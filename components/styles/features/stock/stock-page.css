@@ -234,6 +234,7 @@
 
 .bo-stockAdjust {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -248,6 +249,11 @@
   flex: 1 1 auto;
   min-width: 0;
   text-align: center;
+}
+
+.bo-stockAdjustExpiry {
+  flex: 0 1 132px;
+  text-align: left;
 }
 
 .bo-stockItemActions {

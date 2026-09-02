@@ -139,6 +139,7 @@ export function HistoryTab({ item }: { item: StockItem }) {
                 <p className="bo-stockRowMeta" data-ui="stock-item-history-meta">
                   {movement.warehouseName} · {movement.actorName} · {new Date(movement.occurredAt).toLocaleString("es-ES")}
                 </p>
+                {movement.expiresAt ? <p className="bo-stockNote" data-ui="stock-item-history-expiry">Caducidad: {new Date(movement.expiresAt).toLocaleDateString("es-ES")}</p> : null}
                 {movement.wasteReason ? <p className="bo-stockNote" data-ui="stock-item-history-reason">Motivo: {movement.wasteReason}</p> : null}
                 {movement.note ? <p className="bo-stockNote" data-ui="stock-item-history-note">{movement.note}</p> : null}
               </article>

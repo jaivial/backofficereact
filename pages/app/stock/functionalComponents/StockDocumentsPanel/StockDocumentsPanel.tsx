@@ -68,6 +68,7 @@ export function StockDocumentsPanel({ items, warehouses }: { items: StockDocumen
   const [recipeName, setRecipeName] = useState("");
   const [recipeOutputItemId, setRecipeOutputItemId] = useState(0);
   const [recipeOutputQuantity, setRecipeOutputQuantity] = useState("1");
+  const [lineExpiries, setLineExpiries] = useState<Record<number, string>>({});
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -95,6 +96,7 @@ export function StockDocumentsPanel({ items, warehouses }: { items: StockDocumen
       setRecipeName(data.document.extraction?.name || "");
       setRecipeOutputQuantity(String(data.document.extraction?.yieldQuantity || 1));
       setRecipeOutputItemId(0);
+      setLineExpiries({});
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No se pudo abrir el documento");
     }
@@ -155,7 +157,12 @@ export function StockDocumentsPanel({ items, warehouses }: { items: StockDocumen
     setSaving(true);
     setError("");
     try {
-      await documentRequest(`/documents/${selected.id}/confirm-invoice`, { method: "POST", body: JSON.stringify({ warehouseId: selectedWarehouseId, idempotencyKey: crypto.randomUUID() }) });
+      const expiries: Record<string, string> = {};
+      for (const line of selected.lines) {
+        const expiry = lineExpiries[line.id];
+        if (line.status !== "IGNORED" && line.matchedStockItemId && expiry) expiries[String(line.id)] = expiry;
+      }
+      await documentRequest(`/documents/${selected.id}/confirm-invoice`, { method: "POST", body: JSON.stringify({ warehouseId: selectedWarehouseId, lineExpiries: expiries, idempotencyKey: crypto.randomUUID() }) });
       setNotice("Factura confirmada. Compra añadida al stock.");
       setSelected(null);
       await loadDocuments();
@@ -164,7 +171,7 @@ export function StockDocumentsPanel({ items, warehouses }: { items: StockDocumen
     } finally {
       setSaving(false);
     }
-  }, [loadDocuments, selected, selectedWarehouseId]);
+  }, [lineExpiries, loadDocuments, selected, selectedWarehouseId]);
 
   const confirmRecipe = useCallback(async () => {
     if (!selected) return;
@@ -327,6 +334,11 @@ export function StockDocumentsPanel({ items, warehouses }: { items: StockDocumen
                         {items.map((item) => <option key={item.id} value={item.id} data-ui="stock-ocr-line-item-option">{item.name} · {item.displayUnit.label}</option>)}
                       </select>
                     </FormField>
+                    {selected.documentType === "INVOICE" && line.matchedStockItemId && line.status !== "IGNORED" ? (
+                      <FormField label="Caducidad" htmlFor={`stock-ocr-line-expiry-${line.id}`}>
+                        <input id={`stock-ocr-line-expiry-${line.id}`} className="bo-input" type="date" value={lineExpiries[line.id] || ""} onChange={(event) => setLineExpiries((current) => ({ ...current, [line.id]: event.target.value }))} data-ui="stock-ocr-line-expiry" data-testid={`stock-ocr-line-expiry-${line.id}`} />
+                      </FormField>
+                    ) : null}
                   </div>
                   <label className="bo-stockCheckbox" data-ui="stock-ocr-line-ignore-label">
                     <input type="checkbox" checked={line.status === "IGNORED"} onChange={(event) => updateLine(line.id, { status: event.target.checked ? "IGNORED" : line.matchedStockItemId ? "OK" : "NEEDS_MATCH" })} data-ui="stock-ocr-line-ignore" />
