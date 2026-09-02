@@ -758,4 +758,77 @@
 
 [data-ui="ficha-card"]:hover .bo-fichaArrow { opacity: 0.9; }
 
+/* ── Fichas tecnicas: card picture (toggleable per user preference) ───── */
+.bo-fichaCardImage {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  margin-bottom: 10px;
+}
+
+/* ── Fichas tecnicas: show-images switch in the filters bar ───────────── */
+.bo-fichasImagesToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bo-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bo-fichasImagesToggle:hover {
+  color: var(--bo-text);
+}
+
+.bo-fichasImagesToggle input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bo-muted) 30%, transparent);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--bo-transition-fast) ease;
+}
+
+.bo-fichasImagesToggle input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bo-text);
+  transition: transform var(--bo-transition-fast) ease;
+}
+
+.bo-fichasImagesToggle input:checked {
+  background: var(--bo-accent);
+}
+
+.bo-fichasImagesToggle input:checked::after {
+  transform: translateX(16px);
+}
+
+.bo-fichasImagesToggle input:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-fichasImagesToggle input,
+  .bo-fichasImagesToggle input::after { transition: none; }
+}
+
 /* Danger variant for the inline icon button (delete) */
