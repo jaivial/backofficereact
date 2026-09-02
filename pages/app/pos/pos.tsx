@@ -26,6 +26,7 @@ type StockOption = { id: number; name: string; deductionSource: string; quantity
 type Warehouse = { id: number; name: string; isDefault: boolean };
 type Reservation = { id:number;customerName:string;reservationDate:string;reservationTime:string;partySize:number;status:string;visitId?:number|null;visitStatus?:string|null };
 type Recipe = { id: number; name: string; outputItemId: number };
+type PosHealth = { openVisits: number; oldOpenVisits: number; openStockExceptions: number; partialStockTickets: number; negativeStockAnomalies: number; oldOpenShifts: number };
 
 const DEFAULT_SETTINGS: Settings = { isEnabled: false, stockMode: "OFF", coversMode: "MANUAL", timezone: "Europe/Madrid", businessDayCutoff: "05:00", autoCloseVisit: true, receiptPrefix: "TPV" };
 
@@ -83,6 +84,7 @@ export default function Page() {
   const [salesRows, setSalesRows] = useState<Array<{ date: string; serviceType: string; tickets: number; netCents: number; covers: number }>>([]);
   const [importItems, setImportItems] = useState<Array<{ sourceType: string; sourceId: number; name: string; priceGrossCents: number; imported: boolean }>>([]);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [health, setHealth] = useState<PosHealth | null>(null);
 
   // The business date only exists once the cash day answers. Bootstrap is the
   // heaviest POS endpoint, so it waits for that first answer instead of firing
@@ -129,6 +131,8 @@ export default function Page() {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
   }, [activeDate, scopeReady]);
   useEffect(() => { void load(); }, [load]);
+  // Health check runs once on load; users without pos.settings.manage get a 403 and simply never see the banner.
+  useEffect(() => { void request<PosHealth>("/health").then((response) => setHealth(response)).catch(() => setHealth(null)); }, []);
 
   const saleStockItems = useMemo(()=>stockItems.filter(item=>item.deductionSource!=="PRODUCTION"),[stockItems]);
   const compatibleRecipes = useMemo(()=>recipes.filter(recipe=>recipe.outputItemId===mappingItemId),[mappingItemId,recipes]);
@@ -154,9 +158,13 @@ export default function Page() {
 
   const saveSettings = useCallback(async () => { try { await request("/settings", { method: "PATCH", body: JSON.stringify(settings) }); setMessage("Configuración TPV guardada."); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo guardar configuración"); } }, [load, settings]);
 
+  const healthAlert = health ? health.negativeStockAnomalies > 0 || health.openStockExceptions > 0 || health.partialStockTickets > 0 || health.oldOpenShifts > 0 || health.oldOpenVisits > 0 : false;
+  const healthCritical = health ? health.negativeStockAnomalies > 0 : false;
+
   return <main className="w-full overflow-y-auto" data-ui="pos-page">
     <header className="flex flex-wrap items-start justify-between gap-3" data-ui="pos-header"><div data-ui="pos-heading"><h1 className="text-2xl font-bold text-[var(--bo-text)]" data-ui="pos-title">TPV</h1><p className="text-sm text-[var(--bo-muted)]" data-ui="pos-subtitle">Ventas, stock automático y comensales</p></div><span className="rounded-full border border-[var(--bo-border)] px-3 py-2 text-xs text-[var(--bo-muted)]" data-ui="pos-mode">Stock {settings.stockMode} · comensales {settings.coversMode}</span><POSSectionMenu section={section} onChange={setSection} onOpenCalendar={() => setCalendarOpen(true)}/></header>
     {error?<div className="mb-4 rounded-lg border border-[var(--bo-color-danger)] p-3 text-[var(--bo-text-danger)]" role="alert" data-ui="pos-error">{error}</div>:null}{message?<div className="mb-4 rounded-lg border border-[var(--bo-color-success)] p-3 text-[var(--bo-text-success)]" role="status" data-ui="pos-message">{message}</div>:null}
+    {healthAlert&&health?<div className={`mb-4 rounded-lg border p-3 text-sm ${healthCritical?"border-[var(--bo-color-danger)] text-[var(--bo-text-danger)]":"border-[var(--bo-border-2)] text-[var(--bo-text-warning)]"}`} role={healthCritical?"alert":"status"} data-ui="pos-health-banner" data-testid="pos-health-banner"><span className="font-semibold" data-ui="pos-health-banner-title">{healthCritical?"Atención stock TPV":"Aviso TPV"}</span><span className="ml-2 inline-flex flex-wrap gap-3" data-ui="pos-health-banner-items">{health.negativeStockAnomalies>0?<a className="underline" href="/app/pos?section=stock" data-testid="pos-health-anomalies">{health.negativeStockAnomalies} anomalías de stock</a>:null}{health.openStockExceptions>0?<a className="underline" href="/app/pos?section=stock" data-testid="pos-health-exceptions">{health.openStockExceptions} excepciones de stock</a>:null}{health.partialStockTickets>0?<span data-ui="pos-health-partial">{health.partialStockTickets} tickets con stock parcial</span>:null}{health.oldOpenShifts>0?<span data-ui="pos-health-shifts">{health.oldOpenShifts} turnos abiertos +24 h</span>:null}{health.oldOpenVisits>0?<span data-ui="pos-health-visits">{health.oldOpenVisits} visitas abiertas +12 h</span>:null}</span></div>:null}
 
     {section==="sell"&&scopeReady?(needsCashDay?(activeDate?(cashDayState.unclosedPrevious.length>0?<POSUnclosedDaysModal date={activeDate} unclosedPrevious={cashDayState.unclosedPrevious} error={cashDayState.error} onOpenDay={openDay} onPickDate={pickDate}/>:<POSNoCashDayModal date={activeDate} error={cashDayState.error} onOpenDay={openDay} onPickDate={pickDate}/>):<section className="rounded-xl border border-[var(--bo-border)] bg-[var(--bo-surface)] p-4" data-ui="pos-cash-day-unavailable"><h2 className="font-semibold text-[var(--bo-text)]" data-ui="pos-cash-day-unavailable-title">No se pudo determinar el día de caja</h2><p className="mt-1 text-sm text-[var(--bo-muted)]" data-ui="pos-cash-day-unavailable-detail">{cashDayState.error||"Sin respuesta del servidor."}</p><button className="mt-3 min-h-11 rounded-lg border border-[var(--bo-border-2)] px-4 text-[var(--bo-accent)]" type="button" onClick={()=>void cashDayState.refresh()} data-ui="pos-cash-day-retry" data-testid="pos-cash-day-retry">Reintentar</button></section>):<POSSellScreen date={activeDate} readOnly={cashDayState.readOnly} cashDay={cashDayState.cashDay} totals={cashDayState.totals} cashDayError={cashDayState.error} onCloseDay={cashDayState.closeDay}/>):null}
 
