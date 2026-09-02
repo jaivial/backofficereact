@@ -99,9 +99,11 @@ export function FichasTecnicasPanel() {
     // calls (each bringing back 24 image URLs).
     const controller = new AbortController();
     const isInitial = !firstListDone.current;
+    // Always clear any previous error so a successful reload stops showing a
+    // stale alert (the InlineAlert has no dismiss control).
+    setError("");
     if (isInitial) {
       setLoading(true);
-      setError("");
     } else {
       setRefreshing(true);
     }
@@ -155,19 +157,12 @@ export function FichasTecnicasPanel() {
     return () => { cancelled = true; };
   }, []);
 
-  // New filters mean a different list: back to the first page and drop any
-  // open sheet so the grid is what the user sees. The first render is a no-op
-  // — selectedId is already seeded from ?ficha=, and zeroing it on mount
-  // would strip the deep-link before the URL reflects it.
-  const firstFilterRender = useRef(true);
-  useEffect(() => {
-    if (firstFilterRender.current) {
-      firstFilterRender.current = false;
-      return;
-    }
-    setPage(1);
-    setSelectedId(null);
-  }, [categoryId, statusFilter, searchQuery, setSelectedId]);
+  // selectedId (an open ficha via ?ficha=) is reset by every handler that
+  // changes a filter, alongside setPage(1), so the fetch effect receives the
+  // new filter and the reset page in a single batch. A separate useEffect
+  // here is no longer needed — and would pay a full extra debounce because
+  // the fetch effect would re-run with the old page, then again after the
+  // reset effect updates page=1.
 
   const selectedSheet = useMemo(
     () => (selectedId == null ? null : sheets.find((sheet) => sheet.id === selectedId) ?? null),
@@ -214,7 +209,11 @@ export function FichasTecnicasPanel() {
         <select
           className="bo-input bo-fichasFilterSelect"
           value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
+          onChange={(e) => {
+            setCategoryId(e.target.value);
+            setPage(1);
+            setSelectedId(null);
+          }}
           data-ui="fichas-filter-category"
           aria-label="Categoria"
         >
@@ -228,7 +227,11 @@ export function FichasTecnicasPanel() {
             type="button"
             className={`bo-fichasSegBtn ${statusFilter === "" || statusFilter === undefined ? "is-active" : ""}`}
             data-ui="fichas-status-all"
-            onClick={() => setStatusFilter("")}
+            onClick={() => {
+              setStatusFilter("");
+              setPage(1);
+              setSelectedId(null);
+            }}
           >
             Todos
           </button>
@@ -236,7 +239,11 @@ export function FichasTecnicasPanel() {
             type="button"
             className={`bo-fichasSegBtn ${statusFilter === "DRAFT" ? "is-active" : ""}`}
             data-ui="fichas-status-draft"
-            onClick={() => setStatusFilter("DRAFT")}
+            onClick={() => {
+              setStatusFilter("DRAFT");
+              setPage(1);
+              setSelectedId(null);
+            }}
           >
             Borrador
           </button>
@@ -244,7 +251,11 @@ export function FichasTecnicasPanel() {
             type="button"
             className={`bo-fichasSegBtn ${statusFilter === "PUBLISHED" ? "is-active" : ""}`}
             data-ui="fichas-status-published"
-            onClick={() => setStatusFilter("PUBLISHED")}
+            onClick={() => {
+              setStatusFilter("PUBLISHED");
+              setPage(1);
+              setSelectedId(null);
+            }}
           >
             Publicada
           </button>
@@ -256,7 +267,11 @@ export function FichasTecnicasPanel() {
             className="bo-input bo-fichasSearchInput"
             placeholder="Buscar por nombre..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+              setSelectedId(null);
+            }}
             data-ui="fichas-search-input"
             aria-label="Buscar ficha"
           />
