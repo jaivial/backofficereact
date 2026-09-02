@@ -42,6 +42,7 @@ export type Movement = {
   note?: string;
   actorName: string;
   occurredAt: string;
+  expiresAt?: string | null;
 };
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
