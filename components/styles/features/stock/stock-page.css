@@ -832,3 +832,21 @@
 }
 
 /* Danger variant for the inline icon button (delete) */
+
+.bo-stockBannerList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin-top: 0.25rem;
+}
+
+.bo-stockBannerList a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bo-stockBannerList a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
