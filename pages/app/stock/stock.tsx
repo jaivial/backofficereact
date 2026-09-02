@@ -101,8 +101,36 @@ export default function Page() {
   const [transferToId, setTransferToId] = useState(0);
   const [transferQuantity, setTransferQuantity] = useState("1");
   const [section, setSection] = useUrlTabQuery();
+  const [permissions, setPermissions] = useState<Record<string, boolean> | null>(null);
+
+  // null = still unknown (or the endpoint failed): render as allowed so admins
+  // never lose controls to a transient error. The backend enforces the real
+  // gate; this only avoids showing buttons a role cannot use.
+  const can = useCallback((key: string) => (permissions ? permissions[key] === true : true), [permissions]);
+
+  useEffect(() => {
+    request<{ permissions: { key: string; allowed: boolean }[] }>("/permissions/mine")
+      .then((data) => setPermissions(Object.fromEntries((data.permissions || []).map((entry) => [entry.key, entry.allowed]))))
+      .catch(() => setPermissions(null));
+  }, []);
 
   const selectedWarehouseId = useMemo(() => warehouseId || warehouses.find((warehouse) => warehouse.isDefault)?.id || 0, [warehouseId, warehouses]);
+  const operationsVisible = can("stock.recipes.view") || can("stock.ocr.upload") || can("stock.waste.record") || can("stock.costs.view");
+
+  const visibleTabs = useMemo(
+    () => SECTION_TABS.filter((tab) => {
+      if (tab.id === "settings") return can("stock.settings.manage");
+      if (tab.id === "operations") return operationsVisible;
+      return true;
+    }),
+    [can, operationsVisible],
+  );
+
+  const effectiveSection = useMemo<Section>(() => {
+    if (section === "settings" && !can("stock.settings.manage")) return "inventory";
+    if (section === "operations" && !operationsVisible) return "inventory";
+    return section;
+  }, [section, can, operationsVisible]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -206,25 +234,29 @@ export default function Page() {
             <p className="bo-pageSubtitle" data-ui="stock-subtitle">Existencias por almacén, movimientos y mermas</p>
           </div>
           <div className="bo-stockHeroActions" data-ui="stock-header-actions">
-            <Button variant="secondary" onClick={() => setShowWarehouses((open) => !open)} aria-expanded={showWarehouses} data-testid="stock-manage-warehouses">
-              <WarehouseIcon className="bo-ico" size={16} aria-hidden="true" data-ui="stock-warehouse-icon" />
-              Almacenes
-            </Button>
-            <Button variant="primary" onClick={() => setShowItemForm(true)} data-testid="stock-new-item">
-              <Plus className="bo-ico" size={16} aria-hidden="true" data-ui="stock-new-icon" />
-              Nuevo artículo
-            </Button>
+            {can("stock.warehouses.manage") || can("stock.transfer") ? (
+              <Button variant="secondary" onClick={() => setShowWarehouses((open) => !open)} aria-expanded={showWarehouses} data-testid="stock-manage-warehouses">
+                <WarehouseIcon className="bo-ico" size={16} aria-hidden="true" data-ui="stock-warehouse-icon" />
+                Almacenes
+              </Button>
+            ) : null}
+            {can("stock.items.manage") ? (
+              <Button variant="primary" onClick={() => setShowItemForm(true)} data-testid="stock-new-item">
+                <Plus className="bo-ico" size={16} aria-hidden="true" data-ui="stock-new-icon" />
+                Nuevo artículo
+              </Button>
+            ) : null}
           </div>
         </header>
 
         <div className="bo-stockTabsRow" data-ui="stock-sections">
-          <SimpleTabs items={SECTION_TABS} activeId={section} onChange={(id) => setSection(id as Section)} aria-label="Secciones de stock" />
+          <SimpleTabs items={visibleTabs} activeId={effectiveSection} onChange={(id) => setSection(id as Section)} aria-label="Secciones de stock" />
         </div>
 
         {error ? <InlineAlert kind="error" title="Error de stock" message={error} /> : null}
 
         <div className="bo-stockStack" data-ui="stock-sections-content">
-          {section === "inventory" ? (
+          {effectiveSection === "inventory" ? (
             <>
               {stockAlert ? (
                 <div
@@ -272,21 +304,25 @@ export default function Page() {
                       {warehouses.map((warehouse) => (
                         <div className="bo-stockRow" key={warehouse.id} data-ui="stock-warehouse-row">
                           <span data-ui="stock-warehouse-chip">{warehouse.name}{warehouse.isDefault ? " · principal" : ""}</span>
-                          <span className="bo-stockRowActions" data-ui="stock-warehouse-actions">
-                            <Button variant="ghost" size="sm" onClick={() => void editWarehouse(warehouse)} data-testid={`stock-edit-warehouse-${warehouse.id}`}>Editar</Button>
-                            <Button variant="danger" size="sm" disabled={warehouse.isDefault} onClick={() => void deleteWarehouse(warehouse)} data-testid={`stock-delete-warehouse-${warehouse.id}`}>Eliminar</Button>
-                          </span>
+                          {can("stock.warehouses.manage") ? (
+                            <span className="bo-stockRowActions" data-ui="stock-warehouse-actions">
+                              <Button variant="ghost" size="sm" onClick={() => void editWarehouse(warehouse)} data-testid={`stock-edit-warehouse-${warehouse.id}`}>Editar</Button>
+                              <Button variant="danger" size="sm" disabled={warehouse.isDefault} onClick={() => void deleteWarehouse(warehouse)} data-testid={`stock-delete-warehouse-${warehouse.id}`}>Eliminar</Button>
+                            </span>
+                          ) : null}
                         </div>
                       ))}
                     </div>
 
+                    {can("stock.warehouses.manage") ? (
                     <form className="bo-stockToolbar" onSubmit={createWarehouse} data-ui="stock-warehouse-form">
                       <label className="sr-only" htmlFor="stock-warehouse-name" data-ui="stock-warehouse-name-label">Nombre</label>
                       <input id="stock-warehouse-name" className="bo-input bo-stockAdjustInput" value={warehouseName} onChange={(event) => setWarehouseName(event.target.value)} placeholder="Nuevo almacén" required data-testid="stock-warehouse-name" />
                       <Button variant="primary" type="submit" data-testid="stock-create-warehouse">Crear</Button>
                     </form>
+                    ) : null}
 
-                    {warehouses.length > 1 ? (
+                    {warehouses.length > 1 && can("stock.transfer") ? (
                       <div className="bo-stockSubsection" data-ui="stock-transfer-form">
                         <h3 className="bo-stockSubtitle" data-ui="stock-transfer-title">Transferir existencias</h3>
                         <div className="bo-stockFormGrid bo-stockFormGrid--3" data-ui="stock-transfer-fields">
@@ -382,6 +418,7 @@ export default function Page() {
                           <div className={progressClass(item)} style={{ width: `${percent}%` }} data-ui="stock-progress-fill" />
                         </div>
 
+                        {can("stock.adjust") ? (
                         <div className="bo-stockAdjust" data-ui="stock-adjustment" onClick={(event) => event.stopPropagation()}>
                           <Button variant="secondary" className="bo-stockAdjustBtn" aria-label={`Restar ${item.name}`} onClick={(event) => { event.stopPropagation(); void adjust(item, "subtract"); }} data-testid={`stock-subtract-${item.id}`}>
                             <Minus size={16} aria-hidden="true" data-ui="stock-minus-icon" />
@@ -392,15 +429,20 @@ export default function Page() {
                             <Plus size={16} aria-hidden="true" data-ui="stock-plus-icon" />
                           </Button>
                         </div>
+                        ) : null}
 
                         <div className="bo-stockItemActions" data-ui="stock-card-actions">
                           <StatusBadge variant="neutral" className="bo-stockItemSourceBadge" data-ui="stock-card-source">{sourceLabel(item.deductionSource)}</StatusBadge>
-                          <button type="button" className="bo-stockIconBtn" aria-label={`Editar ${item.name}`} data-testid={`stock-edit-${item.id}`} onClick={(event) => { event.stopPropagation(); navigate(`/app/stock/item?id=${item.id}`); }}>
-                            <Pencil size={16} aria-hidden="true" data-ui="stock-edit-icon" />
-                          </button>
-                          <button type="button" className="bo-stockIconBtn bo-stockIconBtn--danger" aria-label={`Eliminar ${item.name}`} data-testid={`stock-delete-${item.id}`} onClick={(event) => { event.stopPropagation(); void deleteItem(item); }}>
-                            <Trash2 size={16} aria-hidden="true" data-ui="stock-delete-icon" />
-                          </button>
+                          {can("stock.items.manage") ? (
+                            <>
+                              <button type="button" className="bo-stockIconBtn" aria-label={`Editar ${item.name}`} data-testid={`stock-edit-${item.id}`} onClick={(event) => { event.stopPropagation(); navigate(`/app/stock/item?id=${item.id}`); }}>
+                                <Pencil size={16} aria-hidden="true" data-ui="stock-edit-icon" />
+                              </button>
+                              <button type="button" className="bo-stockIconBtn bo-stockIconBtn--danger" aria-label={`Eliminar ${item.name}`} data-testid={`stock-delete-${item.id}`} onClick={(event) => { event.stopPropagation(); void deleteItem(item); }}>
+                                <Trash2 size={16} aria-hidden="true" data-ui="stock-delete-icon" />
+                              </button>
+                            </>
+                          ) : null}
                         </div>
                       </article>
                     );
@@ -418,20 +460,20 @@ export default function Page() {
             </>
           ) : null}
 
-          {section === "sheets" ? (
+          {effectiveSection === "sheets" ? (
             <FichasTecnicasPanel />
           ) : null}
 
-          {section === "operations" ? (
+          {effectiveSection === "operations" ? (
             <div className="bo-stack" data-ui="stock-operations-content" data-testid="stock-operations-content">
-              <StockOperationsPanel items={itemOptions} warehouses={warehouses} onChanged={load} />
-              <StockDocumentsPanel items={itemOptions} warehouses={warehouses} />
-              <PortionWastePanel />
-              <ProductionLabourPanel />
+              {can("stock.recipes.view") ? <StockOperationsPanel items={itemOptions} warehouses={warehouses} onChanged={load} /> : null}
+              {can("stock.ocr.upload") ? <StockDocumentsPanel items={itemOptions} warehouses={warehouses} /> : null}
+              {can("stock.waste.record") ? <PortionWastePanel /> : null}
+              {can("stock.costs.view") ? <ProductionLabourPanel /> : null}
             </div>
           ) : null}
 
-          {section === "settings" ? <StockSettingsPanel /> : null}
+          {effectiveSection === "settings" ? <StockSettingsPanel /> : null}
         </div>
       </div>
 
