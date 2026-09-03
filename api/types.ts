@@ -432,6 +432,7 @@ export type GroupMenuV2Dish = {
   catalog_dish_id?: number | null;
   title: string;
   description: string;
+  description_enabled?: boolean;
   allergens: string[];
   supplement_enabled: boolean;
   supplement_price: number | null;

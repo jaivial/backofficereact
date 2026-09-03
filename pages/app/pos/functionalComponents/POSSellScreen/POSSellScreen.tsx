@@ -310,6 +310,10 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const toggleTicketExpanded = useCallback(() => setTicketExpanded((current) => !current), []);
 
   const handleAddProduct = useCallback((product: Parameters<typeof register.addProduct>[0]) => {
+    if (register.settings.stockMode === "LIVE" && register.productStock[String(product.id)] === "out") {
+      register.setError(`Sin stock: ${product.name} no disponible.`);
+      return;
+    }
     const priceValue = Number(keypadValue.replace(",", ".")) || 0;
     const hasMultiplier = keypadMultiplierQty != null && keypadMultiplierQty > 0;
     const hasPrice = priceValue > 0;
@@ -410,7 +414,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
           </div>
           <div className="pos-sell__row pos-sell__row--catalog" data-testid="pos-sell-row-catalog" hidden={ticketExpanded}>
             <POSCategoryPanel categories={categories} active={category} onSelect={setCategory} />
-            <POSProductGrid products={visibleProducts} busy={register.busy || !register.ticket} readOnly={readOnly} onAdd={handleAddProduct} />
+            <POSProductGrid products={visibleProducts} busy={register.busy || !register.ticket} readOnly={readOnly} onAdd={handleAddProduct} stockStatus={register.settings.stockMode === "OFF" ? undefined : register.productStock} />
           </div>
         </div>
         <POSControlRail onAction={railAction} disabledKeys={disabledRailKeys} readOnly={readOnly} />

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { navigate } from "vike/client/router";
-import { Boxes, ChevronRight, Minus, Pencil, Plus, Search, Trash2, Warehouse as WarehouseIcon, X } from "lucide-react";
+import { Boxes, ChevronRight, Minus, Pencil, Plus, Search, Trash2, Upload, Warehouse as WarehouseIcon, X } from "lucide-react";
 
 import { Breadcrumbs } from "../../../ui/nav/Breadcrumbs";
 import { SimpleTabs } from "../../../ui/nav/SimpleTabs";
@@ -14,19 +14,30 @@ import { FormField } from "../../../ui/inputs/FormField";
 import { FichasTecnicasPanel } from "./functionalComponents/FichasTecnicasPanel/FichasTecnicasPanel";
 import { StockSettingsPanel } from "./functionalComponents/StockSettingsPanel/StockSettingsPanel";
 import { StockItemModal } from "./functionalComponents/StockItemModal/StockItemModal";
+import { StockOperationsPanel } from "./functionalComponents/StockOperationsPanel/StockOperationsPanel";
+import { StockDocumentsPanel } from "./functionalComponents/StockDocumentsPanel/StockDocumentsPanel";
+import { StockExpiringPanel } from "./functionalComponents/StockExpiringPanel/StockExpiringPanel";
+import { StockValuationPanel } from "./functionalComponents/StockValuationPanel/StockValuationPanel";
+import { StockImportModal } from "./functionalComponents/StockImportModal/StockImportModal";
+import { PortionWastePanel } from "./functionalComponents/PortionWastePanel/PortionWastePanel";
+import { ProductionLabourPanel } from "./functionalComponents/ProductionLabourPanel/ProductionLabourPanel";
+import { StockSuppliersPanel } from "./functionalComponents/StockSuppliersPanel/StockSuppliersPanel";
 
 type Warehouse = { id: number; name: string; code?: string; type: string; isDefault: boolean; isActive: boolean; sortOrder: number; notes?: string };
 type Unit = { id: number; code: string; label: string; factorToBase: number };
 type StockItem = { id: number; name: string; sku?: string; categoryName?: string; kind: string; baseDimension: string; baseUnit: string; isTracked: boolean; deductionSource: string; quantityBase: number; parLevelBase: number; reorderPointBase: number; displayUnit: Unit };
 type StockItemOption = Pick<StockItem, "id" | "name" | "kind" | "isTracked" | "displayUnit">;
-type Summary = { itemsTracked: number; belowPar: number; belowReorder: number; outOfStock: number; negative: number; coveragePct: number };
-type Section = "inventory" | "sheets" | "settings";
+type SummaryItem = { id: number; name: string; qty: number; par: number; reorderPoint: number };
+type Summary = { itemsTracked: number; belowPar: number; belowReorder: number; outOfStock: number; negative: number; coveragePct: number; belowParItems?: SummaryItem[]; belowReorderItems?: SummaryItem[]; outOfStockItems?: SummaryItem[]; negativeItems?: SummaryItem[]; unresolvedAnomalies?: number };
+type Section = "inventory" | "sheets" | "operations" | "suppliers" | "settings";
 
 const EMPTY_SUMMARY: Summary = { itemsTracked: 0, belowPar: 0, belowReorder: 0, outOfStock: 0, negative: 0, coveragePct: 0 };
 
 const SECTION_TABS: { id: Section; label: string }[] = [
   { id: "inventory", label: "Existencias" },
   { id: "sheets", label: "Fichas tecnicas" },
+  { id: "operations", label: "Operaciones" },
+  { id: "suppliers", label: "Proveedores" },
   { id: "settings", label: "Configuración" },
 ];
 
@@ -60,7 +71,7 @@ function sourceLabel(deductionSource: string): string {
 function useUrlTabQuery(): [Section, (id: Section) => void] {
   const pageContext = usePageContext();
   const initial = (pageContext.urlParsed?.search?.tab || "") as string;
-  const validTabs: Section[] = ["inventory", "sheets", "settings"];
+  const validTabs: Section[] = ["inventory", "sheets", "operations", "suppliers", "settings"];
   const fallback: Section = validTabs.includes(initial as Section) ? (initial as Section) : "inventory";
   const [section, setSection] = useState<Section>(fallback);
 
@@ -87,7 +98,9 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [quantities, setQuantities] = useState<Record<number, string>>({});
+  const [expiryDates, setExpiryDates] = useState<Record<number, string>>({});
   const [showItemForm, setShowItemForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [showWarehouses, setShowWarehouses] = useState(false);
   const [warehouseName, setWarehouseName] = useState("");
   const [transferItemId, setTransferItemId] = useState(0);
@@ -95,8 +108,36 @@ export default function Page() {
   const [transferToId, setTransferToId] = useState(0);
   const [transferQuantity, setTransferQuantity] = useState("1");
   const [section, setSection] = useUrlTabQuery();
+  const [permissions, setPermissions] = useState<Record<string, boolean> | null>(null);
+
+  // null = still unknown (or the endpoint failed): render as allowed so admins
+  // never lose controls to a transient error. The backend enforces the real
+  // gate; this only avoids showing buttons a role cannot use.
+  const can = useCallback((key: string) => (permissions ? permissions[key] === true : true), [permissions]);
+
+  useEffect(() => {
+    request<{ permissions: { key: string; allowed: boolean }[] }>("/permissions/mine")
+      .then((data) => setPermissions(Object.fromEntries((data.permissions || []).map((entry) => [entry.key, entry.allowed]))))
+      .catch(() => setPermissions(null));
+  }, []);
 
   const selectedWarehouseId = useMemo(() => warehouseId || warehouses.find((warehouse) => warehouse.isDefault)?.id || 0, [warehouseId, warehouses]);
+  const operationsVisible = can("stock.recipes.view") || can("stock.ocr.upload") || can("stock.waste.record") || can("stock.costs.view");
+
+  const visibleTabs = useMemo(
+    () => SECTION_TABS.filter((tab) => {
+      if (tab.id === "settings") return can("stock.settings.manage");
+      if (tab.id === "operations") return operationsVisible;
+      return true;
+    }),
+    [can, operationsVisible],
+  );
+
+  const effectiveSection = useMemo<Section>(() => {
+    if (section === "settings" && !can("stock.settings.manage")) return "inventory";
+    if (section === "operations" && !operationsVisible) return "inventory";
+    return section;
+  }, [section, can, operationsVisible]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -107,7 +148,7 @@ export default function Page() {
       if (warehouseId) params.set("warehouseId", String(warehouseId));
       const [itemData, summaryData, warehouseData, optionData] = await Promise.all([
         request<{ items: StockItem[]; totalPages: number }>(`/items?${params}`),
-        request<Summary>("/summary"),
+        request<Summary>("/summary?details=1"),
         request<{ warehouses: Warehouse[] }>("/warehouses"),
         request<{ items: StockItemOption[] }>("/item-options"),
       ]);
@@ -133,13 +174,14 @@ export default function Page() {
     try {
       const result = await request<{ quantityBase: number }>(`/items/${item.id}/movements`, {
         method: "POST",
-        body: JSON.stringify({ warehouseId: selectedWarehouseId, quantity, unitId: item.displayUnit.id, type: "ADJUSTMENT", direction: direction === "add" ? "ADD" : "SUBTRACT", idempotencyKey: crypto.randomUUID() }),
+        body: JSON.stringify({ warehouseId: selectedWarehouseId, quantity, unitId: item.displayUnit.id, type: "ADJUSTMENT", direction: direction === "add" ? "ADD" : "SUBTRACT", ...(direction === "add" && expiryDates[item.id] ? { expiresAt: expiryDates[item.id] } : {}), idempotencyKey: crypto.randomUUID() }),
       });
       setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, quantityBase: result.quantityBase } : entry));
+      if (direction === "add" && expiryDates[item.id]) setExpiryDates((current) => ({ ...current, [item.id]: "" }));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No se pudo ajustar el stock");
     }
-  }, [quantities, selectedWarehouseId]);
+  }, [expiryDates, quantities, selectedWarehouseId]);
 
   const createWarehouse = useCallback(async (event: React.FormEvent) => {
     event.preventDefault();
@@ -181,6 +223,14 @@ export default function Page() {
     ["Artículos", summary.itemsTracked], ["Bajo objetivo", summary.belowPar], ["Bajo mínimo", summary.belowReorder], ["Agotados", summary.outOfStock],
   ], [summary]);
 
+  const stockAlert = useMemo<{ critical: boolean; title: string; items: SummaryItem[] } | null>(() => {
+    const critical = [...(summary.negativeItems || []), ...(summary.outOfStockItems || [])];
+    if (critical.length) return { critical: true, title: `Stock crítico: ${critical.length} artículos agotados o en negativo`, items: critical };
+    const low = summary.belowParItems || [];
+    if (low.length) return { critical: false, title: `Bajo objetivo: ${low.length} artículos por debajo del par`, items: low };
+    return null;
+  }, [summary]);
+
   return (
     <main className="bo-stockPage" data-ui="stock-page">
       <div className="bo-container" data-slot="stock-container">
@@ -192,26 +242,58 @@ export default function Page() {
             <p className="bo-pageSubtitle" data-ui="stock-subtitle">Existencias por almacén, movimientos y mermas</p>
           </div>
           <div className="bo-stockHeroActions" data-ui="stock-header-actions">
-            <Button variant="secondary" onClick={() => setShowWarehouses((open) => !open)} aria-expanded={showWarehouses} data-testid="stock-manage-warehouses">
-              <WarehouseIcon className="bo-ico" size={16} aria-hidden="true" data-ui="stock-warehouse-icon" />
-              Almacenes
-            </Button>
-            <Button variant="primary" onClick={() => setShowItemForm(true)} data-testid="stock-new-item">
-              <Plus className="bo-ico" size={16} aria-hidden="true" data-ui="stock-new-icon" />
-              Nuevo artículo
-            </Button>
+            {can("stock.warehouses.manage") || can("stock.transfer") ? (
+              <Button variant="secondary" onClick={() => setShowWarehouses((open) => !open)} aria-expanded={showWarehouses} data-testid="stock-manage-warehouses">
+                <WarehouseIcon className="bo-ico" size={16} aria-hidden="true" data-ui="stock-warehouse-icon" />
+                Almacenes
+              </Button>
+            ) : null}
+            {can("stock.items.manage") ? (
+              <Button variant="secondary" onClick={() => setShowImport(true)} data-testid="stock-import">
+                <Upload className="bo-ico" size={16} aria-hidden="true" data-ui="stock-import-icon" />
+                Importar
+              </Button>
+            ) : null}
+            {can("stock.items.manage") ? (
+              <Button variant="primary" onClick={() => setShowItemForm(true)} data-testid="stock-new-item">
+                <Plus className="bo-ico" size={16} aria-hidden="true" data-ui="stock-new-icon" />
+                Nuevo artículo
+              </Button>
+            ) : null}
           </div>
         </header>
 
         <div className="bo-stockTabsRow" data-ui="stock-sections">
-          <SimpleTabs items={SECTION_TABS} activeId={section} onChange={(id) => setSection(id as Section)} aria-label="Secciones de stock" />
+          <SimpleTabs items={visibleTabs} activeId={effectiveSection} onChange={(id) => setSection(id as Section)} aria-label="Secciones de stock" />
         </div>
 
         {error ? <InlineAlert kind="error" title="Error de stock" message={error} /> : null}
 
         <div className="bo-stockStack" data-ui="stock-sections-content">
-          {section === "inventory" ? (
+          {effectiveSection === "inventory" ? (
             <>
+              {stockAlert ? (
+                <div
+                  className={`bo-alert bo-alert--glass ${stockAlert.critical ? "bo-alert--error" : "bo-alert--warning"}`}
+                  role={stockAlert.critical ? "alert" : "status"}
+                  data-ui="stock-banner"
+                  data-testid="stock-banner"
+                >
+                  <div className="bo-alertTitle" data-ui="stock-banner-title">{stockAlert.title}</div>
+                  <div className="bo-alertMsg bo-stockBannerList" data-ui="stock-banner-list">
+                    {stockAlert.items.slice(0, 6).map((item) => (
+                      <a key={item.id} href={`/app/stock/item?id=${item.id}&tab=historial`} data-testid={`stock-banner-item-${item.id}`}>{item.name}</a>
+                    ))}
+                    {stockAlert.items.length > 6 ? <span data-ui="stock-banner-more">y {stockAlert.items.length - 6} más</span> : null}
+                    {(summary.unresolvedAnomalies || 0) > 0 ? (
+                      <a href="/app/pos?section=stock" data-testid="stock-banner-anomalies">{summary.unresolvedAnomalies} anomalías de stock abiertas</a>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
+              <StockExpiringPanel />
+
               <section className="bo-stockSummary" aria-label="Resumen de stock" data-ui="stock-summary">
                 {summaryCards.map(([label, value]) => (
                   <article className="bo-card bo-stockSummaryCard" key={label} data-ui={`stock-summary-${label.toLowerCase().replaceAll(" ", "-")}`}>
@@ -224,6 +306,8 @@ export default function Page() {
                   <strong className="bo-statValue" data-ui="stock-coverage-value">{Math.round(summary.coveragePct)}% cubierto</strong>
                 </article>
               </section>
+
+              <StockValuationPanel />
 
               {showWarehouses ? (
                 <section className="bo-panel" aria-label="Almacenes" data-ui="stock-warehouse-panel">
@@ -238,21 +322,25 @@ export default function Page() {
                       {warehouses.map((warehouse) => (
                         <div className="bo-stockRow" key={warehouse.id} data-ui="stock-warehouse-row">
                           <span data-ui="stock-warehouse-chip">{warehouse.name}{warehouse.isDefault ? " · principal" : ""}</span>
-                          <span className="bo-stockRowActions" data-ui="stock-warehouse-actions">
-                            <Button variant="ghost" size="sm" onClick={() => void editWarehouse(warehouse)} data-testid={`stock-edit-warehouse-${warehouse.id}`}>Editar</Button>
-                            <Button variant="danger" size="sm" disabled={warehouse.isDefault} onClick={() => void deleteWarehouse(warehouse)} data-testid={`stock-delete-warehouse-${warehouse.id}`}>Eliminar</Button>
-                          </span>
+                          {can("stock.warehouses.manage") ? (
+                            <span className="bo-stockRowActions" data-ui="stock-warehouse-actions">
+                              <Button variant="ghost" size="sm" onClick={() => void editWarehouse(warehouse)} data-testid={`stock-edit-warehouse-${warehouse.id}`}>Editar</Button>
+                              <Button variant="danger" size="sm" disabled={warehouse.isDefault} onClick={() => void deleteWarehouse(warehouse)} data-testid={`stock-delete-warehouse-${warehouse.id}`}>Eliminar</Button>
+                            </span>
+                          ) : null}
                         </div>
                       ))}
                     </div>
 
+                    {can("stock.warehouses.manage") ? (
                     <form className="bo-stockToolbar" onSubmit={createWarehouse} data-ui="stock-warehouse-form">
                       <label className="sr-only" htmlFor="stock-warehouse-name" data-ui="stock-warehouse-name-label">Nombre</label>
                       <input id="stock-warehouse-name" className="bo-input bo-stockAdjustInput" value={warehouseName} onChange={(event) => setWarehouseName(event.target.value)} placeholder="Nuevo almacén" required data-testid="stock-warehouse-name" />
                       <Button variant="primary" type="submit" data-testid="stock-create-warehouse">Crear</Button>
                     </form>
+                    ) : null}
 
-                    {warehouses.length > 1 ? (
+                    {warehouses.length > 1 && can("stock.transfer") ? (
                       <div className="bo-stockSubsection" data-ui="stock-transfer-form">
                         <h3 className="bo-stockSubtitle" data-ui="stock-transfer-title">Transferir existencias</h3>
                         <div className="bo-stockFormGrid bo-stockFormGrid--3" data-ui="stock-transfer-fields">
@@ -297,6 +385,12 @@ export default function Page() {
                       {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id} data-ui="stock-warehouse-option">{warehouse.name}</option>)}
                     </select>
                   </div>
+                  <div className="bo-stockExportActions" data-ui="stock-export-actions">
+                    <span className="bo-stockExportLabel" data-ui="stock-export-label">Exportar</span>
+                    <a className="bo-btn bo-btn--ghost bo-btn--sm" href="/api/admin/stock/export?type=items" download data-ui="stock-export-items" data-testid="stock-export-items">Artículos</a>
+                    <a className="bo-btn bo-btn--ghost bo-btn--sm" href="/api/admin/stock/export?type=movements" download data-ui="stock-export-movements" data-testid="stock-export-movements">Movimientos</a>
+                    <a className="bo-btn bo-btn--ghost bo-btn--sm" href="/api/admin/stock/export?type=waste" download data-ui="stock-export-waste" data-testid="stock-export-waste">Mermas</a>
+                  </div>
                 </div>
               </section>
 
@@ -312,7 +406,16 @@ export default function Page() {
                   title="No hay artículos"
                   description="Crea el primero o importa tu catálogo."
                   data-ui="stock-empty"
-                />
+                >
+                  {can("stock.items.manage") ? (
+                    <div className="bo-stockEmptyActions" data-ui="stock-empty-actions">
+                      <Button variant="primary" onClick={() => setShowImport(true)} data-testid="stock-import-empty">
+                        <Upload className="bo-ico" size={16} aria-hidden="true" data-ui="stock-import-empty-icon" />
+                        Importar catálogo
+                      </Button>
+                    </div>
+                  ) : null}
+                </EmptyState>
               ) : (
                 <section className="bo-stockGrid" aria-label="Artículos en stock" data-ui="stock-grid">
                   {items.map((item) => {
@@ -348,25 +451,33 @@ export default function Page() {
                           <div className={progressClass(item)} style={{ width: `${percent}%` }} data-ui="stock-progress-fill" />
                         </div>
 
+                        {can("stock.adjust") ? (
                         <div className="bo-stockAdjust" data-ui="stock-adjustment" onClick={(event) => event.stopPropagation()}>
                           <Button variant="secondary" className="bo-stockAdjustBtn" aria-label={`Restar ${item.name}`} onClick={(event) => { event.stopPropagation(); void adjust(item, "subtract"); }} data-testid={`stock-subtract-${item.id}`}>
                             <Minus size={16} aria-hidden="true" data-ui="stock-minus-icon" />
                           </Button>
                           <label className="sr-only" htmlFor={`stock-quantity-${item.id}`} data-ui="stock-quantity-label">Cantidad de {item.name}</label>
                           <input id={`stock-quantity-${item.id}`} className="bo-input bo-stockAdjustInput" inputMode="decimal" value={quantities[item.id] || "1"} onChange={(event) => setQuantities((current) => ({ ...current, [item.id]: event.target.value }))} data-testid={`stock-quantity-${item.id}`} />
+                          <label className="sr-only" htmlFor={`stock-expiry-${item.id}`} data-ui="stock-expiry-label">Caducidad de {item.name} (opcional, se aplica al sumar)</label>
+                          <input id={`stock-expiry-${item.id}`} className="bo-input bo-stockAdjustInput bo-stockAdjustExpiry" type="date" value={expiryDates[item.id] || ""} onChange={(event) => setExpiryDates((current) => ({ ...current, [item.id]: event.target.value }))} aria-label={`Caducidad de ${item.name} (opcional, se aplica al sumar)`} data-testid={`stock-expiry-${item.id}`} />
                           <Button variant="primary" className="bo-stockAdjustBtn" aria-label={`Sumar ${item.name}`} onClick={(event) => { event.stopPropagation(); void adjust(item, "add"); }} data-testid={`stock-add-${item.id}`}>
                             <Plus size={16} aria-hidden="true" data-ui="stock-plus-icon" />
                           </Button>
                         </div>
+                        ) : null}
 
                         <div className="bo-stockItemActions" data-ui="stock-card-actions">
                           <StatusBadge variant="neutral" className="bo-stockItemSourceBadge" data-ui="stock-card-source">{sourceLabel(item.deductionSource)}</StatusBadge>
-                          <button type="button" className="bo-stockIconBtn" aria-label={`Editar ${item.name}`} data-testid={`stock-edit-${item.id}`} onClick={(event) => { event.stopPropagation(); navigate(`/app/stock/item?id=${item.id}`); }}>
-                            <Pencil size={16} aria-hidden="true" data-ui="stock-edit-icon" />
-                          </button>
-                          <button type="button" className="bo-stockIconBtn bo-stockIconBtn--danger" aria-label={`Eliminar ${item.name}`} data-testid={`stock-delete-${item.id}`} onClick={(event) => { event.stopPropagation(); void deleteItem(item); }}>
-                            <Trash2 size={16} aria-hidden="true" data-ui="stock-delete-icon" />
-                          </button>
+                          {can("stock.items.manage") ? (
+                            <>
+                              <button type="button" className="bo-stockIconBtn" aria-label={`Editar ${item.name}`} data-testid={`stock-edit-${item.id}`} onClick={(event) => { event.stopPropagation(); navigate(`/app/stock/item?id=${item.id}`); }}>
+                                <Pencil size={16} aria-hidden="true" data-ui="stock-edit-icon" />
+                              </button>
+                              <button type="button" className="bo-stockIconBtn bo-stockIconBtn--danger" aria-label={`Eliminar ${item.name}`} data-testid={`stock-delete-${item.id}`} onClick={(event) => { event.stopPropagation(); void deleteItem(item); }}>
+                                <Trash2 size={16} aria-hidden="true" data-ui="stock-delete-icon" />
+                              </button>
+                            </>
+                          ) : null}
                         </div>
                       </article>
                     );
@@ -384,11 +495,22 @@ export default function Page() {
             </>
           ) : null}
 
-          {section === "sheets" ? (
+          {effectiveSection === "sheets" ? (
             <FichasTecnicasPanel />
           ) : null}
 
-          {section === "settings" ? <StockSettingsPanel /> : null}
+          {effectiveSection === "operations" ? (
+            <div className="bo-stack" data-ui="stock-operations-content" data-testid="stock-operations-content">
+              {can("stock.recipes.view") ? <StockOperationsPanel items={itemOptions} warehouses={warehouses} onChanged={load} /> : null}
+              {can("stock.ocr.upload") ? <StockDocumentsPanel items={itemOptions} warehouses={warehouses} /> : null}
+              {can("stock.waste.record") ? <PortionWastePanel /> : null}
+              {can("stock.costs.view") ? <ProductionLabourPanel /> : null}
+            </div>
+          ) : null}
+
+          {effectiveSection === "suppliers" ? <StockSuppliersPanel canWrite={can("stock.items.manage")} /> : null}
+
+          {effectiveSection === "settings" ? <StockSettingsPanel /> : null}
         </div>
       </div>
 
@@ -396,6 +518,12 @@ export default function Page() {
         open={showItemForm}
         onClose={() => setShowItemForm(false)}
         onCreated={load}
+      />
+
+      <StockImportModal
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={load}
       />
 
     </main>

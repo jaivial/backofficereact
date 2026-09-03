@@ -234,6 +234,7 @@
 
 .bo-stockAdjust {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -248,6 +249,11 @@
   flex: 1 1 auto;
   min-width: 0;
   text-align: center;
+}
+
+.bo-stockAdjustExpiry {
+  flex: 0 1 132px;
+  text-align: left;
 }
 
 .bo-stockItemActions {
@@ -832,3 +838,206 @@
 }
 
 /* Danger variant for the inline icon button (delete) */
+
+.bo-stockBannerList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin-top: 0.25rem;
+}
+
+.bo-stockBannerList a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bo-stockBannerList a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Export actions inside the filters toolbar */
+
+.bo-stockExportActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.bo-stockExportLabel {
+  font-size: 13px;
+  color: var(--bo-muted);
+}
+
+/* Import button centered under the empty state */
+
+.bo-stockEmptyActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+/* Horizontal scroll for valuation / import preview tables */
+
+.bo-stockTableScroll {
+  overflow-x: auto;
+}
+
+/* Import modal */
+
+.bo-stockImportPick,
+.bo-stockImportPreview,
+.bo-stockImportResult {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bo-stockImportTemplate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bo-primary, #8a5a3b);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.bo-stockImportTemplate:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.bo-stockImportActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-stockImportSummary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-stockImportRowInvalid td {
+  color: var(--bo-danger, #b3261e);
+}
+.bo-stockSuppliersNotes {
+  display: block;
+  color: var(--bo-text-muted, #6b6b6b);
+  font-size: 12px;
+}
+
+.bo-stockPriceOthers {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bo-stockPriceDelta {
+  font-size: 12px;
+}
+
+.bo-stockPriceDelta--better {
+  color: var(--bo-success, #1b7f4d);
+}
+
+.bo-stockPriceDelta--worse {
+  color: var(--bo-danger, #b3261e);
+}
+
+/* Seasonality editor (stock settings) */
+.bo-seasonWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bo-border, #e3e3e3);
+}
+
+.bo-seasonHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bo-seasonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+}
+
+.bo-seasonCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bo-seasonMonth {
+  font-size: 12px;
+  color: var(--bo-text-muted, #6b6b6b);
+}
+
+.bo-seasonInput {
+  width: 100%;
+}
+
+/* Menu engineering chart (fichas tecnicas) */
+.bo-menueng {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--bo-border, #e3e3e3);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.bo-menuengHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-menuengHead h3 {
+  margin: 0;
+  margin-right: auto;
+}
+
+.bo-menuengDays {
+  width: 160px;
+}
+
+.bo-menuengChart {
+  color: var(--bo-text, #1c1c1c);
+}
+
+.bo-menuengTip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--bo-surface, #fff);
+  border: 1px solid var(--bo-border, #e3e3e3);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+  font-size: 12px;
+}
+
+.bo-menuengTipClass {
+  font-weight: 600;
+}
