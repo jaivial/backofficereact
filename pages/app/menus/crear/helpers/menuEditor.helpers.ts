@@ -614,6 +614,7 @@ export function getSectionDishesFingerprint(section: EditorSection): string {
       allergens: dish.allergens,
       supplement_enabled: dish.supplement_enabled,
       supplement_price: dish.supplement_price,
+      description_enabled: dish.description_enabled,
       price: dish.price,
       active: dish.active,
       position: idx,
@@ -638,6 +639,7 @@ export function getDishPatchFingerprint(dish: EditorDish, isALaCarte: boolean): 
     allergens: dish.allergens,
     supplement_enabled: dish.supplement_enabled,
     supplement_price: dish.supplement_price,
+    description_enabled: dish.description_enabled,
     price: isALaCarte ? dish.price : null,
     active: dish.active,
   });
