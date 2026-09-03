@@ -21,6 +21,7 @@ import { StockValuationPanel } from "./functionalComponents/StockValuationPanel/
 import { StockImportModal } from "./functionalComponents/StockImportModal/StockImportModal";
 import { PortionWastePanel } from "./functionalComponents/PortionWastePanel/PortionWastePanel";
 import { ProductionLabourPanel } from "./functionalComponents/ProductionLabourPanel/ProductionLabourPanel";
+import { StockSuppliersPanel } from "./functionalComponents/StockSuppliersPanel/StockSuppliersPanel";
 
 type Warehouse = { id: number; name: string; code?: string; type: string; isDefault: boolean; isActive: boolean; sortOrder: number; notes?: string };
 type Unit = { id: number; code: string; label: string; factorToBase: number };
@@ -28,7 +29,7 @@ type StockItem = { id: number; name: string; sku?: string; categoryName?: string
 type StockItemOption = Pick<StockItem, "id" | "name" | "kind" | "isTracked" | "displayUnit">;
 type SummaryItem = { id: number; name: string; qty: number; par: number; reorderPoint: number };
 type Summary = { itemsTracked: number; belowPar: number; belowReorder: number; outOfStock: number; negative: number; coveragePct: number; belowParItems?: SummaryItem[]; belowReorderItems?: SummaryItem[]; outOfStockItems?: SummaryItem[]; negativeItems?: SummaryItem[]; unresolvedAnomalies?: number };
-type Section = "inventory" | "sheets" | "operations" | "settings";
+type Section = "inventory" | "sheets" | "operations" | "suppliers" | "settings";
 
 const EMPTY_SUMMARY: Summary = { itemsTracked: 0, belowPar: 0, belowReorder: 0, outOfStock: 0, negative: 0, coveragePct: 0 };
 
@@ -36,6 +37,7 @@ const SECTION_TABS: { id: Section; label: string }[] = [
   { id: "inventory", label: "Existencias" },
   { id: "sheets", label: "Fichas tecnicas" },
   { id: "operations", label: "Operaciones" },
+  { id: "suppliers", label: "Proveedores" },
   { id: "settings", label: "Configuración" },
 ];
 
@@ -69,7 +71,7 @@ function sourceLabel(deductionSource: string): string {
 function useUrlTabQuery(): [Section, (id: Section) => void] {
   const pageContext = usePageContext();
   const initial = (pageContext.urlParsed?.search?.tab || "") as string;
-  const validTabs: Section[] = ["inventory", "sheets", "operations", "settings"];
+  const validTabs: Section[] = ["inventory", "sheets", "operations", "suppliers", "settings"];
   const fallback: Section = validTabs.includes(initial as Section) ? (initial as Section) : "inventory";
   const [section, setSection] = useState<Section>(fallback);
 
@@ -505,6 +507,8 @@ export default function Page() {
               {can("stock.costs.view") ? <ProductionLabourPanel /> : null}
             </div>
           ) : null}
+
+          {effectiveSection === "suppliers" ? <StockSuppliersPanel canWrite={can("stock.items.manage")} /> : null}
 
           {effectiveSection === "settings" ? <StockSettingsPanel /> : null}
         </div>
