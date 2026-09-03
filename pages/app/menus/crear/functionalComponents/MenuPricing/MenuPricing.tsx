@@ -1,5 +1,6 @@
 import React from "react";
-import { Plus, Settings2, Trash2 } from "lucide-react";
+import { Beer, CupSoda, Droplets, Martini, Plus, Settings2, Wine } from "lucide-react";
+import type { BeverageOption } from "../../types/menuEditor.types";
 import { Switch } from "../../../../../../ui/shadcn/Switch";
 import { Select } from "../../../../../../ui/inputs/Select";
 import { PlusMinusCounter } from "../../../../../../ui/widgets/PlusMinusCounter";
@@ -9,6 +10,8 @@ import { beverageTypeOptions } from "../../constants/menuEditor.constants";
 export type MenuPricingProps = {
   isSpecial: boolean;
   beverageType: string;
+  beverageOptions: BeverageOption[];
+  onOpenBeverageModal: () => void;
   beveragePrice: string;
   beverageHasSupplement: boolean;
   beverageSupplementPrice: string;
@@ -31,6 +34,8 @@ export type MenuPricingProps = {
 export function MenuPricing({
   isSpecial,
   beverageType,
+  beverageOptions,
+  onOpenBeverageModal,
   beveragePrice,
   beverageHasSupplement,
   beverageSupplementPrice,
@@ -71,6 +76,36 @@ export function MenuPricing({
           <div className="bo-field" data-slot="menuPricing-field">
             <div className="bo-label" data-slot="menuPricing-label">Precio por persona</div>
             <input className="bo-input" value={beveragePrice} onChange={(e) => onBeveragePriceChange(e.target.value)} inputMode="decimal" data-testid="menu-pricing-beverage-price-input" />
+          </div>
+        ) : null}
+
+        {beverageType === "opcion" || beverageType === "ilimitada" ? (
+          <div className="bo-field" data-slot="menuPricing-field">
+            <div className="bo-label" data-slot="menuPricing-label">Bebidas incluidas</div>
+            <div className="bo-beverageIconRow" data-testid="menu-pricing-beverage-icon-row">
+              {beverageOptions.filter((option) => option.selected).map((option) => {
+                const Icon = beverageIconForSlug(option.slug);
+                return (
+                  <span
+                    key={option.id}
+                    className="bo-beverageIconChip is-selected"
+                    title={option.name}
+                    data-testid={`menu-pricing-beverage-icon-${option.slug}`}
+                  >
+                    <Icon size={16} />
+                  </span>
+                );
+              })}
+              <button
+                type="button"
+                className="bo-btn bo-btn--ghost bo-btn--sm bo-beverageAddBtn"
+                onClick={onOpenBeverageModal}
+                data-testid="menu-pricing-beverage-add-plus"
+                aria-label="Gestionar bebidas incluidas"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
           </div>
         ) : null}
 
@@ -139,4 +174,24 @@ export function MenuPricing({
         </div>
     </Panel>
   );
+}
+
+function beverageIconForSlug(slug: string) {
+  switch (slug) {
+    case "agua":
+      return Droplets;
+    case "refrescos":
+      return CupSoda;
+    case "vino":
+      return Wine;
+    case "cerveza-de-barril":
+    case "cerveza-de-tercio":
+      return Beer;
+    case "sangria":
+      return Wine;
+    case "martini":
+      return Martini;
+    default:
+      return CupSoda;
+  }
 }
