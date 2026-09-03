@@ -6,7 +6,7 @@ export const ROLE_SECTION_ACCESS: Record<string, BOSection[]> = {
   root: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder", "plataforma"],
   admin: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder"],
   metre: ["reservas", "menus", "comida", "fichaje", "facturas"],
-  jefe_cocina: ["reservas", "menus", "comida", "fichaje", "horarios"],
+  jefe_cocina: ["reservas", "menus", "comida", "stock", "fichaje", "horarios"],
   arrocero: ["fichaje", "horarios"],
   pinche_cocina: ["fichaje", "horarios"],
   fregaplatos: ["fichaje", "horarios"],
