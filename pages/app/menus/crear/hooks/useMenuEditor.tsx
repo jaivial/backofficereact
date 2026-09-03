@@ -18,6 +18,7 @@ import {
   buildBasicsPayload,
   buildMenuAITracker,
   clampDishCropValue,
+  getDishPatchFingerprint,
   getSectionsDishFingerprintMap,
   getSectionsDishSyncStateMap,
   getSectionsFingerprint,
@@ -491,9 +492,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
           };
           section.dishes.forEach((dish) => {
             if (!dish.id) return;
-            sectionSyncState.byId[String(dish.id)] = JSON.stringify({
-              id: dish.id || null, catalog: dish.catalog_dish_id || null, title: dish.title.trim(), description: dish.description, description_enabled: dish.description_enabled, allergens: dish.allergens, supplement_enabled: dish.supplement_enabled, supplement_price: dish.supplement_price, price: isALaCarte ? dish.price : null, active: dish.active,
-            });
+            sectionSyncState.byId[String(dish.id)] = getDishPatchFingerprint(dish, isALaCarte);
           });
           const order = JSON.stringify(sectionSyncState.ids);
           const currentOrder = previousSectionSyncState ? previousSectionSyncState.order : "";
