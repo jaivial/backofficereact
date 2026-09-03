@@ -112,6 +112,7 @@
 
 /* ── Features: Stock Control ───────────────────────────── */
 @import "./styles/features/stock/stock-page.css";
+@import "./styles/features/stock/quick-count.css";
 @import "./styles/features/comida/technical-sheets.css";
 
 /* ── Features: Communication ──────────────────────────── */
