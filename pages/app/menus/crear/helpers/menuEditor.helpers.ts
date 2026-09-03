@@ -583,6 +583,7 @@ export function getSectionsFingerprint(sections: EditorSection[]): string {
         catalog: d.catalog_dish_id || null,
         title: d.title,
         desc: d.description,
+        descEnabled: d.description_enabled,
         allergens: d.allergens,
         supp: d.supplement_enabled,
         suppPrice: d.supplement_price,
