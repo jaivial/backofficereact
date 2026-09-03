@@ -934,3 +934,26 @@
 .bo-stockImportRowInvalid td {
   color: var(--bo-danger, #b3261e);
 }
+.bo-stockSuppliersNotes {
+  display: block;
+  color: var(--bo-text-muted, #6b6b6b);
+  font-size: 12px;
+}
+
+.bo-stockPriceOthers {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bo-stockPriceDelta {
+  font-size: 12px;
+}
+
+.bo-stockPriceDelta--better {
+  color: var(--bo-success, #1b7f4d);
+}
+
+.bo-stockPriceDelta--worse {
+  color: var(--bo-danger, #b3261e);
+}
