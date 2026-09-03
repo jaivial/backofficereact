@@ -27,6 +27,7 @@ type Props = {
 export function SettingsTab({ item, onChanged, onDeleted }: Props) {
   const [name, setName] = useState(item.name);
   const [sku, setSku] = useState(item.sku || "");
+  const [barcode, setBarcode] = useState(item.barcode || "");
   const [kind, setKind] = useState(item.kind);
   const [isTracked, setIsTracked] = useState(item.isTracked);
   const [deductionSource, setDeductionSource] = useState(item.deductionSource);
@@ -49,6 +50,7 @@ export function SettingsTab({ item, onChanged, onDeleted }: Props) {
         body: JSON.stringify({
           name: name.trim(),
           sku: sku.trim(),
+          barcode: barcode.trim(),
           kind,
           isTracked,
           deductionSource,
@@ -102,6 +104,16 @@ export function SettingsTab({ item, onChanged, onDeleted }: Props) {
                 value={sku}
                 onChange={(event) => setSku(event.target.value)}
                 data-ui="stock-item-settings-sku"
+              />
+            </FormField>
+            <FormField label="Código de barras" htmlFor="settings-barcode">
+              <input
+                id="settings-barcode"
+                className="bo-input"
+                inputMode="numeric"
+                value={barcode}
+                onChange={(event) => setBarcode(event.target.value)}
+                data-ui="stock-item-settings-barcode"
               />
             </FormField>
             <FormField label="Tipo" htmlFor="settings-kind">
