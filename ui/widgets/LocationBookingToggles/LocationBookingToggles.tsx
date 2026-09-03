@@ -50,9 +50,9 @@ export function LocationBookingToggles({
         : "Aparece un selector de salón en el paso 1 de la reserva web";
     return (
       <div className="bo-locationToggleRow" data-ui={`location-toggle-${flag}-row`}>
-        <div className="bo-locationToggleInfo">
-          <div className="bo-locationToggleLabel">{label}</div>
-          <div className="bo-locationToggleHint">{hint}</div>
+        <div data-slot="locationBookingToggles-locationToggleInfo" className="bo-locationToggleInfo">
+          <div data-slot="locationBookingToggles-locationToggleLabel" className="bo-locationToggleLabel">{label}</div>
+          <div data-slot="locationBookingToggles-locationToggleHint" className="bo-locationToggleHint">{hint}</div>
         </div>
         <Switch
           checked={checked}

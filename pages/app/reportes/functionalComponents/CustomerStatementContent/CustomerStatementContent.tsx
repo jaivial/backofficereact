@@ -76,7 +76,7 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-[var(--bo-muted)]" data-ui="invoice-date">{formatDate(inv.invoice_date)}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-[var(--bo-text)]" data-ui="invoice-total">{formatCurrency(inv.total, "EUR")}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-center" data-ui="invoice-status">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
+                        <span data-slot="customerStatementContent-span" className={`px-2 py-1 text-xs rounded-full ${
                           inv.status === "pagada" ? "bg-green-100 text-[var(--bo-color-success)]" :
                           inv.status === "pendiente" ? "bg-[var(--bo-warning-bg)] text-[var(--bo-color-warning)]" :
                           inv.status === "enviada" ? "bg-[color-mix(in_srgb,var(--bo-accent)_18%,transparent)] text-[var(--bo-accent)]" :

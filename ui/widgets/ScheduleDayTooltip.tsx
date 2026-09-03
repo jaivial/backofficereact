@@ -26,7 +26,7 @@ export function ScheduleDayTooltip({ dayData, className, style }: Props) {
       style={style}
       data-testid="calendar-day-popover"
     >
-      <div className="text-xs font-semibold text-[var(--bo-muted)] mb-2">
+      <div data-slot="scheduleDayTooltip-mb-2" className="text-xs font-semibold text-[var(--bo-muted)] mb-2">
         {new Date(dayData.date + "T12:00:00").toLocaleDateString("es-ES", {
           weekday: "long",
           day: "numeric",
@@ -35,24 +35,24 @@ export function ScheduleDayTooltip({ dayData, className, style }: Props) {
       </div>
 
       {dayData.workers.length === 0 ? (
-        <div className="text-xs text-[var(--bo-faint)] py-2 text-center">
+        <div data-slot="scheduleDayTooltip-text-center" className="text-xs text-[var(--bo-faint)] py-2 text-center">
           Sin horarios asignados
         </div>
       ) : (
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <div data-slot="scheduleDayTooltip-overflow-y-auto" className="space-y-2 max-h-48 overflow-y-auto">
           {dayData.workers.map((worker) => (
-            <div key={worker.memberId} className="flex items-start gap-2 p-1.5 rounded-lg hover:bg-white/5">
+            <div data-slot="scheduleDayTooltip-hover:bg-white/5" key={worker.memberId} className="flex items-start gap-2 p-1.5 rounded-lg hover:bg-white/5">
               <Avatar className="w-7 h-7 rounded-full flex-shrink-0">
                 {worker.photoUrl ? (
                   <AvatarImage src={worker.photoUrl} alt={worker.memberName} />
                 ) : null}
                 <AvatarFallback className="text-[10px]">{initials(worker.memberName)}</AvatarFallback>
               </Avatar>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium leading-tight truncate">{worker.memberName}</div>
-                <div className="text-[11px] text-[var(--bo-muted)] leading-tight mt-0.5">
+              <div data-slot="scheduleDayTooltip-flex-1" className="min-w-0 flex-1">
+                <div data-slot="scheduleDayTooltip-truncate" className="text-sm font-medium leading-tight truncate">{worker.memberName}</div>
+                <div data-slot="scheduleDayTooltip-mt-0.5" className="text-[11px] text-[var(--bo-muted)] leading-tight mt-0.5">
                   {worker.schedules.map((s, i) => (
-                    <span key={i}>
+                    <span data-slot="scheduleDayTooltip-span" key={i}>
                       {i > 0 && <span className="mx-1">·</span>}
                       {s.startTime} - {s.endTime}
                     </span>

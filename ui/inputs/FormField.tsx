@@ -22,8 +22,8 @@ export function FormField({
   ...rest
 }: FormFieldProps) {
   return (
-    <div className={cn("bo-field", className)} {...rest}>
-      <label className={cn("bo-label", labelClassName)} htmlFor={htmlFor}>
+    <div data-slot="formField-div" className={cn("bo-field", className)} {...rest}>
+      <label data-slot="formField-label" className={cn("bo-label", labelClassName)} htmlFor={htmlFor}>
         {label}
         {required && <span aria-hidden="true"> *</span>}
       </label>

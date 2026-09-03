@@ -135,18 +135,18 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
 
   return (
     <div className="bo-panel" data-ui="config-whatsapp-bot" data-testid="config-whatsapp-bot">
-      <div className="bo-panelHead flex-col items-stretch gap-1">
-        <div className="bo-panelTitle flex items-center gap-2">
+      <div data-slot="configWhatsAppBot-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
+        <div data-slot="configWhatsAppBot-gap-2" className="bo-panelTitle flex items-center gap-2">
           <Bot size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
           Bot de reservas por WhatsApp
         </div>
-        <div className="bo-panelMeta">Configura el modelo LLM y la personalidad del bot para cada restaurante, y previsualiza su system prompt.</div>
+        <div data-slot="configWhatsAppBot-panelMeta" className="bo-panelMeta">Configura el modelo LLM y la personalidad del bot para cada restaurante, y previsualiza su system prompt.</div>
       </div>
 
-      <div className="bo-panelBody flex flex-col gap-5">
+      <div data-slot="configWhatsAppBot-gap-5" className="bo-panelBody flex flex-col gap-5">
         {/* Restaurant selector */}
         <label className="bo-field" data-slot="config-bot-restaurant-field">
-          <span className="bo-label">Restaurante</span>
+          <span data-slot="configWhatsAppBot-label" className="bo-label">Restaurante</span>
           <SearchableSelect
             value={String(restaurantId || "")}
             onChange={(v) => setRestaurantId(Number(v) || 0)}
@@ -170,33 +170,33 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
                 data-slot="config-bot-restaurant-data"
                 data-testid="config-bot-restaurant-data"
               >
-                <div className="font-semibold text-sm text-[var(--bo-text)]">{restaurantData.brandName || "Sin nombre"}</div>
-                <div className="flex items-center gap-1.5 text-[var(--bo-muted)]">
+                <div data-slot="configWhatsAppBot-text-[var(-bo" className="font-semibold text-sm text-[var(--bo-text)]">{restaurantData.brandName || "Sin nombre"}</div>
+                <div data-slot="configWhatsAppBot-text-[var(-bo" className="flex items-center gap-1.5 text-[var(--bo-muted)]">
                   <Phone size={12} aria-hidden="true" />
                   {restaurantData.phone || "Sin teléfono en Contacto"}
                 </div>
-                <div className="flex items-center gap-1.5 text-[var(--bo-muted)]">
+                <div data-slot="configWhatsAppBot-text-[var(-bo" className="flex items-center gap-1.5 text-[var(--bo-muted)]">
                   <MapPin size={12} aria-hidden="true" />
                   {restaurantData.address || "Sin dirección en Contacto"}
                 </div>
-                <div className="flex items-center gap-1.5 text-[var(--bo-muted)]">
+                <div data-slot="configWhatsAppBot-text-[var(-bo" className="flex items-center gap-1.5 text-[var(--bo-muted)]">
                   <UtensilsCrossed size={12} aria-hidden="true" />
                   {restaurantData.riceTypes?.length
                     ? `${restaurantData.riceTypes.length} arroces: ${restaurantData.riceTypes.join(", ")}`
                     : "Sin arroces configurados"}
                 </div>
                 {restaurantData.hours ? (
-                  <div className="text-[var(--bo-muted)]">Horarios: {restaurantData.hours}</div>
+                  <div data-slot="configWhatsAppBot-text-[var(-bo" className="text-[var(--bo-muted)]">Horarios: {restaurantData.hours}</div>
                 ) : null}
                 {restaurantData.dailyLimit > 0 ? (
-                  <div className="text-[var(--bo-muted)]">Límite diario: {restaurantData.dailyLimit} comensales</div>
+                  <div data-slot="configWhatsAppBot-text-[var(-bo" className="text-[var(--bo-muted)]">Límite diario: {restaurantData.dailyLimit} comensales</div>
                 ) : null}
               </div>
             ) : null}
 
             {/* Model */}
             <label className="bo-field" data-slot="config-bot-model-field">
-              <span className="bo-label">Modelo LLM</span>
+              <span data-slot="configWhatsAppBot-label" className="bo-label">Modelo LLM</span>
               <SearchableSelect
                 value={config.model}
                 onChange={(v) => setField("model", v)}
@@ -208,10 +208,10 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
               />
             </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div data-slot="configWhatsAppBot-gap-4" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Language */}
               <label className="bo-field" data-slot="config-bot-language-field">
-                <span className="bo-label">Idioma por defecto</span>
+                <span data-slot="configWhatsAppBot-label" className="bo-label">Idioma por defecto</span>
                 <SearchableSelect
                   value={config.language_default}
                   onChange={(v) => setField("language_default", v)}
@@ -223,7 +223,7 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
 
               {/* Tone */}
               <label className="bo-field" data-slot="config-bot-tone-field">
-                <span className="bo-label">Tono</span>
+                <span data-slot="configWhatsAppBot-label" className="bo-label">Tono</span>
                 <input
                   className="bo-input"
                   value={config.tone}
@@ -237,7 +237,7 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
 
             {/* Custom instructions */}
             <label className="bo-field" data-slot="config-bot-instructions-field">
-              <span className="bo-label">Instrucciones personalizadas</span>
+              <span data-slot="configWhatsAppBot-label" className="bo-label">Instrucciones personalizadas</span>
               <textarea
                 className="bo-input min-h-24"
                 value={config.custom_instructions}
@@ -251,7 +251,7 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
 
             {/* Contact phone — prefilled from restaurant_info.telefono */}
             <label className="bo-field" data-slot="config-bot-phone-field">
-              <span className="bo-label">Teléfono de contacto del bot (prellenado desde Contacto)</span>
+              <span data-slot="configWhatsAppBot-label" className="bo-label">Teléfono de contacto del bot (prellenado desde Contacto)</span>
               <input
                 className="bo-input"
                 value={config.contact_phone}
@@ -264,8 +264,8 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
 
             {/* Editable critical rules */}
             <label className="bo-field" data-slot="config-bot-rules-field">
-              <div className="flex items-center justify-between gap-2">
-                <span className="bo-label">Reglas críticas del bot (editables por restaurante)</span>
+              <div data-slot="configWhatsAppBot-gap-2" className="flex items-center justify-between gap-2">
+                <span data-slot="configWhatsAppBot-label" className="bo-label">Reglas críticas del bot (editables por restaurante)</span>
                 <button
                   type="button"
                   className="bo-btn bo-btn--ghost gap-1 text-xs"
@@ -286,15 +286,15 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
                 data-role="config-bot-rules-input"
               />
               {config.rules.trim() && config.rules.trim() !== defaultRules.trim() ? (
-                <span className="text-xs text-[var(--bo-warning,orange)]">Reglas personalizadas: este restaurante no recibirá mejoras futuras de las reglas por defecto.</span>
+                <span data-slot="configWhatsAppBot-text-[var(-bo" className="text-xs text-[var(--bo-warning,orange)]">Reglas personalizadas: este restaurante no recibirá mejoras futuras de las reglas por defecto.</span>
               ) : (
-                <span className="text-xs text-[var(--bo-muted)]">Usando las reglas por defecto del sistema.</span>
+                <span data-slot="configWhatsAppBot-text-[var(-bo" className="text-xs text-[var(--bo-muted)]">Usando las reglas por defecto del sistema.</span>
               )}
             </label>
 
             {/* Attachments toggle */}
             <div className="bo-foodDetailQuickStatus" data-slot="config-bot-attachments-field">
-              <span className="bo-label">Desactivar envío de adjuntos (imágenes, documentos, ubicación, contacto)</span>
+              <span data-slot="configWhatsAppBot-label" className="bo-label">Desactivar envío de adjuntos (imágenes, documentos, ubicación, contacto)</span>
               <Switch
                 checked={config.disable_attachments}
                 onCheckedChange={(v) => setField("disable_attachments", v)}
@@ -305,12 +305,12 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
 
             {/* System prompt — full render with the dynamic multi-tenant data */}
             <div className="bo-field" data-slot="config-bot-preview-field">
-              <div className="flex items-center justify-between gap-2">
-                <span className="bo-label flex items-center gap-2">
+              <div data-slot="configWhatsAppBot-gap-2" className="flex items-center justify-between gap-2">
+                <span data-slot="configWhatsAppBot-gap-2" className="bo-label flex items-center gap-2">
                   <Eye size={14} className="text-[var(--bo-muted)]" aria-hidden="true" />
                   System prompt construido (datos dinámicos + reglas + personalización)
                 </span>
-                <div className="flex items-center gap-2">
+                <div data-slot="configWhatsAppBot-gap-2" className="flex items-center gap-2">
                   <button
                     type="button"
                     className="bo-btn bo-btn--ghost gap-1 text-xs"
@@ -339,7 +339,7 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
                   >
                     {promptPreview || "Sin preview disponible."}
                   </pre>
-                  <span className="text-xs text-[var(--bo-muted)]">
+                  <span data-slot="configWhatsAppBot-text-[var(-bo" className="text-xs text-[var(--bo-muted)]">
                     Este es el prompt exacto que recibe el LLM: se reconstruye en cada mensaje con los datos en vivo del restaurante (nombre, contacto, arroces, horarios, límite diario, fecha de hoy) más las reglas y personalización de arriba. Se actualiza en vivo mientras editas; recuerda guardar para aplicarlo.
                   </span>
                 </>

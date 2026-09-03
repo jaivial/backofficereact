@@ -33,10 +33,10 @@ export const WithMultipleActions: Story = {
   args: {
     left: <h1>Users</h1>,
     right: (
-      <div style={{ display: "flex", gap: "8px" }}>
-        <button>Refresh</button>
-        <button>Export</button>
-        <button>Add User</button>
+      <div data-slot="pageToolbar.stories-div" style={{ display: "flex", gap: "8px" }}>
+        <button data-testid="refresh">Refresh</button>
+        <button data-testid="export">Export</button>
+        <button data-testid="add-user">Add User</button>
       </div>
     ),
   },
@@ -46,16 +46,16 @@ export const WithSearch: Story = {
   name: "With Search",
   args: {
     left: (
-      <input
+      <input data-testid="search"
         type="search"
         placeholder="Search..."
         style={{ padding: "6px 12px", borderRadius: "4px", border: "1px solid #ccc" }}
       />
     ),
     right: (
-      <div style={{ display: "flex", gap: "8px" }}>
-        <button>Filter</button>
-        <button>Create New</button>
+      <div data-slot="pageToolbar.stories-div" style={{ display: "flex", gap: "8px" }}>
+        <button data-testid="filter">Filter</button>
+        <button data-testid="create-new">Create New</button>
       </div>
     ),
   },
@@ -65,14 +65,14 @@ export const WithBreadcrumbs: Story = {
   name: "With Breadcrumbs",
   args: {
     left: (
-      <nav style={{ fontSize: "14px", color: "#666" }}>
+      <nav data-testid="nav" style={{ fontSize: "14px", color: "#666" }}>
         Home / Settings / <strong>Users</strong>
       </nav>
     ),
     right: (
-      <div style={{ display: "flex", gap: "8px" }}>
-        <button>Save</button>
-        <button>Cancel</button>
+      <div data-slot="pageToolbar.stories-div" style={{ display: "flex", gap: "8px" }}>
+        <button data-testid="save">Save</button>
+        <button data-testid="cancel">Cancel</button>
       </div>
     ),
   },

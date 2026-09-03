@@ -256,7 +256,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
 
             {/* Results List */}
             <ScrollArea dataSlot="batch-send-results">
-              <div className="bo-batchSendResults">
+              <div data-slot="batchSendModal-batchSendResults" className="bo-batchSendResults">
               <h4 data-slot="batch-send-results-title">Detalles</h4>
               <div className="bo-batchSendResultsList" data-slot="batch-send-results-list">
                 {results.map((result) => (

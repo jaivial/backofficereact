@@ -30,10 +30,10 @@ function formatDate(dateStr: string): string {
 
 function DetailRow({ icon, label, value, isLong }: { icon: React.ReactNode; label: string; value: React.ReactNode; isLong?: boolean }) {
   return (
-    <div className="bo-detailRow">
-      <span className="bo-detailRow__icon">{icon}</span>
-      <span className="bo-detailRow__label">{label}</span>
-      <span className={`bo-detailRow__value ${isLong ? "bo-detailRow__value--long" : ""}`}>{value}</span>
+    <div data-slot="invoiceDetailsModal-detailRow" className="bo-detailRow">
+      <span data-slot="invoiceDetailsModal-detailRow-icon" className="bo-detailRow__icon">{icon}</span>
+      <span data-slot="invoiceDetailsModal-detailRow-label" className="bo-detailRow__label">{label}</span>
+      <span data-slot="invoiceDetailsModal-span" className={`bo-detailRow__value ${isLong ? "bo-detailRow__value--long" : ""}`}>{value}</span>
     </div>
   );
 }
@@ -72,28 +72,28 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
   return (
     <Modal open={open} title="Detalles de factura" onClose={onClose} size="md" hideClose>
       <ModalHeader title="Detalles de factura" onClose={onClose} />
-      <div className="bo-invoiceDetails">
+      <div data-slot="invoiceDetailsModal-invoiceDetails" className="bo-invoiceDetails">
         <ScrollArea dataSlot="invoice-details-body">
-          <div className="bo-invoiceDetailsBody">
+          <div data-slot="invoiceDetailsModal-invoiceDetailsBody" className="bo-invoiceDetailsBody">
           {/* Status & number header */}
-          <div className="bo-invoiceDetailsHeader">
-            <div className="bo-invoiceDetailsHeaderLeft">
-              <div className="bo-invoiceDetailsNumber">
+          <div data-slot="invoiceDetailsModal-invoiceDetailsHeader" className="bo-invoiceDetailsHeader">
+            <div data-slot="invoiceDetailsModal-invoiceDetailsHeaderLeft" className="bo-invoiceDetailsHeaderLeft">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsNumber" className="bo-invoiceDetailsNumber">
                 <Hash size={12} />
                 {invoice.invoice_number || `#${invoice.id}`}
               </div>
-              <div className="bo-invoiceDetailsAmount">{formatPrice(totalAmount, invoice.currency)}</div>
+              <div data-slot="invoiceDetailsModal-invoiceDetailsAmount" className="bo-invoiceDetailsAmount">{formatPrice(totalAmount, invoice.currency)}</div>
             </div>
-            <div className="bo-invoiceDetailsStatus">
+            <div data-slot="invoiceDetailsModal-invoiceDetailsStatus" className="bo-invoiceDetailsStatus">
               <StatusBadge status={invoice.status} />
             </div>
           </div>
 
           {/* Two-column grid (single column on mobile via CSS) */}
-          <div className="bo-invoiceDetailsColumns">
+          <div data-slot="invoiceDetailsModal-invoiceDetailsColumns" className="bo-invoiceDetailsColumns">
             {/* Left column: Customer */}
-            <div className="bo-invoiceDetailsSection">
-              <div className="bo-invoiceDetailsSectionTitle">Cliente</div>
+            <div data-slot="invoiceDetailsModal-invoiceDetailsSection" className="bo-invoiceDetailsSection">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Cliente</div>
               <DetailRow icon={<User size={14} />} label="Nombre" value={fullName} />
               {invoice.customer_email && <DetailRow icon={<Mail size={14} />} label="Email" value={invoice.customer_email} isLong />}
               {invoice.customer_phone && <DetailRow icon={<Phone size={14} />} label="Teléfono" value={invoice.customer_phone} />}
@@ -102,8 +102,8 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
             </div>
 
             {/* Right column: Invoice info */}
-            <div className="bo-invoiceDetailsSection">
-              <div className="bo-invoiceDetailsSectionTitle">Factura</div>
+            <div data-slot="invoiceDetailsModal-invoiceDetailsSection" className="bo-invoiceDetailsSection">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Factura</div>
               <DetailRow icon={<Calendar size={14} />} label="Fecha" value={formatDate(invoice.invoice_date)} />
               {invoice.due_date && <DetailRow icon={<Clock size={14} />} label="Vencimiento" value={formatDate(invoice.due_date)} />}
               {invoice.payment_date && <DetailRow icon={<CreditCard size={14} />} label="Pagado" value={formatDate(invoice.payment_date)} />}
@@ -114,16 +114,16 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
 
           {/* Payment progress */}
           {invoice.status !== "borrador" && (
-            <div className="bo-invoiceDetailsSection">
-              <div className="bo-invoiceDetailsSectionTitle">Pago</div>
-              <div className="bo-invoiceDetailsPayment">
-                <div className="bo-invoiceDetailsPaymentBar">
-                  <div className="bo-invoiceDetailsPaymentText">
-                    <span style={{ color: "var(--bo-muted)" }}>{formatPrice(paidAmount, invoice.currency)} pagado</span>
-                    <span style={{ color: "var(--bo-faint)" }}>{formatPrice(remaining, invoice.currency)} restante</span>
+            <div data-slot="invoiceDetailsModal-invoiceDetailsSection" className="bo-invoiceDetailsSection">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Pago</div>
+              <div data-slot="invoiceDetailsModal-invoiceDetailsPayment" className="bo-invoiceDetailsPayment">
+                <div data-slot="invoiceDetailsModal-invoiceDetailsPaymentBar" className="bo-invoiceDetailsPaymentBar">
+                  <div data-slot="invoiceDetailsModal-invoiceDetailsPaymentText" className="bo-invoiceDetailsPaymentText">
+                    <span data-slot="invoiceDetailsModal-span" style={{ color: "var(--bo-muted)" }}>{formatPrice(paidAmount, invoice.currency)} pagado</span>
+                    <span data-slot="invoiceDetailsModal-span" style={{ color: "var(--bo-faint)" }}>{formatPrice(remaining, invoice.currency)} restante</span>
                   </div>
-                  <div className="bo-invoiceDetailsPaymentTrack">
-                    <div
+                  <div data-slot="invoiceDetailsModal-invoiceDetailsPaymentTrack" className="bo-invoiceDetailsPaymentTrack">
+                    <div data-slot="invoiceDetailsModal-div"
                       className={`bo-invoiceDetailsPaymentFill ${remaining <= 0 ? "bo-invoiceDetailsPaymentFill--complete" : ""}`}
                       style={{ width: `${totalAmount > 0 ? Math.min((paidAmount / totalAmount) * 100, 100) : 0}%` }}
                     />
@@ -135,28 +135,28 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
 
           {/* Line items */}
           {invoice.line_items && invoice.line_items.length > 0 && (
-            <div className="bo-invoiceDetailsSection">
-              <div className="bo-invoiceDetailsSectionTitle">Líneas</div>
-              <div>
+            <div data-slot="invoiceDetailsModal-invoiceDetailsSection" className="bo-invoiceDetailsSection">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Líneas</div>
+              <div data-slot="invoiceDetailsModal-div">
                 {invoice.line_items.map((item, idx) => (
-                  <div key={idx} className="bo-invoiceDetailsLineItem">
-                    <span className="bo-invoiceDetailsLineItem__desc">
+                  <div data-slot="invoiceDetailsModal-invoiceDetailsLineItem" key={idx} className="bo-invoiceDetailsLineItem">
+                    <span data-slot="invoiceDetailsModal-invoiceDetailsLineItem-desc" className="bo-invoiceDetailsLineItem__desc">
                       {item.quantity && item.quantity > 1 ? `${item.quantity}x ` : ""}{item.description}
                     </span>
-                    <span className="bo-invoiceDetailsLineItem__price">
+                    <span data-slot="invoiceDetailsModal-invoiceDetailsLineItem-price" className="bo-invoiceDetailsLineItem__price">
                       {item.total ? formatPrice(item.total, invoice.currency) : item.unit_price ? formatPrice(item.unit_price * (item.quantity || 1), invoice.currency) : ""}
                     </span>
                   </div>
                 ))}
                 {invoice.iva_rate != null && (
-                  <div className="bo-invoiceDetailsLineItemIva">
-                    <span>IVA {invoice.iva_rate}%</span>
-                    <span>{invoice.iva_amount ? formatPrice(invoice.iva_amount, invoice.currency) : ""}</span>
+                  <div data-slot="invoiceDetailsModal-invoiceDetailsLineItemIva" className="bo-invoiceDetailsLineItemIva">
+                    <span data-slot="invoiceDetailsModal-span">IVA {invoice.iva_rate}%</span>
+                    <span data-slot="invoiceDetailsModal-span">{invoice.iva_amount ? formatPrice(invoice.iva_amount, invoice.currency) : ""}</span>
                   </div>
                 )}
-                <div className="bo-invoiceDetailsTotal">
-                  <span>Total</span>
-                  <span>{formatPrice(totalAmount, invoice.currency)}</span>
+                <div data-slot="invoiceDetailsModal-invoiceDetailsTotal" className="bo-invoiceDetailsTotal">
+                  <span data-slot="invoiceDetailsModal-span">Total</span>
+                  <span data-slot="invoiceDetailsModal-span">{formatPrice(totalAmount, invoice.currency)}</span>
                 </div>
               </div>
             </div>
@@ -164,8 +164,8 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
 
           {/* Reservation info */}
           {invoice.is_reservation && (
-            <div className="bo-invoiceDetailsSection">
-              <div className="bo-invoiceDetailsSectionTitle">Reserva</div>
+            <div data-slot="invoiceDetailsModal-invoiceDetailsSection" className="bo-invoiceDetailsSection">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Reserva</div>
               {invoice.reservation_date && <DetailRow icon={<Calendar size={14} />} label="Fecha" value={formatDate(invoice.reservation_date)} />}
               {invoice.reservation_customer_name && <DetailRow icon={<User size={14} />} label="Cliente" value={invoice.reservation_customer_name} />}
               {invoice.reservation_party_size && <DetailRow icon={<Users size={14} />} label="Comensales" value={String(invoice.reservation_party_size)} />}
@@ -174,19 +174,19 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
 
           {/* Internal notes */}
           {invoice.internal_notes && (
-            <div className="bo-invoiceDetailsSection">
-              <div className="bo-invoiceDetailsSectionTitle">Notas internas</div>
-              <p className="bo-invoiceDetailsNotes">{invoice.internal_notes}</p>
+            <div data-slot="invoiceDetailsModal-invoiceDetailsSection" className="bo-invoiceDetailsSection">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Notas internas</div>
+              <p data-slot="invoiceDetailsModal-invoiceDetailsNotes" className="bo-invoiceDetailsNotes">{invoice.internal_notes}</p>
             </div>
           )}
 
           {/* Attachments */}
           {invoice.attachments && invoice.attachments.length > 0 && (
-            <div className="bo-invoiceDetailsSection">
-              <div className="bo-invoiceDetailsSectionTitle">Adjuntos ({invoice.attachments.length})</div>
-              <div className="bo-invoiceDetailsTags">
+            <div data-slot="invoiceDetailsModal-invoiceDetailsSection" className="bo-invoiceDetailsSection">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Adjuntos ({invoice.attachments.length})</div>
+              <div data-slot="invoiceDetailsModal-invoiceDetailsTags" className="bo-invoiceDetailsTags">
                 {invoice.attachments.map((att) => (
-                  <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="bo-invoiceDetailsAttachmentLink">
+                  <a data-testid="invoicedetailsattachmentlink" key={att.id} href={att.url} target="_blank" rel="noopener noreferrer" className="bo-invoiceDetailsAttachmentLink">
                     <Download size={12} />
                     {att.filename || "Adjunto"}
                   </a>
@@ -197,11 +197,11 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
 
           {/* Tags */}
           {invoice.tags && invoice.tags.length > 0 && (
-            <div className="bo-invoiceDetailsSection">
-              <div className="bo-invoiceDetailsSectionTitle">Etiquetas</div>
-              <div className="bo-invoiceDetailsTags">
+            <div data-slot="invoiceDetailsModal-invoiceDetailsSection" className="bo-invoiceDetailsSection">
+              <div data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Etiquetas</div>
+              <div data-slot="invoiceDetailsModal-invoiceDetailsTags" className="bo-invoiceDetailsTags">
                 {invoice.tags.map((tag, idx) => (
-                  <span key={idx} className="bo-invoiceDetailsTag">
+                  <span data-slot="invoiceDetailsModal-invoiceDetailsTag" key={idx} className="bo-invoiceDetailsTag">
                     <TagIcon size={10} />{tag}
                   </span>
                 ))}
@@ -213,7 +213,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
 
         {/* Action buttons at the bottom */}
         {hasActions && (
-          <div className="bo-invoiceDetailsActions">
+          <div data-slot="invoiceDetailsModal-invoiceDetailsActions" className="bo-invoiceDetailsActions">
             {onDownloadPdf && (
               <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => onDownloadPdf(invoice)} data-testid="details-download-btn">
                 <Download size={14} /> Descargar PDF

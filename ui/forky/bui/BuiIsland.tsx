@@ -54,7 +54,7 @@ export function BuiIsland({
   }, []);
 
   return (
-    <div className={`bui-scope ${className ?? ""}`} {...rest}>
+    <div data-slot="buiIsland-div" className={`bui-scope ${className ?? ""}`} {...rest}>
       {children}
     </div>
   );

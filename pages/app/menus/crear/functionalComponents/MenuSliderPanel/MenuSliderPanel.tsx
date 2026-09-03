@@ -218,7 +218,7 @@ export function MenuSliderPanel({
     return (
       <div className="bo-field" data-slot="sliderPanel-field">
         <div className="bo-label" data-slot="sliderPanel-label">Slider de imagenes</div>
-        <p className="bo-mutedText">Guarda el menu para configurar el slider.</p>
+        <p data-slot="menuSliderPanel-mutedText" className="bo-mutedText">Guarda el menu para configurar el slider.</p>
       </div>
     );
   }
@@ -260,7 +260,7 @@ export function MenuSliderPanel({
   const pendingCell = (
     <div key="pending" className="bo-sliderCell bo-sliderPendingCell" role="status" aria-label="Mejorando imagen con IA" data-testid="slider-ai-skeleton">
       <Sparkles size={18} />
-      <span>Mejorando...</span>
+      <span data-slot="menuSliderPanel-span">Mejorando...</span>
     </div>
   );
 
@@ -308,7 +308,7 @@ export function MenuSliderPanel({
       {/* Ver todas — full grid in the reused glass modal. */}
       <Modal open={seeAll} title="Imagenes del slider" onClose={() => setSeeAll(false)} widthPx={640} hideClose>
         <ModalHeader title="Imagenes del slider" onClose={() => setSeeAll(false)} />
-        <div className="bo-modalBody">
+        <div data-slot="menuSliderPanel-modalBody" className="bo-modalBody">
           <div className="bo-sliderGrid bo-sliderGrid--all" data-slot="sliderPanel-allGrid">
             {images.map(renderCell)}
             {addCell("add-all")}
@@ -325,25 +325,25 @@ export function MenuSliderPanel({
         hideClose
       >
         <ModalHeader title="Asesor IA de imagen" onClose={busy ? () => undefined : closeAdvisor} />
-        <div className="bo-modalBody bo-dishAIAdvisorBody">
-          <div className="bo-dishAIAdvisorCopy">
-            <p className="bo-dishAIAdvisorLead">
+        <div data-slot="menuSliderPanel-dishAIAdvisorBody" className="bo-modalBody bo-dishAIAdvisorBody">
+          <div data-slot="menuSliderPanel-dishAIAdvisorCopy" className="bo-dishAIAdvisorCopy">
+            <p data-slot="menuSliderPanel-dishAIAdvisorLead" className="bo-dishAIAdvisorLead">
               Mejorar esta imagen con IA la adapta al formato 16:9 del slider y eleva la presentacion de tu menu.
             </p>
-            <p className="bo-dishAIAdvisorHint">Imagen: {Math.max(1, advisor?.kb ?? 0)}KB.</p>
+            <p data-slot="menuSliderPanel-dishAIAdvisorHint" className="bo-dishAIAdvisorHint">Imagen: {Math.max(1, advisor?.kb ?? 0)}KB.</p>
           </div>
           {advisor ? (
-            <div className="bo-dishAIAdvisorPreviewWrap">
+            <div data-slot="menuSliderPanel-dishAIAdvisorPreviewWrap" className="bo-dishAIAdvisorPreviewWrap">
               <img className="bo-dishAIAdvisorPreview" src={advisor.previewUrl} alt="Previsualizacion" />
             </div>
           ) : null}
           {aiEnabled ? null : (
             <p className="bo-dishAIAdvisorNotice" data-testid="slider-advisor-ai-unavailable">
               <Info size={15} aria-hidden />
-              <span>
+              <span data-slot="menuSliderPanel-span">
                 La mejora con IA no esta disponible: falta configurar un modelo de imagen.{" "}
                 {isRoot ? (
-                  <a href="/app/config?content=ia">Configuralo en Ajustes &gt; IA</a>
+                  <a data-testid="configuralo-en-ajustes-g" href="/app/config?content=ia">Configuralo en Ajustes &gt; IA</a>
                 ) : (
                   "Pide a un administrador que lo configure en Ajustes > IA."
                 )}
@@ -351,7 +351,7 @@ export function MenuSliderPanel({
             </p>
           )}
         </div>
-        <div className="bo-modalActions bo-dishAIAdvisorActions">
+        <div data-slot="menuSliderPanel-dishAIAdvisorActions" className="bo-modalActions bo-dishAIAdvisorActions">
           <button
             className="bo-btn bo-btn--advisorSecondary"
             type="button"
@@ -370,7 +370,7 @@ export function MenuSliderPanel({
               data-testid="slider-advisor-improve-with-ai"
             >
               <Sparkles size={15} />
-              <span>{busy ? "Mejorando con IA..." : "Mejorar con IA"}</span>
+              <span data-slot="menuSliderPanel-span">{busy ? "Mejorando con IA..." : "Mejorar con IA"}</span>
             </button>
           ) : null}
         </div>

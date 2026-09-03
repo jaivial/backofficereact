@@ -44,18 +44,18 @@ export function ConfigAIImage() {
 
   return (
     <div className="bo-panel" data-ui="config-ai-image" data-testid="config-ai-image">
-      <div className="bo-panelHead flex-col items-stretch gap-1">
-        <div className="bo-panelTitle flex items-center gap-2">
+      <div data-slot="configAIImage-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
+        <div data-slot="configAIImage-gap-2" className="bo-panelTitle flex items-center gap-2">
           <Sparkles size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
           Generacion de imagenes con IA
         </div>
-        <div className="bo-panelMeta">Configura el proveedor y los modelos usados para generar imagenes de la carta.</div>
+        <div data-slot="configAIImage-panelMeta" className="bo-panelMeta">Configura el proveedor y los modelos usados para generar imagenes de la carta.</div>
       </div>
 
-      <div className="bo-panelBody flex flex-col gap-5">
+      <div data-slot="configAIImage-gap-5" className="bo-panelBody flex flex-col gap-5">
         {/* Provider */}
         <label className="bo-field" data-slot="config-ai-provider-field">
-          <span className="bo-label">Proveedor</span>
+          <span data-slot="configAIImage-label" className="bo-label">Proveedor</span>
           <SearchableSelect
             value={config.providerSlug}
             onChange={(v) => setField("providerSlug", v)}
@@ -71,7 +71,7 @@ export function ConfigAIImage() {
         {/* API key — appears once a provider is selected */}
         {hasProvider ? (
           <label className="bo-field" data-slot="config-ai-apikey-field">
-            <span className="bo-label flex items-center gap-2">
+            <span data-slot="configAIImage-gap-2" className="bo-label flex items-center gap-2">
               <KeyRound size={14} className="text-[var(--bo-muted)]" aria-hidden="true" />
               API key
             </span>
@@ -92,7 +92,7 @@ export function ConfigAIImage() {
         {hasProvider && keyReady ? (
           <>
             <label className="bo-field" data-slot="config-ai-t2i-field">
-              <span className="bo-label">Modelo Texto a Imagen</span>
+              <span data-slot="configAIImage-label" className="bo-label">Modelo Texto a Imagen</span>
               <SearchableSelect
                 value={config.t2iModelSlug || ""}
                 onChange={(v) => setField("t2iModelSlug", v)}
@@ -105,7 +105,7 @@ export function ConfigAIImage() {
             </label>
 
             <label className="bo-field" data-slot="config-ai-i2i-field">
-              <span className="bo-label">Modelo Imagen a Imagen</span>
+              <span data-slot="configAIImage-label" className="bo-label">Modelo Imagen a Imagen</span>
               <SearchableSelect
                 value={config.i2iModelSlug || ""}
                 onChange={(v) => setField("i2iModelSlug", v)}
@@ -118,7 +118,7 @@ export function ConfigAIImage() {
             </label>
 
             <div className="bo-foodDetailQuickStatus" data-slot="config-ai-active-field">
-              <span className="bo-label">Activar generacion con IA</span>
+              <span data-slot="configAIImage-label" className="bo-label">Activar generacion con IA</span>
               <Switch
                 checked={config.isActive}
                 onCheckedChange={(v) => setField("isActive", v)}

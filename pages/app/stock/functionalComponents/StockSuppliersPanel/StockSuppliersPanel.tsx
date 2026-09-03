@@ -323,22 +323,22 @@ function SupplierAliasesEditor({ supplierId, supplierName, canWrite, onChanged }
                 return (
                   <tr key={row.key} data-ui="stock-supplier-alias-row" data-testid={`stock-supplier-alias-row-${row.key}`}>
                     <td data-ui="stock-supplier-alias-code">
-                      <label className="sr-only" htmlFor={`stock-alias-code-${row.key}`}>Código</label>
+                      <label data-slot="stockSuppliersPanel-sr-only" className="sr-only" htmlFor={`stock-alias-code-${row.key}`}>Código</label>
                       <input id={`stock-alias-code-${row.key}`} className="bo-input" value={row.supplierCode} disabled={!canWrite} onChange={(event) => updateRow(row.key, { supplierCode: event.target.value })} placeholder="—" data-testid={`stock-alias-code-${row.key}`} />
                     </td>
                     <td data-ui="stock-supplier-alias-description">
-                      <label className="sr-only" htmlFor={`stock-alias-description-${row.key}`}>Descripción</label>
+                      <label data-slot="stockSuppliersPanel-sr-only" className="sr-only" htmlFor={`stock-alias-description-${row.key}`}>Descripción</label>
                       <input id={`stock-alias-description-${row.key}`} className="bo-input" value={row.description} disabled={!canWrite} onChange={(event) => updateRow(row.key, { description: event.target.value })} required data-testid={`stock-alias-description-${row.key}`} />
                     </td>
                     <td data-ui="stock-supplier-alias-item">
-                      <label className="sr-only" htmlFor={`stock-alias-item-${row.key}`}>Artículo</label>
+                      <label data-slot="stockSuppliersPanel-sr-only" className="sr-only" htmlFor={`stock-alias-item-${row.key}`}>Artículo</label>
                       <select id={`stock-alias-item-${row.key}`} className="bo-input" value={row.stockItemId} disabled={!canWrite} onChange={(event) => void setRowItem(row.key, Number(event.target.value))} data-testid={`stock-alias-item-${row.key}`}>
                         <option value={0}>Artículo…</option>
                         {items.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                       </select>
                     </td>
                     <td data-ui="stock-supplier-alias-unit">
-                      <label className="sr-only" htmlFor={`stock-alias-unit-${row.key}`}>Unidad</label>
+                      <label data-slot="stockSuppliersPanel-sr-only" className="sr-only" htmlFor={`stock-alias-unit-${row.key}`}>Unidad</label>
                       <select id={`stock-alias-unit-${row.key}`} className="bo-input" value={row.stockUnitId} disabled={!canWrite} onChange={(event) => updateRow(row.key, { stockUnitId: Number(event.target.value) })} data-testid={`stock-alias-unit-${row.key}`}>
                         {units.length === 0 ? <option value={0}>—</option> : null}
                         {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.label}</option>)}

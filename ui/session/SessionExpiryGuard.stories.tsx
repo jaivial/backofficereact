@@ -31,7 +31,7 @@ const dispatchEvents = (
 const decorators = [
   (Story: React.ComponentType) => (
     <Provider>
-      <div style={{ padding: "1rem", background: "#f5f5f5", minHeight: "100vh" }}>
+      <div data-slot="sessionExpiryGuard.stories-div" style={{ padding: "1rem", background: "#f5f5f5", minHeight: "100vh" }}>
         <Story />
       </div>
     </Provider>

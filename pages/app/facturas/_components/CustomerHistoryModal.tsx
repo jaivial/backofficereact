@@ -214,7 +214,7 @@ export function CustomerHistoryModal({
           <div className="bo-customerHistoryInvoices" data-slot="customer-history-invoices">
             <h4 className="bo-customerHistoryInvoicesTitle" data-slot="customerHistoryModal-customerHistoryInvoicesTitle">Historial de facturas</h4>
             <ScrollArea dataSlot="customer-history-invoices-list">
-              <div className="bo-customerHistoryInvoicesList">
+              <div data-slot="customerHistoryModal-customerHistoryInvoicesList" className="bo-customerHistoryInvoicesList">
               {invoices
                 .sort((a, b) => new Date(b.invoice_date).getTime() - new Date(a.invoice_date).getTime())
                 .map((invoice) => (
