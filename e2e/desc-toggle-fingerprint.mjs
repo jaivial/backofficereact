@@ -1,6 +1,6 @@
 import { chromium } from "@playwright/test";
 
-// Regresion: toggling the "Descripcion" switch must fire a save request.
+// Regression: toggling the "Descripcion" switch must fire a save request.
 // getSectionsFingerprint omitted description_enabled, so the autosave
 // effect early-returned and no PATCH was ever sent.
 const BASE = process.env.BASE || "https://127.0.0.1:3020";
@@ -11,10 +11,16 @@ const ctx = await browser.newContext({ ignoreHTTPSErrors: true });
 const page = await ctx.newPage();
 
 const saveRequests = [];
+const saveResponses = [];
 page.on("request", (req) => {
   const url = req.url();
   if (req.method() === "PATCH" && /group-menus-v2\/\d+\/sections\/\d+\/dishes\/\d+/.test(url)) {
     saveRequests.push({ url, body: req.postData() });
+  }
+});
+page.on("response", (res) => {
+  if (res.request().method() === "PATCH" && /group-menus-v2\/\d+\/sections\/\d+\/dishes\/\d+/.test(res.url())) {
+    saveResponses.push({ url: res.url(), status: res.status() });
   }
 });
 
@@ -52,23 +58,29 @@ if (switches === 0) throw new Error("no description switches found");
 
 const first = page.locator(switchSel).first();
 const before = await first.getAttribute("aria-checked") ?? (await first.getAttribute("data-state"));
-await first.click();
 
-// Autosave debounce is 700ms; allow generous window.
-await page.waitForTimeout(4_000);
+// Autosave debounce is 700ms; allow generous window. Always restore the
+// original switch state so a failing assertion leaves the DB as found.
+try {
+  await first.click();
+  await page.waitForTimeout(4_000);
 
-if (saveRequests.length === 0) {
-  throw new Error("FAIL: no PATCH section-dish request fired after description toggle");
+  if (saveRequests.length === 0) {
+    throw new Error("FAIL: no PATCH section-dish request fired after description toggle");
+  }
+  const withFlag = saveRequests.some((r) => /"description_enabled":(true|false)/.test(r.body || ""));
+  console.log("requests:", JSON.stringify(saveRequests, null, 2));
+  if (!withFlag) throw new Error("FAIL: PATCH did not include description_enabled");
+  const badStatus = saveResponses.filter((r) => r.status < 200 || r.status >= 300);
+  if (badStatus.length > 0) {
+    throw new Error(`FAIL: PATCH returned non-2xx: ${JSON.stringify(badStatus)}`);
+  }
+
+  const after = await first.getAttribute("aria-checked") ?? (await first.getAttribute("data-state"));
+  console.log(`OK: ${saveRequests.length} PATCH fired with 2xx, description_enabled present. switch ${before} -> ${after}`);
+} finally {
+  await first.click();
+  await page.waitForTimeout(4_000);
+  console.log("restored:", saveRequests.length, "total PATCHes");
+  await browser.close();
 }
-const withFlag = saveRequests.some((r) => /"description_enabled":(true|false)/.test(r.body || ""));
-console.log("requests:", JSON.stringify(saveRequests, null, 2));
-if (!withFlag) throw new Error("FAIL: PATCH did not include description_enabled");
-
-const after = await first.getAttribute("aria-checked") ?? (await first.getAttribute("data-state"));
-console.log(`OK: ${saveRequests.length} PATCH fired, description_enabled present. switch ${before} -> ${after}`);
-
-// Restore original state so the test DB is left as found.
-await first.click();
-await page.waitForTimeout(4_000);
-console.log("restored:", saveRequests.length, "total PATCHes");
-await browser.close();
