@@ -301,7 +301,7 @@ export default function Page() {
         {error ? (
           <>
             <InlineAlert kind="error" title="No se pudo cargar la configuración" message={error} />
-            <div className="mt-4 text-center">
+            <div data-slot="config-text-center" className="mt-4 text-center">
               <button className="bo-btn bo-btn--ghost" type="button" onClick={() => void reload()} disabled={busy} data-testid="config-reload-button">
                 Reintentar
               </button>

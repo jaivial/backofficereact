@@ -20,7 +20,7 @@ export function IngredientCard({ component, onRemove }: Props) {
       data-ui="ingredient-card"
       data-testid={`ingredient-card-${component.id}`}
     >
-      <div className="bo-ingredientCard__media">
+      <div data-slot="ingredientCard-ingredientCard-media" className="bo-ingredientCard__media">
         {component.imageUrl ? (
           <img
             className="bo-ingredientCard__image"
@@ -41,21 +41,21 @@ export function IngredientCard({ component, onRemove }: Props) {
         )}
       </div>
 
-      <div className="bo-ingredientCard__main">
-        <span className="bo-ingredientCard__name">{component.name}</span>
+      <div data-slot="ingredientCard-ingredientCard-main" className="bo-ingredientCard__main">
+        <span data-slot="ingredientCard-ingredientCard-name" className="bo-ingredientCard__name">{component.name}</span>
         {component.isOptional ? (
-          <span className="bo-ingredientCard__flag">Opcional</span>
+          <span data-slot="ingredientCard-ingredientCard-flag" className="bo-ingredientCard__flag">Opcional</span>
         ) : null}
       </div>
 
       <dl className="bo-ingredientCard__figures">
-        <div className="bo-ingredientCard__figure">
+        <div data-slot="ingredientCard-ingredientCard-figure" className="bo-ingredientCard__figure">
           <dt>Cantidad</dt>
           <dd>
             {component.quantity} {component.unitCode}
           </dd>
         </div>
-        <div className="bo-ingredientCard__figure">
+        <div data-slot="ingredientCard-ingredientCard-figure" className="bo-ingredientCard__figure">
           <dt>Merma</dt>
           {/* An em dash rather than "0 %": no waste recorded is not the same
               statement as a measured zero. */}
@@ -65,8 +65,8 @@ export function IngredientCard({ component, onRemove }: Props) {
         </div>
       </dl>
 
-      <div className="bo-ingredientCard__actions">
-        <button
+      <div data-slot="ingredientCard-ingredientCard-actions" className="bo-ingredientCard__actions">
+        <button data-testid="btn-icon"
           type="button"
           className="bo-btn bo-btn--ghost bo-btn--icon"
           aria-label={`Quitar ${component.name}`}

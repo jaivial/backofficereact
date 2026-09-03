@@ -17,15 +17,15 @@ export function ExportButtonPair({
   className,
 }: ExportButtonPairProps) {
   return (
-    <div className={cn("flex gap-2", className)}>
-      <button
+    <div data-slot="exportButtonPair-div" className={cn("flex gap-2", className)}>
+      <button data-testid="btn-sm"
         type="button"
         className="bo-btn bo-btn--danger bo-btn--sm"
         onClick={onExportPdf}
       >
         {pdfLabel}
       </button>
-      <button
+      <button data-testid="btn-sm-2"
         type="button"
         className="bo-btn bo-btn--success bo-btn--sm"
         onClick={onExportExcel}

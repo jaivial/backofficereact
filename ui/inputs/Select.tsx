@@ -210,7 +210,7 @@ export function Select({
                 data-ui="select-listbox"
               >
                 <ScrollArea dataSlot="select-list-scroll">
-                  <div className="grid gap-0.5">
+                  <div data-slot="select-gap-0.5" className="grid gap-0.5">
                     {options.map((o, idx) => {
                       const isSel = o.value === value;
                       const isAct = idx === activeIdx;

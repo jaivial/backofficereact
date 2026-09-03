@@ -285,11 +285,11 @@ export function WhatsAppConnection() {
       data-state={state}
       aria-label="Bot de WhatsApp"
     >
-      <div className="bo-panelHeader">
-        <h3>
+      <div data-slot="whatsAppConnection-panelHeader" className="bo-panelHeader">
+        <h3 data-slot="whatsAppConnection-h3">
           <Bot size={18} aria-hidden="true" /> Bot de WhatsApp
         </h3>
-        <span
+        <span data-slot="whatsAppConnection-span"
           className={`bo-badge ${state === "connected" ? "bo-badge--ok" : "bo-badge--muted"}`}
         >
           {state === "connected" ? (
@@ -304,19 +304,19 @@ export function WhatsAppConnection() {
         </span>
       </div>
 
-      <div
+      <div data-slot="whatsAppConnection-stack"
         className="bo-stack"
         style={{ alignItems: "center", textAlign: "center" }}
         aria-live="polite"
       >
         {state === "loading" ? (
-          <p className="bo-muted">
+          <p data-slot="whatsAppConnection-muted" className="bo-muted">
             <Loader2 className="bo-spin" size={16} aria-hidden="true" />{" "}
             Cargando estado…
           </p>
         ) : state === "connected" ? (
           <>
-            <p className="bo-muted">
+            <p data-slot="whatsAppConnection-muted" className="bo-muted">
               WhatsApp conectado
               {connection?.phone ? (
                 <>
@@ -326,7 +326,7 @@ export function WhatsAppConnection() {
               ) : null}
               . El bot ya puede responder mensajes.
             </p>
-            <div className="bo-row">
+            <div data-slot="whatsAppConnection-row" className="bo-row">
               <Button
                 variant="secondary"
                 onClick={() => setShowDisconnectConfirm(true)}
@@ -340,12 +340,12 @@ export function WhatsAppConnection() {
         ) : state === "qr_ready" ? (
           <>
             {connection?.pair_code ? (
-              <div className="bo-pairingCodeBlock">
-                <p className="bo-muted">
+              <div data-slot="whatsAppConnection-pairingCodeBlock" className="bo-pairingCodeBlock">
+                <p data-slot="whatsAppConnection-muted" className="bo-muted">
                   Introduce este código en WhatsApp → Dispositivos vinculados →
                   Vincular con número de teléfono:
                 </p>
-                <div className="bo-pairCode" aria-label="Código de vinculación">
+                <div data-slot="whatsAppConnection-c-digo-de-vinculaci-n" className="bo-pairCode" aria-label="Código de vinculación">
                   {connection.pair_code}
                 </div>
                 <Button
@@ -367,7 +367,7 @@ export function WhatsAppConnection() {
               </div>
             ) : null}
             {connection?.qr ? (
-              <div className="bo-qrWrap">
+              <div data-slot="whatsAppConnection-qrWrap" className="bo-qrWrap">
                 <img
                   className="bo-qr"
                   src={qrToSrc(connection.qr)}
@@ -375,24 +375,24 @@ export function WhatsAppConnection() {
                   width={240}
                   height={240}
                 />
-                <ol className="bo-qrSteps">
-                  <li>Abre WhatsApp en el teléfono del restaurante.</li>
-                  <li>
+                <ol data-slot="whatsAppConnection-qrSteps" className="bo-qrSteps">
+                  <li data-slot="whatsAppConnection-li">Abre WhatsApp en el teléfono del restaurante.</li>
+                  <li data-slot="whatsAppConnection-li">
                     Entra en <strong>Dispositivos vinculados</strong>.
                   </li>
-                  <li>
+                  <li data-slot="whatsAppConnection-li">
                     Pulsa <strong>Vincular dispositivo</strong> y escanea el QR.
                   </li>
                 </ol>
               </div>
             ) : null}
-            <p className="bo-muted bo-qrWaiting">
+            <p data-slot="whatsAppConnection-qrWaiting" className="bo-muted bo-qrWaiting">
               <Loader2 className="bo-spin" size={16} aria-hidden="true" />{" "}
               {connection?.pair_code
                 ? "Esperando confirmación del código…"
                 : "Esperando lectura del QR…"}
             </p>
-            <div className="bo-row bo-qrActions">
+            <div data-slot="whatsAppConnection-qrActions" className="bo-row bo-qrActions">
               <Button
                 variant="secondary"
                 onClick={() => void connect()}
@@ -412,13 +412,13 @@ export function WhatsAppConnection() {
             </div>
           </>
         ) : state === "provisioning" ? (
-          <p className="bo-muted">
+          <p data-slot="whatsAppConnection-muted" className="bo-muted">
             <Loader2 className="bo-spin" size={16} aria-hidden="true" />{" "}
             Preparando conexión segura…
           </p>
         ) : state === "error" ? (
           <>
-            <p className="bo-muted">
+            <p data-slot="whatsAppConnection-muted" className="bo-muted">
               No se pudo preparar WhatsApp. Revisa la conexión e inténtalo de
               nuevo.
             </p>
@@ -433,11 +433,11 @@ export function WhatsAppConnection() {
           </>
         ) : (
           <>
-            <p className="bo-muted">
+            <p data-slot="whatsAppConnection-muted" className="bo-muted">
               Conecta el WhatsApp del restaurante para activar el bot de
               reservas.
             </p>
-            <div className="bo-row">
+            <div data-slot="whatsAppConnection-row" className="bo-row">
               <Button
                 variant="primary"
                 onClick={() => void connect()}
@@ -474,20 +474,20 @@ export function WhatsAppConnection() {
         }}
         size="sm"
       >
-        <div className="bo-modalHead">
-          <div className="bo-modalTitle">
+        <div data-slot="whatsAppConnection-modalHead" className="bo-modalHead">
+          <div data-slot="whatsAppConnection-modalTitle" className="bo-modalTitle">
             Conectar con código de vinculación
           </div>
         </div>
-        <div className="bo-modalBody">
-          <p className="bo-muted">
+        <div data-slot="whatsAppConnection-modalBody" className="bo-modalBody">
+          <p data-slot="whatsAppConnection-muted" className="bo-muted">
             Introduce el número de WhatsApp con prefijo internacional para
             generar un código.
           </p>
-          <label className="bo-label" htmlFor="whatsapp-pairing-phone">
+          <label data-slot="whatsAppConnection-label" className="bo-label" htmlFor="whatsapp-pairing-phone">
             Número de teléfono
           </label>
-          <input
+          <input data-testid="34600000000"
             id="whatsapp-pairing-phone"
             className="bo-input"
             type="tel"
@@ -498,17 +498,17 @@ export function WhatsAppConnection() {
             placeholder="34600000000"
             aria-describedby="whatsapp-pairing-help whatsapp-pairing-error"
           />
-          <p id="whatsapp-pairing-help" className="bo-muted">
+          <p data-slot="whatsAppConnection-muted" id="whatsapp-pairing-help" className="bo-muted">
             Sin espacios ni el signo + (ejemplo: 34600000000).
           </p>
           {pairingError ? (
-            <p id="whatsapp-pairing-error" role="alert" className="bo-error">
+            <p data-slot="whatsAppConnection-error" id="whatsapp-pairing-error" role="alert" className="bo-error">
               {pairingError}
             </p>
           ) : null}
         </div>
-        <div className="bo-modalActions">
-          <button
+        <div data-slot="whatsAppConnection-modalActions" className="bo-modalActions">
+          <button data-testid="cancelar"
             type="button"
             className="bo-btn bo-btn--ghost"
             onClick={() => setShowPairingDialog(false)}
@@ -516,7 +516,7 @@ export function WhatsAppConnection() {
           >
             Cancelar
           </button>
-          <button
+          <button data-testid="generar-c-digo"
             type="button"
             className="bo-btn bo-btn--primary"
             onClick={() => void submitPairing()}

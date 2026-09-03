@@ -96,8 +96,8 @@ export const WithRightSlot: Story = {
     onToggleDay: () => console.log("Toggle day clicked"),
     rightSlot: (
       <div className="bo-configDayLimitRow" data-slot="right-slot">
-        <span>15 reservas</span>
-        <span>42 personas</span>
+        <span data-slot="reservationDayPanel.stories-span">15 reservas</span>
+        <span data-slot="reservationDayPanel.stories-span">42 personas</span>
       </div>
     ),
   },

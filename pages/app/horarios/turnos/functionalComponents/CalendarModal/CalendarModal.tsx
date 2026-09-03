@@ -131,9 +131,9 @@ export function CalendarModal({ open, onClose, onSelectDate, year, month, curren
     <Modal open={open} title="Calendario de horarios" onClose={onClose} size="md" data-slot="calendar-modal" hideClose>
       <ModalHeader title="Calendario de horarios" onClose={onClose} />
 
-      <div className="px-4 pb-4">
+      <div data-slot="calendarModal-pb-4" className="px-4 pb-4">
         {/* Month navigation */}
-        <div className="flex items-center justify-between mb-4">
+        <div data-slot="calendarModal-mb-4" className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={prevMonth}
@@ -160,14 +160,14 @@ export function CalendarModal({ open, onClose, onSelectDate, year, month, curren
         {/* Loading */}
         {loading && (
           <div className="flex items-center justify-center py-8" data-testid="calendar-loading">
-            <div className="bo-spinner" />
+            <div data-slot="calendarModal-spinner" className="bo-spinner" />
           </div>
         )}
 
         {/* Calendar grid */}
         {!loading && (
-          <div>
-            <div className="grid grid-cols-7 mb-1">
+          <div data-slot="calendarModal-div">
+            <div data-slot="calendarModal-mb-1" className="grid grid-cols-7 mb-1">
               {WEEKDAYS.map((wd, idx) => (
                 <div
                   key={`wd-${idx}`}
@@ -179,7 +179,7 @@ export function CalendarModal({ open, onClose, onSelectDate, year, month, curren
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-[2px]">
+            <div data-slot="calendarModal-gap-[2px]" className="grid grid-cols-7 gap-[2px]">
               {days.map((cell, idx) => {
                 if (!cell.day || !cell.iso) {
                   return <div key={`empty-${idx}`} className="h-[62px]" />;
@@ -207,8 +207,8 @@ export function CalendarModal({ open, onClose, onSelectDate, year, month, curren
                         : "border-transparent text-[var(--bo-text)] hover:border-[var(--bo-border-2)]"
                     }`}
                   >
-                    <span className="text-sm font-semibold leading-tight">{cell.day}</span>
-                    <span className="text-[10px] leading-tight mt-0.5 opacity-60">
+                    <span data-slot="calendarModal-leading-tight" className="text-sm font-semibold leading-tight">{cell.day}</span>
+                    <span data-slot="calendarModal-opacity-60" className="text-[10px] leading-tight mt-0.5 opacity-60">
                       {count}/{totalMembers}
                     </span>
                   </button>

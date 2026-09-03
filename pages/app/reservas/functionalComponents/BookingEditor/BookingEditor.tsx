@@ -547,8 +547,8 @@ export function BookingEditor({
               transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
               data-slot="booking-editor-menu-loading"
             >
-              <span className="bo-spinner" aria-hidden="true" />
-              <span className="bo-mutedText">Cargando menús de grupo…</span>
+              <span data-slot="bookingEditor-spinner" className="bo-spinner" aria-hidden="true" />
+              <span data-slot="bookingEditor-mutedText" className="bo-mutedText">Cargando menús de grupo…</span>
             </motion.div>
           ) : draft.special_menu && menus.length === 0 ? (
             <motion.div
@@ -667,8 +667,8 @@ export function BookingEditor({
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
                 data-slot="booking-editor-arroz-loading"
               >
-                <span className="bo-spinner" aria-hidden="true" />
-                <span className="bo-mutedText">Cargando tipos de arroz…</span>
+                <span data-slot="bookingEditor-spinner" className="bo-spinner" aria-hidden="true" />
+                <span data-slot="bookingEditor-mutedText" className="bo-mutedText">Cargando tipos de arroz…</span>
               </motion.div>
             ) : draft.arroz_enabled && riceTypes.length === 0 && riceTypesLoaded ? (
               <motion.div
@@ -702,7 +702,7 @@ export function BookingEditor({
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
                 data-slot="booking-editor-arroz-content"
               >
-                <div className="bo-mutedText">Mínimo 2 raciones por arroz · restantes: {remainingArroz}</div>
+                <div data-slot="bookingEditor-mutedText" className="bo-mutedText">Mínimo 2 raciones por arroz · restantes: {remainingArroz}</div>
                 {draft.arroz.map((row, idx) => (
                   <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
                     <div className="bo-bookingChoiceSelectorRow" data-slot="booking-editor-rice-selector-row">
@@ -781,7 +781,7 @@ function CounterField({
   return (
     <div className={["bo-field", "bo-field--counter", className].filter(Boolean).join(" ")} style={style} data-slot="bookingEditor-div">
       <div className="bo-label" style={{ textAlign: "center" }} data-slot="bookingEditor-label">{label}</div>
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div data-slot="bookingEditor-div" style={{ display: "flex", justifyContent: "center" }}>
       <div className="bo-counter" data-slot={`booking-editor-counter-${label.toLowerCase()}`}>
         <button
           type="button"

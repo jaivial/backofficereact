@@ -67,7 +67,7 @@ export function SimpleTabs({
             type="button"
             title={item.title}
           >
-            <span className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
+            <span data-slot="simpleTabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
               <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
             </span>
@@ -116,7 +116,7 @@ export function SimpleTabsList({
             onClick={() => ctx.setActiveId(item.id)}
             type="button"
           >
-            <span className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
+            <span data-slot="simpleTabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
               <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
             </span>

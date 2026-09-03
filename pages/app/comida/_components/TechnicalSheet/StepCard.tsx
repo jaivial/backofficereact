@@ -44,11 +44,11 @@ export function StepCard({
 
   return (
     <li className="bo-stepCard" data-ui="sheet-step-card" data-testid={`step-card-${step.id}`}>
-      <span className="bo-stepCard__no" aria-hidden="true">
+      <span data-slot="stepCard-stepCard-no" className="bo-stepCard__no" aria-hidden="true">
         {step.stepNo}
       </span>
 
-      <div className="bo-stepCard__media">
+      <div data-slot="stepCard-stepCard-media" className="bo-stepCard__media">
         {generating ? (
           // A skeleton in the final 1:1 box, so the layout does not jump when
           // the picture lands.
@@ -66,7 +66,7 @@ export function StepCard({
             loading="lazy"
           />
         ) : (
-          <button
+          <button data-testid="anadir-imagen"
             ref={imageButtonRef}
             type="button"
             className="bo-stepCard__imageAdd"
@@ -75,13 +75,13 @@ export function StepCard({
             onClick={() => setImageOpen((open) => !open)}
           >
             <ImagePlus size={22} aria-hidden="true" />
-            <span>Anadir imagen</span>
+            <span data-slot="stepCard-span">Anadir imagen</span>
           </button>
         )}
 
         {/* Replacing an existing picture stays possible without removing it first. */}
         {!generating && step.imageUrl ? (
-          <button
+          <button data-testid="cambiar"
             ref={imageButtonRef}
             type="button"
             className="bo-stepCard__imageChange"
@@ -94,11 +94,11 @@ export function StepCard({
         ) : null}
       </div>
 
-      <div className="bo-stepCard__body">
-        <label className="sr-only" htmlFor={`step-title-${step.id}`}>
+      <div data-slot="stepCard-stepCard-body" className="bo-stepCard__body">
+        <label data-slot="stepCard-sr-only" className="sr-only" htmlFor={`step-title-${step.id}`}>
           Titulo del paso {step.stepNo}
         </label>
-        <input
+        <input data-testid="stepcard-titleinput"
           id={`step-title-${step.id}`}
           className="bo-input bo-stepCard__titleInput"
           value={title}
@@ -109,10 +109,10 @@ export function StepCard({
           }}
         />
 
-        <label className="sr-only" htmlFor={`step-desc-${step.id}`}>
+        <label data-slot="stepCard-sr-only" className="sr-only" htmlFor={`step-desc-${step.id}`}>
           Descripcion del paso {step.stepNo}
         </label>
-        <textarea
+        <textarea data-testid="que-hay-que-hacer-en-este-paso"
           id={`step-desc-${step.id}`}
           className="bo-textarea bo-stepCard__textInput"
           rows={3}
@@ -125,14 +125,14 @@ export function StepCard({
         />
 
         {step.generationStatus === "FAILED" ? (
-          <p className="bo-stepCard__error" role="alert">
+          <p data-slot="stepCard-stepCard-error" className="bo-stepCard__error" role="alert">
             No se pudo generar la imagen: {step.generationError}
           </p>
         ) : null}
       </div>
 
-      <div className="!my-auto bo-stepCard__actions">
-        <button
+      <div data-slot="stepCard-stepCard-actions" className="!my-auto bo-stepCard__actions">
+        <button data-testid="btn-icon"
           type="button"
           className="bo-btn bo-btn--ghost bo-btn--icon"
           aria-label={`Subir paso ${step.stepNo}`}
@@ -141,7 +141,7 @@ export function StepCard({
         >
           <ArrowUp size={16} aria-hidden="true" />
         </button>
-        <button
+        <button data-testid="btn-icon-2"
           type="button"
           className="bo-btn bo-btn--ghost bo-btn--icon"
           aria-label={`Bajar paso ${step.stepNo}`}
@@ -150,7 +150,7 @@ export function StepCard({
         >
           <ArrowDown size={16} aria-hidden="true" />
         </button>
-        <button
+        <button data-testid="btn-icon-3"
           type="button"
           className="bo-btn bo-btn--ghost bo-btn--icon"
           aria-label={`Eliminar paso ${step.stepNo}`}

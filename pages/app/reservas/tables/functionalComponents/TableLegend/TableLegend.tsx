@@ -241,7 +241,7 @@ export function TableLegend({
       <div data-slot="sheet-head" className="bo-tableMapSheetHead">
         {bookingForAssignment ? (
           <div data-ui="assigning-banner" className="bo-assigningBanner">
-            <span>Asignando: <strong data-ui="assigning-name">{bookingForAssignment.customer_name}</strong></span>
+            <span data-slot="tableLegend-span">Asignando: <strong data-ui="assigning-name">{bookingForAssignment.customer_name}</strong></span>
             <button data-ui="cancel-assign-btn" className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={onCancelAssignmentMode}>Cancelar</button>
           </div>
         ) : (
@@ -436,14 +436,14 @@ export function TableLegend({
                           onClick={onMultiTableModeToggle}
                           aria-pressed={multiTableMode}
                         >
-                          <span className="bo-multiTableToggleThumb" />
+                          <span data-slot="tableLegend-multiTableToggleThumb" className="bo-multiTableToggleThumb" />
                         </button>
                       </div>
 
                       {multiTableMode && (
                         <>
                           <div data-ui="multi-table-progress" className="bo-multiTableProgress">
-                            <span className={`bo-multiTableProgressText${multiTableComplete ? " is-complete" : ""}`}>
+                            <span data-slot="tableLegend-span" className={`bo-multiTableProgressText${multiTableComplete ? " is-complete" : ""}`}>
                               {multiTableTotalSeats} / {multiTablePartySize} pax
                             </span>
                           </div>
