@@ -19,6 +19,7 @@ export type StockItem = {
   id: number;
   name: string;
   sku?: string;
+  barcode?: string;
   categoryName?: string;
   kind: string;
   baseDimension: string;
@@ -42,6 +43,7 @@ export type Movement = {
   note?: string;
   actorName: string;
   occurredAt: string;
+  expiresAt?: string | null;
 };
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
