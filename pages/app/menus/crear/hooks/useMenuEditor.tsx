@@ -492,7 +492,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
           section.dishes.forEach((dish) => {
             if (!dish.id) return;
             sectionSyncState.byId[String(dish.id)] = JSON.stringify({
-              id: dish.id || null, catalog: dish.catalog_dish_id || null, title: dish.title.trim(), description: dish.description, allergens: dish.allergens, supplement_enabled: dish.supplement_enabled, supplement_price: dish.supplement_price, price: isALaCarte ? dish.price : null, active: dish.active,
+              id: dish.id || null, catalog: dish.catalog_dish_id || null, title: dish.title.trim(), description: dish.description, description_enabled: dish.description_enabled, allergens: dish.allergens, supplement_enabled: dish.supplement_enabled, supplement_price: dish.supplement_price, price: isALaCarte ? dish.price : null, active: dish.active,
             });
           });
           const order = JSON.stringify(sectionSyncState.ids);
@@ -514,6 +514,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
                   catalog_dish_id: dish.catalog_dish_id ?? null,
                   title: trimmedTitle,
                   description: dish.description,
+                  description_enabled: dish.description_enabled,
                   allergens: dish.allergens,
                   supplement_enabled: dish.supplement_enabled,
                   supplement_price: dish.supplement_price,
@@ -526,7 +527,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
           }
 
           const payloadDishes: Array<{
-            id?: number; catalog_dish_id?: number | null; title: string; description: string; allergens: string[];
+            id?: number; catalog_dish_id?: number | null; title: string; description: string; description_enabled: boolean; allergens: string[];
             supplement_enabled: boolean; supplement_price: number | null; price: number | null; active: boolean;
           }> = [];
           const localDishes: EditorDish[] = [];
@@ -552,6 +553,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
             }
             payloadDishes.push({
               id: dish.id, catalog_dish_id: catalogId, title: trimmedTitle, description: dish.description,
+              description_enabled: dish.description_enabled,
               allergens: dish.allergens, supplement_enabled: dish.supplement_enabled,
               supplement_price: dish.supplement_price, price: isALaCarte ? dish.price : null, active: dish.active,
             });
