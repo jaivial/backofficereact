@@ -421,6 +421,19 @@ export function buildGroupMenuAIWSURL(menuId: number): string {
   const wsURL = new URL("/api/admin/group-menus-v2/ws", window.location.href);
   wsURL.protocol = wsURL.protocol === "https:" ? "wss:" : "ws:";
   wsURL.searchParams.set("menuId", String(menuId));
+  // Correlation id links browser, websocket frames, backend checkpoints and
+  // public-menu output for full cross-boundary traceability.
+  let correlationId = "";
+  try {
+    correlationId = window.sessionStorage.getItem("vcCorrelationId") || "";
+  } catch {
+    correlationId = "";
+  }
+  if (!correlationId) {
+    correlationId = `bo-${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+    try { window.sessionStorage.setItem("vcCorrelationId", correlationId); } catch { /* ignore */ }
+  }
+  wsURL.searchParams.set("correlationId", correlationId);
   return wsURL.toString();
 }
 
