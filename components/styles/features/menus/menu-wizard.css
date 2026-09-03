@@ -2579,3 +2579,72 @@
   border-radius: var(--bo-radius-md);
   object-fit: contain;
 }
+
+/* Beverage options (issue 3) */
+.bo-beverageIconRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-beverageIconChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  color: var(--bo-muted);
+}
+
+.bo-beverageIconChip.is-selected {
+  border-color: rgba(140, 244, 185, 0.32);
+  background: rgba(140, 244, 185, 0.10);
+  color: rgba(140, 244, 185, 0.95);
+}
+
+.bo-beverageAddBtn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-beverageOptionCell {
+  position: relative;
+  display: inline-flex;
+}
+
+.bo-beverageDeleteBtn {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-bg, #16181d);
+  color: var(--bo-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.bo-beverageDeleteBtn:hover {
+  color: rgba(255, 166, 166, 0.95);
+  border-color: rgba(255, 166, 166, 0.34);
+}
+
+.bo-beverageCustomAdd {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  grid-column: 1 / -1;
+  margin-top: 6px;
+}

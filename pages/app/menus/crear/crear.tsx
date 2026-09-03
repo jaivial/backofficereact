@@ -1,14 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Beer,
   Check,
   ChevronDown,
   ChevronUp,
+  CupSoda,
+  Droplets,
   Eye,
   GripVertical,
+  Martini,
   Plus,
   Settings2,
   Trash2,
   Upload,
+  Wine,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Reorder } from "motion/react";
@@ -205,6 +210,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   const {
     error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages,
     showMenuPreviewImage, sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement,
+    beverageOptions, beverageModalOpen, beverageDeleteTarget,
     beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, specialMenuImage,
     menuPreviewImageBusy, specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen,
     desktopPreviewDocked, previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
@@ -218,6 +224,8 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     previewFrameRef, dishImageInputRef, menuPreviewImageInputRef, specialMenuImageInputRef,
     setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
     setShowDishImages, setShowMenuPreviewImage, setSections, setIncludedCoffee, setBeverageType,
+    refreshBeverageOptions, setBeverageOptionSelected, createBeverageOption,
+    requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeveragePrice, setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize,
     setMainLimit, setMainLimitNum, setComments, setSpecialMenuImage, setSaveState, setBusy,
     setHydrated, setMobileTab, setDesktopPreviewOpen,
@@ -653,6 +661,35 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                       <div className="bo-label" data-slot="crear-label">Bebida</div>
                       <Select className="bo-menuSettingSelect" value={beverageType} onChange={setBeverageType} options={beverageTypeOptions} size="sm" ariaLabel="Tipo de bebida" />
                     </div>
+                    {beverageType === "opcion" || beverageType === "ilimitada" ? (
+                      <div className="bo-field" data-slot="crear-field">
+                        <div className="bo-label" data-slot="crear-label">Bebidas incluidas</div>
+                        <div className="bo-beverageIconRow" data-testid="menu-crear-beverage-icon-row">
+                          {beverageOptions.filter((option) => option.selected).map((option) => {
+                            const Icon = beverageIconForSlug(option.slug);
+                            return (
+                              <span
+                                key={option.id}
+                                className="bo-beverageIconChip is-selected"
+                                title={option.name}
+                                data-testid={`menu-crear-beverage-icon-${option.slug}`}
+                              >
+                                <Icon size={16} />
+                              </span>
+                            );
+                          })}
+                          <button
+                            type="button"
+                            className="bo-btn bo-btn--ghost bo-btn--sm bo-beverageAddBtn"
+                            onClick={refreshBeverageOptions}
+                            data-testid="menu-crear-beverage-add-plus"
+                            aria-label="Gestionar bebidas incluidas"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
                     {beverageType !== "no_incluida" ? (
                       <div className="bo-field" data-slot="crear-field">
                         <div className="bo-label" data-slot="crear-label">Precio por persona</div>
@@ -786,6 +823,58 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
         onConfirm={(payload) => void onMenuPreviewImageCropConfirm(payload)}
       />
 
+      {/* Beverage options modal (WS-only mutations) */}
+      <Modal open={beverageModalOpen} title="Bebidas" onClose={closeBeverageModal} widthPx={620} hideClose>
+        <ModalHeader title="Selecciona bebidas" onClose={closeBeverageModal} />
+        <div className="bo-modalBody" data-slot="crear-beverageModalBody">
+          <div className="bo-allergenGrid" data-testid="menu-crear-beverage-grid">
+            {beverageOptions.map((option) => {
+              const Icon = beverageIconForSlug(option.slug);
+              return (
+                <div key={option.id} className="bo-beverageOptionCell" data-testid={`menu-crear-beverage-option-${option.slug}`}>
+                  <button
+                    type="button"
+                    className={`bo-allergenCircle ${option.selected ? "is-selected" : ""}`}
+                    onClick={() => setBeverageOptionSelected(option.id, !option.selected)}
+                    data-testid={`menu-crear-beverage-toggle-${option.slug}`}
+                  >
+                    <span className="bo-allergenCircleIcon" data-slot="crear-beverageCircleIcon"><Icon size={16} /></span>
+                    <span className="bo-allergenCircleLabel" data-slot="crear-beverageCircleLabel">{option.name}</span>
+                  </button>
+                  {option.is_custom ? (
+                    <button
+                      type="button"
+                      className="bo-beverageDeleteBtn"
+                      aria-label={`Eliminar ${option.name}`}
+                      onClick={() => requestBeverageOptionDelete({ id: option.id, name: option.name })}
+                      data-testid={`menu-crear-beverage-delete-${option.slug}`}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+            <BeverageCustomAdd onAdd={createBeverageOption} />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Beverage custom-delete confirmation (over the beverage modal) */}
+      <ConfirmDialog
+        title="Eliminar bebida"
+        message={beverageDeleteTarget
+          ? `¿Eliminar "${beverageDeleteTarget.name}"? Se quitará para este restaurante en todos los menús. Esta acción no se puede deshacer.`
+          : ""}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        danger
+        open={!!beverageDeleteTarget}
+        onCancel={cancelBeverageOptionDelete}
+        onClose={cancelBeverageOptionDelete}
+        onConfirm={confirmBeverageOptionDelete}
+      />
+
       {/* Allergen modal */}
       <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620} hideClose>
         <ModalHeader title="Selecciona alergenos" onClose={() => setAllergenModal(null)} />
@@ -840,5 +929,53 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
         }}
       />
     </section>
+  );
+}
+
+function beverageIconForSlug(slug: string) {
+  switch (slug) {
+    case "agua":
+      return Droplets;
+    case "refrescos":
+      return CupSoda;
+    case "vino":
+      return Wine;
+    case "cerveza-de-barril":
+    case "cerveza-de-tercio":
+      return Beer;
+    case "sangria":
+      return Wine;
+    case "martini":
+      return Martini;
+    default:
+      return CupSoda;
+  }
+}
+
+function BeverageCustomAdd({ onAdd }: { onAdd: (name: string) => void }) {
+  const [value, setValue] = useState("");
+  return (
+    <div className="bo-beverageCustomAdd" data-testid="menu-crear-beverage-custom-add">
+      <input
+        className="bo-input"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Añadir bebida personalizada"
+        data-testid="menu-crear-beverage-custom-input"
+      />
+      <button
+        type="button"
+        className="bo-btn bo-btn--ghost bo-btn--sm"
+        onClick={() => {
+          if (!value.trim()) return;
+          onAdd(value.trim());
+          setValue("");
+        }}
+        disabled={!value.trim()}
+        data-testid="menu-crear-beverage-custom-confirm"
+      >
+        <Plus size={14} /> Añadir
+      </button>
+    </div>
   );
 }
