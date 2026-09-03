@@ -521,13 +521,9 @@
   display: inline;
 }
 
-/* Configuracion tab shows only the editor+settings panels in the editor
-   column (keeps the form at its previous width; mobile stays single-column). */
+/* Configuracion uses the same two-column editor/preview layout as Platos. */
 .bo-menuWizardFinal .bo-editorPane--config {
-  grid-column: 1 / -1;
-  width: min(100%, 769px);
-  max-width: 769px;
-  margin-inline: auto;
+  min-width: 0;
 }
 
 /* Both editor panes and the preview pane stay mounted; the inactive tab's
@@ -537,9 +533,7 @@
   display: none;
 }
 
-.bo-menuWizardFinal.is-configActive .bo-editorPane--platos,
-.bo-menuWizardFinal.is-configActive .bo-previewPane,
-.bo-menuWizardFinal.is-configActive .bo-previewDesktopSwitch {
+.bo-menuWizardFinal.is-configActive .bo-editorPane--platos {
   display: none;
 }
 
@@ -625,7 +619,7 @@
 }
 
 @media (max-width: 980px) {
-  /* ponytail: surface Preview switch at <=980px; it toggles the preview pane inside the Platos tab. */
+  /* Surface the same Preview switch in both Platos and Configuracion tabs. */
   .bo-previewDesktopSwitch {
     display: inline-flex;
     align-items: center;
