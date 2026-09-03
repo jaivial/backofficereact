@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { Button } from "../../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { FormField } from "../../../../../ui/inputs/FormField";
 import { MarginBandsPanel } from "../MarginBandsPanel/MarginBandsPanel";
+import { SeasonalityEditor } from "./SeasonalityEditor";
 
 type Settings = { warehouseDisplayMode: string; countCadence: string; allowNegativeStock: boolean; labourCostEnabled: boolean; businessProfile: string; seasonalityProfile: Record<string, unknown>; onboardingCompleted: boolean };
 type VATRate = { id: number; name: string; rate: number; isDefault: boolean; isActive: boolean };
@@ -53,8 +54,6 @@ export function StockSettingsPanel() {
   },[load]);
   const deleteVAT = useCallback(async (vat: VATRate) => { if(!window.confirm(`¿Eliminar ${vat.name}?`))return; try{await settingsRequest(`/vat-rates/${vat.id}`,{method:"DELETE"});await load();}catch(reason){setError(reason instanceof Error?reason.message:"No se pudo eliminar IVA");}},[load]);
 
-  const seasonalityText = useMemo(() => Object.keys(settings.seasonalityProfile || {}).length ? JSON.stringify(settings.seasonalityProfile, null, 2) : "Sin clasificación", [settings.seasonalityProfile]);
-
   return (
     <section className="bo-stockSplit" data-ui="stock-settings-panel">
       <article className="bo-panel" data-ui="stock-settings-general">
@@ -98,7 +97,7 @@ export function StockSettingsPanel() {
             <Button variant="primary" onClick={() => void save()} data-testid="stock-settings-save">Guardar onboarding</Button>
           </div>
 
-          <pre className="bo-stockCode" data-ui="stock-settings-seasonality">{seasonalityText}</pre>
+          <SeasonalityEditor profile={settings.seasonalityProfile} onChange={(seasonalityProfile) => setSettings((current) => ({ ...current, seasonalityProfile }))} />
         </div>
       </article>
 
