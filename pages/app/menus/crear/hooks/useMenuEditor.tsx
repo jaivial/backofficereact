@@ -1848,7 +1848,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
           {menuPreviewAIGenerating ? (
             <div className="bo-sliderCell bo-sliderPendingCell" role="status" aria-live="polite" data-testid="menu-preview-ai-skeleton">
               <Sparkles size={16} aria-hidden="true" />
-              <span>Generando...</span>
+              <span data-slot="useMenuEditor-span">Generando...</span>
             </div>
           ) : menuPreviewImageUrl ? (
             <div className="bo-sliderCell" data-slot="useMenuEditor-menuPreviewCell">

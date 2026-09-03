@@ -35,9 +35,9 @@ export default function Page() {
 
   return (
     <div className="bo-platformPage" data-ui="platform-page">
-      <header className="bo-platformHeader">
-        <h1 className="bo-platformTitle">Panel de Plataforma</h1>
-        <p className="bo-platformSub">Gestion de todos los restaurantes y cuentas</p>
+      <header data-testid="platformheader" className="bo-platformHeader">
+        <h1 data-slot="plataforma-platformTitle" className="bo-platformTitle">Panel de Plataforma</h1>
+        <p data-slot="plataforma-platformSub" className="bo-platformSub">Gestion de todos los restaurantes y cuentas</p>
       </header>
 
       <nav className="bo-platformTabs" data-ui="platform-tabs">
@@ -53,7 +53,7 @@ export default function Page() {
         ))}
       </nav>
 
-      <div className="bo-platformContent">
+      <div data-slot="plataforma-platformContent" className="bo-platformContent">
         {tab === "dashboard" && <DashboardTab initialData={initialData} />}
         {tab === "restaurants" && <RestaurantsTab />}
         {tab === "users" && <UsersTab />}
@@ -99,12 +99,12 @@ function DashboardTab({ initialData }: { initialData: Data }) {
 
   return (
     <div className="bo-platformDashboard" data-ui="platform-dashboard">
-      <div className="bo-metricGrid">
+      <div data-slot="plataforma-metricGrid" className="bo-metricGrid">
         {cards.map((c) => (
           <div key={c.label} className="bo-metricCard" data-ui="metric-card">
-            <div className="bo-metricIcon">{c.icon}</div>
-            <div className="bo-metricValue">{c.value}</div>
-            <div className="bo-metricLabel">{c.label}</div>
+            <div data-slot="plataforma-metricIcon" className="bo-metricIcon">{c.icon}</div>
+            <div data-slot="plataforma-metricValue" className="bo-metricValue">{c.value}</div>
+            <div data-slot="plataforma-metricLabel" className="bo-metricLabel">{c.label}</div>
           </div>
         ))}
       </div>
@@ -149,7 +149,7 @@ function RestaurantsTab() {
 
   return (
     <div data-ui="restaurants-tab">
-      <div className="bo-platformActionBar">
+      <div data-slot="plataforma-platformActionBar" className="bo-platformActionBar">
         <button className="bo-platformBtn" onClick={() => setShowCreate(!showCreate)} data-ui="restaurant-create-toggle">
           {showCreate ? "Cancelar" : "+ Nuevo Restaurante"}
         </button>
@@ -158,30 +158,30 @@ function RestaurantsTab() {
       {showCreate && <CreateRestaurantForm onCreated={() => { setShowCreate(false); void load(); }} />}
 
       {loading ? (
-        <div className="bo-platformLoading">Cargando...</div>
+        <div data-slot="plataforma-platformLoading" className="bo-platformLoading">Cargando...</div>
       ) : (
-        <div className="bo-platformTableWrap">
+        <div data-slot="plataforma-platformTableWrap" className="bo-platformTableWrap">
           <table className="bo-platformTable" data-ui="restaurants-table">
-            <thead>
-              <tr>
-                <th>ID</th><th>Slug</th><th>Nombre</th><th>Usuarios</th><th>Miembros</th>
-                <th>Reservas</th><th>Dominios</th><th>WhatsApp</th><th>Creado</th><th>Acciones</th>
+            <thead data-slot="plataforma-thead">
+              <tr data-slot="plataforma-tr">
+                <th data-slot="plataforma-th">ID</th><th>Slug</th><th>Nombre</th><th>Usuarios</th><th>Miembros</th>
+                <th data-slot="plataforma-th">Reservas</th><th>Dominios</th><th>WhatsApp</th><th>Creado</th><th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="plataforma-tbody">
               {restaurants.map((r) => (
                 <tr key={r.id} data-ui={`restaurant-row-${r.id}`}>
-                  <td>{r.id}</td>
-                  <td><code>{r.slug}</code></td>
-                  <td>{r.name}</td>
-                  <td>{r.userCount}</td>
-                  <td>{r.memberCount}</td>
-                  <td>{r.bookingCount}</td>
-                  <td>{r.domainCount}</td>
-                  <td><WhatsAppBadge status={r.whatsappStatus} /></td>
-                  <td>{new Date(r.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    <div className="bo-platformActions">
+                  <td data-slot="plataforma-td">{r.id}</td>
+                  <td data-slot="plataforma-td"><code>{r.slug}</code></td>
+                  <td data-slot="plataforma-td">{r.name}</td>
+                  <td data-slot="plataforma-td">{r.userCount}</td>
+                  <td data-slot="plataforma-td">{r.memberCount}</td>
+                  <td data-slot="plataforma-td">{r.bookingCount}</td>
+                  <td data-slot="plataforma-td">{r.domainCount}</td>
+                  <td data-slot="plataforma-td"><WhatsAppBadge status={r.whatsappStatus} /></td>
+                  <td data-slot="plataforma-td">{new Date(r.createdAt).toLocaleDateString()}</td>
+                  <td data-slot="plataforma-td">
+                    <div data-slot="plataforma-platformActions" className="bo-platformActions">
                       {r.isActive ? (
                         <button className="bo-platformBtn bo-platformBtn--danger" onClick={() => void handleDeactivate(r.id)} data-ui={`restaurant-deactivate-${r.id}`}>
                           Suspender
@@ -226,8 +226,8 @@ function CreateRestaurantForm({ onCreated }: { onCreated: () => void }) {
     <div className="bo-platformForm" data-ui="restaurant-create-form">
       <input className="bo-platformInput" placeholder="Slug (ej: mi-restaurante)" value={slug} onChange={(e) => setSlug(e.target.value)} data-ui="restaurant-create-slug" />
       <input className="bo-platformInput" placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} data-ui="restaurant-create-name" />
-      <input className="bo-platformInput" placeholder="Email contacto" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className="bo-platformInput" placeholder="Telefono" value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <input data-testid="email-contacto" className="bo-platformInput" placeholder="Email contacto" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input data-testid="telefono" className="bo-platformInput" placeholder="Telefono" value={phone} onChange={(e) => setPhone(e.target.value)} />
       {error && <div className="bo-platformError">{error}</div>}
       <button className="bo-platformBtn" disabled={loading || !slug || !name} onClick={() => void submit()} data-ui="restaurant-create-submit">
         {loading ? "Creando..." : "Crear"}
@@ -274,8 +274,8 @@ function UsersTab() {
 
   return (
     <div data-ui="users-tab">
-      <div className="bo-platformActionBar">
-        <button className="bo-platformBtn" onClick={() => setShowCreate(!showCreate)}>
+      <div data-slot="plataforma-platformActionBar" className="bo-platformActionBar">
+        <button data-testid="platformbtn" className="bo-platformBtn" onClick={() => setShowCreate(!showCreate)}>
           {showCreate ? "Cancelar" : "+ Nuevo Usuario"}
         </button>
       </div>
@@ -283,31 +283,31 @@ function UsersTab() {
       {showCreate && <CreateUserForm onCreated={() => { setShowCreate(false); void load(); }} />}
 
       {loading ? (
-        <div className="bo-platformLoading">Cargando...</div>
+        <div data-slot="plataforma-platformLoading" className="bo-platformLoading">Cargando...</div>
       ) : (
-        <div className="bo-platformTableWrap">
+        <div data-slot="plataforma-platformTableWrap" className="bo-platformTableWrap">
           <table className="bo-platformTable" data-ui="users-table">
-            <thead>
-              <tr>
-                <th>ID</th><th>Email</th><th>Nombre</th><th>Superadmin</th>
-                <th>Sesiones</th><th>Restaurantes</th><th>Acciones</th>
+            <thead data-slot="plataforma-thead">
+              <tr data-slot="plataforma-tr">
+                <th data-slot="plataforma-th">ID</th><th>Email</th><th>Nombre</th><th>Superadmin</th>
+                <th data-slot="plataforma-th">Sesiones</th><th>Restaurantes</th><th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="plataforma-tbody">
               {users.map((u) => (
                 <tr key={u.id} data-ui={`user-row-${u.id}`}>
-                  <td>{u.id}</td>
-                  <td>{u.email}</td>
-                  <td>{u.name}</td>
-                  <td>
+                  <td data-slot="plataforma-td">{u.id}</td>
+                  <td data-slot="plataforma-td">{u.email}</td>
+                  <td data-slot="plataforma-td">{u.name}</td>
+                  <td data-slot="plataforma-td">
                     <button className={`bo-platformToggle ${u.isSuperadmin ? "is-on" : ""}`} onClick={() => void handleToggleSuper(u)} data-ui={`user-toggle-super-${u.id}`}>
                       {u.isSuperadmin ? "ON" : "OFF"}
                     </button>
                   </td>
-                  <td>{u.activeSessionCount}</td>
-                  <td>{u.restaurants.map((r) => `${r.restaurantName} (${r.role})`).join(", ") || "-"}</td>
-                  <td>
-                    <div className="bo-platformActions">
+                  <td data-slot="plataforma-td">{u.activeSessionCount}</td>
+                  <td data-slot="plataforma-td">{u.restaurants.map((r) => `${r.restaurantName} (${r.role})`).join(", ") || "-"}</td>
+                  <td data-slot="plataforma-td">
+                    <div data-slot="plataforma-platformActions" className="bo-platformActions">
                       <button className="bo-platformBtn" onClick={() => void handleResetPassword(u.id, u.name)} data-ui={`user-reset-pw-${u.id}`}>
                         Reset PW
                       </button>
@@ -347,14 +347,14 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <div className="bo-platformForm" data-ui="user-create-form">
-      <input className="bo-platformInput" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className="bo-platformInput" placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
-      <input className="bo-platformInput" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      <label className="bo-platformCheckbox">
-        <input type="checkbox" checked={isSuper} onChange={(e) => setIsSuper(e.target.checked)} /> Superadmin
+      <input data-testid="email" className="bo-platformInput" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input data-testid="nombre" className="bo-platformInput" placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
+      <input data-testid="password" className="bo-platformInput" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <label data-slot="plataforma-platformCheckbox" className="bo-platformCheckbox">
+        <input data-testid="input-checkbox" type="checkbox" checked={isSuper} onChange={(e) => setIsSuper(e.target.checked)} /> Superadmin
       </label>
       {error && <div className="bo-platformError">{error}</div>}
-      <button className="bo-platformBtn" disabled={loading || !email || !name || !password} onClick={() => void submit()}>
+      <button data-testid="platformbtn-2" className="bo-platformBtn" disabled={loading || !email || !name || !password} onClick={() => void submit()}>
         {loading ? "Creando..." : "Crear"}
       </button>
     </div>
@@ -385,27 +385,27 @@ function SubscriptionsTab() {
   return (
     <div data-ui="subscriptions-tab">
       {loading ? (
-        <div className="bo-platformLoading">Cargando...</div>
+        <div data-slot="plataforma-platformLoading" className="bo-platformLoading">Cargando...</div>
       ) : (
-        <div className="bo-platformTableWrap">
-          <table className="bo-platformTable">
-            <thead>
-              <tr>
-                <th>ID</th><th>Restaurante</th><th>Feature</th><th>Concepto</th>
-                <th>Importe</th><th>Frecuencia</th><th>Activa</th><th>Acciones</th>
+        <div data-slot="plataforma-platformTableWrap" className="bo-platformTableWrap">
+          <table data-slot="plataforma-platformTable" className="bo-platformTable">
+            <thead data-slot="plataforma-thead">
+              <tr data-slot="plataforma-tr">
+                <th data-slot="plataforma-th">ID</th><th>Restaurante</th><th>Feature</th><th>Concepto</th>
+                <th data-slot="plataforma-th">Importe</th><th>Frecuencia</th><th>Activa</th><th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="plataforma-tbody">
               {subs.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.id}</td>
-                  <td>{s.restaurantName}</td>
-                  <td><code>{s.featureKey || "-"}</code></td>
-                  <td>{s.concept || "-"}</td>
-                  <td>{s.amount.toFixed(2)} {s.currency}</td>
-                  <td>{s.frequency}</td>
-                  <td>{s.isActive ? "✅" : "❌"}</td>
-                  <td>
+                <tr data-slot="plataforma-tr" key={s.id}>
+                  <td data-slot="plataforma-td">{s.id}</td>
+                  <td data-slot="plataforma-td">{s.restaurantName}</td>
+                  <td data-slot="plataforma-td"><code>{s.featureKey || "-"}</code></td>
+                  <td data-slot="plataforma-td">{s.concept || "-"}</td>
+                  <td data-slot="plataforma-td">{s.amount.toFixed(2)} {s.currency}</td>
+                  <td data-slot="plataforma-td">{s.frequency}</td>
+                  <td data-slot="plataforma-td">{s.isActive ? "✅" : "❌"}</td>
+                  <td data-slot="plataforma-td">
                     <button className="bo-platformBtn" onClick={() => void handleToggle(s.id, s.isActive)} data-ui={`sub-toggle-${s.id}`}>
                       {s.isActive ? "Desactivar" : "Activar"}
                     </button>
@@ -453,28 +453,28 @@ function WhatsAppTab() {
   return (
     <div data-ui="whatsapp-tab">
       {loading ? (
-        <div className="bo-platformLoading">Cargando...</div>
+        <div data-slot="plataforma-platformLoading" className="bo-platformLoading">Cargando...</div>
       ) : (
-        <div className="bo-platformTableWrap">
+        <div data-slot="plataforma-platformTableWrap" className="bo-platformTableWrap">
           <table className="bo-platformTable" data-ui="whatsapp-table">
-            <thead>
-              <tr>
-                <th>ID</th><th>Restaurante</th><th>Instancia</th><th>Telefono</th>
-                <th>Estado</th><th>Pair Code</th><th>Activa</th><th>Acciones</th>
+            <thead data-slot="plataforma-thead">
+              <tr data-slot="plataforma-tr">
+                <th data-slot="plataforma-th">ID</th><th>Restaurante</th><th>Instancia</th><th>Telefono</th>
+                <th data-slot="plataforma-th">Estado</th><th>Pair Code</th><th>Activa</th><th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="plataforma-tbody">
               {instances.map((i) => (
                 <tr key={i.id} data-ui={`wa-row-${i.id}`}>
-                  <td>{i.id}</td>
-                  <td>{i.restaurantName}</td>
-                  <td><code>{i.instanceName}</code></td>
-                  <td>{i.connectedPhone || "-"}</td>
-                  <td><WhatsAppBadge status={i.status} /></td>
-                  <td>{i.pairCode || "-"}</td>
-                  <td>{i.isActive ? "✅" : "❌"}</td>
-                  <td>
-                    <div className="bo-platformActions">
+                  <td data-slot="plataforma-td">{i.id}</td>
+                  <td data-slot="plataforma-td">{i.restaurantName}</td>
+                  <td data-slot="plataforma-td"><code>{i.instanceName}</code></td>
+                  <td data-slot="plataforma-td">{i.connectedPhone || "-"}</td>
+                  <td data-slot="plataforma-td"><WhatsAppBadge status={i.status} /></td>
+                  <td data-slot="plataforma-td">{i.pairCode || "-"}</td>
+                  <td data-slot="plataforma-td">{i.isActive ? "✅" : "❌"}</td>
+                  <td data-slot="plataforma-td">
+                    <div data-slot="plataforma-platformActions" className="bo-platformActions">
                       <button className="bo-platformBtn" onClick={() => void handleRenewQR(i.id)} data-ui={`wa-renew-qr-${i.id}`}>
                         Renovar QR
                       </button>
@@ -526,8 +526,8 @@ function StripeTab() {
   return (
     <div data-ui="stripe-tab">
       <div className="bo-platformCard" data-ui="stripe-refund-card">
-        <h3 className="bo-platformCardTitle">Procesar Devolucion (Refund)</h3>
-        <div className="bo-platformForm">
+        <h3 data-slot="plataforma-platformCardTitle" className="bo-platformCardTitle">Procesar Devolucion (Refund)</h3>
+        <div data-slot="plataforma-platformForm" className="bo-platformForm">
           <input className="bo-platformInput" placeholder="Charge ID (ch_...) o Payment Intent (pi_...)" value={refundId} onChange={(e) => setRefundId(e.target.value)} data-ui="stripe-refund-id" />
           <input className="bo-platformInput" type="number" step="0.01" placeholder="Cantidad EUR (vacio = total)" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} data-ui="stripe-refund-amount" />
           <select className="bo-platformInput" value={refundReason} onChange={(e) => setRefundReason(e.target.value)} data-ui="stripe-refund-reason">
@@ -542,30 +542,30 @@ function StripeTab() {
         </div>
       </div>
 
-      <h3 className="bo-platformCardTitle">Pagos Recientes (Live API)</h3>
+      <h3 data-slot="plataforma-platformCardTitle" className="bo-platformCardTitle">Pagos Recientes (Live API)</h3>
       {loading ? (
-        <div className="bo-platformLoading">Cargando pagos...</div>
+        <div data-slot="plataforma-platformLoading" className="bo-platformLoading">Cargando pagos...</div>
       ) : livePayments.length === 0 ? (
-        <div className="bo-platformEmpty">No hay pagos o Stripe no esta configurado</div>
+        <div data-slot="plataforma-platformEmpty" className="bo-platformEmpty">No hay pagos o Stripe no esta configurado</div>
       ) : (
-        <div className="bo-platformTableWrap">
+        <div data-slot="plataforma-platformTableWrap" className="bo-platformTableWrap">
           <table className="bo-platformTable" data-ui="stripe-payments-table">
-            <thead>
-              <tr>
-                <th>Charge ID</th><th>Importe</th><th>Estado</th><th>Email</th>
-                <th>Descripcion</th><th>Metadata</th><th>Fecha</th>
+            <thead data-slot="plataforma-thead">
+              <tr data-slot="plataforma-tr">
+                <th data-slot="plataforma-th">Charge ID</th><th>Importe</th><th>Estado</th><th>Email</th>
+                <th data-slot="plataforma-th">Descripcion</th><th>Metadata</th><th>Fecha</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="plataforma-tbody">
               {livePayments.map((p, idx) => (
-                <tr key={p.id ?? idx}>
-                  <td><code>{String(p.id ?? "-")}</code></td>
-                  <td>{((Number(p.amount) || 0) / 100).toFixed(2)} {String(p.currency ?? "").toUpperCase()}</td>
-                  <td>{String(p.status ?? "-")} {p.refunded ? "(reembolsado)" : ""}</td>
-                  <td>{String(p.receiptEmail ?? p.billingDetails?.email ?? "-")}</td>
-                  <td>{String(p.description ?? "-")}</td>
-                  <td>{p.metadata ? JSON.stringify(p.metadata) : "-"}</td>
-                  <td>{p.created ? new Date(Number(p.created) * 1000).toLocaleString() : "-"}</td>
+                <tr data-slot="plataforma-tr" key={p.id ?? idx}>
+                  <td data-slot="plataforma-td"><code>{String(p.id ?? "-")}</code></td>
+                  <td data-slot="plataforma-td">{((Number(p.amount) || 0) / 100).toFixed(2)} {String(p.currency ?? "").toUpperCase()}</td>
+                  <td data-slot="plataforma-td">{String(p.status ?? "-")} {p.refunded ? "(reembolsado)" : ""}</td>
+                  <td data-slot="plataforma-td">{String(p.receiptEmail ?? p.billingDetails?.email ?? "-")}</td>
+                  <td data-slot="plataforma-td">{String(p.description ?? "-")}</td>
+                  <td data-slot="plataforma-td">{p.metadata ? JSON.stringify(p.metadata) : "-"}</td>
+                  <td data-slot="plataforma-td">{p.created ? new Date(Number(p.created) * 1000).toLocaleString() : "-"}</td>
                 </tr>
               ))}
             </tbody>
@@ -595,27 +595,27 @@ function DomainsTab() {
   return (
     <div data-ui="domains-tab">
       {loading ? (
-        <div className="bo-platformLoading">Cargando...</div>
+        <div data-slot="plataforma-platformLoading" className="bo-platformLoading">Cargando...</div>
       ) : (
-        <div className="bo-platformTableWrap">
-          <table className="bo-platformTable">
-            <thead>
-              <tr>
-                <th>ID</th><th>Restaurante</th><th>Dominio</th><th>Primario</th>
-                <th>Registro</th><th>Pago Stripe</th><th>Coste</th><th>Auto-renovar</th>
+        <div data-slot="plataforma-platformTableWrap" className="bo-platformTableWrap">
+          <table data-slot="plataforma-platformTable" className="bo-platformTable">
+            <thead data-slot="plataforma-thead">
+              <tr data-slot="plataforma-tr">
+                <th data-slot="plataforma-th">ID</th><th>Restaurante</th><th>Dominio</th><th>Primario</th>
+                <th data-slot="plataforma-th">Registro</th><th>Pago Stripe</th><th>Coste</th><th>Auto-renovar</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="plataforma-tbody">
               {domains.map((d) => (
-                <tr key={d.id}>
-                  <td>{d.id}</td>
-                  <td>{d.restaurantName}</td>
-                  <td><code>{d.domain}</code></td>
-                  <td>{d.isPrimary ? "✅" : ""}</td>
-                  <td>{d.registrationStatus}</td>
-                  <td>{d.stripePaymentStatus}</td>
-                  <td>{d.registrationCost ? `${d.registrationCost.toFixed(2)} EUR` : "-"}</td>
-                  <td>{d.autoRenew ? "✅" : "❌"}</td>
+                <tr data-slot="plataforma-tr" key={d.id}>
+                  <td data-slot="plataforma-td">{d.id}</td>
+                  <td data-slot="plataforma-td">{d.restaurantName}</td>
+                  <td data-slot="plataforma-td"><code>{d.domain}</code></td>
+                  <td data-slot="plataforma-td">{d.isPrimary ? "✅" : ""}</td>
+                  <td data-slot="plataforma-td">{d.registrationStatus}</td>
+                  <td data-slot="plataforma-td">{d.stripePaymentStatus}</td>
+                  <td data-slot="plataforma-td">{d.registrationCost ? `${d.registrationCost.toFixed(2)} EUR` : "-"}</td>
+                  <td data-slot="plataforma-td">{d.autoRenew ? "✅" : "❌"}</td>
                 </tr>
               ))}
             </tbody>
@@ -644,28 +644,28 @@ function ServersTab() {
 
   return (
     <div data-ui="servers-tab">
-      <p className="bo-platformSub">Servidores UAZAPI para instancias WhatsApp</p>
+      <p data-slot="plataforma-platformSub" className="bo-platformSub">Servidores UAZAPI para instancias WhatsApp</p>
       {loading ? (
-        <div className="bo-platformLoading">Cargando...</div>
+        <div data-slot="plataforma-platformLoading" className="bo-platformLoading">Cargando...</div>
       ) : (
-        <div className="bo-platformTableWrap">
-          <table className="bo-platformTable">
-            <thead>
-              <tr>
-                <th>ID</th><th>Nombre</th><th>Provider</th><th>Base URL</th>
-                <th>Capacidad</th><th>En uso</th><th>Activo</th>
+        <div data-slot="plataforma-platformTableWrap" className="bo-platformTableWrap">
+          <table data-slot="plataforma-platformTable" className="bo-platformTable">
+            <thead data-slot="plataforma-thead">
+              <tr data-slot="plataforma-tr">
+                <th data-slot="plataforma-th">ID</th><th>Nombre</th><th>Provider</th><th>Base URL</th>
+                <th data-slot="plataforma-th">Capacidad</th><th>En uso</th><th>Activo</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="plataforma-tbody">
               {servers.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.id}</td>
-                  <td>{s.name}</td>
-                  <td>{s.provider}</td>
-                  <td><code>{s.baseUrl}</code></td>
-                  <td>{s.capacity}</td>
-                  <td>{s.usedCount}</td>
-                  <td>{s.isActive ? "✅" : "❌"}</td>
+                <tr data-slot="plataforma-tr" key={s.id}>
+                  <td data-slot="plataforma-td">{s.id}</td>
+                  <td data-slot="plataforma-td">{s.name}</td>
+                  <td data-slot="plataforma-td">{s.provider}</td>
+                  <td data-slot="plataforma-td"><code>{s.baseUrl}</code></td>
+                  <td data-slot="plataforma-td">{s.capacity}</td>
+                  <td data-slot="plataforma-td">{s.usedCount}</td>
+                  <td data-slot="plataforma-td">{s.isActive ? "✅" : "❌"}</td>
                 </tr>
               ))}
             </tbody>

@@ -99,7 +99,7 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
                   data-testid="pos-split-merge"
                 >
                   <Merge className="h-4 w-4" aria-hidden="true" />
-                  <span>Reagrupar</span>
+                  <span data-slot="pOSTicketPanel-span">Reagrupar</span>
                 </button>
               ) : null}
             </div>

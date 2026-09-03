@@ -69,7 +69,7 @@ export function SalonFloorAccordion({
           disabled={busy}
           data-testid={`${testIdPrefix}-floor-accordion-trigger-${floorId}`}
         >
-          <span className="bo-floorAccordionTriggerInfo">
+          <span data-slot="salonFloorAccordion-floorAccordionTriggerInfo" className="bo-floorAccordionTriggerInfo">
             <span className="bo-floorCardName" data-testid={`${testIdPrefix}-floor-name-${floor.floorNumber}`}>
               {floor.name}
             </span>
@@ -124,7 +124,7 @@ export function SalonFloorAccordion({
                 className="bo-configSalonRow"
                 data-testid={`${testIdPrefix}-salon-row-${salon.id}`}
               >
-                <div className="bo-configSalonInfo">
+                <div data-slot="salonFloorAccordion-configSalonInfo" className="bo-configSalonInfo">
                   <span className="bo-configSalonName" data-testid={`${testIdPrefix}-salon-name-${salon.id}`}>
                     {salon.name}
                   </span>

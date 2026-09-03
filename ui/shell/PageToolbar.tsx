@@ -13,8 +13,8 @@ export function PageToolbar({
   ...rest
 }: PageToolbarProps) {
   return (
-    <div className={cn("bo-toolbar", className)} {...rest}>
-      <div className="bo-toolbarLeft">{left}</div>
+    <div data-slot="pageToolbar-div" className={cn("bo-toolbar", className)} {...rest}>
+      <div data-slot="pageToolbar-toolbarLeft" className="bo-toolbarLeft">{left}</div>
       {right && <div className="bo-toolbarRight">{right}</div>}
     </div>
   );

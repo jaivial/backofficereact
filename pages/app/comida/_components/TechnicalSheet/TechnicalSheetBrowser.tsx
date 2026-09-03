@@ -108,11 +108,11 @@ export function TechnicalSheetBrowser({ onPick, onCreate, productName = "", crea
       data-ui="technical-sheet-browser"
       data-testid="technical-sheet-browser"
     >
-      <div className="bo-sheetBrowser__head">
-        <div className="bo-sheetBrowser__filters">
-          <div className="bo-sheetSearchField">
+      <div data-slot="technicalSheetBrowser-sheetBrowser-head" className="bo-sheetBrowser__head">
+        <div data-slot="technicalSheetBrowser-sheetBrowser-filters" className="bo-sheetBrowser__filters">
+          <div data-slot="technicalSheetBrowser-sheetSearchField" className="bo-sheetSearchField">
             <Search size={14} aria-hidden="true" />
-            <input
+            <input data-testid="buscar-ficha-tecnica"
               type="search"
               className="bo-input"
               aria-label="Buscar ficha tecnica"
@@ -160,7 +160,7 @@ export function TechnicalSheetBrowser({ onPick, onCreate, productName = "", crea
       {sheets.length > 0 ? (
         <ul className="bo-sheetCardGrid" data-ui="sheet-browser-list">
           {sheets.map((sheet) => (
-            <li key={sheet.id}>
+            <li data-slot="technicalSheetBrowser-li" key={sheet.id}>
               <button
                 type="button"
                 className="bo-sheetCard"
@@ -168,20 +168,20 @@ export function TechnicalSheetBrowser({ onPick, onCreate, productName = "", crea
                 data-role="sheet-browser-card"
                 onClick={() => onPick(sheet)}
               >
-                <span className="bo-sheetCard__media">
+                <span data-slot="technicalSheetBrowser-sheetCard-media" className="bo-sheetCard__media">
                   {sheet.imageUrl ? (
                     <img src={sheet.imageUrl} alt="" loading="lazy" />
                   ) : (
-                    <span className="bo-sheetCard__placeholder" aria-hidden="true">
+                    <span data-slot="technicalSheetBrowser-sheetCard-placeholder" className="bo-sheetCard__placeholder" aria-hidden="true">
                       <ImageOff size={18} />
                     </span>
                   )}
                 </span>
-                <span className="bo-sheetCard__body">
-                  <span className="bo-sheetCard__name">{sheet.name}</span>
-                  <span className="bo-sheetCard__meta">{summarise(sheet)}</span>
+                <span data-slot="technicalSheetBrowser-sheetCard-body" className="bo-sheetCard__body">
+                  <span data-slot="technicalSheetBrowser-sheetCard-name" className="bo-sheetCard__name">{sheet.name}</span>
+                  <span data-slot="technicalSheetBrowser-sheetCard-meta" className="bo-sheetCard__meta">{summarise(sheet)}</span>
                   {/* Status in words, not colour alone. */}
-                  <span
+                  <span data-slot="technicalSheetBrowser-span"
                     className={`bo-sheetCard__status bo-sheetCard__status--${sheet.status.toLowerCase()}`}
                   >
                     {sheet.status === "DRAFT" ? "Borrador" : "Publicada"}
@@ -189,7 +189,7 @@ export function TechnicalSheetBrowser({ onPick, onCreate, productName = "", crea
                   {/* Stating the reuse count is what makes picking a shared sheet
                       an informed choice rather than a surprise. */}
                   {sheet.usageCount > 0 ? (
-                    <span className="bo-sheetCard__usage">
+                    <span data-slot="technicalSheetBrowser-sheetCard-usage" className="bo-sheetCard__usage">
                       Usada por {sheet.usageCount} producto{sheet.usageCount === 1 ? "" : "s"}
                     </span>
                   ) : null}

@@ -72,10 +72,10 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
     return (
       <section aria-label="Anuncios" className="grid gap-6" data-testid="config-anuncios">
         <div className="bo-anunciosEmpty" data-ui="anuncios-empty" data-testid="anuncios-empty">
-          <div className="bo-anunciosEmptyIcon" aria-hidden="true">
+          <div data-slot="anunciosList-anunciosEmptyIcon" className="bo-anunciosEmptyIcon" aria-hidden="true">
             <Sparkles size={28} />
           </div>
-          <div className="bo-anunciosEmptyTitle">Aún no hay anuncios</div>
+          <div data-slot="anunciosList-anunciosEmptyTitle" className="bo-anunciosEmptyTitle">Aún no hay anuncios</div>
           <p className="bo-anunciosEmptyHint" data-role="anuncios-empty-hint">
             Crea tu primer anuncio con el botón <Plus size={14} aria-hidden="true" className="inline align-middle" /> para empezar a publicar promociones, eventos o menús en la web del restaurante.
           </p>
@@ -89,7 +89,7 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
     <section aria-label="Anuncios" className="grid gap-4" data-testid="config-anuncios">
       <div className="bo-anunciosListHead" data-slot="anuncios-list-head">
         <Megaphone size={18} aria-hidden="true" className="shrink-0 text-bo-accent" />
-        <h2 className="bo-anunciosListTitle">Tus anuncios</h2>
+        <h2 data-slot="anunciosList-anunciosListTitle" className="bo-anunciosListTitle">Tus anuncios</h2>
         <span className="bo-anunciosListCount" data-slot="anuncios-list-count">{sorted.length}</span>
       </div>
 

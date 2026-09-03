@@ -58,7 +58,7 @@ export const AllergenIconList = React.memo(function AllergenIconList({
             data-derived={isDerived ? "true" : "false"}
           >
             {editable ? (
-              <button
+              <button data-testid="allergentoggle"
                 type="button"
                 className="bo-allergenToggle"
                 disabled={isDerived}

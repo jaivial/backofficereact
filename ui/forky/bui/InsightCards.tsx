@@ -42,8 +42,8 @@ function useDarkMode() {
 /* inline @entity mention */
 function Entity({ name, tone }: { name: string; tone: string }) {
   return (
-    <span className="inline-flex items-center gap-1 align-baseline font-medium text-ink">
-      <span className={`inline-block size-2.5 rounded-full ${tone}`} />
+    <span data-slot="insightCards-text-ink" className="inline-flex items-center gap-1 align-baseline font-medium text-ink">
+      <span data-slot="insightCards-span" className={`inline-block size-2.5 rounded-full ${tone}`} />
       @{name}
     </span>
   );
@@ -65,11 +65,11 @@ function chartIndexFromPointer(event: React.PointerEvent<HTMLDivElement>, pointC
 
 function ChartTooltip({ rows }: { rows: { label: string; value: string; color: string }[] }) {
   return (
-    <div className="insight-chart-tooltip">
-      <span className="insight-chart-tooltip-time">Today, 12:00</span>
+    <div data-slot="insightCards-insight-chart-tooltip" className="insight-chart-tooltip">
+      <span data-slot="insightCards-insight-chart-tooltip" className="insight-chart-tooltip-time">Today, 12:00</span>
       {rows.map((row) => (
-        <div key={row.label} className="insight-chart-tooltip-row">
-          <span className="insight-chart-tooltip-label"><span className="insight-chart-tooltip-dot" style={{ background: row.color }} />{row.label}</span>
+        <div data-slot="insightCards-insight-chart-tooltip" key={row.label} className="insight-chart-tooltip-row">
+          <span data-slot="insightCards-insight-chart-tooltip" className="insight-chart-tooltip-label"><span className="insight-chart-tooltip-dot" style={{ background: row.color }} />{row.label}</span>
           <strong>{row.value}</strong>
         </div>
       ))}
@@ -112,8 +112,8 @@ function CompareCard() {
   );
 
   return (
-    <div className="min-h-[278px] rounded-card bg-surface p-3 shadow-hairline">
-      <div className="flex items-center gap-4">
+    <div data-slot="insightCards-shadow-hairline" className="min-h-[278px] rounded-card bg-surface p-3 shadow-hairline">
+      <div data-slot="insightCards-gap-4" className="flex items-center gap-4">
         {[
           {
             name: "Mint Chip",
@@ -130,28 +130,28 @@ function CompareCard() {
             dot: "bg-accent",
           },
         ].map((s) => (
-          <div key={s.name} className="flex-1">
-            <span className="flex items-center gap-1.5 text-[11.5px] text-ink-2">
-              <span className={`size-2 rounded-full ${s.dot}`} />
+          <div data-slot="insightCards-flex-1" key={s.name} className="flex-1">
+            <span data-slot="insightCards-text-ink-2" className="flex items-center gap-1.5 text-[11.5px] text-ink-2">
+              <span data-slot="insightCards-span" className={`size-2 rounded-full ${s.dot}`} />
               {s.name}
             </span>
-            <span className={`block text-[17px] font-semibold tracking-[-0.01em] tabular-nums ${s.tone === "red" ? "text-red" : "text-green"}`}>
+            <span data-slot="insightCards-span" className={`block text-[17px] font-semibold tracking-[-0.01em] tabular-nums ${s.tone === "red" ? "text-red" : "text-green"}`}>
               {s.delta}
             </span>
             <Mono tone={s.tone as "red" | "green"}>{s.sub}</Mono>
           </div>
         ))}
       </div>
-      <div className="mt-2 overflow-hidden rounded-control bg-inset shadow-hairline">
-        <div className="flex items-center justify-between border-b border-line px-2.5 py-1.5">
-          <span className="text-[11px] text-ink-3 tabular-nums">
+      <div data-slot="insightCards-shadow-hairline" className="mt-2 overflow-hidden rounded-control bg-inset shadow-hairline">
+        <div data-slot="insightCards-py-1.5" className="flex items-center justify-between border-b border-line px-2.5 py-1.5">
+          <span data-slot="insightCards-tabular-nums" className="text-[11px] text-ink-3 tabular-nums">
             Trend snapshot
           </span>
-          <span className="rounded-full bg-field px-2 py-0.5 text-[10.5px] font-medium text-ink-2">
+          <span data-slot="insightCards-text-ink-2" className="rounded-full bg-field px-2 py-0.5 text-[10.5px] font-medium text-ink-2">
             Snapshot
           </span>
         </div>
-        <div
+        <div data-slot="insightCards-h-[166px]"
           className="insight-chart-stage relative h-[166px]"
           onPointerDown={(event) => setHoverIndex(chartIndexFromPointer(event, data.mint.length))}
           onPointerMove={(event) => setHoverIndex(chartIndexFromPointer(event, data.mint.length))}
@@ -175,8 +175,8 @@ function CompareCard() {
             formatValue={formatPercent}
           />
           {hoverIndex !== null && <>
-            <span className="insight-chart-cursor" style={{ left: `${(hoverIndex / (data.mint.length - 1)) * 100}%` }} />
-            <span className="insight-chart-tooltip-anchor" style={{ left: `${Math.min(Math.max((hoverIndex / (data.mint.length - 1)) * 100, 28), 72)}%` }}>
+            <span data-slot="insightCards-insight-chart-cursor" className="insight-chart-cursor" style={{ left: `${(hoverIndex / (data.mint.length - 1)) * 100}%` }} />
+            <span data-slot="insightCards-insight-chart-tooltip" className="insight-chart-tooltip-anchor" style={{ left: `${Math.min(Math.max((hoverIndex / (data.mint.length - 1)) * 100, 28), 72)}%` }}>
               <ChartTooltip rows={[{ label: "Mint Chip", value: formatPercent(data.mint[hoverIndex].value), color: "var(--orange)" }, { label: "Pistachio", value: formatPercent(data.pistachio[hoverIndex].value), color: "var(--accent)" }]} />
             </span>
           </>}
@@ -206,28 +206,28 @@ function AnomalyCard() {
   const moneyLabel = formatMoney(spend.at(-1)?.value ?? 2112);
 
   return (
-    <div className="min-h-[278px] rounded-card bg-surface p-3 shadow-hairline">
-      <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
+    <div data-slot="insightCards-shadow-hairline" className="min-h-[278px] rounded-card bg-surface p-3 shadow-hairline">
+      <div data-slot="insightCards-justify-between" className="flex items-center justify-between">
+        <span data-slot="insightCards-text-ink" className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
           High freezer spend
         </span>
-        <span className="rounded-full bg-field px-2 py-0.5 text-[10.5px] font-medium text-ink-2">
+        <span data-slot="insightCards-text-ink-2" className="rounded-full bg-field px-2 py-0.5 text-[10.5px] font-medium text-ink-2">
           Snapshot
         </span>
       </div>
-      <div className="mt-2 overflow-hidden rounded-control bg-inset shadow-hairline">
-        <div className="flex items-center justify-between border-b border-line px-2.5 py-1.5">
-          <span className="text-[11px] text-ink-3 tabular-nums">
+      <div data-slot="insightCards-shadow-hairline" className="mt-2 overflow-hidden rounded-control bg-inset shadow-hairline">
+        <div data-slot="insightCards-py-1.5" className="flex items-center justify-between border-b border-line px-2.5 py-1.5">
+          <span data-slot="insightCards-tabular-nums" className="text-[11px] text-ink-3 tabular-nums">
             {hoverIndex !== null
               ? metric === "spend"
                 ? formatMoney(data[hoverIndex].value)
                 : `${Math.round(data[hoverIndex].value)} kWh`
               : `${threshold} threshold`}
           </span>
-          <span className="flex rounded-full bg-field p-0.5">
+          <span data-slot="insightCards-p-0.5" className="flex rounded-full bg-field p-0.5">
             {(["spend", "usage"] as const).map((item) => (
-              <button
+              <button data-testid="button"
                 key={item}
                 type="button"
                 aria-pressed={metric === item}
@@ -241,7 +241,7 @@ function AnomalyCard() {
             ))}
           </span>
         </div>
-        <div
+        <div data-slot="insightCards-h-[166px]"
           className="insight-chart-stage relative h-[166px]"
           onPointerDown={(event) => setHoverIndex(chartIndexFromPointer(event, data.length))}
           onPointerMove={(event) => setHoverIndex(chartIndexFromPointer(event, data.length))}
@@ -267,19 +267,19 @@ function AnomalyCard() {
             formatValue={(v) => (metric === "spend" ? formatMoney(v) : `${Math.round(v)} kWh`)}
           />
           {hoverIndex !== null && <>
-            <span className="insight-chart-cursor" style={{ left: `${(hoverIndex / (data.length - 1)) * 100}%` }} />
-            <span className="insight-chart-tooltip-anchor" style={{ left: `${Math.min(Math.max((hoverIndex / (data.length - 1)) * 100, 28), 72)}%` }}>
+            <span data-slot="insightCards-insight-chart-cursor" className="insight-chart-cursor" style={{ left: `${(hoverIndex / (data.length - 1)) * 100}%` }} />
+            <span data-slot="insightCards-insight-chart-tooltip" className="insight-chart-tooltip-anchor" style={{ left: `${Math.min(Math.max((hoverIndex / (data.length - 1)) * 100, 28), 72)}%` }}>
               <ChartTooltip rows={[{ label: metric === "spend" ? "Spend" : "Usage", value: metric === "spend" ? formatMoney(data[hoverIndex].value) : `${Math.round(data[hoverIndex].value)} kWh`, color: "var(--red)" }]} />
             </span>
           </>}
         </div>
       </div>
-      <div className="mt-1.5 flex items-baseline gap-2">
-        <span className="text-[17px] font-semibold tracking-[-0.01em] text-ink tabular-nums">
+      <div data-slot="insightCards-gap-2" className="mt-1.5 flex items-baseline gap-2">
+        <span data-slot="insightCards-tabular-nums" className="text-[17px] font-semibold tracking-[-0.01em] text-ink tabular-nums">
           {moneyLabel} spent
         </span>
         <Mono tone="red">+$1,834.66</Mono>
-        <span className="text-[11px] text-ink-3">vs 3 months</span>
+        <span data-slot="insightCards-text-ink-3" className="text-[11px] text-ink-3">vs 3 months</span>
       </div>
     </div>
   );
@@ -296,23 +296,23 @@ function AllocationCard() {
   const active = segments.find((segment) => segment.name === selected) ?? segments[0];
 
   return (
-    <div className="min-h-[278px] rounded-card bg-surface p-3 shadow-hairline">
-      <span className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
-        <span className="flex size-3.5 items-center justify-center rounded-full bg-orange text-[8px] font-bold text-white">
+    <div data-slot="insightCards-shadow-hairline" className="min-h-[278px] rounded-card bg-surface p-3 shadow-hairline">
+      <span data-slot="insightCards-text-ink" className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
+        <span data-slot="insightCards-text-white" className="flex size-3.5 items-center justify-center rounded-full bg-orange text-[8px] font-bold text-white">
           V
         </span>
         Vanilla allocation
       </span>
-      <span className="mt-1 block text-[20px] font-semibold tracking-[-0.01em] text-ink tabular-nums">
+      <span data-slot="insightCards-tabular-nums" className="mt-1 block text-[20px] font-semibold tracking-[-0.01em] text-ink tabular-nums">
         {active.amount}
       </span>
-      <div
+      <div data-slot="insightCards-allocation-segments"
         className="mt-3 flex h-9 gap-0.5 overflow-hidden rounded-full bg-field p-0.5"
         role="group"
         aria-label="Allocation segments"
       >
         {segments.map((s) => (
-          <button
+          <button data-testid="button-2"
             key={s.name}
             type="button"
             aria-pressed={selected === s.name}
@@ -326,7 +326,7 @@ function AllocationCard() {
               transitionTimingFunction: EASE,
             }}
           >
-            <span
+            <span data-slot="insightCards-duration-500"
               className="absolute inset-y-1 left-1 rounded-full bg-white/20 transition-[width,opacity] duration-500"
               style={{
                 width: selected === s.name ? "calc(100% - 8px)" : "0%",
@@ -337,9 +337,9 @@ function AllocationCard() {
           </button>
         ))}
       </div>
-      <div className="mt-2 flex items-center gap-1.5">
+      <div data-slot="insightCards-gap-1.5" className="mt-2 flex items-center gap-1.5">
         {segments.map((s) => (
-          <button
+          <button data-testid="button-3"
             key={s.name}
             type="button"
             aria-pressed={selected === s.name}
@@ -348,14 +348,14 @@ function AllocationCard() {
               selected === s.name ? "bg-field text-ink" : "text-ink-2 hover:bg-hover hover:text-ink"
             }`}
           >
-            <span className={`size-1.5 rounded-full ${s.cls}`} />
+            <span data-slot="insightCards-span" className={`size-1.5 rounded-full ${s.cls}`} />
             {s.name} <span className="tabular-nums">{s.pct}%</span>
           </button>
         ))}
       </div>
-      <div className="mt-3 min-h-16 rounded-control bg-inset px-2.5 py-2 shadow-hairline">
-        <span className={`block text-[11.5px] font-medium ${active.tone}`}>{active.label}</span>
-        <span className="mt-1 block text-[11px] leading-relaxed text-ink-3">
+      <div data-slot="insightCards-shadow-hairline" className="mt-3 min-h-16 rounded-control bg-inset px-2.5 py-2 shadow-hairline">
+        <span data-slot="insightCards-span" className={`block text-[11.5px] font-medium ${active.tone}`}>{active.label}</span>
+        <span data-slot="insightCards-text-ink-3" className="mt-1 block text-[11px] leading-relaxed text-ink-3">
           Contribution snapshot across current inventory value. Segment selection changes the inspected group without moving the card.
         </span>
       </div>
@@ -391,7 +391,7 @@ const PAGES = [
     prose: (
       <>
         You’re heavily invested in <Entity name="Vanilla" tone="bg-orange" /> — it’s{" "}
-        <span className="font-medium text-ink">72.5%</span> of your case.
+        <span data-slot="insightCards-text-ink" className="font-medium text-ink">72.5%</span> of your case.
       </>
     ),
     Card: AllocationCard,
@@ -409,16 +409,16 @@ export default function InsightCards() {
   const { prose, Card, pill } = PAGES[page];
 
   return (
-    <div className="min-h-[408px] w-full max-w-86">
+    <div data-slot="insightCards-max-w-86" className="min-h-[408px] w-full max-w-86">
       {/* pager header */}
-      <div className="flex items-center justify-between">
-        <span className="flex items-baseline gap-1.5">
-          <span className="text-[13px] font-semibold text-ink">Insights</span>
-          <span className="text-[13px] text-ink-3 tabular-nums">{PAGES.length}</span>
+      <div data-slot="insightCards-justify-between" className="flex items-center justify-between">
+        <span data-slot="insightCards-gap-1.5" className="flex items-baseline gap-1.5">
+          <span data-slot="insightCards-text-ink" className="text-[13px] font-semibold text-ink">Insights</span>
+          <span data-slot="insightCards-tabular-nums" className="text-[13px] text-ink-3 tabular-nums">{PAGES.length}</span>
         </span>
-        <span className="flex items-center gap-0.5">
+        <span data-slot="insightCards-gap-0.5" className="flex items-center gap-0.5">
           {(["M15 18l-6-6 6-6", "M9 6l6 6-6 6"] as const).map((d, i) => (
-            <button
+            <button data-testid="active-scale-0-96"
               key={i}
               aria-label={i === 0 ? "Previous insight" : "Next insight"}
               onClick={() => move(i === 0 ? -1 : 1)}
@@ -435,15 +435,15 @@ export default function InsightCards() {
       </div>
 
       {/* page content — blurred crossfade */}
-      <div
+      <div data-slot="insightCards-duration-250"
         className="transition-[opacity,filter] duration-250"
         style={{ opacity: 1, filter: "blur(0)" }}
       >
-        <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-2">{prose}</p>
-        <div className="mt-2">
+        <p data-slot="insightCards-text-ink-2" className="mt-1.5 text-[12.5px] leading-relaxed text-ink-2">{prose}</p>
+        <div data-slot="insightCards-mt-2" className="mt-2">
           <Card />
         </div>
-        <button
+        <button data-testid="hover-bg-hover"
           className="mt-2 rounded-full bg-surface px-3 py-1.5 text-left text-[12px] text-ink
             shadow-btn transition-colors duration-100 hover:bg-hover"
         >

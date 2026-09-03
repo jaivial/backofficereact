@@ -46,20 +46,20 @@ vi.mock("./bui", () => ({
 vi.mock("@assistant-ui/react", () => ({
   ActionBarPrimitive: {
     Reload: ({ children, ...props }: { children?: React.ReactNode } & Record<string, unknown>) => (
-      <button type="button" {...props}>{children}</button>
+      <button data-testid="button" type="button" {...props}>{children}</button>
     ),
   },
   ThreadPrimitive: {
     Root: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
-      <div className={className}>{children}</div>
+      <div data-slot="forkyModal.test-div" className={className}>{children}</div>
     ),
     Viewport: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
-      <div className={className}>{children}</div>
+      <div data-slot="forkyModal.test-div" className={className}>{children}</div>
     ),
     Empty: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
     Messages: ({ className }: { className?: string }) => <div className={className}>messages</div>,
     Suggestion: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
-      <button type="button" className={className}>{children}</button>
+      <button data-testid="button-2" type="button" className={className}>{children}</button>
     ),
     If: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   },

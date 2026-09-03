@@ -22,7 +22,7 @@ export const Default: Story = {
       <>
         <MobileActionButton onClick={() => setOpen(true)}>Open Modal</MobileActionButton>
         <MobileModal open={open} onClose={() => setOpen(false)} title="Modal Title">
-          <p>Modal content goes here.</p>
+          <p data-slot="mobileModal.stories-p">Modal content goes here.</p>
         </MobileModal>
       </>
     );

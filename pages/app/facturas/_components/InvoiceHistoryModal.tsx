@@ -131,7 +131,7 @@ export function InvoiceHistoryModal({
         </div>
 
         <ScrollArea dataSlot="invoice-history-body">
-          <div className="bo-modal-body">
+          <div data-slot="invoiceHistoryModal-modal-body" className="bo-modal-body">
           {invoiceNumber && (
             <div className="bo-historyInvoiceInfo" data-slot="invoice-history-info">
               <strong>Factura:</strong> {invoiceNumber}

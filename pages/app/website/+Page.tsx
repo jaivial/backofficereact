@@ -150,16 +150,16 @@ export default function WebsiteBuilderPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-100">Website Builder</h1>
-          <p className="text-sm text-slate-400 mt-1">Crea y publica la web de tu restaurante</p>
+    <div data-slot="website-space-y-6" className="p-6 max-w-6xl mx-auto space-y-6">
+      <header data-testid="justify-between" className="flex items-center justify-between">
+        <div data-slot="website-div">
+          <h1 data-slot="website-text-slate-100" className="text-2xl font-bold text-slate-100">Website Builder</h1>
+          <p data-slot="website-mt-1" className="text-sm text-slate-400 mt-1">Crea y publica la web de tu restaurante</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-300">Estado:</span>
-            <button 
+        <div data-slot="website-gap-4" className="flex items-center gap-4">
+          <div data-slot="website-gap-2" className="flex items-center gap-2">
+            <span data-slot="website-text-slate-300" className="text-sm text-slate-300">Estado:</span>
+            <button data-testid="button" 
               onClick={() => handleSave({ is_published: !config?.is_published })}
               className={`px-3 py-1 rounded text-sm font-medium ${config?.is_published ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}
             >
@@ -169,20 +169,20 @@ export default function WebsiteBuilderPage() {
         </div>
       </header>
 
-      <div className="flex gap-4 border-b border-slate-700/50 pb-2">
-        <button 
+      <div data-slot="website-pb-2" className="flex gap-4 border-b border-slate-700/50 pb-2">
+        <button data-testid="plantillas-premium" 
           onClick={() => setActiveTab("templates")}
           className={`bg-transparent px-4 py-2 font-medium transition-colors ${activeTab === "templates" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
         >
           Plantillas Premium
         </button>
-        <button 
+        <button data-testid="constructor-con-ia" 
           onClick={() => setActiveTab("ai")}
           className={`bg-transparent px-4 py-2 font-medium transition-colors ${activeTab === "ai" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
         >
           Constructor con IA
         </button>
-        <button 
+        <button data-testid="dominio-personalizado" 
           onClick={() => setActiveTab("domain")}
           className={`bg-transparent px-4 py-2 font-medium transition-colors ${activeTab === "domain" ? "text-indigo-400 border-b-2 border-indigo-500" : "text-slate-400 hover:text-slate-200"}`}
         >
@@ -191,15 +191,15 @@ export default function WebsiteBuilderPage() {
       </div>
 
       {activeTab === "templates" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div data-slot="website-gap-6" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {TEMPLATES.map((tmpl) => (
-            <div 
+            <div data-slot="website-div" 
               key={tmpl.id} 
               className={`rounded-xl border bg-slate-800/50 overflow-hidden transition-all ${config?.template_id === tmpl.id ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-slate-700 hover:border-slate-600'}`}
             >
               <img src={tmpl.img} alt={tmpl.name} className="w-full h-48 object-cover" />
-              <div className="p-4 flex items-center justify-between">
-                <span className="font-medium text-slate-200">{tmpl.name}</span>
+              <div data-slot="website-justify-between" className="p-4 flex items-center justify-between">
+                <span data-slot="website-text-slate-200" className="font-medium text-slate-200">{tmpl.name}</span>
                 <Button 
                   variant={config?.template_id === tmpl.id ? "default" : "secondary"}
                   size="sm"
@@ -214,18 +214,18 @@ export default function WebsiteBuilderPage() {
       )}
 
       {activeTab === "ai" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-              <h2 className="text-lg font-medium text-slate-200 mb-2">Generar con IA</h2>
-              <p className="text-sm text-slate-400 mb-4">Describe cómo quieres que se vea tu sitio web. Nuestra IA creará el código HTML/CSS por ti, integrando tus menús y horarios automáticamente.</p>
-              <textarea 
+        <div data-slot="website-gap-6" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div data-slot="website-space-y-4" className="space-y-4">
+            <div data-slot="website-border-slate-700" className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+              <h2 data-slot="website-mb-2" className="text-lg font-medium text-slate-200 mb-2">Generar con IA</h2>
+              <p data-slot="website-mb-4" className="text-sm text-slate-400 mb-4">Describe cómo quieres que se vea tu sitio web. Nuestra IA creará el código HTML/CSS por ti, integrando tus menús y horarios automáticamente.</p>
+              <textarea data-testid="ej-quiero-una-web-moderna-con-fondo-oscu" 
                 className="w-full h-32 bg-slate-900 border border-slate-700 rounded-lg p-3 text-slate-200 text-sm focus:ring-1 focus:ring-indigo-500 outline-none"
                 placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografía elegante y muestra mi menú de arroces en la página principal..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
               />
-              <div className="mt-4 flex justify-end">
+              <div data-slot="website-justify-end" className="mt-4 flex justify-end">
                 <Button 
                   variant="default"
                   onClick={handleAIGenerate}
@@ -237,15 +237,15 @@ export default function WebsiteBuilderPage() {
             </div>
           </div>
           
-          <div className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden flex flex-col h-[500px]">
-            <div className="bg-slate-900 p-3 border-b border-slate-700 flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-300">Vista Previa (HTML Personalizado)</span>
+          <div data-slot="website-h-[500px]" className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden flex flex-col h-[500px]">
+            <div data-slot="website-items-center" className="bg-slate-900 p-3 border-b border-slate-700 flex justify-between items-center">
+              <span data-slot="website-text-slate-300" className="text-sm font-medium text-slate-300">Vista Previa (HTML Personalizado)</span>
             </div>
-            <div className="flex-1 bg-white p-4 overflow-auto">
+            <div data-slot="website-overflow-auto" className="flex-1 bg-white p-4 overflow-auto">
               {config?.custom_html ? (
-                <div dangerouslySetInnerHTML={{ __html: config.custom_html }} />
+                <div data-slot="website-div" dangerouslySetInnerHTML={{ __html: config.custom_html }} />
               ) : (
-                <div className="h-full flex items-center justify-center text-slate-400 text-sm">
+                <div data-slot="website-text-sm" className="h-full flex items-center justify-center text-slate-400 text-sm">
                   No hay HTML generado aún
                 </div>
               )}
@@ -255,20 +255,20 @@ export default function WebsiteBuilderPage() {
       )}
 
       {activeTab === "domain" && (
-        <div className="max-w-2xl bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-          <h2 className="text-xl font-medium text-slate-100 mb-2">Dominio Personalizado</h2>
+        <div data-slot="website-border-slate-700" className="max-w-2xl bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+          <h2 data-slot="website-mb-2" className="text-xl font-medium text-slate-100 mb-2">Dominio Personalizado</h2>
           
           {config?.domain ? (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-6">
-              <p className="text-sm text-green-400 font-medium">Tienes un dominio activo</p>
-              <div className="text-2xl font-bold text-slate-100 mt-1">{config.domain}</div>
+            <div data-slot="website-mb-6" className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-6">
+              <p data-slot="website-font-medium" className="text-sm text-green-400 font-medium">Tienes un dominio activo</p>
+              <div data-slot="website-mt-1" className="text-2xl font-bold text-slate-100 mt-1">{config.domain}</div>
             </div>
           ) : (
-            <p className="text-sm text-slate-400 mb-6">Busca y registra un dominio para tu sitio web. El pago se añadirá a tu facturación anual.</p>
+            <p data-slot="website-mb-6" className="text-sm text-slate-400 mb-6">Busca y registra un dominio para tu sitio web. El pago se añadirá a tu facturación anual.</p>
           )}
 
-          <div className="flex gap-2 mb-6">
-            <input 
+          <div data-slot="website-mb-6" className="flex gap-2 mb-6">
+            <input data-testid="ej-mirestaurante-com" 
               type="text"
               placeholder="Ej: mirestaurante.com"
               value={domainQuery}
@@ -282,19 +282,19 @@ export default function WebsiteBuilderPage() {
           </div>
 
           {domainResult && (
-            <div className="border border-slate-700 rounded-lg p-4 bg-slate-900/50">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="font-medium text-slate-200 text-lg">{domainResult.domain}</div>
+            <div data-slot="website-bg-slate-900/50" className="border border-slate-700 rounded-lg p-4 bg-slate-900/50">
+              <div data-slot="website-items-center" className="flex justify-between items-center">
+                <div data-slot="website-div">
+                  <div data-slot="website-text-lg" className="font-medium text-slate-200 text-lg">{domainResult.domain}</div>
                   {domainResult.available ? (
-                    <span className="text-sm text-green-400 font-medium">¡Disponible!</span>
+                    <span data-slot="website-font-medium" className="text-sm text-green-400 font-medium">¡Disponible!</span>
                   ) : (
-                    <span className="text-sm text-red-400 font-medium">No disponible</span>
+                    <span data-slot="website-font-medium" className="text-sm text-red-400 font-medium">No disponible</span>
                   )}
                 </div>
                 {domainResult.available && (
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-slate-100">{domainResult.marked_price.toFixed(2)} {domainResult.currency} <span className="text-sm text-slate-400 font-normal">/ año</span></div>
+                  <div data-slot="website-text-right" className="text-right">
+                    <div data-slot="website-text-slate-100" className="text-xl font-bold text-slate-100">{domainResult.marked_price.toFixed(2)} {domainResult.currency} <span className="text-sm text-slate-400 font-normal">/ año</span></div>
                     <Button 
                       variant="default"
                       className="mt-2 w-full" 
