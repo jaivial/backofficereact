@@ -19,6 +19,7 @@ export type StockItem = {
   id: number;
   name: string;
   sku?: string;
+  barcode?: string;
   categoryName?: string;
   kind: string;
   baseDimension: string;
