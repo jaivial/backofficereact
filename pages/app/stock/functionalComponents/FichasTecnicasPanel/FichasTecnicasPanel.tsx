@@ -16,6 +16,7 @@ import {
   type SheetSummary,
 } from "../../../comida/_components/TechnicalSheet/sheetsApi";
 import { useSheetImageSocket } from "../../../comida/_components/TechnicalSheet/useSheetImageSocket";
+import { MenuEngineeringChart } from "./MenuEngineeringChart";
 
 // "Fichas tecnicas" tab: a card per elaborated product (every plato/postre that
 // has a DRAFT/ACTIVE technical sheet). Clicking a card opens that sheet's editor
@@ -313,6 +314,7 @@ export function FichasTecnicasPanel() {
         </span>
       </div>
       <div className="bo-panelBody" data-ui="fichas-body">
+        <MenuEngineeringChart />
         {renderFiltersBar()}
 
         {error ? <InlineAlert kind="error" title={error} /> : null}
