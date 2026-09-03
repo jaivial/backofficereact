@@ -856,3 +856,81 @@
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+
+/* Export actions inside the filters toolbar */
+
+.bo-stockExportActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.bo-stockExportLabel {
+  font-size: 13px;
+  color: var(--bo-muted);
+}
+
+/* Import button centered under the empty state */
+
+.bo-stockEmptyActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+/* Horizontal scroll for valuation / import preview tables */
+
+.bo-stockTableScroll {
+  overflow-x: auto;
+}
+
+/* Import modal */
+
+.bo-stockImportPick,
+.bo-stockImportPreview,
+.bo-stockImportResult {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bo-stockImportTemplate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--bo-primary, #8a5a3b);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.bo-stockImportTemplate:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.bo-stockImportActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-stockImportSummary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-stockImportRowInvalid td {
+  color: var(--bo-danger, #b3261e);
+}

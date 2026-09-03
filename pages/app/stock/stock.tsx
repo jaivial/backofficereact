@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { navigate } from "vike/client/router";
-import { Boxes, ChevronRight, Minus, Pencil, Plus, Search, Trash2, Warehouse as WarehouseIcon, X } from "lucide-react";
+import { Boxes, ChevronRight, Minus, Pencil, Plus, Search, Trash2, Upload, Warehouse as WarehouseIcon, X } from "lucide-react";
 
 import { Breadcrumbs } from "../../../ui/nav/Breadcrumbs";
 import { SimpleTabs } from "../../../ui/nav/SimpleTabs";
@@ -17,6 +17,8 @@ import { StockItemModal } from "./functionalComponents/StockItemModal/StockItemM
 import { StockOperationsPanel } from "./functionalComponents/StockOperationsPanel/StockOperationsPanel";
 import { StockDocumentsPanel } from "./functionalComponents/StockDocumentsPanel/StockDocumentsPanel";
 import { StockExpiringPanel } from "./functionalComponents/StockExpiringPanel/StockExpiringPanel";
+import { StockValuationPanel } from "./functionalComponents/StockValuationPanel/StockValuationPanel";
+import { StockImportModal } from "./functionalComponents/StockImportModal/StockImportModal";
 import { PortionWastePanel } from "./functionalComponents/PortionWastePanel/PortionWastePanel";
 import { ProductionLabourPanel } from "./functionalComponents/ProductionLabourPanel/ProductionLabourPanel";
 
@@ -96,6 +98,7 @@ export default function Page() {
   const [quantities, setQuantities] = useState<Record<number, string>>({});
   const [expiryDates, setExpiryDates] = useState<Record<number, string>>({});
   const [showItemForm, setShowItemForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [showWarehouses, setShowWarehouses] = useState(false);
   const [warehouseName, setWarehouseName] = useState("");
   const [transferItemId, setTransferItemId] = useState(0);
@@ -244,6 +247,12 @@ export default function Page() {
               </Button>
             ) : null}
             {can("stock.items.manage") ? (
+              <Button variant="secondary" onClick={() => setShowImport(true)} data-testid="stock-import">
+                <Upload className="bo-ico" size={16} aria-hidden="true" data-ui="stock-import-icon" />
+                Importar
+              </Button>
+            ) : null}
+            {can("stock.items.manage") ? (
               <Button variant="primary" onClick={() => setShowItemForm(true)} data-testid="stock-new-item">
                 <Plus className="bo-ico" size={16} aria-hidden="true" data-ui="stock-new-icon" />
                 Nuevo artículo
@@ -295,6 +304,8 @@ export default function Page() {
                   <strong className="bo-statValue" data-ui="stock-coverage-value">{Math.round(summary.coveragePct)}% cubierto</strong>
                 </article>
               </section>
+
+              <StockValuationPanel />
 
               {showWarehouses ? (
                 <section className="bo-panel" aria-label="Almacenes" data-ui="stock-warehouse-panel">
@@ -372,6 +383,12 @@ export default function Page() {
                       {warehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id} data-ui="stock-warehouse-option">{warehouse.name}</option>)}
                     </select>
                   </div>
+                  <div className="bo-stockExportActions" data-ui="stock-export-actions">
+                    <span className="bo-stockExportLabel" data-ui="stock-export-label">Exportar</span>
+                    <a className="bo-btn bo-btn--ghost bo-btn--sm" href="/api/admin/stock/export?type=items" download data-ui="stock-export-items" data-testid="stock-export-items">Artículos</a>
+                    <a className="bo-btn bo-btn--ghost bo-btn--sm" href="/api/admin/stock/export?type=movements" download data-ui="stock-export-movements" data-testid="stock-export-movements">Movimientos</a>
+                    <a className="bo-btn bo-btn--ghost bo-btn--sm" href="/api/admin/stock/export?type=waste" download data-ui="stock-export-waste" data-testid="stock-export-waste">Mermas</a>
+                  </div>
                 </div>
               </section>
 
@@ -387,7 +404,16 @@ export default function Page() {
                   title="No hay artículos"
                   description="Crea el primero o importa tu catálogo."
                   data-ui="stock-empty"
-                />
+                >
+                  {can("stock.items.manage") ? (
+                    <div className="bo-stockEmptyActions" data-ui="stock-empty-actions">
+                      <Button variant="primary" onClick={() => setShowImport(true)} data-testid="stock-import-empty">
+                        <Upload className="bo-ico" size={16} aria-hidden="true" data-ui="stock-import-empty-icon" />
+                        Importar catálogo
+                      </Button>
+                    </div>
+                  ) : null}
+                </EmptyState>
               ) : (
                 <section className="bo-stockGrid" aria-label="Artículos en stock" data-ui="stock-grid">
                   {items.map((item) => {
@@ -488,6 +514,12 @@ export default function Page() {
         open={showItemForm}
         onClose={() => setShowItemForm(false)}
         onCreated={load}
+      />
+
+      <StockImportModal
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={load}
       />
 
     </main>
