@@ -740,7 +740,13 @@ export function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
     catalog_dish_id: d.catalog_dish_id ?? null,
     title: d.title,
     description,
-    description_enabled: (prev?.description_enabled ?? false) || hasDescription,
+    // Prefer the persisted flag; only infer from content when the API omits it.
+    // Falling back to hasDescription unconditionally re-enabled descriptions the
+    // user had explicitly turned off.
+    description_enabled:
+      typeof d.description_enabled === "boolean"
+        ? d.description_enabled
+        : (prev?.description_enabled ?? hasDescription),
     allergens: d.allergens || [],
     supplement_enabled: !!d.supplement_enabled,
     supplement_price: d.supplement_price ?? null,
