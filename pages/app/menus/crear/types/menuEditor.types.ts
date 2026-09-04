@@ -139,3 +139,16 @@ export type AllergenItem = {
   key: string;
   icon: React.ComponentType<{ size?: number }>;
 };
+
+export type BeverageOption = {
+  id: number;
+  slug: string;
+  name: string;
+  is_custom: boolean;
+  selected: boolean;
+};
+
+export type BeverageDeleteTarget = {
+  id: number;
+  name: string;
+};

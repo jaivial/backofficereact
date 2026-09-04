@@ -171,13 +171,13 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
   return (
     <Card variant="glass" className={className} data-ui={dataUi ?? "tax-simulation"}>
       {/* Header */}
-      <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true"><Calculator className="h-4 w-4" /></span>
-            <h2 className="text-base font-semibold" style={{ margin: 0 }}>Simulación fiscal</h2>
+      <div data-slot="taxSimulation-lg:justify-between" className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div data-slot="taxSimulation-div">
+          <div data-slot="taxSimulation-gap-3" className="flex items-center gap-3">
+            <span data-slot="taxSimulation-text-[var(-bo" className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true"><Calculator className="h-4 w-4" /></span>
+            <h2 data-slot="taxSimulation-font-semibold" className="text-base font-semibold" style={{ margin: 0 }}>Simulación fiscal</h2>
           </div>
-          <p className="mt-[0.4rem] max-w-2xl text-xs leading-5 text-[var(--bo-muted)]">
+          <p data-slot="taxSimulation-text-[var(-bo" className="mt-[0.4rem] max-w-2xl text-xs leading-5 text-[var(--bo-muted)]">
             Desglose de IVA, IRPF/IS y cuota de autónomos sobre los ingresos del periodo. Sin costes de negocio.
           </p>
         </div>
@@ -395,7 +395,7 @@ export function TaxSimulation({ grossRevenue, stockPurchases, className, "data-u
       {/* Disclaimer */}
       <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[var(--bo-faint)]" data-ui="tax-disclaimer">
         <Percent className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        <span>
+        <span data-slot="taxSimulation-span">
           Estimación orientativa. Tipos de sociedades confirmados: IS 25% general, 15% nueva creación (Ley 27/2014, art. 29) y 19/21% micropyme (Ley 7/2024; 17/20% desde 2027). IRPF: escala conjunta estatal + autonómica media de la campaña 2025/2026 (19–47%); la parte autonómica real varía por CCAA. IVA 10% comida / 21% bebidas. Cuota autónomos RETA 200–590 €/mes sin MEI (BOE-A-2026-7296; el MEI al 0,9% añade ~6–46 €/mes). No incluye mínimo personal ni deducciones. No es asesoramiento fiscal.
         </span>
       </p>

@@ -164,7 +164,7 @@ function MockMemberShiftModal({
   };
 
   return (
-    <div style={{ padding: "20px", minWidth: "400px" }}>
+    <div data-slot="memberShiftModal.stories-div" style={{ padding: "20px", minWidth: "400px" }}>
       <MemberShiftModal
         member={member}
         selectedDate={selectedDate}
@@ -250,8 +250,8 @@ export const Interactive: Story = {
     const [isActive, setIsActive] = useState(false);
 
     return (
-      <div style={{ padding: "20px", fontFamily: "system-ui", minWidth: "500px" }}>
-        <div
+      <div data-slot="memberShiftModal.stories-div" style={{ padding: "20px", fontFamily: "system-ui", minWidth: "500px" }}>
+        <div data-slot="memberShiftModal.stories-div"
           style={{
             background: "#f5f5f5",
             padding: "12px",
@@ -259,17 +259,17 @@ export const Interactive: Story = {
             marginBottom: "16px",
           }}
         >
-          <h4 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>State Controls (reopen modal to apply):</h4>
-          <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-            <input
+          <h4 data-slot="memberShiftModal.stories-h4" style={{ margin: "0 0 8px 0", fontSize: "14px" }}>State Controls (reopen modal to apply):</h4>
+          <label data-slot="memberShiftModal.stories-label" style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <input data-testid="input-checkbox"
               type="checkbox"
               checked={hasSchedule}
               onChange={(e) => setHasSchedule(e.target.checked)}
             />
             Has Schedule
           </label>
-          <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <input
+          <label data-slot="memberShiftModal.stories-label" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input data-testid="input-checkbox-2"
               type="checkbox"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
@@ -279,7 +279,7 @@ export const Interactive: Story = {
           </label>
         </div>
 
-        <div
+        <div data-slot="memberShiftModal.stories-div"
           style={{
             background: "#e8f5e9",
             padding: "12px",
@@ -288,13 +288,13 @@ export const Interactive: Story = {
             fontFamily: "monospace",
           }}
         >
-          <h4 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>Actions Available in Modal:</h4>
-          <ul style={{ margin: 0, paddingLeft: "20px" }}>
-            <li>Start fichaje - changes to active state</li>
-            <li>Stop fichaje - returns to not active</li>
-            <li>Remove shift - clears schedule</li>
-            <li>Assign shift - creates schedule</li>
-            <li>Adjust time - updates schedule times</li>
+          <h4 data-slot="memberShiftModal.stories-h4" style={{ margin: "0 0 8px 0", fontSize: "14px" }}>Actions Available in Modal:</h4>
+          <ul data-slot="memberShiftModal.stories-ul" style={{ margin: 0, paddingLeft: "20px" }}>
+            <li data-slot="memberShiftModal.stories-li">Start fichaje - changes to active state</li>
+            <li data-slot="memberShiftModal.stories-li">Stop fichaje - returns to not active</li>
+            <li data-slot="memberShiftModal.stories-li">Remove shift - clears schedule</li>
+            <li data-slot="memberShiftModal.stories-li">Assign shift - creates schedule</li>
+            <li data-slot="memberShiftModal.stories-li">Adjust time - updates schedule times</li>
           </ul>
         </div>
 
@@ -323,8 +323,8 @@ export const Closed: Story = {
     const [open, setOpen] = useState(false);
 
     return (
-      <div style={{ padding: "40px", color: "#888", textAlign: "center" }}>
-        <button
+      <div data-slot="memberShiftModal.stories-div" style={{ padding: "40px", color: "#888", textAlign: "center" }}>
+        <button data-testid="open-modal"
           onClick={() => setOpen(true)}
           style={{
             padding: "8px 16px",
@@ -338,9 +338,9 @@ export const Closed: Story = {
         >
           Open Modal
         </button>
-        <p>Modal is closed.</p>
-        <p style={{ fontSize: "12px" }}>Select a different story variant to see different modal states.</p>
-        <div style={{ marginTop: "20px" }}>
+        <p data-slot="memberShiftModal.stories-p">Modal is closed.</p>
+        <p data-slot="memberShiftModal.stories-p" style={{ fontSize: "12px" }}>Select a different story variant to see different modal states.</p>
+        <div data-slot="memberShiftModal.stories-div" style={{ marginTop: "20px" }}>
           <MemberShiftModal
             member={mockMember}
             selectedDate="2026-04-26"

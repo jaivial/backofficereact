@@ -22,10 +22,10 @@ export const Default: Story = {
         <CardDescription>Card description goes here.</CardDescription>
       </CardHeader>
       <CardContent>
-        <p>Card content goes here. This is the main body of the card.</p>
+        <p data-slot="card.stories-p">Card content goes here. This is the main body of the card.</p>
       </CardContent>
       <CardFooter>
-        <p>Card footer</p>
+        <p data-slot="card.stories-p">Card footer</p>
       </CardFooter>
     </Card>
   ),
@@ -40,7 +40,7 @@ export const WithoutFooter: Story = {
         <CardDescription>A card without footer</CardDescription>
       </CardHeader>
       <CardContent>
-        <p>Card content</p>
+        <p data-slot="card.stories-p">Card content</p>
       </CardContent>
     </Card>
   ),

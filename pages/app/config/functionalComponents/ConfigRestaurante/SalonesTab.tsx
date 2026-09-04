@@ -204,7 +204,7 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
 
   return (
     <div id="config-salons-panel" role="tabpanel" aria-label="Salones" className="bo-configFloorsPanelContent" data-ui="config-salons-tabpanel">
-      <div className="bo-configSalonsToolbar">
+      <div data-slot="salonesTab-configSalonsToolbar" className="bo-configSalonsToolbar">
         <Button variant="primary" size="sm" onClick={openCreate} disabled={busy || floors.length === 0} data-ui="salon-add">
           <Plus className="bo-ico" aria-hidden /> Añadir salón
         </Button>
@@ -232,8 +232,8 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
         onClose={() => setEditor(null)}
         size="sm"
       >
-        <div className="bo-form">
-          <label className="bo-label" htmlFor="salon-floor">Planta</label>
+        <div data-slot="salonesTab-form" className="bo-form">
+          <label data-slot="salonesTab-label" className="bo-label" htmlFor="salon-floor">Planta</label>
           <Select
             value={String(draft.floorNumber)}
             onChange={(v) => setDraft((d) => ({ ...d, floorNumber: Number(v) }))}
@@ -242,7 +242,7 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
             disabled={busy}
           />
 
-          <label className="bo-label" htmlFor="salon-name">Nombre del salón</label>
+          <label data-slot="salonesTab-label" className="bo-label" htmlFor="salon-name">Nombre del salón</label>
           <input
             id="salon-name"
             className="bo-input"
@@ -255,8 +255,8 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
             onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
           />
 
-          <div className="bo-configSalonToggle">
-            <span className="bo-label">Capacidad limitada</span>
+          <div data-slot="salonesTab-configSalonToggle" className="bo-configSalonToggle">
+            <span data-slot="salonesTab-label" className="bo-label">Capacidad limitada</span>
             <Switch
               checked={effectiveHasLimit}
               disabled={busy || floorCapped}
@@ -266,7 +266,7 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
           </div>
 
           {floorCapped && (
-            <p className="bo-mutedText" style={{ marginBottom: 8, fontSize: 12 }}>
+            <p data-slot="salonesTab-mutedText" className="bo-mutedText" style={{ marginBottom: 8, fontSize: 12 }}>
               Esta planta tiene un aforo máximo ({floorForDraft?.maxAforo} personas), por lo que el salón debe tener límite de aforo.
             </p>
           )}
@@ -287,7 +287,7 @@ export function SalonesTab({ floors, date, api, busy, setBusy, setError, pushToa
             />
           )}
 
-          <div className="bo-modalActions">
+          <div data-slot="salonesTab-modalActions" className="bo-modalActions">
             <Button variant="ghost" onClick={() => setEditor(null)} disabled={busy}>Cancelar</Button>
             <Button variant="primary" onClick={() => void save()} disabled={busy} data-ui="salon-save">
               {editor?.kind === "edit" ? "Guardar cambios" : "Guardar"}

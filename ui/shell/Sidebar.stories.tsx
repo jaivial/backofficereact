@@ -33,11 +33,11 @@ const meta = {
   },
   decorators: [
     (Story: React.ComponentType) => (
-      <div style={{ height: "100vh", display: "flex" }}>
+      <div data-slot="sidebar.stories-div" style={{ height: "100vh", display: "flex" }}>
         <Story />
-        <main style={{ flex: 1, padding: "2rem", background: "#f5f5f5" }}>
-          <h1>Content Area</h1>
-          <p>Current path shown in sidebar</p>
+        <main data-testid="main" style={{ flex: 1, padding: "2rem", background: "#f5f5f5" }}>
+          <h1 data-slot="sidebar.stories-h1">Content Area</h1>
+          <p data-slot="sidebar.stories-p">Current path shown in sidebar</p>
         </main>
       </div>
     ),
@@ -177,20 +177,20 @@ export const AllRolesOverview: Story = {
     const roles = ["root", "admin", "metre", "jefe_cocina", "camarero", "barista"] as const;
 
     return (
-      <div style={{ padding: "2rem", background: "#fff", minHeight: "100vh" }}>
-        <h2 style={{ marginBottom: "1rem" }}>Sidebar Items by Role</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1.5rem" }}>
+      <div data-slot="sidebar.stories-div" style={{ padding: "2rem", background: "#fff", minHeight: "100vh" }}>
+        <h2 data-slot="sidebar.stories-h2" style={{ marginBottom: "1rem" }}>Sidebar Items by Role</h2>
+        <div data-slot="sidebar.stories-div" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1.5rem" }}>
           {roles.map((role) => {
             const items = sidebarItemsForRole(role);
             return (
-              <div key={role} style={{ border: "1px solid #e5e5e5", borderRadius: "8px", padding: "1rem" }}>
-                <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: "0 0 0.5rem 0", textTransform: "capitalize" }}>{role.replace("_", " ")}</h3>
-                <p style={{ fontSize: "0.75rem", color: "#666", margin: "0 0 0.5rem 0" }}>
+              <div data-slot="sidebar.stories-div" key={role} style={{ border: "1px solid #e5e5e5", borderRadius: "8px", padding: "1rem" }}>
+                <h3 data-slot="sidebar.stories-h3" style={{ fontSize: "1rem", fontWeight: 600, margin: "0 0 0.5rem 0", textTransform: "capitalize" }}>{role.replace("_", " ")}</h3>
+                <p data-slot="sidebar.stories-p" style={{ fontSize: "0.75rem", color: "#666", margin: "0 0 0.5rem 0" }}>
                   {items.length} item{items.length !== 1 ? "s" : ""}
                 </p>
-                <ul style={{ fontSize: "0.875rem", margin: 0, paddingLeft: "1.25rem" }}>
+                <ul data-slot="sidebar.stories-ul" style={{ fontSize: "0.875rem", margin: 0, paddingLeft: "1.25rem" }}>
                   {items.map((item) => (
-                    <li key={item.key}>{item.label}</li>
+                    <li data-slot="sidebar.stories-li" key={item.key}>{item.label}</li>
                   ))}
                 </ul>
               </div>

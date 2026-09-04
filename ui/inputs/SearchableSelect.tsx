@@ -134,7 +134,7 @@ export function SearchableSelect({
       >
         <span className="bo-selectLabelWrap" data-ui="select-label-wrap">
           {selected?.icon ? (
-            <span className="bo-selectIcon" aria-hidden="true">{selected.icon}</span>
+            <span data-slot="searchableSelect-selectIcon" className="bo-selectIcon" aria-hidden="true">{selected.icon}</span>
           ) : null}
           <span className={cn("bo-selectLabel !max-w-[240px]", !selected && "text-[var(--bo-muted)]")} data-ui="select-selected-label">
             {label}
@@ -166,7 +166,7 @@ export function SearchableSelect({
                 }}
                 data-ui="searchable-select-listbox"
               >
-                <div className="flex-none flex items-center gap-2 px-2 py-2 border-b border-[var(--bo-border)] bg-[var(--bo-surface)]">
+                <div data-slot="searchableSelect-bg-[var(-bo" className="flex-none flex items-center gap-2 px-2 py-2 border-b border-[var(--bo-border)] bg-[var(--bo-surface)]">
                   <Search size={14} className="text-[var(--bo-muted)] shrink-0" aria-hidden="true" />
                   <input
                     ref={searchRef}

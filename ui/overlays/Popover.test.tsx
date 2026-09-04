@@ -8,8 +8,8 @@ function Harness({ onClose = () => {}, className = "" }: { onClose?: () => void;
   const anchorRef = useRef<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(true);
   return (
-    <div>
-      <button ref={anchorRef} type="button" onClick={() => setOpen(true)}>
+    <div data-slot="popover.test-div">
+      <button data-testid="abrir" ref={anchorRef} type="button" onClick={() => setOpen(true)}>
         Abrir
       </button>
       <Popover
@@ -22,7 +22,7 @@ function Harness({ onClose = () => {}, className = "" }: { onClose?: () => void;
         ariaLabel="Contenido"
         className={className}
       >
-        <button type="button">Interno</button>
+        <button data-testid="interno" type="button">Interno</button>
       </Popover>
     </div>
   );
@@ -39,7 +39,7 @@ describe("Popover", () => {
     const anchorRef = { current: document.createElement("button") };
     render(
       <Popover open={false} anchorRef={anchorRef} onClose={() => {}} ariaLabel="Contenido">
-        <span>Interno</span>
+        <span data-slot="popover.test-span">Interno</span>
       </Popover>,
     );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("Popover sizing", () => {
     document.body.appendChild(anchorRef.current);
     render(
       <Popover open anchorRef={anchorRef} onClose={() => {}} ariaLabel="Contenido" {...props}>
-        <span>Interno</span>
+        <span data-slot="popover.test-span">Interno</span>
       </Popover>,
     );
     return screen.getByRole("dialog", { name: "Contenido" });

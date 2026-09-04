@@ -85,7 +85,7 @@ export function WeeklyScheduleTable({
                         const daySchedules = schedulesByDate.get(date) || [];
                         if (daySchedules.length === 0) {
                           return (
-                            <span className="flex flex-wrap items-center gap-2">
+                            <span data-slot="weeklyScheduleTable-gap-2" className="flex flex-wrap items-center gap-2">
                               <span data-slot="noSchedule" className="no-schedule italic text-[var(--bo-faint)]">
                                 Sin horario
                               </span>
@@ -105,7 +105,7 @@ export function WeeklyScheduleTable({
                           );
                         }
                         return (
-                          <div className="flex flex-col gap-1.5">
+                          <div data-slot="weeklyScheduleTable-gap-1.5" className="flex flex-col gap-1.5">
                             {daySchedules.map((schedule) => (
                               <span
                                 key={schedule.id}

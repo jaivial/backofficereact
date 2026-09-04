@@ -35,7 +35,7 @@ function ThemeStatusDisplay() {
   }, [theme]);
 
   return (
-    <div
+    <div data-slot="themeSync.stories-div"
       style={{
         padding: "16px",
         background: theme === "dark" ? "#1f2937" : "#f9fafb",
@@ -43,8 +43,8 @@ function ThemeStatusDisplay() {
         borderRadius: "8px",
       }}
     >
-      <p style={{ margin: 0 }}>Current theme: {theme}</p>
-      <p style={{ margin: 0, fontSize: "12px", opacity: 0.7 }}>
+      <p data-slot="themeSync.stories-p" style={{ margin: 0 }}>Current theme: {theme}</p>
+      <p data-slot="themeSync.stories-p" style={{ margin: 0, fontSize: "12px", opacity: 0.7 }}>
         ThemeSync is syncing to document.documentElement.dataset.theme and bo_theme cookie
       </p>
     </div>
@@ -72,7 +72,7 @@ export const LightTheme: Story = {
   decorators: [
     (Story) => (
       <WithThemeProvider theme="light">
-        <div>
+        <div data-slot="themeSync.stories-div">
           <Story />
           <ThemeStatusDisplay />
         </div>
@@ -85,7 +85,7 @@ export const DarkTheme: Story = {
   decorators: [
     (Story) => (
       <WithThemeProvider theme="dark">
-        <div>
+        <div data-slot="themeSync.stories-div">
           <Story />
           <ThemeStatusDisplay />
         </div>
@@ -103,11 +103,11 @@ export const ThemeChangeSync: Story = {
         <JotaiProvider
           initialValues={[[themeAtom, theme]] as unknown as Iterable<readonly [unknown, unknown]>}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div data-slot="themeSync.stories-div" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <Story />
             <ThemeStatusDisplay />
-            <div>
-              <button
+            <div data-slot="themeSync.stories-div">
+              <button data-testid="light"
                 onClick={() => setTheme("light")}
                 style={{
                   padding: "8px 16px",
@@ -121,7 +121,7 @@ export const ThemeChangeSync: Story = {
               >
                 Light
               </button>
-              <button
+              <button data-testid="dark"
                 onClick={() => setTheme("dark")}
                 style={{
                   padding: "8px 16px",
@@ -135,7 +135,7 @@ export const ThemeChangeSync: Story = {
                 Dark
               </button>
             </div>
-            <p style={{ fontSize: "12px", opacity: 0.7 }}>
+            <p data-slot="themeSync.stories-p" style={{ fontSize: "12px", opacity: 0.7 }}>
               Open browser DevTools console to see theme sync logs
             </p>
           </div>

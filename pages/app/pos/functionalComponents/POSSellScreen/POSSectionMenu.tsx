@@ -53,9 +53,9 @@ export function POSSectionMenu({ section, onChange, onOpenCalendar }: {
         widthPx={220}
         data-testid="pos-section-popover"
       >
-        <ul className="pos-sectionMenuList" role="menu">
+        <ul data-slot="pOSSectionMenu-pos-sectionMenuList" className="pos-sectionMenuList" role="menu">
           {SECTIONS.map((s) => (
-            <li key={s.id} role="none">
+            <li data-slot="pOSSectionMenu-li" key={s.id} role="none">
               <button
                 type="button"
                 role="menuitemradio"
@@ -69,8 +69,8 @@ export function POSSectionMenu({ section, onChange, onOpenCalendar }: {
               </button>
             </li>
           ))}
-          <li role="separator" className="pos-sectionMenuSeparator" />
-          <li role="none">
+          <li data-slot="pOSSectionMenu-pos-sectionMenuSeparator" role="separator" className="pos-sectionMenuSeparator" />
+          <li data-slot="pOSSectionMenu-li" role="none">
             <button
               type="button"
               role="menuitem"
@@ -81,8 +81,8 @@ export function POSSectionMenu({ section, onChange, onOpenCalendar }: {
               Calendario
             </button>
           </li>
-          <li role="separator" className="pos-sectionMenuSeparator" />
-          <li role="none">
+          <li data-slot="pOSSectionMenu-pos-sectionMenuSeparator" role="separator" className="pos-sectionMenuSeparator" />
+          <li data-slot="pOSSectionMenu-li" role="none">
             <button
               type="button"
               role="menuitemradio"
@@ -94,7 +94,7 @@ export function POSSectionMenu({ section, onChange, onOpenCalendar }: {
               Integrado
             </button>
           </li>
-          <li role="none">
+          <li data-slot="pOSSectionMenu-li" role="none">
             <button
               type="button"
               role="menuitemradio"

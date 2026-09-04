@@ -46,6 +46,7 @@ import {
   buildGroupMenuAIWSURL,
 } from "../helpers/menuEditor.helpers";
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB } from "../constants/menuEditor.constants";
+import type { BeverageOption, BeverageDeleteTarget } from "../types/menuEditor.types";
 import {
   BasicsDraft,
   BasicsPayload,
@@ -85,6 +86,9 @@ export type UseMenuEditorReturn = {
   sections: EditorSection[];
   includedCoffee: boolean;
   beverageType: string;
+  beverageOptions: BeverageOption[];
+  beverageModalOpen: boolean;
+  beverageDeleteTarget: BeverageDeleteTarget | null;
   beveragePrice: string;
   beverageHasSupplement: boolean;
   beverageSupplementPrice: string;
@@ -162,6 +166,13 @@ export type UseMenuEditorReturn = {
   setIncludedCoffee: (v: boolean) => void;
   setBeverageType: (type: string) => void;
   setBeveragePrice: (price: string) => void;
+  refreshBeverageOptions: () => void;
+  setBeverageOptionSelected: (optionId: number, selected: boolean) => void;
+  createBeverageOption: (name: string) => void;
+  requestBeverageOptionDelete: (option: BeverageDeleteTarget) => void;
+  confirmBeverageOptionDelete: () => void;
+  cancelBeverageOptionDelete: () => void;
+  closeBeverageModal: () => void;
   setBeverageHasSupplement: (v: boolean) => void;
   setBeverageSupplementPrice: (price: string) => void;
   setMinPartySize: (size: string) => void;
@@ -263,6 +274,9 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [sections, setSections] = useState<EditorSection[]>([]);
   const [includedCoffee, setIncludedCoffee] = useState<boolean>(false);
   const [beverageType, setBeverageType] = useState<string>(DEFAULT_BEVERAGE.type);
+  const [beverageOptions, setBeverageOptions] = useState<BeverageOption[]>([]);
+  const [beverageModalOpen, setBeverageModalOpen] = useState(false);
+  const [beverageDeleteTarget, setBeverageDeleteTarget] = useState<BeverageDeleteTarget | null>(null);
   const [beveragePrice, setBeveragePrice] = useState<string>("");
   const [beverageHasSupplement, setBeverageHasSupplement] = useState<boolean>(false);
   const [beverageSupplementPrice, setBeverageSupplementPrice] = useState<string>("");
@@ -311,6 +325,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const menuAIWSRetryRef = useRef<number | null>(null);
   const menuAIWSSocketRef = useRef<WebSocket | null>(null);
   const menuAIWSAttemptsRef = useRef(0);
+  const beverageWSMenuIdRef = useRef<number | null>(null);
   const menuAIWSAuthToastShownRef = useRef(false);
   const dishImageAdvisorDraftRef = useRef<DishImageCropDraft | null>(null);
   const dishImageCropDraftRef = useRef<DishImageCropDraft | null>(null);
@@ -789,6 +804,29 @@ export function useMenuEditor(): UseMenuEditorReturn {
       if (previewPatch) applyMenuPreviewAIState(previewPatch);
     };
 
+    const applyBeverageOptions = (payload: Record<string, unknown>) => {
+      const optionsRaw = payload.options;
+      if (!Array.isArray(optionsRaw)) return;
+      const next = optionsRaw
+        .map((raw) => {
+          const row = raw as Record<string, unknown>;
+          const id = Number(row.id ?? 0);
+          const name = String(row.name ?? "").trim();
+          if (!id || !name) return null;
+          return {
+            id,
+            slug: String(row.slug ?? ""),
+            name,
+            is_custom: row.is_custom === true || row.is_custom === 1,
+            selected: row.selected === true || row.selected === 1,
+          } as BeverageOption;
+        })
+        .filter((row): row is BeverageOption => row !== null);
+      setBeverageOptions(next);
+      // Named observation point: frontend state updated from a backend frame.
+      console.log(`[checkpoint] beverage_options_applied count=${next.length}`);
+    };
+
     const scheduleReconnect = () => {
       if (disposed) return;
       menuAIWSAttemptsRef.current += 1;
@@ -824,10 +862,15 @@ export function useMenuEditor(): UseMenuEditorReturn {
         let payload: Record<string, unknown> | null = null;
         try { payload = JSON.parse(String(event.data ?? "")) as Record<string, unknown>; } catch { return; }
         const type = String(payload.type ?? "").trim().toLowerCase();
+        if (type === "beverage_options" || type === "beverage_error") {
+          applyBeverageOptions(payload);
+          return;
+        }
         if (type === "sync" || type === "ai_update" || type === "tracker_update"
           || type === "hello" || type === "snapshot"
           || type === "preview_image_completed" || type === "preview_image_failed") {
           applyMessageTracker(payload);
+          if (Array.isArray(payload.beverage_options)) applyBeverageOptions(payload);
         }
       });
 
@@ -1551,6 +1594,55 @@ export function useMenuEditor(): UseMenuEditorReturn {
     try { ws.send(JSON.stringify({ type: "sync", menuId })); } catch { /* ignore */ }
   }, [menuId]);
 
+  // --- Beverage options: WS-only mutations (no REST) ---
+  const sendBeverageMessage = useCallback((message: Record<string, unknown>) => {
+    const ws = menuAIWSSocketRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN || !menuId) {
+      pushToast({ kind: "error", title: "Error", message: "Conexion no disponible. Intentalo de nuevo." });
+      return;
+    }
+    beverageWSMenuIdRef.current = menuId;
+    let correlationId = "";
+    try { correlationId = window.sessionStorage.getItem("vcCorrelationId") || ""; } catch { correlationId = ""; }
+    try { ws.send(JSON.stringify({ ...message, menu_id: menuId, correlation_id: correlationId })); } catch { /* ignore */ }
+    // Named observation point: frontend sent a websocket mutation.
+    console.log(`[checkpoint] beverage_ws_sent type=${String(message.type ?? "")} menu_id=${menuId}`);
+  }, [menuId, pushToast]);
+
+  const refreshBeverageOptions = useCallback(() => {
+    setBeverageModalOpen(true);
+    sendBeverageMessage({ type: "beverage_refresh" });
+  }, [sendBeverageMessage]);
+
+  const setBeverageOptionSelected = useCallback((optionId: number, selected: boolean) => {
+    setBeverageOptions((prev) => prev.map((option) => (option.id === optionId ? { ...option, selected } : option)));
+    sendBeverageMessage({ type: "beverage_set", option_id: optionId, selected });
+  }, [sendBeverageMessage]);
+
+  const createBeverageOption = useCallback((name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    sendBeverageMessage({ type: "beverage_create", name: trimmed });
+  }, [sendBeverageMessage]);
+
+  const requestBeverageOptionDelete = useCallback((option: BeverageDeleteTarget) => {
+    setBeverageDeleteTarget(option);
+  }, []);
+
+  const confirmBeverageOptionDelete = useCallback(() => {
+    if (!beverageDeleteTarget) return;
+    sendBeverageMessage({ type: "beverage_delete", option_id: beverageDeleteTarget.id });
+    setBeverageDeleteTarget(null);
+  }, [beverageDeleteTarget, sendBeverageMessage]);
+
+  const cancelBeverageOptionDelete = useCallback(() => {
+    setBeverageDeleteTarget(null);
+  }, []);
+
+  const closeBeverageModal = useCallback(() => {
+    setBeverageModalOpen(false);
+  }, []);
+
   // --- closeDishImageAdvisor ---
   const closeDishImageAdvisor = useCallback((opts?: { keepTarget?: boolean }) => {
     setDishImageAdvisorDraft((prev) => { if (prev?.objectUrl) URL.revokeObjectURL(prev.objectUrl); return null; });
@@ -1756,7 +1848,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
           {menuPreviewAIGenerating ? (
             <div className="bo-sliderCell bo-sliderPendingCell" role="status" aria-live="polite" data-testid="menu-preview-ai-skeleton">
               <Sparkles size={16} aria-hidden="true" />
-              <span>Generando...</span>
+              <span data-slot="useMenuEditor-span">Generando...</span>
             </div>
           ) : menuPreviewImageUrl ? (
             <div className="bo-sliderCell" data-slot="useMenuEditor-menuPreviewCell">
@@ -1826,6 +1918,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages,
     showMenuPreviewImage, menuPreviewImageUrl, menuPreviewAIRequested, menuPreviewAIGenerating,
     sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement, beverageSupplementPrice,
+    beverageOptions, beverageModalOpen, beverageDeleteTarget,
     minPartySize, mainLimit, mainLimitNum, comments, specialMenuImage, menuPreviewImageBusy,
     specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen, desktopPreviewDocked,
     previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
@@ -1843,6 +1936,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setMenuId, setIsDraft, setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
     setShowDishImages, setShowMenuPreviewImage, setMenuPreviewImageUrl, setMenuPreviewAIRequested,
     setMenuPreviewAIGenerating, setSections, setIncludedCoffee, setBeverageType, setBeveragePrice,
+    refreshBeverageOptions, setBeverageOptionSelected, createBeverageOption,
+    requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize, setMainLimit, setMainLimitNum,
     setComments, setSpecialMenuImage, setSaveState, setBusy, setHydrated, setMobileTab,
     setDesktopPreviewOpen, setDesktopPreviewDocked, setAllergenModal, setMenuAITracker,

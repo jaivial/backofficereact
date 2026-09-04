@@ -25,17 +25,17 @@ export function ConfigBunnyStorage() {
 
   return (
     <div className="bo-panel" data-ui="config-bunny-storage" data-testid="config-bunny-storage">
-      <div className="bo-panelHead flex-col items-stretch gap-1">
-        <div className="bo-panelTitle flex items-center gap-2">
+      <div data-slot="configBunnyStorage-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
+        <div data-slot="configBunnyStorage-gap-2" className="bo-panelTitle flex items-center gap-2">
           <Cloud size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
           Almacenamiento CDN (BunnyCDN)
         </div>
-        <div className="bo-panelMeta">
+        <div data-slot="configBunnyStorage-panelMeta" className="bo-panelMeta">
           Credenciales de la zona de BunnyCDN de este restaurante. Se usan para subir y servir las imagenes generadas con IA y las fotos de la carta.
         </div>
       </div>
 
-      <div className="bo-panelBody flex flex-col gap-5">
+      <div data-slot="configBunnyStorage-gap-5" className="bo-panelBody flex flex-col gap-5">
         {config.usingEnvFallback ? (
           <div className="bo-panelMeta" data-slot="config-cdn-fallback-notice">
             Ahora mismo se usan las credenciales globales del servidor. Rellena los tres campos y activa el interruptor para que este restaurante use su propia zona.
@@ -43,11 +43,11 @@ export function ConfigBunnyStorage() {
         ) : null}
 
         <div className="bo-field" data-slot="config-cdn-zone-field">
-          <span className="bo-label flex items-center gap-1.5">
-            <label htmlFor="cdn-zone">Zona de almacenamiento</label>
+          <span data-slot="configBunnyStorage-gap-1.5" className="bo-label flex items-center gap-1.5">
+            <label data-slot="configBunnyStorage-label" htmlFor="cdn-zone">Zona de almacenamiento</label>
             <InfoHint title="Zona de almacenamiento">
-              <p>El <strong>nombre</strong> de tu Storage Zone, no la URL.</p>
-              <p>
+              <p data-slot="configBunnyStorage-p">El <strong>nombre</strong> de tu Storage Zone, no la URL.</p>
+              <p data-slot="configBunnyStorage-p">
                 En BunnyCDN: <em>Storage &rsaquo; tu zona &rsaquo; FTP &amp; API Access</em>. Ahi veras
                 el endpoint como <code>https://storage.bunnycdn.com/villacarmen</code> — aqui va solo la
                 ultima parte, <code>villacarmen</code>.
@@ -68,15 +68,15 @@ export function ConfigBunnyStorage() {
         </div>
 
         <div className="bo-field" data-slot="config-cdn-key-field">
-          <span className="bo-label flex items-center gap-1.5">
-            <label htmlFor="cdn-key">Password</label>
+          <span data-slot="configBunnyStorage-gap-1.5" className="bo-label flex items-center gap-1.5">
+            <label data-slot="configBunnyStorage-label" htmlFor="cdn-key">Password</label>
             <InfoHint title="Password">
-              <p>La contrasena de acceso de la Storage Zone, que hace de clave de API para subir ficheros.</p>
-              <p>
+              <p data-slot="configBunnyStorage-p">La contrasena de acceso de la Storage Zone, que hace de clave de API para subir ficheros.</p>
+              <p data-slot="configBunnyStorage-p">
                 En BunnyCDN: <em>Storage &rsaquo; tu zona &rsaquo; FTP &amp; API Access</em>, campo
                 <strong> Password</strong>. Usa la principal, no la de solo lectura, porque necesitamos escribir.
               </p>
-              <p>Una vez guardada no se vuelve a mostrar: si la dejas en blanco se mantiene la que ya hay.</p>
+              <p data-slot="configBunnyStorage-p">Una vez guardada no se vuelve a mostrar: si la dejas en blanco se mantiene la que ya hay.</p>
             </InfoHint>
           </span>
           <input
@@ -93,15 +93,15 @@ export function ConfigBunnyStorage() {
         </div>
 
         <div className="bo-field" data-slot="config-cdn-pull-field">
-          <span className="bo-label flex items-center gap-1.5">
-            <label htmlFor="cdn-pull">Pull URL publica</label>
+          <span data-slot="configBunnyStorage-gap-1.5" className="bo-label flex items-center gap-1.5">
+            <label data-slot="configBunnyStorage-label" htmlFor="cdn-pull">Pull URL publica</label>
             <InfoHint title="Pull URL publica">
-              <p>El dominio publico desde el que se sirven las imagenes a los clientes.</p>
-              <p>
+              <p data-slot="configBunnyStorage-p">El dominio publico desde el que se sirven las imagenes a los clientes.</p>
+              <p data-slot="configBunnyStorage-p">
                 En BunnyCDN: <em>CDN &rsaquo; tu Pull Zone &rsaquo; General</em>, el <strong>Hostname</strong>.
                 Se escribe completo con <code>https://</code>, por ejemplo <code>https://villacarmenmedia.b-cdn.net</code>.
               </p>
-              <p>La Pull Zone tiene que estar conectada a la Storage Zone de arriba, o las imagenes daran 404.</p>
+              <p data-slot="configBunnyStorage-p">La Pull Zone tiene que estar conectada a la Storage Zone de arriba, o las imagenes daran 404.</p>
             </InfoHint>
           </span>
           <input
@@ -118,10 +118,10 @@ export function ConfigBunnyStorage() {
         </div>
 
         <div className="bo-foodDetailQuickStatus" data-slot="config-cdn-active-field">
-          <span className="bo-label flex items-center gap-1.5">
+          <span data-slot="configBunnyStorage-gap-1.5" className="bo-label flex items-center gap-1.5">
             Usar estas credenciales
             <InfoHint title="Usar estas credenciales">
-              <p>
+              <p data-slot="configBunnyStorage-p">
                 Activado, este restaurante usa la zona de arriba. Desactivado, vuelve a las credenciales
                 globales del servidor sin perder lo que hayas guardado.
               </p>

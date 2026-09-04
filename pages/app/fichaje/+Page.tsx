@@ -623,7 +623,7 @@ export default function Page() {
                 </div>
               ) : (
                 <div className="bo-fichajeAdminScheduleEmpty" data-testid="fichaje-admin-schedule-note">
-                  <div className="bo-mutedText">Este miembro no tiene turno asignado para esta fecha.</div>
+                  <div data-slot="fichaje-mutedText" className="bo-mutedText">Este miembro no tiene turno asignado para esta fecha.</div>
                   <button
                     className="bo-btn bo-btn--ghost bo-btn--sm"
                     type="button"

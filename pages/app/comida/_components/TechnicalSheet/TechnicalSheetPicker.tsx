@@ -68,7 +68,7 @@ export function TechnicalSheetPicker({ itemId, onLinked, onClose, source = "comi
   return (
     <div className="bo-stack" data-ui="technical-sheet-picker" data-testid="technical-sheet-picker">
       <FormField label="Buscar ficha tecnica" htmlFor="sheet-search">
-        <input
+        <input data-testid="nombre-de-la-ficha"
           id="sheet-search"
           className="bo-input"
           type="search"
@@ -83,27 +83,27 @@ export function TechnicalSheetPicker({ itemId, onLinked, onClose, source = "comi
       {loading ? <p className="bo-muted">Cargando fichas tecnicas...</p> : null}
 
       {!loading && sheets.length === 0 ? (
-        <p className="bo-muted">No hay fichas tecnicas que coincidan con la busqueda.</p>
+        <p data-slot="technicalSheetPicker-muted" className="bo-muted">No hay fichas tecnicas que coincidan con la busqueda.</p>
       ) : null}
 
-      <ul className="bo-sheetPicker__list">
+      <ul data-slot="technicalSheetPicker-sheetPicker-list" className="bo-sheetPicker__list">
         {sheets.map((sheet) => (
-          <li key={sheet.id} className="bo-sheetPicker__item">
-            <div className="bo-sheetPicker__info">
-              <span className="bo-sheetPicker__name">{sheet.name}</span>
-              <span className="bo-muted">
+          <li data-slot="technicalSheetPicker-sheetPicker-item" key={sheet.id} className="bo-sheetPicker__item">
+            <div data-slot="technicalSheetPicker-sheetPicker-info" className="bo-sheetPicker__info">
+              <span data-slot="technicalSheetPicker-sheetPicker-name" className="bo-sheetPicker__name">{sheet.name}</span>
+              <span data-slot="technicalSheetPicker-muted" className="bo-muted">
                 {sheet.portions} raciones · {sheet.status === "DRAFT" ? "Borrador" : "Publicada"}
               </span>
               {/* Stating the reuse count up front is what makes the direct-link
                   option safe to offer at all. */}
               {sheet.usageCount > 0 ? (
-                <span className="bo-sheetPicker__usage">
+                <span data-slot="technicalSheetPicker-sheetPicker-usage" className="bo-sheetPicker__usage">
                   Usada por {sheet.usageCount} producto{sheet.usageCount === 1 ? "" : "s"}: al
                   vincularla directamente, los cambios afectaran a todos.
                 </span>
               ) : null}
             </div>
-            <div className="bo-sheetPicker__actions">
+            <div data-slot="technicalSheetPicker-sheetPicker-actions" className="bo-sheetPicker__actions">
               <Button
                 variant="primary"
                 disabled={busyId === sheet.id}
@@ -123,7 +123,7 @@ export function TechnicalSheetPicker({ itemId, onLinked, onClose, source = "comi
         ))}
       </ul>
 
-      <div className="bo-row">
+      <div data-slot="technicalSheetPicker-row" className="bo-row">
         <Button variant="ghost" onClick={onClose}>
           Cancelar
         </Button>
