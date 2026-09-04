@@ -5,6 +5,13 @@ COPY package.json bun.lock* ./
 RUN bun install --frozen-lockfile || bun install
 COPY . .
 
+# Install Playwright + Chromium so `bun run test:browser` can exercise
+# the menu-preview iframe regression suite. The base bun image ships
+# without these system libs; `bunx playwright install --with-deps chromium`
+# adds everything required for headless Chromium. We capture the install
+# log (no `|| true`) so a failing install is visible in CI logs.
+RUN bunx playwright install --with-deps chromium > /tmp/pw-install.log 2>&1 || (tail -80 /tmp/pw-install.log >&2; exit 1)
+
 ENV NODE_ENV=development
 ENV PORT=3010
 EXPOSE 3010
