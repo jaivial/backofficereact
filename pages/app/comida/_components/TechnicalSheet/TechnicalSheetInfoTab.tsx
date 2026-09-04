@@ -62,9 +62,9 @@ export function TechnicalSheetInfoTab({
 
   return (
     <div className="bo-stack" data-ui="sheet-info-tab" data-testid="sheet-info-tab">
-      <section className="bo-stack bo-sheetSection">
-        <div className="bo-sheetSectionHead">
-          <h3 className="bo-sectionTitle">Ingredientes</h3>
+      <section data-testid="sheetsection" className="bo-stack bo-sheetSection">
+        <div data-slot="technicalSheetInfoTab-sheetSectionHead" className="bo-sheetSectionHead">
+          <h3 data-slot="technicalSheetInfoTab-sectionTitle" className="bo-sectionTitle">Ingredientes</h3>
           <button
             ref={addIngredientRef}
             type="button"
@@ -105,9 +105,9 @@ export function TechnicalSheetInfoTab({
         />
       </section>
 
-      <section className="bo-stack bo-sheetSection">
-        <div className="bo-sheetSectionHead">
-          <h3 className="bo-sectionTitle">Alergenos</h3>
+      <section data-testid="sheetsection-2" className="bo-stack bo-sheetSection">
+        <div data-slot="technicalSheetInfoTab-sheetSectionHead" className="bo-sheetSectionHead">
+          <h3 data-slot="technicalSheetInfoTab-sectionTitle" className="bo-sectionTitle">Alergenos</h3>
           <button
             ref={addAllergenRef}
             type="button"

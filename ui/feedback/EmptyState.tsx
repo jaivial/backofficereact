@@ -18,7 +18,7 @@ export function EmptyState({
   ...rest
 }: EmptyStateProps) {
   return (
-    <div
+    <div data-slot="emptyState-div"
       className={cn(
         variant === "tailwind"
           ? "bg-[var(--bo-surface)] rounded-lg shadow-sm border border-[var(--bo-border)] p-12 text-center"

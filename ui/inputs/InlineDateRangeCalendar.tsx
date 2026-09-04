@@ -61,7 +61,7 @@ export function InlineDateRangeCalendar({ from, to, onChange, disabledDates, dis
         uiPrefix="inline-date-range"
       />
       {draft.from ? (
-        <button type="button" className="bo-btn bo-btn--sm bo-btn--ghost" onClick={() => { clear(); onChange({ from: "", to: "" }); }}>
+        <button data-testid="limpiar-fechas" type="button" className="bo-btn bo-btn--sm bo-btn--ghost" onClick={() => { clear(); onChange({ from: "", to: "" }); }}>
           Limpiar fechas
         </button>
       ) : null}

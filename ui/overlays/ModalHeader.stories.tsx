@@ -50,7 +50,7 @@ export const WithRichNodeTitle: Story = {
   name: "With Rich Node Title",
   args: {
     title: (
-      <span>
+      <span data-slot="modalHeader.stories-span">
         <strong>Bold</strong> and <em>Italic</em> Title
       </span>
     ),

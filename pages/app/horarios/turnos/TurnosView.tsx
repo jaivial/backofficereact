@@ -316,7 +316,7 @@ export function TurnosView({ date: initialDate, members, schedules: initialSched
               data-testid="horarios-turnos-calendar-btn"
             >
               <CalendarDays size={18} strokeWidth={1.8} />
-              <span className="bo-dateBtnLabel">{formatDateLabel(date)}</span>
+              <span data-slot="turnosView-dateBtnLabel" className="bo-dateBtnLabel">{formatDateLabel(date)}</span>
             </button>
             <CalendarModal
               open={calendarModalOpen}

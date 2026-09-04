@@ -98,16 +98,16 @@ function TabFallback({
       aria-live="polite"
       data-slot={isError ? "tab-error" : "tab-empty-fallback"}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+      <div data-slot="bookingsViewTabs-div" style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
         {icon ? (
-          <div
+          <div data-slot="bookingsViewTabs-div"
             aria-hidden="true"
             style={{ color: "var(--bo-muted)", flexShrink: 0, marginTop: 2 }}
           >
             {icon}
           </div>
         ) : null}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div data-slot="bookingsViewTabs-div" style={{ flex: 1, minWidth: 0 }}>
           <div className="bo-alertTitle" data-slot="fallback-title">{title}</div>
           {message ? (
             <div className="bo-alertMsg" data-slot="fallback-message" style={{ wordBreak: "break-word" }}>
@@ -115,7 +115,7 @@ function TabFallback({
             </div>
           ) : null}
           {onRetry ? (
-            <div className="bo-alertActions" style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            <div data-slot="bookingsViewTabs-alertActions" className="bo-alertActions" style={{ marginTop: 12, display: "flex", gap: 8 }}>
               <button
                 type="button"
                 className="bo-btn bo-btn--sm bo-btn--primary"
@@ -123,7 +123,7 @@ function TabFallback({
                 data-slot="fallback-retry"
               >
                 <RefreshCw size={14} strokeWidth={1.8} aria-hidden="true" />
-                <span className="bo-btnText">{retryLabel}</span>
+                <span data-slot="bookingsViewTabs-btnText" className="bo-btnText">{retryLabel}</span>
               </button>
             </div>
           ) : null}

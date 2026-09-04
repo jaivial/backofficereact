@@ -113,7 +113,7 @@ export default function WebsiteBuilder() {
                 Website Builder
               </h1>
               {website && (
-                <span className={`px-2 py-1 text-xs rounded-full ${
+                <span data-slot="website-builder-span" className={`px-2 py-1 text-xs rounded-full ${
                   website.status === 'published' 
                     ? 'bg-green-500/20 text-green-400' 
                     : 'bg-yellow-500/20 text-yellow-400'

@@ -177,10 +177,10 @@ function AccessibleTable({ spec }: { spec: ForkyChartSpec }) {
   return (
     <table className="w-full border-collapse text-xs" data-testid="forky-chart-table">
       <caption className="sr-only">{spec.title ?? "Gráfico generado por Forky"}</caption>
-      <thead>
-        <tr>
+      <thead data-slot="forkyChart-thead">
+        <tr data-slot="forkyChart-tr">
           {cols.map((c) => (
-            <th
+            <th data-slot="forkyChart-th"
               key={c}
               scope="col"
               className={c === labelVK ? "border border-foreground/10 px-2 py-1 text-left font-medium" : "border border-foreground/10 px-2 py-1 text-right font-medium"}
@@ -190,11 +190,11 @@ function AccessibleTable({ spec }: { spec: ForkyChartSpec }) {
           ))}
         </tr>
       </thead>
-      <tbody>
+      <tbody data-slot="forkyChart-tbody">
         {data.map((row, i) => (
-          <tr key={i} className="even:bg-foreground/[0.03]">
+          <tr data-slot="forkyChart-even:bg-foreground/[0.03]" key={i} className="even:bg-foreground/[0.03]">
             {cols.map((c) => (
-              <td
+              <td data-slot="forkyChart-td"
                 key={c}
                 className={c === labelVK ? "border border-foreground/10 px-2 py-1" : "border border-foreground/10 px-2 py-1 text-right tabular-nums"}
               >
@@ -213,7 +213,7 @@ function ForkyChartEmpty({ kind, message }: { kind: "empty" | "loading" | "error
   if (kind === "loading") {
     return (
       <div className="rounded-xl border border-foreground/10 p-3" data-testid="forky-chart-loading">
-        <div className="h-4 w-1/3 animate-pulse rounded bg-foreground/10" />
+        <div data-slot="forkyChart-bg-foreground/10" className="h-4 w-1/3 animate-pulse rounded bg-foreground/10" />
         <div className="mt-3 h-40 animate-pulse rounded bg-foreground/5" data-ui="forky-chart-loading-skeleton" />
       </div>
     );
@@ -343,10 +343,10 @@ export function ForkyChartView({ spec }: { spec: ForkyChartSpec }) {
       <ChartContainer config={config} className="h-56" aria-label={spec.title ?? "Gráfico generado por Forky"}>
         {chart}
       </ChartContainer>
-      <div className="mt-2 flex items-center gap-2">
+      <div data-slot="forkyChart-gap-2" className="mt-2 flex items-center gap-2">
         <details className="flex-1" data-testid="forky-chart-details">
           <summary className="cursor-pointer text-[11px] text-muted-foreground">Ver datos</summary>
-          <div className="mt-2 overflow-x-auto">
+          <div data-slot="forkyChart-overflow-x-auto" className="mt-2 overflow-x-auto">
             <AccessibleTable spec={spec} />
           </div>
         </details>

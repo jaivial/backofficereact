@@ -469,7 +469,7 @@ export default function Page() {
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-[var(--bo-muted)]" data-slot="estado-cuenta-text-[var(--bo-muted)]">{formatDate(inv.invoice_date)}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-[var(--bo-text)]" data-slot="estado-cuenta-text-[var(--bo-text)]">{formatCurrency(inv.total, "EUR")}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-center" data-slot="estado-cuenta-text-center">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
+                            <span data-slot="estado-cuenta-span" className={`px-2 py-1 text-xs rounded-full ${
                               inv.status === "pagada" ? "bg-green-100 text-[var(--bo-color-success)]" :
                               inv.status === "pendiente" ? "bg-[var(--bo-warning-bg)] text-[var(--bo-color-warning)]" :
                               inv.status === "enviada" ? "bg-[color-mix(in_srgb,var(--bo-accent)_18%,transparent)] text-[var(--bo-accent)]" :

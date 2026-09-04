@@ -66,7 +66,7 @@ export function POSCalendarModal({ open, onClose, activeDate, onChangeDate }: PO
   return (
     <Modal open={open} onClose={onClose} title="Calendario" size="lg" hideClose data-testid="pos-calendar-modal">
       <ModalHeader title="Calendario" onClose={onClose} data-testid="pos-calendar-header" />
-      <div className="pos-calendarModal__body">
+      <div data-slot="pOSCalendarModal-pos-calendarModal-body" className="pos-calendarModal__body">
         <POSCashDayCalendar
           year={year}
           month={month}
@@ -76,7 +76,7 @@ export function POSCalendarModal({ open, onClose, activeDate, onChangeDate }: PO
           onNextMonth={() => setMonth((cur) => ({ year: cur.month === 12 ? cur.year + 1 : cur.year, month: cur.month === 12 ? 1 : cur.month + 1 }))}
         />
         <aside className="pos-calendarModal__detail" data-testid="pos-calendar-detail">
-          <header className="pos-calendarModal__detailHead">
+          <header data-testid="pos-calendarmodal-detailhead" className="pos-calendarModal__detailHead">
             <h3 data-testid="pos-calendar-detail-title">{selected || "Selecciona un día"}</h3>
             {detail?.readOnly ? <span className="pos-calendarModal__badge" data-testid="pos-calendar-readonly">Solo consulta</span> : null}
           </header>
@@ -87,15 +87,15 @@ export function POSCalendarModal({ open, onClose, activeDate, onChangeDate }: PO
               <ul className="pos-calendarModal__tables" data-testid="pos-calendar-tables">
                 {detail.tables.map((t) => (
                   <li className="pos-calendarModal__table" key={t.tableId ?? t.tableName} data-testid={`pos-calendar-table-${t.tableId ?? t.tableName}`}>
-                    <div className="pos-calendarModal__tableHead">
+                    <div data-slot="pOSCalendarModal-pos-calendarModal-tableHead" className="pos-calendarModal__tableHead">
                       <strong data-testid={`pos-calendar-table-name-${t.tableId ?? t.tableName}`}>{t.tableName || "Sin mesa"}</strong>
                       <span data-testid={`pos-calendar-table-total-${t.tableId ?? t.tableName}`}>{eur.format((t.totalGrossCents || 0) / 100)}</span>
                     </div>
                     <span className="pos-calendarModal__covers" data-testid={`pos-calendar-table-covers-${t.tableId ?? t.tableName}`}>{t.covers} comensales · {t.visits.length} visita(s)</span>
-                    <ul className="pos-calendarModal__visits">
+                    <ul data-slot="pOSCalendarModal-pos-calendarModal-visits" className="pos-calendarModal__visits">
                       {t.visits.map((v) => (
                         <li key={v.visitId} data-testid={`pos-calendar-visit-${v.visitId}`}>
-                          <span>{v.channel === "BAR" ? "Barra" : v.channel} · {v.status === "OPEN" ? "Abierta" : "Cerrada"} · {v.tickets.length} ticket(s)</span>
+                          <span data-slot="pOSCalendarModal-span">{v.channel === "BAR" ? "Barra" : v.channel} · {v.status === "OPEN" ? "Abierta" : "Cerrada"} · {v.tickets.length} ticket(s)</span>
                           <span data-testid={`pos-calendar-visit-total-${v.visitId}`}>{eur.format((v.totalGrossCents || 0) / 100)}</span>
                         </li>
                       ))}

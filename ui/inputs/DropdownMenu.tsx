@@ -283,7 +283,7 @@ export function DropdownMenu({
   ) : null;
 
   return (
-    <div className={cn("bo-dropdownWrapper", className, wrapperClassName)}>
+    <div data-slot="dropdownMenu-div" className={cn("bo-dropdownWrapper", className, wrapperClassName)}>
       {trigger}
       {menu}
     </div>

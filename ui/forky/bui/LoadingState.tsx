@@ -45,9 +45,9 @@ function LoaderGrid({
   round: boolean;
 }) {
   return (
-    <span aria-hidden className="grid shrink-0 grid-cols-[repeat(3,4px)] gap-[1.5px]">
+    <span data-slot="loadingState-gap-[1.5px]" aria-hidden className="grid shrink-0 grid-cols-[repeat(3,4px)] gap-[1.5px]">
       {delays.map((delay, index) => (
-        <span
+        <span data-slot="loadingState-span"
           key={index}
           className={`size-[4px] bg-ink ${round ? "rounded-full" : "rounded-[1px]"}`}
           style={{
@@ -88,7 +88,7 @@ export default function LoadingState({
   const { delays, dur, round } = PATTERNS[variant] ?? PATTERNS.Drive;
 
   const labelEl = (
-    <span
+    <span data-slot="loadingState-text-transparent"
       className="bg-clip-text text-[13px] font-medium text-transparent"
       style={{
         backgroundImage:
@@ -104,19 +104,19 @@ export default function LoadingState({
 
   if (surfer) {
     return (
-      <div role="status" className="flex w-fit flex-col items-start">
-        <div className="flex items-center gap-2.5">
+      <div data-slot="loadingState-items-start" role="status" className="flex w-fit flex-col items-start">
+        <div data-slot="loadingState-gap-2.5" className="flex items-center gap-2.5">
           <LoaderGrid {...PATTERNS.Drive} />
           {labelEl}
           {elapsedEl}
         </div>
 
         {/* the context card follows the status text it is illustrating */}
-        <div
+        <div data-slot="loadingState-shadow-overlay"
           className="mt-2 w-56 overflow-hidden rounded-[10px] shadow-overlay"
           style={{ animation: "pop-in 200ms cubic-bezier(0.16,1,0.3,1) both", transformOrigin: "top left" }}
         >
-          <div className="relative aspect-video w-full" style={{ background: "var(--tooltip-bg)" }}>
+          <div data-slot="loadingState-w-full" className="relative aspect-video w-full" style={{ background: "var(--tooltip-bg)" }}>
             {videoOk ? (
               <video
                 src={videoSrc}
@@ -128,9 +128,9 @@ export default function LoadingState({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-1.5">
+              <div data-slot="loadingState-gap-1.5" className="flex h-full w-full flex-col items-center justify-center gap-1.5">
                 <LoaderGrid {...PATTERNS.Drive} />
-                <span className="px-3 text-center font-mono text-[10px]" style={{ color: "var(--tooltip-muted)" }}>
+                <span data-slot="loadingState-text-[10px]" className="px-3 text-center font-mono text-[10px]" style={{ color: "var(--tooltip-muted)" }}>
                   Video unavailable
                 </span>
               </div>
@@ -142,7 +142,7 @@ export default function LoadingState({
   }
 
   return (
-    <div role="status" className="flex w-fit items-center gap-2.5">
+    <div data-slot="loadingState-gap-2.5" role="status" className="flex w-fit items-center gap-2.5">
       <LoaderGrid delays={delays} dur={dur} round={round} />
       {labelEl}
       {elapsedEl}

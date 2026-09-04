@@ -257,7 +257,7 @@ export function MenuItemEditor({
                       return (
                         <span key={`${dish.clientId}-${name}`} className="bo-allergenPill" title={name} data-slot="menuItemEditor-allergenPill">
                           {Icon ? <Icon size={14} aria-hidden="true" /> : null}
-                          <span>{name}</span>
+                          <span data-slot="menuItemEditor-span">{name}</span>
                         </span>
                       );
                     })}

@@ -30,58 +30,58 @@ function RealtimeStateDisplay() {
   const state = useAtomValue(mockFichajeRealtimeAtom);
 
   return (
-    <div style={{ padding: "20px", fontFamily: "monospace", fontSize: "14px" }}>
-      <h3 style={{ marginBottom: "16px" }}>Fichaje Realtime State</h3>
-      <div style={{ display: "grid", gap: "8px" }}>
-        <div>
+    <div data-slot="fichajeRealtimeBridge.stories-div" style={{ padding: "20px", fontFamily: "monospace", fontSize: "14px" }}>
+      <h3 data-slot="fichajeRealtimeBridge.stories-h3" style={{ marginBottom: "16px" }}>Fichaje Realtime State</h3>
+      <div data-slot="fichajeRealtimeBridge.stories-div" style={{ display: "grid", gap: "8px" }}>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>WebSocket Connected:</strong>{" "}
-          <span style={{ color: state.wsConnected ? "green" : "red" }}>
+          <span data-slot="fichajeRealtimeBridge.stories-span" style={{ color: state.wsConnected ? "green" : "red" }}>
             {state.wsConnected ? "YES" : "NO"}
           </span>
         </div>
-        <div>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>WebSocket Connecting:</strong>{" "}
-          <span style={{ color: state.wsConnecting ? "orange" : "gray" }}>
+          <span data-slot="fichajeRealtimeBridge.stories-span" style={{ color: state.wsConnecting ? "orange" : "gray" }}>
             {state.wsConnecting ? "YES" : "NO"}
           </span>
         </div>
-        <div>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>Restaurant ID:</strong> {state.restaurantId ?? "null"}
         </div>
-        <div>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>Last Sync:</strong>{" "}
           {state.lastSyncAt ? new Date(state.lastSyncAt).toLocaleTimeString() : "null"}
         </div>
-        <div>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>Current Member:</strong>{" "}
           {state.member ? `${state.member.id} - ${state.member.fullName}` : "null"}
         </div>
-        <div>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>Active Entries Count:</strong> {Object.keys(state.activeEntriesByMember).length}
         </div>
-        <div>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>Active Entry (own):</strong>{" "}
           {state.activeEntry ? `Entry #${state.activeEntry.id} - ${state.activeEntry.memberName}` : "null"}
         </div>
-        <div>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>Schedule Today:</strong>{" "}
           {state.scheduleToday
             ? `${state.scheduleToday.startTime} - ${state.scheduleToday.endTime}`
             : "null"}
         </div>
-        <div>
+        <div data-slot="fichajeRealtimeBridge.stories-div">
           <strong>Pending Schedule Updates:</strong>{" "}
-          <span style={{ color: state.pendingScheduleUpdates ? "orange" : "gray" }}>
+          <span data-slot="fichajeRealtimeBridge.stories-span" style={{ color: state.pendingScheduleUpdates ? "orange" : "gray" }}>
             {state.pendingScheduleUpdates ? "YES" : "NO"}
           </span>
         </div>
 
         {Object.keys(state.activeEntriesByMember).length > 0 && (
-          <div style={{ marginTop: "16px" }}>
+          <div data-slot="fichajeRealtimeBridge.stories-div" style={{ marginTop: "16px" }}>
             <strong>Active Entries:</strong>
-            <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+            <ul data-slot="fichajeRealtimeBridge.stories-ul" style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
               {Object.values(state.activeEntriesByMember).map((entry) => (
-                <li key={entry.id}>
+                <li data-slot="fichajeRealtimeBridge.stories-li" key={entry.id}>
                   {entry.memberName} - Started at {entry.startTime}
                 </li>
               ))}
@@ -213,7 +213,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div style={{ background: "#1a1a2e", padding: "20px", borderRadius: "8px" }}>
+      <div data-slot="fichajeRealtimeBridge.stories-div" style={{ background: "#1a1a2e", padding: "20px", borderRadius: "8px" }}>
         <Story />
       </div>
     ),
@@ -229,7 +229,7 @@ export const DisconnectedState: Story = {
     const [displayState, setDisplayState] = useState<FichajeRealtimeState | null>(null);
 
     return (
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div data-slot="fichajeRealtimeBridge.stories-div" style={{ display: "flex", gap: "20px" }}>
         <BridgeWithSimulation simulationMode="disconnected" onStateChange={setDisplayState} />
         {displayState && <RealtimeStateDisplay />}
       </div>
@@ -250,7 +250,7 @@ export const ConnectingState: Story = {
     const [displayState, setDisplayState] = useState<FichajeRealtimeState | null>(null);
 
     return (
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div data-slot="fichajeRealtimeBridge.stories-div" style={{ display: "flex", gap: "20px" }}>
         <BridgeWithSimulation simulationMode="connecting" onStateChange={setDisplayState} />
         {displayState && <RealtimeStateDisplay />}
       </div>
@@ -271,7 +271,7 @@ export const ConnectedEmptyState: Story = {
     const [displayState, setDisplayState] = useState<FichajeRealtimeState | null>(null);
 
     return (
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div data-slot="fichajeRealtimeBridge.stories-div" style={{ display: "flex", gap: "20px" }}>
         <BridgeWithSimulation simulationMode="connected-empty" onStateChange={setDisplayState} />
         {displayState && <RealtimeStateDisplay />}
       </div>
@@ -292,7 +292,7 @@ export const ConnectedWithActiveEntry: Story = {
     const [displayState, setDisplayState] = useState<FichajeRealtimeState | null>(null);
 
     return (
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div data-slot="fichajeRealtimeBridge.stories-div" style={{ display: "flex", gap: "20px" }}>
         <BridgeWithSimulation simulationMode="connected-active" onStateChange={setDisplayState} />
         {displayState && <RealtimeStateDisplay />}
       </div>
@@ -313,7 +313,7 @@ export const ConnectedWithSchedule: Story = {
     const [displayState, setDisplayState] = useState<FichajeRealtimeState | null>(null);
 
     return (
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div data-slot="fichajeRealtimeBridge.stories-div" style={{ display: "flex", gap: "20px" }}>
         <BridgeWithSimulation simulationMode="with-schedule" onStateChange={setDisplayState} />
         {displayState && <RealtimeStateDisplay />}
       </div>
@@ -376,7 +376,7 @@ export const MultipleActiveEntries: Story = {
     }, [setState]);
 
     return (
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div data-slot="fichajeRealtimeBridge.stories-div" style={{ display: "flex", gap: "20px" }}>
         <FichajeRealtimeBridge />
         {displayState && <RealtimeStateDisplay />}
       </div>

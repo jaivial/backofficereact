@@ -243,7 +243,7 @@ export function StockItemModal({
           >
             <Camera size={28} className="bo-stockChoiceIco" aria-hidden="true" />
             <strong className="bo-stockChoiceTitle">Escanear documento</strong>
-            <span className="bo-stockChoiceHint">Foto de un albaran o etiqueta; MiniMax rellena el nombre.</span>
+            <span data-slot="stockItemModal-stockChoiceHint" className="bo-stockChoiceHint">Foto de un albaran o etiqueta; MiniMax rellena el nombre.</span>
           </button>
           <button
             type="button"
@@ -254,7 +254,7 @@ export function StockItemModal({
           >
             <Keyboard size={28} className="bo-stockChoiceIco" aria-hidden="true" />
             <strong className="bo-stockChoiceTitle">Anadir manualmente</strong>
-            <span className="bo-stockChoiceHint">Crea el articulo a mano con todos sus datos.</span>
+            <span data-slot="stockItemModal-stockChoiceHint" className="bo-stockChoiceHint">Crea el articulo a mano con todos sus datos.</span>
           </button>
         </div>
       ) : null}
@@ -266,7 +266,7 @@ export function StockItemModal({
             {captured ? <img src={captured} alt="Captura" className="bo-stockScanPreview" data-ui="stock-scan-preview" /> : null}
           </div>
           {scanError ? <InlineAlert kind="error" title={scanError} /> : null}
-          <div className="bo-foodModal-actions">
+          <div data-slot="stockItemModal-foodModal-actions" className="bo-foodModal-actions">
             <button type="button" className="bo-btn bo-btn--ghost" onClick={() => setStep("choice")} disabled={scanning} data-testid="stock-scan-back">
               Volver
             </button>

@@ -91,11 +91,11 @@ function AssistantMessage() {
       style={{ animation: "fui-fade-up 400ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "top left" }}
     >
       {/* ThinkingOrb avatar — the assistant identity, kept from the old UI */}
-      <div className="flex items-center gap-2" style={{ height: 28 }}>
-        <div className="shrink-0" style={{ transform: "scale(0.42)", transformOrigin: "left center", width: 27, height: 27 }}>
+      <div data-slot="forkyModal-gap-2" className="flex items-center gap-2" style={{ height: 28 }}>
+        <div data-slot="forkyModal-shrink-0" className="shrink-0" style={{ transform: "scale(0.42)", transformOrigin: "left center", width: 27, height: 27 }}>
           {mounted && <ThinkingOrb state="solving" size={64} theme="auto" />}
         </div>
-        <span className="text-[12px] leading-[1.3] font-medium text-fui-ink">Forky</span>
+        <span data-slot="forkyModal-text-fui-ink" className="text-[12px] leading-[1.3] font-medium text-fui-ink">Forky</span>
       </div>
       <div
         ref={messageRef}
@@ -115,7 +115,7 @@ function AssistantMessage() {
             data-testid="forky-message-error"
             className="mt-1 flex items-center gap-2 rounded-[8px] bg-fui-red-tint px-3 py-2 text-[13px] text-fui-red"
           >
-            <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-fui-red" />
+            <span data-slot="forkyModal-bg-fui-red" aria-hidden className="size-1.5 shrink-0 rounded-full bg-fui-red" />
             <ErrorPrimitive.Message className="block">
               No he podido responder. Revisa la conexión y vuelve a intentarlo.
             </ErrorPrimitive.Message>
@@ -123,8 +123,8 @@ function AssistantMessage() {
         </MessagePrimitive.Error>
       </div>
       {/* Actions — appear on hover (beautifului streaming-text action row) */}
-      <div className="flex items-center gap-0.5 pl-0 opacity-0 transition-opacity duration-300 group-focus-within/message:opacity-100 group-hover/message:opacity-100 motion-reduce:transition-none">
-        <button
+      <div data-slot="forkyModal-motion-reduce:transition-non" className="flex items-center gap-0.5 pl-0 opacity-0 transition-opacity duration-300 group-focus-within/message:opacity-100 group-hover/message:opacity-100 motion-reduce:transition-none">
+        <button data-testid="button"
           type="button"
           aria-label={copied ? "Copiado" : "Copiar respuesta"}
           onClick={handleCopy}
@@ -132,7 +132,7 @@ function AssistantMessage() {
           style={{ border: "none" }}
         >
           {copied ? (
-            <span className="text-[11px] text-fui-green">✓</span>
+            <span data-slot="forkyModal-text-fui-green" className="text-[11px] text-fui-green">✓</span>
           ) : (
             <CopyIcon className="size-3.5" />
           )}
@@ -191,7 +191,7 @@ function EmptyState() {
     >
       {/* Large breathing orb */}
       {mounted && (
-        <div style={{ animation: "fui-fade-in 500ms ease-out both" }}>
+        <div data-slot="forkyModal-div" style={{ animation: "fui-fade-in 500ms ease-out both" }}>
           <ThinkingOrb state="breathing" size={64} theme="auto" />
         </div>
       )}
@@ -206,7 +206,7 @@ function EmptyState() {
       </h2>
 
       {/* Suggestion chips (beautifului pill buttons) */}
-      <div className="flex flex-wrap justify-center gap-2">
+      <div data-slot="forkyModal-gap-2" className="flex flex-wrap justify-center gap-2">
         {SUGGESTIONS.map((suggestion, i) => (
           <ThreadPrimitive.Suggestion
             key={suggestion}
@@ -214,7 +214,7 @@ function EmptyState() {
             send
             asChild
           >
-            <div
+            <div data-slot="forkyModal-hover:text-fui-ink"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -281,7 +281,7 @@ function ScrollToBottomButton({
   if (newCount === 0) return null;
 
   return (
-    <button
+    <button data-testid="hover-translate-y-px"
       type="button"
       onClick={onClick}
       className="absolute inset-x-0 bottom-24 z-20 mx-auto flex w-fit items-center gap-1.5 rounded-full bg-fui-surface px-3.5 py-1.5 text-xs text-fui-ink-2 transition-transform duration-200 hover:-translate-y-px"
@@ -360,12 +360,12 @@ function ChatPane({ onClose }: { onClose: () => void }) {
           style={{ boxShadow: "var(--fui-shadow-card)" }}
         >
           {/* Header — hairline bar with title and close action */}
-          <div className="flex shrink-0 items-center justify-between border-b border-fui-line p-1.5">
-            <div className="flex items-center gap-2 pl-1">
-              <span className="text-[13px] font-semibold text-fui-ink">Forky</span>
-              <span className="text-[12px] text-fui-ink-3">Asistente del restaurante</span>
+          <div data-slot="forkyModal-p-1.5" className="flex shrink-0 items-center justify-between border-b border-fui-line p-1.5">
+            <div data-slot="forkyModal-pl-1" className="flex items-center gap-2 pl-1">
+              <span data-slot="forkyModal-text-fui-ink" className="text-[13px] font-semibold text-fui-ink">Forky</span>
+              <span data-slot="forkyModal-text-fui-ink" className="text-[12px] text-fui-ink-3">Asistente del restaurante</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div data-slot="forkyModal-gap-1" className="flex items-center gap-1">
               <div
                 role="button"
                 tabIndex={0}
