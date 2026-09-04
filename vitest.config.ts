@@ -13,6 +13,16 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['**/*.{test,spec}.{js,ts,jsx,tsx}'],
-    exclude: ['node_modules', 'dist', '.git', 'e2e/specs', 'e2e/**/*.spec.{ts,tsx}'],
+    exclude: [
+      'node_modules',
+      'dist',
+      '.git',
+      'e2e/specs',
+      'e2e/**/*.spec.{ts,tsx}',
+      // Browser-mode tests use @vitest/browser/context globals and a
+      // previewServer-injected `__PREVIEW_URL__` constant. They are run
+      // by `bun run test:browser` (vitest.browser.config.ts).
+      '**/*.browser.test.{ts,tsx}',
+    ],
   },
 });
