@@ -721,8 +721,8 @@ export function GuestNamesModal({
 			/>
 			<div data-ui="guest-names-content" className="bo-guestNamesContent">
 				<div data-ui="guest-names-header" className="bo-guestNamesHeader">
-					<h3>Comensales en {tableName || "mesa"}</h3>
-					<button
+					<h3 data-slot="tables-h3">Comensales en {tableName || "mesa"}</h3>
+					<button data-testid="cerrar"
 						type="button"
 						className="bo-actionBtn bo-actionBtn--glass"
 						onClick={onClose}
@@ -734,7 +734,7 @@ export function GuestNamesModal({
 				<div data-ui="guest-names-inputs" className="bo-guestNamesInputs">
 					{draft.map((name, idx) => (
 						<div key={idx} data-ui="guest-name-row" className="bo-guestNameRow">
-							<label className="bo-guestNameLabel">Comensal {idx + 1}</label>
+							<label data-slot="tables-guestNameLabel" className="bo-guestNameLabel">Comensal {idx + 1}</label>
 							<input
 								data-ui="guest-name-input"
 								className="bo-input"
@@ -746,14 +746,14 @@ export function GuestNamesModal({
 					))}
 				</div>
 				<div data-ui="guest-names-footer" className="bo-guestNamesFooter">
-					<button
+					<button data-testid="cancelar"
 						type="button"
 						className="bo-btn bo-btn--ghost bo-btn--sm"
 						onClick={onClose}
 					>
 						Cancelar
 					</button>
-					<button
+					<button data-testid="guardar"
 						type="button"
 						className="bo-btn bo-btn--primary bo-btn--sm"
 						onClick={handleSave}
@@ -1043,7 +1043,7 @@ function BookingAssignmentEditor({
 										data-ui="assignment-seats"
 										className="bo-bookingAssignmentSeats"
 									>
-										<button
+										<button data-testid="restar-comensal"
 											type="button"
 											className="bo-counterBtn"
 											aria-label="Restar comensal"
@@ -1059,7 +1059,7 @@ function BookingAssignmentEditor({
 										>
 											{row.seats}
 										</span>
-										<button
+										<button data-testid="sumar-comensal"
 											type="button"
 											className="bo-counterBtn"
 											aria-label="Sumar comensal"
@@ -1083,7 +1083,7 @@ function BookingAssignmentEditor({
 								>
 									<ClipboardList size={13} strokeWidth={1.8} />
 									{namesCount > 0 && (
-										<span className="bo-namesBadge">{namesCount}</span>
+										<span data-slot="tables-namesBadge" className="bo-namesBadge">{namesCount}</span>
 									)}
 								</button>
 								<button
@@ -5960,7 +5960,7 @@ export default function TableManagerPage() {
 											data-ui="assigning-banner"
 											className="bo-assigningBanner"
 										>
-											<span>
+											<span data-slot="tables-span">
 												Asignando:{" "}
 												<strong data-ui="assigning-name">
 													{bookingForAssignment.customer_name}
@@ -6233,7 +6233,7 @@ export default function TableManagerPage() {
 																					data-ui="multi-table-toggle-row"
 																					className="bo-multiTableToggleRow"
 																				>
-																					<span className="bo-multiTableLabel">
+																					<span data-slot="tables-multiTableLabel" className="bo-multiTableLabel">
 																						Asignar múltiples mesas
 																					</span>
 																					<button
@@ -6251,7 +6251,7 @@ export default function TableManagerPage() {
 																							}
 																						}}
 																					>
-																						<span className="bo-multiTableToggleThumb" />
+																						<span data-slot="tables-multiTableToggleThumb" className="bo-multiTableToggleThumb" />
 																					</button>
 																				</div>
 																				{multiTableMode && (
@@ -6268,7 +6268,7 @@ export default function TableManagerPage() {
 																								data-ui="multi-table-progress"
 																								className="bo-multiTableProgress"
 																							>
-																								<span
+																								<span data-slot="tables-span"
 																									className={`bo-multiTableProgressText${multiTableTotalSeats >= multiTablePartySize ? " is-complete" : ""}`}
 																								>
 																									{multiTableTotalSeats} /{" "}
@@ -6289,12 +6289,12 @@ export default function TableManagerPage() {
 																											data-ui="multi-table-row"
 																											className="bo-multiTableRow"
 																										>
-																											<span className="bo-multiTableRowName">
+																											<span data-slot="tables-multiTableRowName" className="bo-multiTableRowName">
 																												{row.table_name} (
 																												{row.seats})
 																											</span>
-																											<div className="bo-multiTableRowActions">
-																												<button
+																											<div data-slot="tables-multiTableRowActions" className="bo-multiTableRowActions">
+																												<button data-testid="nombres"
 																													type="button"
 																													className="bo-btn bo-btn--ghost bo-btn--xs"
 																													onClick={(e) => {
@@ -6309,7 +6309,7 @@ export default function TableManagerPage() {
 																														size={14}
 																													/>
 																												</button>
-																												<button
+																												<button data-testid="quitar"
 																													type="button"
 																													className="bo-btn bo-btn--ghost bo-btn--xs"
 																													onClick={(e) => {

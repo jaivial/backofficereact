@@ -191,7 +191,7 @@ export function FillFromReservationModal({ onClose, onSelect, searchReservations
           </div>
 
           <ScrollArea dataSlot="reservation-results">
-            <div className="bo-reservationResults">
+            <div data-slot="fillFromReservationModal-reservationResults" className="bo-reservationResults">
             {loading ? (
               <div className="bo-reservationLoading" data-slot="reservation-loading">
                 <div className="bo-spinner" data-slot="fillFromReservationModal-spinner" />

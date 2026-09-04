@@ -23,7 +23,7 @@ export function Panel({
 }: PanelProps) {
   const hasHead = title || meta || actions;
   return (
-    <div className={cn("bo-panel", variant === "glass" && "bo-panel--glass", className)} {...rest}>
+    <div data-slot="panel-div" className={cn("bo-panel", variant === "glass" && "bo-panel--glass", className)} {...rest}>
       {hasHead && (
         <div className={cn("bo-panelHead", headClassName)} data-slot="panel-head">
           {title && <div className="bo-panelTitle" data-slot="panel-title">{title}</div>}

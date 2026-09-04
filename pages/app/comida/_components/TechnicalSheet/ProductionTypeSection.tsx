@@ -161,7 +161,7 @@ export function ProductionTypeSection({
       />
 
       {isPreparado && activeSheetId == null ? (
-        <div className="bo-stack">
+        <div data-slot="productionTypeSection-stack" className="bo-stack">
           {createError ? <InlineAlert kind="error" title={createError} /> : null}
           {creating ? (
             <p className="bo-sheetHint" data-role="production-section-creating">

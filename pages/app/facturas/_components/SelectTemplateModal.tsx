@@ -125,7 +125,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
 
             {/* Templates list */}
             <ScrollArea dataSlot="select-template-list">
-              <div className="bo-templateList">
+              <div data-slot="selectTemplateModal-templateList" className="bo-templateList">
               {loading ? (
                 <div className="bo-templateLoading" data-slot="select-template-loading">
                   <Loader2 size={24} className="bo-spin bo-spin--sm" />
@@ -335,7 +335,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
       </div>
 
       <ScrollArea dataSlot="select-template-form-body">
-        <div className="bo-templateFormBody">
+        <div data-slot="selectTemplateModal-templateFormBody" className="bo-templateFormBody">
         {/* Template name */}
         <div className="bo-field" data-slot="select-template-field-name">
           <label className="bo-label" data-slot="selectTemplateModal-label">Nombre de la plantilla *</label>

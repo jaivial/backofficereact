@@ -48,36 +48,36 @@ export function TechnicalSheetCostTab({ cost }: { cost: SheetCost | null }) {
         </p>
       ) : (
         <>
-          <div className="bo-tableWrap">
-            <table className="bo-table bo-table--cost">
+          <div data-slot="technicalSheetCostTab-tableWrap" className="bo-tableWrap">
+            <table data-slot="technicalSheetCostTab-table-cost" className="bo-table bo-table--cost">
               <caption className="sr-only">Desglose de coste por ingrediente</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Ingrediente</th>
-                  <th scope="col" className="bo-table__num">
+              <thead data-slot="technicalSheetCostTab-thead">
+                <tr data-slot="technicalSheetCostTab-tr">
+                  <th data-slot="technicalSheetCostTab-th" scope="col">Ingrediente</th>
+                  <th data-slot="technicalSheetCostTab-table-num" scope="col" className="bo-table__num">
                     Cantidad
                   </th>
-                  <th scope="col" className="bo-table__num">
+                  <th data-slot="technicalSheetCostTab-table-num" scope="col" className="bo-table__num">
                     Merma
                   </th>
-                  <th scope="col" className="bo-table__num">
+                  <th data-slot="technicalSheetCostTab-table-num" scope="col" className="bo-table__num">
                     Coste
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody data-slot="technicalSheetCostTab-tbody">
                 {cost.lines.map((line) => (
-                  <tr key={`${line.stockItemId}-${line.name}`}>
-                    <td>{line.name}</td>
-                    <td className="bo-table__num">
+                  <tr data-slot="technicalSheetCostTab-tr" key={`${line.stockItemId}-${line.name}`}>
+                    <td data-slot="technicalSheetCostTab-td">{line.name}</td>
+                    <td data-slot="technicalSheetCostTab-table-num" className="bo-table__num">
                       {line.enteredQty} {line.unitLabel}
                     </td>
-                    <td className="bo-table__num">
+                    <td data-slot="technicalSheetCostTab-table-num" className="bo-table__num">
                       {line.wastePct > 0 ? `${line.wastePct}%` : "—"}
                     </td>
-                    <td className="bo-table__num">
+                    <td data-slot="technicalSheetCostTab-table-num" className="bo-table__num">
                       {line.priceMissing ? (
-                        <span className="bo-costMissing">Sin precio</span>
+                        <span data-slot="technicalSheetCostTab-costMissing" className="bo-costMissing">Sin precio</span>
                       ) : (
                         euro(line.lineCost)
                       )}
@@ -89,35 +89,35 @@ export function TechnicalSheetCostTab({ cost }: { cost: SheetCost | null }) {
           </div>
 
           <dl className="bo-costSummary" data-ui="sheet-cost-summary" data-testid="sheet-cost-summary">
-            <div className="bo-costSummary__row">
+            <div data-slot="technicalSheetCostTab-costSummary-row" className="bo-costSummary__row">
               <dt>Ingredientes</dt>
               <dd>{euro(cost.ingredientCost)}</dd>
             </div>
             {cost.labourCost > 0 ? (
-              <div className="bo-costSummary__row">
+              <div data-slot="technicalSheetCostTab-costSummary-row" className="bo-costSummary__row">
                 {/* Labour stays its own line so the food-cost % remains comparable
                     with ingredient-only industry benchmarks. */}
                 <dt>Mano de obra</dt>
                 <dd>{euro(cost.labourCost)}</dd>
               </div>
             ) : null}
-            <div className="bo-costSummary__row">
+            <div data-slot="technicalSheetCostTab-costSummary-row" className="bo-costSummary__row">
               <dt>Coste por racion</dt>
               <dd>{euro(cost.costPerPortion)}</dd>
             </div>
             {cost.grossPrice > 0 ? (
               <>
-                <div className="bo-costSummary__row">
+                <div data-slot="technicalSheetCostTab-costSummary-row" className="bo-costSummary__row">
                   <dt>Precio de venta</dt>
                   <dd>{euro(cost.grossPrice)}</dd>
                 </div>
-                <div className="bo-costSummary__row">
+                <div data-slot="technicalSheetCostTab-costSummary-row" className="bo-costSummary__row">
                   <dt>Food cost</dt>
                   <dd>{cost.foodCostPct.toFixed(1)} %</dd>
                 </div>
               </>
             ) : null}
-            <div className="bo-costSummary__row bo-costSummary__row--total">
+            <div data-slot="technicalSheetCostTab-costSummary-row-total" className="bo-costSummary__row bo-costSummary__row--total">
               <dt>Coste total</dt>
               <dd data-ui="sheet-cost-total" data-testid="sheet-cost-total">
                 {euro(cost.totalCost)}

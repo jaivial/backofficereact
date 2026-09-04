@@ -31,9 +31,9 @@ export default meta;
 export const AllIcons: StoryObj = {
   name: "All Icons",
   render: () => (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
+    <div data-slot="sectionIcons.stories-div" style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
       {allKeys.map((key) => (
-        <div
+        <div data-slot="sectionIcons.stories-div"
           key={key}
           style={{
             display: "flex",
@@ -46,7 +46,7 @@ export const AllIcons: StoryObj = {
           }}
         >
           {iconForSidebarItemKey(key)}
-          <span style={{ fontSize: "12px", color: "#666" }}>{key}</span>
+          <span data-slot="sectionIcons.stories-span" style={{ fontSize: "12px", color: "#666" }}>{key}</span>
         </div>
       ))}
     </div>
@@ -56,9 +56,9 @@ export const AllIcons: StoryObj = {
 export const IconSizes: StoryObj = {
   name: "Icon Sizes",
   render: () => (
-    <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+    <div data-slot="sectionIcons.stories-div" style={{ display: "flex", alignItems: "center", gap: "32px" }}>
       {[14, 16, 18, 20, 24, 32].map((size) => (
-        <div
+        <div data-slot="sectionIcons.stories-div"
           key={size}
           style={{
             display: "flex",
@@ -68,7 +68,7 @@ export const IconSizes: StoryObj = {
           }}
         >
           {iconForSidebarItemKey("reservas", { size })}
-          <span style={{ fontSize: "12px", color: "#666" }}>{size}px</span>
+          <span data-slot="sectionIcons.stories-span" style={{ fontSize: "12px", color: "#666" }}>{size}px</span>
         </div>
       ))}
     </div>
@@ -78,9 +78,9 @@ export const IconSizes: StoryObj = {
 export const IconStrokeWidths: StoryObj = {
   name: "Icon Stroke Widths",
   render: () => (
-    <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+    <div data-slot="sectionIcons.stories-div" style={{ display: "flex", alignItems: "center", gap: "32px" }}>
       {[1.2, 1.5, 1.8, 2, 2.5].map((strokeWidth) => (
-        <div
+        <div data-slot="sectionIcons.stories-div"
           key={strokeWidth}
           style={{
             display: "flex",
@@ -90,7 +90,7 @@ export const IconStrokeWidths: StoryObj = {
           }}
         >
           {iconForSidebarItemKey("reservas", { strokeWidth })}
-          <span style={{ fontSize: "12px", color: "#666" }}>{strokeWidth}</span>
+          <span data-slot="sectionIcons.stories-span" style={{ fontSize: "12px", color: "#666" }}>{strokeWidth}</span>
         </div>
       ))}
     </div>
@@ -100,9 +100,9 @@ export const IconStrokeWidths: StoryObj = {
 export const CombinedOptions: StoryObj = {
   name: "Combined Options",
   render: () => (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+    <div data-slot="sectionIcons.stories-div" style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
       {allKeys.map((key) => (
-        <div
+        <div data-slot="sectionIcons.stories-div"
           key={key}
           style={{
             display: "flex",
@@ -110,12 +110,12 @@ export const CombinedOptions: StoryObj = {
             gap: "8px",
           }}
         >
-          <div style={{ display: "flex", gap: "12px" }}>
+          <div data-slot="sectionIcons.stories-div" style={{ display: "flex", gap: "12px" }}>
             {iconForSidebarItemKey(key, { size: 16 })}
             {iconForSidebarItemKey(key, { size: 20 })}
             {iconForSidebarItemKey(key, { size: 24 })}
           </div>
-          <span style={{ fontSize: "11px", color: "#999" }}>{key}</span>
+          <span data-slot="sectionIcons.stories-span" style={{ fontSize: "11px", color: "#999" }}>{key}</span>
         </div>
       ))}
     </div>
@@ -125,9 +125,9 @@ export const CombinedOptions: StoryObj = {
 export const DefaultIcon: StoryObj = {
   name: "Default Icon (unknown key)",
   render: () => (
-    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+    <div data-slot="sectionIcons.stories-div" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
       {iconForSidebarItemKey("unknown" as SidebarItemKey)}
-      <span style={{ fontSize: "14px" }}>Returns Settings icon for unknown keys</span>
+      <span data-slot="sectionIcons.stories-span" style={{ fontSize: "14px" }}>Returns Settings icon for unknown keys</span>
     </div>
   ),
 };
