@@ -161,7 +161,7 @@ export function TechnicalSheetEditor({
         onNavigate={(_href, id) => setTab(id as SubTab)}
       />
 
-      <div role="tabpanel" id={`sheet-panel-${tab}`} aria-labelledby={`sheet-tab-${tab}`}>
+      <div data-slot="technicalSheetEditor-div" role="tabpanel" id={`sheet-panel-${tab}`} aria-labelledby={`sheet-tab-${tab}`}>
         {tab === "info" ? (
           <TechnicalSheetInfoTab
             sheetId={sheetId}

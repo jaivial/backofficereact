@@ -24,12 +24,12 @@ export function POSForceOpenConfirmModal({ count, busy, onCancel, onConfirm }: P
         <h3 id="pos-force-confirm-title" data-testid="pos-force-confirm-title" className="pos-forceConfirm__title">
           {singular ? "¿Abrir sin cerrar el día anterior?" : "¿Abrir sin cerrar los días anteriores?"}
         </h3>
-        <p id="pos-force-confirm-desc" className="pos-forceConfirm__desc">
+        <p data-slot="pOSForceOpenConfirmModal-pos-forceConfirm-desc" id="pos-force-confirm-desc" className="pos-forceConfirm__desc">
           {singular
             ? "Vas a abrir este día sin haber cerrado el anterior. Lo recomendado es cerrarlo antes."
             : "Vas a abrir este día sin haber cerrado varios días anteriores. Lo recomendado es cerrarlos antes."}
         </p>
-        <div className="pos-forceConfirm__actions">
+        <div data-slot="pOSForceOpenConfirmModal-pos-forceConfirm-actions" className="pos-forceConfirm__actions">
           <button type="button" className="pos-forceConfirm__cancel" onClick={onCancel} disabled={busy} data-testid="pos-force-confirm-cancel">
             Cancelar
           </button>

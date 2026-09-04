@@ -36,7 +36,7 @@ export function TechnicalSheetRecipeTab({
           prepara el plato.
         </p>
       ) : (
-        <ol className="bo-stepList">
+        <ol data-slot="technicalSheetRecipeTab-stepList" className="bo-stepList">
           {steps.map((step, index) => (
             <StepCard
               key={step.id}
@@ -55,7 +55,7 @@ export function TechnicalSheetRecipeTab({
 
       {/* The action sits after the content: the list is what the user reads
           first, and the button follows what it adds to. */}
-      <div className="bo-sheetTabActions">
+      <div data-slot="technicalSheetRecipeTab-sheetTabActions" className="bo-sheetTabActions">
         <Button variant="primary" onClick={onAddStep} className="!mx-auto">
           <Plus size={14} aria-hidden="true" />
           Anadir paso

@@ -90,9 +90,9 @@ export function ForkyButton() {
         className="group relative flex cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-500"
       >
         {/* Glow effect - subtle white glow instead of purple */}
-        <div className="absolute -inset-2 rounded-full bg-white/10 blur-lg transition-opacity duration-300 group-hover:bg-white/20" />
+        <div data-slot="forkyButton-group-hover:bg-white/20" className="absolute -inset-2 rounded-full bg-white/10 blur-lg transition-opacity duration-300 group-hover:bg-white/20" />
         {/* Orb */}
-        <div className="relative">
+        <div data-slot="forkyButton-relative" className="relative">
           <ThinkingOrb state={orbState} size={64} theme="dark" data-testid="forky-canvas" />
         </div>
       </button>

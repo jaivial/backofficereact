@@ -64,7 +64,7 @@ export default function MiHorarioPage() {
     <section aria-label="Mi Horario" className="bo-content-grid bo-miHorarioPage" data-ui="mi-horario-page">
       <Panel className="bo-miHorarioPanel" data-ui="mi-horario-panel"
         title={
-          <span>
+          <span data-slot="mi-horario-span">
             <Clock3 size={16} strokeWidth={1.8} aria-hidden="true" data-ui="mi-horario-icon" />
             Mi Horario
           </span>

@@ -34,12 +34,12 @@ export function ConfigLegalPages() {
           data-testid={`legal-page-card-${page.slug}`}
         >
           <div className="bo-cardIconHeader" data-slot="legal-page-cardIconHeader">
-            <div className="bo-cardIcon bo-cardIcon--purple" aria-hidden="true">
+            <div data-slot="configLegalPages-cardIcon-purple" className="bo-cardIcon bo-cardIcon--purple" aria-hidden="true">
               <Scale className="bo-ico" />
             </div>
             <div className="bo-cardIconContent" data-slot="legal-page-cardIconContent">
-              <div className="bo-cardIconTitle">{page.title}</div>
-              <div className="bo-cardIconSubtitle">{page.slug}</div>
+              <div data-slot="configLegalPages-cardIconTitle" className="bo-cardIconTitle">{page.title}</div>
+              <div data-slot="configLegalPages-cardIconSubtitle" className="bo-cardIconSubtitle">{page.slug}</div>
             </div>
           </div>
           <div className="bo-cardBody" data-slot="legal-page-cardBody">

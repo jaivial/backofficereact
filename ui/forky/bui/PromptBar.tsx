@@ -401,23 +401,23 @@ export default function PromptBar({
   };
 
   return (
-    <div
+    <div data-slot="promptBar-div"
       data-promptbar
       className={demo ? "flex min-h-[384px] w-full max-w-105 flex-col justify-end pb-8" : "w-full"}
       onPointerDownCapture={takeOver}
       onKeyDownCapture={takeOver}
     >
       {/* composer is the anchor — menus grow up from its top edge */}
-      <div ref={composerAnchorRef} className="relative">
+      <div data-slot="promptBar-relative" ref={composerAnchorRef} className="relative">
       {/* ── @ / slash menu ─────────────────────────────── */}
       {menu && (
-        <div
+        <div data-slot="promptBar-shadow-raised"
           onMouseLeave={() => setEngaged(false)}
           className="absolute inset-x-0 bottom-full z-10 mb-2 rounded-[10px] bg-surface p-1 shadow-raised"
           style={{ animation: "pop-in 180ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "bottom center" }}
         >
           {/* single gliding highlight — appears once a row is hovered */}
-          <span
+          <span data-slot="promptBar-bg-hover"
             aria-hidden
             className="pointer-events-none absolute inset-x-1 rounded-[6px] bg-hover"
             style={{
@@ -431,7 +431,7 @@ export default function PromptBar({
           {rows.map((row, i) => {
             const source = menu === "at" ? SOURCES.find((s) => s.key === row.key) : undefined;
             return (
-              <button
+              <button data-testid="text-left"
                 key={row.key}
                 type="button"
                 ref={(el) => {
@@ -446,16 +446,16 @@ export default function PromptBar({
                 className="relative z-10 flex h-9 w-full items-center gap-2.5 rounded-[6px] px-2 text-left"
               >
                 {source && (
-                  <span className="flex size-5.5 shrink-0 items-center justify-center text-ink-2">
+                  <span data-slot="promptBar-text-ink-2" className="flex size-5.5 shrink-0 items-center justify-center text-ink-2">
                     {source.brand ? BRANDS[source.brand] : <Icon size={15}>{GLYPHS[source.glyph ?? "clip"]}</Icon>}
                   </span>
                 )}
-                <span className="shrink-0 text-[12.5px] font-medium text-ink">
+                <span data-slot="promptBar-text-ink" className="shrink-0 text-[12.5px] font-medium text-ink">
                   {row.name}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-[12px] text-ink-3">{row.desc}</span>
+                <span data-slot="promptBar-text-ink-3" className="min-w-0 flex-1 truncate text-[12px] text-ink-3">{row.desc}</span>
                 {source?.connect && (
-                  <span
+                  <span data-slot="promptBar-span"
                     role="button"
                     tabIndex={-1}
                     onClick={(event) => {
@@ -473,11 +473,11 @@ export default function PromptBar({
             );
           })}
           {rows.length === 0 && (
-            <div className="flex h-9 items-center px-2 text-[12px] text-ink-3">
+            <div data-slot="promptBar-text-ink-3" className="flex h-9 items-center px-2 text-[12px] text-ink-3">
               No matches for “{query}”
             </div>
           )}
-          <div className="mt-1 border-t border-line px-2 pt-1.5 pb-1 text-[11px] text-ink-3">
+          <div data-slot="promptBar-text-ink-3" className="mt-1 border-t border-line px-2 pt-1.5 pb-1 text-[11px] text-ink-3">
             {menu === "at" ? "Type to search sources & files" : "Type to search commands"}
           </div>
         </div>
@@ -485,13 +485,13 @@ export default function PromptBar({
 
       {/* ── model menu ─────────────────────────────────── */}
       {modelOpen && (
-        <div
+        <div data-slot="promptBar-shadow-raised"
           onMouseLeave={() => setModelHovered(null)}
           className="absolute z-10 w-44 rounded-[10px] bg-surface p-1 shadow-raised"
           style={{ left: modelMenuLeft, bottom: modelMenuBottom, animation: "pop-in 180ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "bottom left" }}
         >
           {/* single gliding highlight — floats to the hovered / selected row */}
-          <span
+          <span data-slot="promptBar-bg-hover"
             aria-hidden
             className="pointer-events-none absolute inset-x-1 rounded-[6px] bg-hover"
             style={{
@@ -503,7 +503,7 @@ export default function PromptBar({
             }}
           />
           {MODELS.map((m, i) => (
-            <button
+            <button data-testid="text-left-2"
               key={m.key}
               type="button"
               ref={(el) => {
@@ -517,9 +517,9 @@ export default function PromptBar({
               }}
               className="relative z-10 flex h-7.5 w-full items-center gap-2 rounded-[6px] px-2 text-left"
             >
-              <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-ink">{m.name}</span>
-              <span className="shrink-0 text-[11px] text-ink-3">{m.tag}</span>
-              <span className={`shrink-0 text-ink ${m.key === model.key ? "" : "invisible"}`}>
+              <span data-slot="promptBar-text-ink" className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-ink">{m.name}</span>
+              <span data-slot="promptBar-text-ink-3" className="shrink-0 text-[11px] text-ink-3">{m.tag}</span>
+              <span data-slot="promptBar-span" className={`shrink-0 text-ink ${m.key === model.key ? "" : "invisible"}`}>
                 <Icon size={13} strokeWidth={2.5}><path d="M20 6L9 17l-5-5" /></Icon>
               </span>
             </button>
@@ -528,7 +528,7 @@ export default function PromptBar({
       )}
 
       {/* ── composer ───────────────────────────────────── */}
-      <div
+      <div data-slot="promptBar-div"
         className={`relative isolate flex flex-col overflow-hidden border border-line bg-surface shadow-card transition-[border-color,border-radius] duration-150 focus-within:border-line-strong ${
           tall ? "gap-2.5 p-3.5" : "gap-1.5 p-1.5"
         } ${
@@ -544,7 +544,7 @@ export default function PromptBar({
           className="pointer-events-none absolute inset-0 -z-10 h-full w-full"
           style={{ borderRadius: "inherit" }}
         />
-        <span
+        <span data-slot="promptBar-leading-[18px]"
           ref={measureRef}
           aria-hidden="true"
           className="pointer-events-none absolute invisible whitespace-pre text-[13px] leading-[18px]"
@@ -553,9 +553,9 @@ export default function PromptBar({
         </span>
 
         {attachments.length > 0 && (
-          <div className={`flex flex-wrap gap-1.5 pt-0.5 ${pill ? "px-1" : "px-0.5"}`}>
+          <div data-slot="promptBar-div" className={`flex flex-wrap gap-1.5 pt-0.5 ${pill ? "px-1" : "px-0.5"}`}>
             {attachments.map((file, i) => (
-              <span
+              <span data-slot="promptBar-span"
                 key={`${file}-${i}`}
                 className={`flex h-6.5 items-center gap-1.5 bg-field py-1 pr-1 pl-1.5 text-[11.5px] text-ink-2 shadow-hairline ${
                   pill ? "rounded-full" : "rounded-chip"
@@ -563,8 +563,8 @@ export default function PromptBar({
                 style={{ animation: "pop-in 200ms cubic-bezier(0.23,1,0.32,1) both" }}
               >
                 <Icon size={12}><g><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></g></Icon>
-                <span className="max-w-36 truncate">{file}</span>
-                <button
+                <span data-slot="promptBar-truncate" className="max-w-36 truncate">{file}</span>
+                <button data-testid="button"
                   type="button"
                   aria-label={`Remove ${file}`}
                   onClick={() => setAttachments((current) => current.filter((_, j) => j !== i))}
@@ -579,7 +579,7 @@ export default function PromptBar({
           </div>
         )}
 
-        <div
+        <div data-slot="promptBar-div"
           ref={controlsRef}
           className={`grid items-end gap-x-1 gap-y-1.5 ${
             wide
@@ -587,7 +587,7 @@ export default function PromptBar({
               : "grid-cols-[28px_minmax(0,1fr)_auto_28px_28px]"
           }`}
         >
-          <button
+          <button data-testid="add-attachments-and-sources"
             type="button"
             aria-label="Add attachments and sources"
             aria-expanded={plusOpen}
@@ -603,7 +603,7 @@ export default function PromptBar({
             <Icon size={16} strokeWidth={2}><path d="M12 5v14M5 12h14" /></Icon>
           </button>
 
-          <textarea
+          <textarea data-testid="prompt"
             ref={inputRef}
             rows={1}
             value={draft}
@@ -644,7 +644,7 @@ export default function PromptBar({
           />
 
           {/* model picker */}
-          <button
+          <button data-testid="choose-model"
             ref={modelRef}
             type="button"
             aria-expanded={modelOpen}
@@ -658,13 +658,13 @@ export default function PromptBar({
             } ${wide ? "col-start-2 row-start-2 justify-self-start" : "col-start-3 row-start-1"}`}
           >
             {model.name}
-            <span className="text-ink-3">
+            <span data-slot="promptBar-text-ink-3" className="text-ink-3">
               <Icon size={11} strokeWidth={2.4}><path d="M6 9l6 6 6-6" /></Icon>
             </span>
           </button>
 
           {/* dictation */}
-          <button
+          <button data-testid="button-2"
             type="button"
             aria-label={listening ? "Stop dictation" : "Start dictation"}
             aria-pressed={listening}
@@ -674,9 +674,9 @@ export default function PromptBar({
             } ${listening ? "bg-accent-tint text-accent-ink" : "text-ink-3 hover:bg-hover hover:text-ink"} ${wide ? "col-start-4 row-start-2" : "col-start-4 row-start-1"}`}
           >
             {listening ? (
-              <span className="flex h-3.5 items-center gap-[2.5px]">
+              <span data-slot="promptBar-gap-[2.5px]" className="flex h-3.5 items-center gap-[2.5px]">
                 {[0, 1, 2].map((i) => (
-                  <span
+                  <span data-slot="promptBar-bg-current"
                     key={i}
                     className="w-[2.5px] rounded-full bg-current"
                     style={{ height: "100%", animation: `eq-bounce 900ms ease-in-out ${i * 150}ms infinite` }}
@@ -689,7 +689,7 @@ export default function PromptBar({
           </button>
 
           {/* send — tactile square (round in the pill variant) */}
-          <button
+          <button data-testid="send"
             type="button"
             aria-label="Send"
             disabled={!canSend}

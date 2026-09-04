@@ -22,7 +22,7 @@ function Chat({ adapter }: { adapter: ChatModelAdapter }) {
         <ComposerPrimitive.Root>
           <ComposerPrimitive.Input data-testid="input" />
           <ComposerPrimitive.Send asChild>
-            <button type="button">send</button>
+            <button data-testid="send" type="button">send</button>
           </ComposerPrimitive.Send>
         </ComposerPrimitive.Root>
       </ThreadPrimitive.Root>

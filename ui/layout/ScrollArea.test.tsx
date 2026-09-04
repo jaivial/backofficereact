@@ -31,7 +31,7 @@ describe("ScrollArea", () => {
   it("renders children", () => {
     render(
       <ScrollArea>
-        <p>contenido</p>
+        <p data-slot="scrollArea.test-p">contenido</p>
       </ScrollArea>,
     );
     expect(screen.getByText("contenido")).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe("ScrollArea", () => {
   it("applies className to wrapper", () => {
     const { container } = render(
       <ScrollArea className="extra-class">
-        <p>contenido</p>
+        <p data-slot="scrollArea.test-p">contenido</p>
       </ScrollArea>,
     );
     const wrapper = container.querySelector("[data-slot='scroll-area']");
@@ -50,7 +50,7 @@ describe("ScrollArea", () => {
   it("uses custom dataSlot", () => {
     const { container } = render(
       <ScrollArea dataSlot="my-scroll">
-        <p>contenido</p>
+        <p data-slot="scrollArea.test-p">contenido</p>
       </ScrollArea>,
     );
     expect(container.querySelector("[data-slot='my-scroll']")).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe("ScrollArea", () => {
   it("defaults data-slot to scroll-area", () => {
     const { container } = render(
       <ScrollArea>
-        <p>contenido</p>
+        <p data-slot="scrollArea.test-p">contenido</p>
       </ScrollArea>,
     );
     expect(container.querySelector("[data-slot='scroll-area']")).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe("ScrollArea", () => {
   it("has viewport with scroll-area-viewport data-slot", () => {
     const { container } = render(
       <ScrollArea>
-        <p>contenido</p>
+        <p data-slot="scrollArea.test-p">contenido</p>
       </ScrollArea>,
     );
     expect(container.querySelector("[data-slot='scroll-area-viewport']")).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe("ScrollArea", () => {
   it("hides scrollbar when content fits (scrollHeight <= clientHeight)", async () => {
     const { container } = render(
       <ScrollArea>
-        <div style={{ height: 50 }}>short content</div>
+        <div data-slot="scrollArea.test-div" style={{ height: 50 }}>short content</div>
       </ScrollArea>,
     );
 
@@ -100,7 +100,7 @@ describe("ScrollArea", () => {
   it("shows scrollbar when content overflows", async () => {
     const { container } = render(
       <ScrollArea>
-        <div style={{ height: 1000 }}>tall content</div>
+        <div data-slot="scrollArea.test-div" style={{ height: 1000 }}>tall content</div>
       </ScrollArea>,
     );
 
@@ -127,7 +127,7 @@ describe("ScrollArea", () => {
   it("renders children inside viewport", () => {
     const { container } = render(
       <ScrollArea>
-        <span>inside viewport</span>
+        <span data-slot="scrollArea.test-span">inside viewport</span>
       </ScrollArea>,
     );
 
@@ -138,7 +138,7 @@ describe("ScrollArea", () => {
   it("applies maxHeight as style when provided", () => {
     const { container } = render(
       <ScrollArea maxHeight={300}>
-        <p>contenido</p>
+        <p data-slot="scrollArea.test-p">contenido</p>
       </ScrollArea>,
     );
     const wrapper = container.querySelector("[data-slot='scroll-area']") as HTMLElement;
@@ -148,7 +148,7 @@ describe("ScrollArea", () => {
   it("applies maxHeight string value", () => {
     const { container } = render(
       <ScrollArea maxHeight="50vh">
-        <p>contenido</p>
+        <p data-slot="scrollArea.test-p">contenido</p>
       </ScrollArea>,
     );
     const wrapper = container.querySelector("[data-slot='scroll-area']") as HTMLElement;
@@ -158,7 +158,7 @@ describe("ScrollArea", () => {
   it("forwards style prop", () => {
     const { container } = render(
       <ScrollArea style={{ marginTop: 10 }}>
-        <p>contenido</p>
+        <p data-slot="scrollArea.test-p">contenido</p>
       </ScrollArea>,
     );
     const wrapper = container.querySelector("[data-slot='scroll-area']") as HTMLElement;

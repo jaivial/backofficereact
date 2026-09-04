@@ -92,15 +92,15 @@ export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLab
         {calcExpr ? <span className="pos-keypad__expr" data-testid="pos-keypad-expr">{calcExpr.trimEnd()}</span> : null}
         <strong className="pos-keypad__value" data-testid="pos-keypad-value">{value || "0"}</strong>
       </div>
-      <div className="pos-keypad__body">
-        <div className="pos-keypad__grid">
+      <div data-slot="pOSKeypad-pos-keypad-body" className="pos-keypad__body">
+        <div data-slot="pOSKeypad-pos-keypad-grid" className="pos-keypad__grid">
           {KEYS.map((key) => (
             <button className="pos-keypad__key" type="button" key={key} disabled={readOnly} onClick={() => press(key)} data-testid={`pos-key-${key === "⌫" ? "back" : key === "," ? "comma" : key}`} aria-label={key === "⌫" ? "Borrar" : key}>
               {key === "⌫" ? <Delete className="h-5 w-5" aria-hidden="true" /> : key}
             </button>
           ))}
         </div>
-        <div className="pos-keypad__calcCol">
+        <div data-slot="pOSKeypad-pos-keypad-calcCol" className="pos-keypad__calcCol">
           {OPS.map((op) => (
             <button className="pos-keypad__calcOp" type="button" key={op.testId} disabled={readOnly} onClick={() => calcOp(op.symbol)} data-testid={`pos-key-op-${op.testId}`} aria-label={`Operador ${op.symbol}`}>{op.symbol}</button>
           ))}

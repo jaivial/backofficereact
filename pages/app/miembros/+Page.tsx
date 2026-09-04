@@ -219,14 +219,14 @@ export default function Page() {
   };
 
   return (
-    <section aria-label="Miembros y roles" className="bo-content-grid bo-membersPage">
-      <div className="bo-panel">
-        <div className="bo-panelHead bo-membersIntroHead">
-          <div>
-            <div className="bo-panelTitle">Equipo y permisos</div>
-            <div className="bo-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
+    <section data-testid="miembros-y-roles" aria-label="Miembros y roles" className="bo-content-grid bo-membersPage">
+      <div data-slot="miembros-panel" className="bo-panel">
+        <div data-slot="miembros-membersIntroHead" className="bo-panelHead bo-membersIntroHead">
+          <div data-slot="miembros-div">
+            <div data-slot="miembros-panelTitle" className="bo-panelTitle">Equipo y permisos</div>
+            <div data-slot="miembros-panelMeta" className="bo-panelMeta">Consulta miembros del restaurante y su rol operativo actual.</div>
           </div>
-          <div className="flex items-center gap-3">
+          <div data-slot="miembros-gap-3" className="flex items-center gap-3">
             <div className="bo-membersIntroBadge" data-testid="member-count">
               <ShieldUser size={16} strokeWidth={1.8} />
               {members.length + localMembers.length} miembros
@@ -238,11 +238,11 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="bo-membersGrid">
+      <div data-slot="miembros-membersGrid" className="bo-membersGrid">
         {[...members, ...localMembers].map((member) => {
           const roleMeta = memberRoleMeta(member);
           return (
-            <div
+            <div data-slot="miembros-memberCard"
               key={member.id}
               role="link"
               tabIndex={0}
@@ -254,22 +254,22 @@ export default function Page() {
                 window.location.assign(`/app/miembros/${member.id}`);
               }}
             >
-              <div className="bo-memberCardTop">
+              <div data-slot="miembros-memberCardTop" className="bo-memberCardTop">
                 <Avatar className="bo-memberAvatar">
                   {member.photoUrl ? <AvatarImage src={member.photoUrl} alt={fullName(member)} /> : null}
                   <AvatarFallback className="bo-memberAvatarFallback">{initials(member.firstName, member.lastName)}</AvatarFallback>
                 </Avatar>
-                <div className="bo-memberMain">
-                  <div className="bo-memberNameRow">
-                    <div className="bo-memberName">{fullName(member)}</div>
+                <div data-slot="miembros-memberMain" className="bo-memberMain">
+                  <div data-slot="miembros-memberNameRow" className="bo-memberNameRow">
+                    <div data-slot="miembros-memberName" className="bo-memberName">{fullName(member)}</div>
                     {isSelfMember(member) ? <span className="bo-badge bo-badge--self">Tu</span> : null}
                   </div>
-                  <div className="bo-memberSub">{member.email ?? "Sin email"}</div>
+                  <div data-slot="miembros-memberSub" className="bo-memberSub">{member.email ?? "Sin email"}</div>
                 </div>
               </div>
 
-              <div className="bo-memberRoleRow">
-                <span className="bo-memberMeta">Rol</span>
+              <div data-slot="miembros-memberRoleRow" className="bo-memberRoleRow">
+                <span data-slot="miembros-memberMeta" className="bo-memberMeta">Rol</span>
                 <RoleBadge
                   roleSlug={roleMeta.slug}
                   roleName={roleMeta.label}
@@ -278,12 +278,12 @@ export default function Page() {
                 />
               </div>
 
-              <div className="bo-memberCardFoot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="bo-memberMeta">Contrato semanal</span>
-                  <span className="bo-badge bo-memberHours">{member.weeklyContractHours.toFixed(2)} h</span>
+              <div data-slot="miembros-memberCardFoot" className="bo-memberCardFoot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div data-slot="miembros-div" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span data-slot="miembros-memberMeta" className="bo-memberMeta">Contrato semanal</span>
+                  <span data-slot="miembros-memberHours" className="bo-badge bo-memberHours">{member.weeklyContractHours.toFixed(2)} h</span>
                 </div>
-                <button
+                <button data-testid="memberwhatsappbutton"
                   type="button"
                   onClick={(e) => handleOpenWhatsApp(e, member)}
                   className="bo-memberWhatsAppButton"
@@ -300,30 +300,30 @@ export default function Page() {
         })}
 
         {members.length === 0 && localMembers.length === 0 ? (
-          <div className="bo-panel bo-panel--empty">
-            <div className="bo-panelHead">
-              <div className="bo-panelTitle">Sin miembros</div>
-              <div className="bo-panelMeta">No hay miembros cargados todavía para este restaurante.</div>
+          <div data-slot="miembros-panel-empty" className="bo-panel bo-panel--empty">
+            <div data-slot="miembros-panelHead" className="bo-panelHead">
+              <div data-slot="miembros-panelTitle" className="bo-panelTitle">Sin miembros</div>
+              <div data-slot="miembros-panelMeta" className="bo-panelMeta">No hay miembros cargados todavía para este restaurante.</div>
             </div>
           </div>
         ) : null}
       </div>
 
       <Modal open={whatsappModalOpen} title="WhatsApp" onClose={() => setWhatsappModalOpen(false)}>
-        <div className="bo-memberWhatsAppModal" data-member-id={selectedMember?.id} data-user-id={selectedMember?.boUserId ?? undefined}>
+        <div data-slot="miembros-memberWhatsAppModal" className="bo-memberWhatsAppModal" data-member-id={selectedMember?.id} data-user-id={selectedMember?.boUserId ?? undefined}>
           {needsSubscription ? (
-            <div className="bo-memberWhatsAppPremium">
-              <div className="bo-memberWhatsAppHeroIcon" aria-hidden="true">
+            <div data-slot="miembros-memberWhatsAppPremium" className="bo-memberWhatsAppPremium">
+              <div data-slot="miembros-memberWhatsAppHeroIcon" className="bo-memberWhatsAppHeroIcon" aria-hidden="true">
                 <MessageCircle size={28} strokeWidth={1.8} />
               </div>
-              <h2>WhatsApp Premium Pack</h2>
-              <p>Envía avisos de turnos y comunicaciones directamente a tu equipo.</p>
-              <div className="bo-memberWhatsAppPrice">
-                <div>29.99 € <span>/ mes</span></div>
-                <ul>
-                  <li>Mensajes ilimitados al staff</li>
-                  <li>Cuenta de empresa central</li>
-                  <li>Sin escanear QR</li>
+              <h2 data-slot="miembros-h2">WhatsApp Premium Pack</h2>
+              <p data-slot="miembros-p">Envía avisos de turnos y comunicaciones directamente a tu equipo.</p>
+              <div data-slot="miembros-memberWhatsAppPrice" className="bo-memberWhatsAppPrice">
+                <div data-slot="miembros-div">29.99 € <span>/ mes</span></div>
+                <ul data-slot="miembros-ul">
+                  <li data-slot="miembros-li">Mensajes ilimitados al staff</li>
+                  <li data-slot="miembros-li">Cuenta de empresa central</li>
+                  <li data-slot="miembros-li">Sin escanear QR</li>
                 </ul>
               </div>
               <Button variant="default" className="bo-memberWhatsAppFullButton" onClick={handleSubscribe} disabled={subscribing}>
@@ -332,23 +332,23 @@ export default function Page() {
               </Button>
             </div>
           ) : (
-            <div className="bo-memberWhatsAppContent">
-              <div className="bo-memberWhatsAppHeading">
-                <div className="bo-memberWhatsAppHeroIcon" aria-hidden="true">
+            <div data-slot="miembros-memberWhatsAppContent" className="bo-memberWhatsAppContent">
+              <div data-slot="miembros-memberWhatsAppHeading" className="bo-memberWhatsAppHeading">
+                <div data-slot="miembros-memberWhatsAppHeroIcon" className="bo-memberWhatsAppHeroIcon" aria-hidden="true">
                   <MessageCircle size={22} strokeWidth={1.8} />
                 </div>
-                <div>
-                  <h2>Mensaje para {selectedMember?.firstName}</h2>
-                  <p>{selectedMember ? fullName(selectedMember) : "Miembro"}</p>
+                <div data-slot="miembros-div">
+                  <h2 data-slot="miembros-h2">Mensaje para {selectedMember?.firstName}</h2>
+                  <p data-slot="miembros-p">{selectedMember ? fullName(selectedMember) : "Miembro"}</p>
                 </div>
               </div>
               {!selectedMember?.whatsappNumber ? (
-                <div className="bo-memberPhoneSetup">
-                  <div className="bo-memberPhoneNotice" role="status">
+                <div data-slot="miembros-memberPhoneSetup" className="bo-memberPhoneSetup">
+                  <div data-slot="miembros-memberPhoneNotice" className="bo-memberPhoneNotice" role="status">
                     <CircleAlert size={18} strokeWidth={1.8} aria-hidden="true" />
-                    <span>Este miembro no tiene un número de WhatsApp configurado en su perfil.</span>
+                    <span data-slot="miembros-span">Este miembro no tiene un número de WhatsApp configurado en su perfil.</span>
                   </div>
-                  <label className="bo-memberWhatsAppLabel">Añadir teléfono</label>
+                  <label data-slot="miembros-memberWhatsAppLabel" className="bo-memberWhatsAppLabel">Añadir teléfono</label>
                   <PhoneInput
                     countryCode={phoneCountryCode}
                     number={phoneNumber}
@@ -358,7 +358,7 @@ export default function Page() {
                     numberAriaLabel={`Teléfono de ${selectedMember?.firstName || "miembro"}`}
                   />
                   {phoneError ? <div className="bo-memberPhoneError" role="alert">{phoneError}</div> : null}
-                  <div className="bo-memberWhatsAppActions">
+                  <div data-slot="miembros-memberWhatsAppActions" className="bo-memberWhatsAppActions">
                     <Button variant="secondary" onClick={() => setWhatsappModalOpen(false)} disabled={phoneSaving}>Cancelar</Button>
                     <Button variant="default" onClick={handleAddPhone} disabled={phoneSaving || !phoneNumber.trim()} data-member-id={selectedMember?.id} data-user-id={selectedMember?.boUserId ?? undefined}>
                       {phoneSaving ? <Loader2 size={16} className="bo-spin" /> : <Phone size={16} strokeWidth={1.8} />}
@@ -368,14 +368,14 @@ export default function Page() {
                 </div>
               ) : (
                 <>
-                  <label className="bo-memberWhatsAppLabel" htmlFor="member-whatsapp-message">Mensaje</label>
-                  <textarea
+                  <label data-slot="miembros-memberWhatsAppLabel" className="bo-memberWhatsAppLabel" htmlFor="member-whatsapp-message">Mensaje</label>
+                  <textarea data-testid="memberwhatsapptextarea"
                     id="member-whatsapp-message"
                     className="bo-textarea bo-memberWhatsAppTextarea"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                   />
-                  <div className="bo-memberWhatsAppActions">
+                  <div data-slot="miembros-memberWhatsAppActions" className="bo-memberWhatsAppActions">
                     <Button variant="secondary" onClick={() => setWhatsappModalOpen(false)}>Cancelar</Button>
                     <Button variant="default" onClick={handleSendWhatsApp} disabled={sending || !message.trim()}>
                       {sending ? <Loader2 size={16} className="bo-spin" /> : <Send size={16} strokeWidth={1.8} />}

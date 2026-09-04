@@ -85,7 +85,7 @@ export function AttachmentsModal({
           </div>
 
           <ScrollArea dataSlot="attachments-modal-body">
-            <div className="bo-attachmentsModalBody">
+            <div data-slot="attachmentsModal-attachmentsModalBody" className="bo-attachmentsModalBody">
             {attachments.length === 0 ? (
               <div className="bo-attachmentsEmpty" data-slot="attachments-empty">
                 <File size={48} className="bo-attachmentsEmptyIcon" />
@@ -191,7 +191,7 @@ export function AttachmentsModal({
               </button>
             </div>
             <ScrollArea dataSlot="preview-modal-body">
-              <div className="bo-previewModalBody">
+              <div data-slot="attachmentsModal-previewModalBody" className="bo-previewModalBody">
               {previewingAttachment.mime_type.startsWith("image/") ? (
                 <img src={previewingAttachment.url} alt={previewingAttachment.original_name} className="bo-previewImage" />
               ) : previewingAttachment.mime_type === "application/pdf" ? (

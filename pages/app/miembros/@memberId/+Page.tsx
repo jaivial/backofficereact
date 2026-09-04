@@ -402,15 +402,15 @@ export default function Page() {
                   ) : (
                     <div className="bo-memberRoleReadonly" data-slot="@memberId-roleReadonly" data-testid="miembro-detail-role-readonly">
                       {memberRole ? (
-                        <span className="bo-memberRoleReadonlyValue">
+                        <span data-slot="@memberId-memberRoleReadonlyValue" className="bo-memberRoleReadonlyValue">
                           <RoleIcon roleSlug={memberRole.slug} iconKey={memberRoleIconKey} size={15} strokeWidth={1.8} />
                           {memberRole.label}
                         </span>
                       ) : (
-                        <span className="bo-memberRoleReadonlyValue bo-memberRoleReadonlyValue--empty">Sin rol</span>
+                        <span data-slot="@memberId-memberRoleReadonlyValue-empt" className="bo-memberRoleReadonlyValue bo-memberRoleReadonlyValue--empty">Sin rol</span>
                       )}
                       {editing && !canChangeRole && memberRole ? (
-                        <span className="bo-memberRoleHint">No puedes cambiar el rol de este miembro</span>
+                        <span data-slot="@memberId-memberRoleHint" className="bo-memberRoleHint">No puedes cambiar el rol de este miembro</span>
                       ) : null}
                     </div>
                   )}

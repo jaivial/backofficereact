@@ -30,22 +30,22 @@ export function ConfigMiniMax() {
 
   return (
     <div className="bo-panel" data-ui="config-minimax" data-testid="config-minimax">
-      <div className="bo-panelHead flex-col items-stretch gap-1">
-        <div className="bo-panelTitle flex items-center gap-2">
+      <div data-slot="configMiniMax-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
+        <div data-slot="configMiniMax-gap-2" className="bo-panelTitle flex items-center gap-2">
           <Bot size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
           MiniMax (IA)
         </div>
-        <div className="bo-panelMeta">
+        <div data-slot="configMiniMax-panelMeta" className="bo-panelMeta">
           Clave de API y modelo de MiniMax de este restaurante. Se usan para ForKy (asistente IA), las
           traducciones de la carta y las funciones de IA de stock. La clave se guarda cifrada (AES-256-GCM)
           en la base de datos y no se vuelve a mostrar.
         </div>
       </div>
 
-      <div className="bo-panelBody flex flex-col gap-5">
+      <div data-slot="configMiniMax-gap-5" className="bo-panelBody flex flex-col gap-5">
         <div className="bo-field" data-slot="config-minimax-key-field">
-          <span className="bo-label flex items-center gap-1.5">
-            <label htmlFor="minimax-key">API Key</label>
+          <span data-slot="configMiniMax-gap-1.5" className="bo-label flex items-center gap-1.5">
+            <label data-slot="configMiniMax-label" htmlFor="minimax-key">API Key</label>
           </span>
           <input
             type="password"
@@ -61,8 +61,8 @@ export function ConfigMiniMax() {
         </div>
 
         <div className="bo-field" data-slot="config-minimax-model-field">
-          <span className="bo-label">
-            <label id="minimax-model-label">Modelo</label>
+          <span data-slot="configMiniMax-label" className="bo-label">
+            <label data-slot="configMiniMax-label" id="minimax-model-label">Modelo</label>
           </span>
           <SearchableSelect
             value={config.model || DEFAULT_MODEL}
@@ -76,7 +76,7 @@ export function ConfigMiniMax() {
         </div>
 
         <div className="bo-foodDetailQuickStatus" data-slot="config-minimax-status-field">
-          <span className="bo-label">
+          <span data-slot="configMiniMax-label" className="bo-label">
             {config.hasApiKey ? "Clave guardada en este restaurante" : "Sin clave propia: se usara la global del servidor (si existe)"}
           </span>
         </div>

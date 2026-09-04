@@ -77,7 +77,7 @@ export function BlockNoteEditor({
   if (!mounted) {
     return (
       <div className="bo-legalPageEditor" data-slot="legal-page-blocknote-loading">
-        <p className="bo-mutedText">Cargando editor…</p>
+        <p data-slot="blockNoteEditor-mutedText" className="bo-mutedText">Cargando editor…</p>
       </div>
     );
   }

@@ -100,7 +100,7 @@ export const Clickable: Story = {
 export const Grid: Story = {
   name: "Grid Layout",
   render: () => (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
+    <div data-slot="statCard.stories-div" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
       <StatCard label="Reservas" value="24" icon="calendar" />
       <StatCard label="Clientes" value="156" icon="users" />
       <StatCard label="Completadas" value="89" icon="check" />

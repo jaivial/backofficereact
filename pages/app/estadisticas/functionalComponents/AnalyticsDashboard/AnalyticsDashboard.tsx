@@ -307,7 +307,7 @@ export function AnalyticsDashboard({
               <div className="border-t border-[var(--bo-border)] p-4" data-ui="analytics-filters-body">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5" data-ui="analytics-filters-grid">
                   <label className="flex min-w-0 flex-col gap-1.5" data-ui="analytics-filter-from">
-                    <span className="text-xs font-medium text-[var(--bo-muted)]">Desde</span>
+                    <span data-slot="analyticsDashboard-text-[var(-bo" className="text-xs font-medium text-[var(--bo-muted)]">Desde</span>
                     <input
                       className="h-10 rounded-lg border border-[var(--bo-border-2)] bg-[var(--bo-surface-3)] px-3 text-sm text-[var(--bo-text)] outline-none transition-[border-color,box-shadow] duration-[var(--bo-transition-base)] focus-visible:border-[var(--bo-accent)] focus-visible:ring-2 focus-visible:ring-[var(--bo-accent)]/30"
                       type="date"
@@ -318,7 +318,7 @@ export function AnalyticsDashboard({
                     />
                   </label>
                   <label className="flex min-w-0 flex-col gap-1.5" data-ui="analytics-filter-to">
-                    <span className="text-xs font-medium text-[var(--bo-muted)]">Hasta</span>
+                    <span data-slot="analyticsDashboard-text-[var(-bo" className="text-xs font-medium text-[var(--bo-muted)]">Hasta</span>
                     <input
                       className="h-10 rounded-lg border border-[var(--bo-border-2)] bg-[var(--bo-surface-3)] px-3 text-sm text-[var(--bo-text)] outline-none transition-[border-color,box-shadow] duration-[var(--bo-transition-base)] focus-visible:border-[var(--bo-accent)] focus-visible:ring-2 focus-visible:ring-[var(--bo-accent)]/30"
                       type="date"
@@ -329,7 +329,7 @@ export function AnalyticsDashboard({
                     />
                   </label>
                   <label className="flex min-w-0 flex-col gap-1.5" data-ui="analytics-filter-granularity">
-                    <span className="text-xs font-medium text-[var(--bo-muted)]">Agrupación</span>
+                    <span data-slot="analyticsDashboard-text-[var(-bo" className="text-xs font-medium text-[var(--bo-muted)]">Agrupación</span>
                     <select
                       className="h-10 rounded-lg border border-[var(--bo-border-2)] bg-[var(--bo-surface-3)] px-3 text-sm text-[var(--bo-text)] outline-none transition-[border-color,box-shadow] duration-[var(--bo-transition-base)] focus-visible:border-[var(--bo-accent)] focus-visible:ring-2 focus-visible:ring-[var(--bo-accent)]/30"
                       value={params.granularity}
@@ -349,7 +349,7 @@ export function AnalyticsDashboard({
                       aria-label="Comparar con periodo anterior"
                       data-testid="analytics-compare"
                     />
-                    <span>Comparar periodo anterior</span>
+                    <span data-slot="analyticsDashboard-span">Comparar periodo anterior</span>
                   </label>
                   <div className="flex items-end" data-ui="analytics-filters-clear">
                     <button
@@ -363,7 +363,7 @@ export function AnalyticsDashboard({
                       data-ui="analytics-clear-filters"
                     >
                       <FilterX size={15} />
-                      <span>Limpiar</span>
+                      <span data-slot="analyticsDashboard-span">Limpiar</span>
                     </button>
                   </div>
                 </div>
@@ -587,20 +587,20 @@ export function AnalyticsDashboard({
             <AnalyticsPanel title="Top productos" description="Productos más vendidos del periodo." icon={<Utensils className="h-4 w-4" aria-hidden="true" />} testId="analytics-top-items-panel">
               {topItems.length ? (
                 <div className="max-h-64 overflow-y-auto" data-ui="analytics-top-items-list">
-                  <table className="w-full text-left text-sm">
-                    <thead className="sticky top-0 border-b border-[var(--bo-border)] bg-[var(--bo-surface)] text-xs uppercase tracking-wide text-[var(--bo-muted)]">
-                      <tr>
-                        <th className="pb-3 pr-3 font-medium">Producto</th>
-                        <th className="pb-3 pr-3 font-medium text-right">Uds</th>
-                        <th className="pb-3 font-medium text-right">Ingresos</th>
+                  <table data-slot="analyticsDashboard-text-sm" className="w-full text-left text-sm">
+                    <thead data-slot="analyticsDashboard-text-[var(-bo" className="sticky top-0 border-b border-[var(--bo-border)] bg-[var(--bo-surface)] text-xs uppercase tracking-wide text-[var(--bo-muted)]">
+                      <tr data-slot="analyticsDashboard-tr">
+                        <th data-slot="analyticsDashboard-font-medium" className="pb-3 pr-3 font-medium">Producto</th>
+                        <th data-slot="analyticsDashboard-text-right" className="pb-3 pr-3 font-medium text-right">Uds</th>
+                        <th data-slot="analyticsDashboard-text-right" className="pb-3 font-medium text-right">Ingresos</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody data-slot="analyticsDashboard-tbody">
                       {topItems.map((item, index) => (
-                        <tr className="border-b border-[var(--bo-border)] last:border-0" key={index}>
-                          <td className="py-2.5 pr-3 font-medium">{item.name}</td>
-                          <td className="py-2.5 pr-3 text-right text-[var(--bo-muted)]">{formatNumber(item.quantity)}</td>
-                          <td className="py-2.5 text-right font-medium">{formatCurrency(item.revenue)}</td>
+                        <tr data-slot="analyticsDashboard-last:border-0" className="border-b border-[var(--bo-border)] last:border-0" key={index}>
+                          <td data-slot="analyticsDashboard-font-medium" className="py-2.5 pr-3 font-medium">{item.name}</td>
+                          <td data-slot="analyticsDashboard-text-[var(-bo" className="py-2.5 pr-3 text-right text-[var(--bo-muted)]">{formatNumber(item.quantity)}</td>
+                          <td data-slot="analyticsDashboard-font-medium" className="py-2.5 text-right font-medium">{formatCurrency(item.revenue)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -649,8 +649,8 @@ function EmptyDataState() {
   return (
     <Card variant="glass" className="text-center" data-testid="analytics-empty-state" data-ui="analytics-empty-state">
       <BarChart3 className="mx-auto h-8 w-8 text-[var(--bo-faint)]" aria-hidden="true" />
-      <h2 className="mt-3 font-semibold">Sin datos en el periodo</h2>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--bo-muted)]">
+      <h2 data-slot="analyticsDashboard-font-semibold" className="mt-3 font-semibold">Sin datos en el periodo</h2>
+      <p data-slot="analyticsDashboard-text-[var(-bo" className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--bo-muted)]">
         No hay facturas, tickets de TPV ni rollups para el rango seleccionado. Ajusta las fechas o pulsa “Actualizar” para regenerar los rollups.
       </p>
     </Card>
@@ -660,13 +660,13 @@ function EmptyDataState() {
 function KpiCard({ label, value, detail, testId, icon, trend }: { label: string; value: string; detail: string; testId: string; icon: React.ReactNode; trend?: string | null }) {
   return (
     <Card variant="glass" className="flex h-full flex-col justify-between" style={{ minHeight: 142 }} data-testid={testId}>
-      <div className="flex items-start justify-between gap-3">
-        <span className="text-xs font-medium uppercase tracking-wide text-[var(--bo-muted)]">{label}</span>
-        <span className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true">{icon}</span>
+      <div data-slot="analyticsDashboard-gap-3" className="flex items-start justify-between gap-3">
+        <span data-slot="analyticsDashboard-text-[var(-bo" className="text-xs font-medium uppercase tracking-wide text-[var(--bo-muted)]">{label}</span>
+        <span data-slot="analyticsDashboard-text-[var(-bo" className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true">{icon}</span>
       </div>
-      <div>
-        <div className="mt-3 text-2xl font-semibold tracking-tight">{value}</div>
-        <p className="mt-1 text-xs leading-5 text-[var(--bo-muted)]">{detail}</p>
+      <div data-slot="analyticsDashboard-div">
+        <div data-slot="analyticsDashboard-tracking-tight" className="mt-3 text-2xl font-semibold tracking-tight">{value}</div>
+        <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-1 text-xs leading-5 text-[var(--bo-muted)]">{detail}</p>
         {trend ? <p className={cn("mt-2 text-xs font-medium", trend.startsWith("-") ? "text-[var(--bo-on-surface-danger)]" : "text-[var(--bo-on-surface-success)]")}>{trend}</p> : null}
       </div>
     </Card>
@@ -676,12 +676,12 @@ function KpiCard({ label, value, detail, testId, icon, trend }: { label: string;
 function AnalyticsPanel({ title, description, icon, testId, children }: { title: string; description: string; icon: React.ReactNode; testId: string; children: React.ReactNode }) {
   return (
     <Card variant="glass" data-testid={testId}>
-      <div className="mb-4">
-        <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true">{icon}</span>
-          <h2 className="font-semibold" style={{ margin: 0 }}>{title}</h2>
+      <div data-slot="analyticsDashboard-mb-4" className="mb-4">
+        <div data-slot="analyticsDashboard-gap-3" className="flex items-center gap-3">
+          <span data-slot="analyticsDashboard-text-[var(-bo" className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true">{icon}</span>
+          <h2 data-slot="analyticsDashboard-font-semibold" className="font-semibold" style={{ margin: 0 }}>{title}</h2>
         </div>
-        <p className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">{description}</p>
+        <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">{description}</p>
       </div>
       {children}
     </Card>
@@ -691,26 +691,26 @@ function AnalyticsPanel({ title, description, icon, testId, children }: { title:
 function QualityPanel({ summary, quality }: { summary: AnalyticsSummary; quality: AnalyticsOverview["dataQuality"] }) {
   return (
     <Card variant="glass" data-testid="analytics-quality">
-      <div className="mb-4">
-        <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true"><Database className="h-4 w-4" /></span>
-          <h2 className="font-semibold" style={{ margin: 0 }}>Calidad del dato</h2>
+      <div data-slot="analyticsDashboard-mb-4" className="mb-4">
+        <div data-slot="analyticsDashboard-gap-3" className="flex items-center gap-3">
+          <span data-slot="analyticsDashboard-text-[var(-bo" className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true"><Database className="h-4 w-4" /></span>
+          <h2 data-slot="analyticsDashboard-font-semibold" className="font-semibold" style={{ margin: 0 }}>Calidad del dato</h2>
         </div>
-        <p className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">Cobertura visible para no confundir desconocido con cero.</p>
+        <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">Cobertura visible para no confundir desconocido con cero.</p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div data-slot="analyticsDashboard-sm:grid-cols-2" className="grid gap-3 sm:grid-cols-2">
         <QualityMetric label="Cobertura coste stock" value={`${formatNumber(quality.costCoverage.percent)}%`} detail={`${formatNumber(quality.unknownCostQuantity)} unidades sin coste`} />
         <QualityMetric label="Cobertura compras" value={`${formatNumber(quality.stockPurchaseCoverage.percent)}%`} detail={`${formatNumber(quality.unknownPurchaseQuantity)} unidades sin coste`} />
         <QualityMetric label="Cobertura merma" value={`${formatNumber(quality.wasteCostCoverage.percent)}%`} detail={`${formatNumber(quality.unknownWasteQuantity)} unidades sin coste`} />
         <QualityMetric label="Documentos sin identidad" value={formatNumber(quality.unidentifiedDocuments)} detail="No cuentan como personas identificadas" />
       </div>
       <Card variant="glass" className="mt-4">
-        <div className="flex items-center justify-between gap-3 text-xs">
-          <span className="text-[var(--bo-muted)]">Coste stock presentado</span>
+        <div data-slot="analyticsDashboard-text-xs" className="flex items-center justify-between gap-3 text-xs">
+          <span data-slot="analyticsDashboard-text-[var(-bo" className="text-[var(--bo-muted)]">Coste stock presentado</span>
           <strong className="font-semibold">{knownCost(summary.costOfGoodsEUR, summary.costOfGoodsLabel)}</strong>
         </div>
-        <div className="mt-2 flex items-center justify-between gap-3 text-xs">
-          <span className="text-[var(--bo-muted)]">Coste merma presentado</span>
+        <div data-slot="analyticsDashboard-text-xs" className="mt-2 flex items-center justify-between gap-3 text-xs">
+          <span data-slot="analyticsDashboard-text-[var(-bo" className="text-[var(--bo-muted)]">Coste merma presentado</span>
           <strong className="font-semibold" data-testid="analytics-waste-cost">{knownCost(summary.wasteCostEUR, summary.wasteCostLabel)}</strong>
         </div>
       </Card>
@@ -722,9 +722,9 @@ function QualityPanel({ summary, quality }: { summary: AnalyticsSummary; quality
 function QualityMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <Card variant="glass">
-      <div className="text-xs text-[var(--bo-muted)]">{label}</div>
-      <div className="mt-1 text-lg font-semibold">{value}</div>
-      <div className="mt-1 text-xs text-[var(--bo-faint)]">{detail}</div>
+      <div data-slot="analyticsDashboard-text-[var(-bo" className="text-xs text-[var(--bo-muted)]">{label}</div>
+      <div data-slot="analyticsDashboard-font-semibold" className="mt-1 text-lg font-semibold">{value}</div>
+      <div data-slot="analyticsDashboard-text-[var(-bo" className="mt-1 text-xs text-[var(--bo-faint)]">{detail}</div>
     </Card>
   );
 }
@@ -732,29 +732,29 @@ function QualityMetric({ label, value, detail }: { label: string; value: string;
 function WasteBreakdown({ overview }: { overview: AnalyticsOverview }) {
   return (
     <Card variant="glass" data-testid="analytics-waste-breakdown">
-      <div className="mb-4">
-        <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-[var(--bo-warning-bg)] p-2 text-[var(--bo-on-surface-warning)]" aria-hidden="true"><AlertTriangle className="h-4 w-4" /></span>
-          <h2 className="font-semibold" style={{ margin: 0 }}>Desglose de merma</h2>
+      <div data-slot="analyticsDashboard-mb-4" className="mb-4">
+        <div data-slot="analyticsDashboard-gap-3" className="flex items-center gap-3">
+          <span data-slot="analyticsDashboard-text-[var(-bo" className="rounded-lg bg-[var(--bo-warning-bg)] p-2 text-[var(--bo-on-surface-warning)]" aria-hidden="true"><AlertTriangle className="h-4 w-4" /></span>
+          <h2 data-slot="analyticsDashboard-font-semibold" className="font-semibold" style={{ margin: 0 }}>Desglose de merma</h2>
         </div>
-        <p className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">Incluye receta y producción.</p>
+        <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">Incluye receta y producción.</p>
       </div>
       {overview.wasteBreakdown.length ? (
-        <div className="max-h-48 overflow-y-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="sticky top-0 border-b border-[var(--bo-border)] bg-[var(--bo-surface)] text-xs uppercase tracking-wide text-[var(--bo-muted)]">
-              <tr>
-                <th className="pb-3 pr-3 font-medium">Motivo</th>
-                <th className="pb-3 pr-3 font-medium">Cantidad</th>
-                <th className="pb-3 font-medium">Coste</th>
+        <div data-slot="analyticsDashboard-overflow-y-auto" className="max-h-48 overflow-y-auto">
+          <table data-slot="analyticsDashboard-text-sm" className="w-full text-left text-sm">
+            <thead data-slot="analyticsDashboard-text-[var(-bo" className="sticky top-0 border-b border-[var(--bo-border)] bg-[var(--bo-surface)] text-xs uppercase tracking-wide text-[var(--bo-muted)]">
+              <tr data-slot="analyticsDashboard-tr">
+                <th data-slot="analyticsDashboard-font-medium" className="pb-3 pr-3 font-medium">Motivo</th>
+                <th data-slot="analyticsDashboard-font-medium" className="pb-3 pr-3 font-medium">Cantidad</th>
+                <th data-slot="analyticsDashboard-font-medium" className="pb-3 font-medium">Coste</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-slot="analyticsDashboard-tbody">
               {overview.wasteBreakdown.map((entry, index) => (
-                <tr className="border-b border-[var(--bo-border)] last:border-0" key={`${entry.reason}-${index}`}>
-                  <td className="py-2 pr-3 font-medium">{entry.reason}</td>
-                  <td className="py-2 pr-3 text-[var(--bo-muted)]">{formatNumber(entry.quantity)}</td>
-                  <td className="py-2 font-medium">{knownCost(entry.knownCostEUR, entry.costLabel)}</td>
+                <tr data-slot="analyticsDashboard-last:border-0" className="border-b border-[var(--bo-border)] last:border-0" key={`${entry.reason}-${index}`}>
+                  <td data-slot="analyticsDashboard-font-medium" className="py-2 pr-3 font-medium">{entry.reason}</td>
+                  <td data-slot="analyticsDashboard-text-[var(-bo" className="py-2 pr-3 text-[var(--bo-muted)]">{formatNumber(entry.quantity)}</td>
+                  <td data-slot="analyticsDashboard-font-medium" className="py-2 font-medium">{knownCost(entry.knownCostEUR, entry.costLabel)}</td>
                 </tr>
               ))}
             </tbody>
@@ -770,11 +770,11 @@ function ComparisonPanel({ overview }: { overview: AnalyticsOverview }) {
   if (!comparison) return null;
   return (
     <Card variant="glass" data-testid="analytics-comparison">
-      <div className="mb-4">
-        <h2 className="font-semibold" style={{ margin: 0 }}>Periodo anterior</h2>
-        <p className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">{comparison.from} → {comparison.to}</p>
+      <div data-slot="analyticsDashboard-mb-4" className="mb-4">
+        <h2 data-slot="analyticsDashboard-font-semibold" className="font-semibold" style={{ margin: 0 }}>Periodo anterior</h2>
+        <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-[0.4rem] text-xs leading-5 text-[var(--bo-muted)]">{comparison.from} → {comparison.to}</p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div data-slot="analyticsDashboard-sm:grid-cols-2" className="grid gap-3 sm:grid-cols-2">
         <ComparisonMetric label="Ingresos totales" value={formatCurrency(comparison.summary.totalRevenueEUR)} delta={comparison.deltaPercent.totalRevenueEUR} />
         <ComparisonMetric label="Personas identificadas" value={formatNumber(comparison.summary.identifiedPeople)} delta={comparison.deltaPercent.identifiedPeople} />
         <ComparisonMetric label="Ingresos facturados" value={formatCurrency(comparison.summary.invoicedRevenueEUR)} delta={comparison.deltaPercent.invoicedRevenueEUR} />
@@ -788,8 +788,8 @@ function ComparisonMetric({ label, value, delta }: { label: string; value: strin
   const hasDelta = typeof delta === "number" && Number.isFinite(delta);
   return (
     <Card variant="glass">
-      <div className="text-xs text-[var(--bo-muted)]">{label}</div>
-      <div className="mt-1 text-lg font-semibold">{value}</div>
+      <div data-slot="analyticsDashboard-text-[var(-bo" className="text-xs text-[var(--bo-muted)]">{label}</div>
+      <div data-slot="analyticsDashboard-font-semibold" className="mt-1 text-lg font-semibold">{value}</div>
       {hasDelta ? <div className={cn("mt-1 text-xs font-medium", delta >= 0 ? "text-[var(--bo-on-surface-success)]" : "text-[var(--bo-on-surface-danger)]")}>{delta >= 0 ? "+" : ""}{formatNumber(delta)}%</div> : null}
     </Card>
   );
@@ -798,15 +798,15 @@ function ComparisonMetric({ label, value, delta }: { label: string; value: strin
 function DataQualityNote({ quality }: { quality: AnalyticsOverview["dataQuality"] }) {
   return (
     <Card variant="glass">
-      <div className="mb-4">
-        <div className="flex items-center gap-3">
+      <div data-slot="analyticsDashboard-mb-4" className="mb-4">
+        <div data-slot="analyticsDashboard-gap-3" className="flex items-center gap-3">
           <Database className="h-4 w-4 shrink-0 text-[var(--bo-accent-2)]" aria-hidden="true" />
-          <h2 className="font-semibold" style={{ margin: 0 }}>Nota de calidad</h2>
+          <h2 data-slot="analyticsDashboard-font-semibold" className="font-semibold" style={{ margin: 0 }}>Nota de calidad</h2>
         </div>
-        <p className="mt-[0.4rem] text-sm leading-6 text-[var(--bo-muted)]">
+        <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-[0.4rem] text-sm leading-6 text-[var(--bo-muted)]">
           Datos disponibles en EUR. Cobertura de coste: {formatNumber(quality.costCoverage.percent)}%; las cantidades sin coste permanecen como N/D.
         </p>
-        <p className="mt-2 text-sm leading-6 text-[var(--bo-muted)]">
+        <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-2 text-sm leading-6 text-[var(--bo-muted)]">
           Documentos no EUR: {formatNumber(quality.nonEurDocuments)}. Documentos sin identidad: {formatNumber(quality.unidentifiedDocuments)}.
         </p>
       </div>
@@ -817,14 +817,14 @@ function DataQualityNote({ quality }: { quality: AnalyticsOverview["dataQuality"
 function LoadingState() {
   return (
     <div className="grid gap-4" aria-live="polite" aria-busy="true" data-testid="analytics-loading">
-      <span className="sr-only">Cargando estadísticas</span>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <span data-slot="analyticsDashboard-sr-only" className="sr-only">Cargando estadísticas</span>
+      <div data-slot="analyticsDashboard-xl:grid-cols-5" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {["one", "two", "three", "four", "five"].map((key) => <div className="h-36 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" key={key} />)}
       </div>
-      <div className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
-        <div className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
+      <div data-slot="analyticsDashboard-bg-[var(-bo" className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
+      <div data-slot="analyticsDashboard-lg:grid-cols-2" className="grid gap-5 lg:grid-cols-2">
+        <div data-slot="analyticsDashboard-bg-[var(-bo" className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
+        <div data-slot="analyticsDashboard-bg-[var(-bo" className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
       </div>
     </div>
   );
@@ -833,12 +833,12 @@ function LoadingState() {
 function ErrorState({ message }: { message: string }) {
   return (
     <Card variant="glass" role="alert" data-testid="analytics-error">
-      <div>
-        <div className="flex items-center gap-3">
+      <div data-slot="analyticsDashboard-div">
+        <div data-slot="analyticsDashboard-gap-3" className="flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--bo-on-surface-danger)]" aria-hidden="true" />
-          <h2 className="font-semibold text-[var(--bo-on-surface-danger)]" style={{ margin: 0 }}>No se pudieron cargar las estadísticas</h2>
+          <h2 data-slot="analyticsDashboard-text-[var(-bo" className="font-semibold text-[var(--bo-on-surface-danger)]" style={{ margin: 0 }}>No se pudieron cargar las estadísticas</h2>
         </div>
-        <p className="mt-[0.4rem] text-sm text-[var(--bo-muted)]">{message}</p>
+        <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-[0.4rem] text-sm text-[var(--bo-muted)]">{message}</p>
       </div>
     </Card>
   );

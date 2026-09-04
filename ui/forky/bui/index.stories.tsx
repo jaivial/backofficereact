@@ -20,7 +20,7 @@ const meta = {
 export default meta;
 
 const Showcase = ({ children }: { children: React.ReactNode }) => (
-  <div className="grid gap-10 rounded-xl bg-[#17171c] p-6">{children}</div>
+  <div data-slot="index.stories-p-6" className="grid gap-10 rounded-xl bg-[#17171c] p-6">{children}</div>
 );
 
 export const PromptBarDemo: StoryObj = {

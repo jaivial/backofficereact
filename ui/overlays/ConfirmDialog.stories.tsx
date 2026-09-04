@@ -135,7 +135,7 @@ export const ActionResult: Story = {
       <>
         <Button onClick={() => setOpen(true)}>Trigger Action</Button>
         {result && (
-          <p style={{ marginTop: "1rem", color: "#16a34a" }}>
+          <p data-slot="confirmDialog.stories-p" style={{ marginTop: "1rem", color: "#16a34a" }}>
             Result: {result}
           </p>
         )}

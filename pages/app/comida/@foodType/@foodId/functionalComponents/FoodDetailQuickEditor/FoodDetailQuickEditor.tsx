@@ -12,7 +12,7 @@ function DescripcionToggle({ value, onChange, disabled }: { value: string; onCha
   const [show, setShow] = useState(value.length > 0);
   return (
     <div className="bo-foodDetailQuickDescription" data-slot="food-detail-quick-description-field">
-      <div className="flex items-center justify-between mb-2">
+      <div data-slot="foodDetailQuickEditor-mb-2" className="flex items-center justify-between mb-2">
         <span className="bo-label" data-role="food-detail-quick-description-label">Descripcion</span>
         <Switch
           checked={show}
@@ -253,7 +253,7 @@ export function FoodDetailQuickEditor({
 
           {/* Alergenos — inline tags, inside form */}
           <div className="bo-foodDetailQuickAlergenos" data-slot="food-detail-quick-alergenos">
-            <div className="flex items-center justify-start gap-4">
+            <div data-slot="foodDetailQuickEditor-gap-4" className="flex items-center justify-start gap-4">
               <span className="bo-label" data-role="food-detail-quick-alergenos-label">Alergenos</span>
               <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={onOpenAllergenModal} data-role="food-detail-allergens-edit-btn">
                 <Plus size={14} />

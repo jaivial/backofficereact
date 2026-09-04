@@ -254,7 +254,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
                   ) : null}
                 </div>
             </ImageDropInput>
-            <div className="bo-brandingLogo-actions">
+            <div data-slot="configContacto-brandingLogo-actions" className="bo-brandingLogo-actions">
               <button
                 type="button"
                 className="bo-brandingLogo-uploadBtn"
@@ -276,7 +276,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
                 )}
               </button>
             </div>
-            <span className="bo-brandingLogo-hint">PNG, JPG o WebP · se reduce a 50 KB automaticamente</span>
+            <span data-slot="configContacto-brandingLogo-hint" className="bo-brandingLogo-hint">PNG, JPG o WebP · se reduce a 50 KB automaticamente</span>
             <input
               ref={logoInputRef}
               type="file"
@@ -346,7 +346,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
             <label className="bo-label" htmlFor="config-contacto-website" data-slot="configContacto-label">
               Dominio web del restaurante
             </label>
-            <div className="bo-inputWithStatus">
+            <div data-slot="configContacto-inputWithStatus" className="bo-inputWithStatus">
               <input
                 id="config-contacto-website"
                 type="text"
@@ -360,7 +360,7 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
                 aria-label="Dominio web del restaurante"
                 data-testid="config-contacto-website-input"
               />
-              <span
+              <span data-slot="configContacto-span"
                 className={`bo-inputStatus bo-inputStatus--${websiteCheck}`}
                 aria-live="polite"
                 aria-label={websiteCheck === "loading" ? "Comprobando web" : websiteCheck === "success" ? "Web válida" : websiteCheck === "error" ? "Web no válida" : undefined}

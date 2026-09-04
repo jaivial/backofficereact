@@ -147,7 +147,7 @@ export function AllergenSelectGrid({
                 {badge}
               </span>
             ) : isLocked ? (
-              <span className="bo-allergenCircleLock" aria-hidden="true">
+              <span data-slot="allergenSelectGrid-allergenCircleLock" className="bo-allergenCircleLock" aria-hidden="true">
                 🔒
               </span>
             ) : null}
