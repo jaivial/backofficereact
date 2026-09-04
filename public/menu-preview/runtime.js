@@ -459,27 +459,25 @@
     return "Bebida no incluida";
   }
 
+  // Beverage parenthetical line list. Delegates to `beverage-lines.js`
+  // (loaded before this file) so the parenthetical list reflects the live
+  // `menu.settings.beverage_options` sent in the preview payload. Falls
+  // back to the inline legacy list only when the helper is missing
+  // (e.g. standalone preview load without the editor wrapper).
+  const helperBeverage = (typeof globalThis !== "undefined" && globalThis.VillaCarmenPreviewBeverage) || (typeof window !== "undefined" && window.VillaCarmenPreviewBeverage) || null;
   function groupBeverageLines(menu) {
+    if (helperBeverage && typeof helperBeverage.groupBeverageLines === "function") {
+      return helperBeverage.groupBeverageLines(menu);
+    }
     const beverage = (menu.settings && menu.settings.beverage) || {};
     const t = String(beverage.type || "no_incluida").toLowerCase();
     const pricePerPax = Number(beverage.price_per_person || 8);
     const priceTag = "+" + formatEuro(Number.isFinite(pricePerPax) ? pricePerPax : 8) + " pax";
-
     if (t === "ilimitada") {
-      return [
-        "Bebida ilimitada " + priceTag,
-        "(A mesa completa)",
-        "Incluye bebidas desde el entrante hasta servir el postre.",
-        "(Incluye agua, refrescos, cerveza de barril y vinos valencianos)",
-      ];
+      return ["Bebida ilimitada " + priceTag, "(A mesa completa)", "Incluye bebidas desde el entrante hasta servir el postre.", "(Incluye agua, refrescos, cerveza de barril y vinos valencianos)"];
     }
     if (t === "opcion") {
-      return [
-        "Opción a bebida ilimitada " + priceTag,
-        "(A mesa completa)",
-        "Incluye bebidas desde el entrante hasta servir el postre.",
-        "(Incluye agua, refrescos, cerveza de barril y vinos valencianos)",
-      ];
+      return ["Opción a bebida ilimitada " + priceTag, "(A mesa completa)", "Incluye bebidas desde el entrante hasta servir el postre.", "(Incluye agua, refrescos, cerveza de barril y vinos valencianos)"];
     }
     return ["Bebida a parte"];
   }
