@@ -91,7 +91,7 @@ export function ReservationFilters({
           <Select value={sort} onChange={onSortChange} options={sortOptions} size="sm" ariaLabel="Ordenar" data-ui="sort-select" />
           <Select value={dir} onChange={onDirChange} options={dirOptions} size="sm" ariaLabel="Dirección" data-ui="dir-select" />
           <label className="bo-filterRow--count" data-ui="count-label">
-            <span className="bo-filterRow--countLabel">Resultados por página:</span>
+            <span data-slot="reservationFilters-filterRow-countLabel" className="bo-filterRow--countLabel">Resultados por página:</span>
             <Select
               value={String(count)}
               onChange={onCountChange}

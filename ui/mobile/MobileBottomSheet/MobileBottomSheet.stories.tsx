@@ -22,7 +22,7 @@ export const Default: Story = {
       <>
         <MobileActionButton onClick={() => setOpen(true)}>Open Bottom Sheet</MobileActionButton>
         <MobileBottomSheet open={open} onClose={() => setOpen(false)} title="Bottom Sheet">
-          <p>Sheet content goes here.</p>
+          <p data-slot="mobileBottomSheet.stories-p">Sheet content goes here.</p>
         </MobileBottomSheet>
       </>
     );

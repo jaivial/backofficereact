@@ -776,7 +776,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
           {/* Step 1: Upload */}
           {currentStep === "upload" && (
             <div className="bo-importWizardUpload" data-slot="importWizard-importWizardUpload">
-              <div
+              <div data-slot="importWizard-div"
                 className={`bo-importWizardDropzone ${isDragging ? "dragging" : ""} ${selectedFile ? "has-file" : ""}`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -1049,7 +1049,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                 <div className="bo-importWizardResultErrors" data-slot="importWizard-importWizardResultErrors">
                   <h4 data-slot="importWizard-res">Errores:</h4>
                   <ScrollArea dataSlot="importWizard-result-errors">
-                    <div className="bo-importWizardResultErrorsList">
+                    <div data-slot="importWizard-importWizardResultErrorsList" className="bo-importWizardResultErrorsList">
                     {importResult.errors.slice(0, 10).map((err, i) => (
                       <div key={i} className="bo-importWizardResultErrorItem" data-slot="importWizard-importWizardResultErrorItem">
                         Fila {err.row}: {err.message}

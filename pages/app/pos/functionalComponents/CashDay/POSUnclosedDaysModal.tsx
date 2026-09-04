@@ -55,31 +55,31 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
     <>
       <div className="pos-unclosedModal__overlay" data-testid="pos-unclosed-modal-overlay">
         <div className="pos-unclosedModal" role="alertdialog" aria-labelledby="pos-unclosed-title" aria-describedby="pos-unclosed-desc" data-testid="pos-unclosed-modal">
-          <header className="pos-unclosedModal__header">
+          <header data-testid="pos-unclosedmodal-header" className="pos-unclosedModal__header">
             <AlertTriangle size={32} className="pos-unclosedModal__icon" />
-            <h2 id="pos-unclosed-title" className="pos-unclosedModal__title">Días anteriores sin cerrar</h2>
-            <p id="pos-unclosed-desc" className="pos-unclosedModal__desc">
+            <h2 data-slot="pOSUnclosedDaysModal-pos-unclosedModal-title" id="pos-unclosed-title" className="pos-unclosedModal__title">Días anteriores sin cerrar</h2>
+            <p data-slot="pOSUnclosedDaysModal-pos-unclosedModal-desc" id="pos-unclosed-desc" className="pos-unclosedModal__desc">
               Cierra estos días antes de abrir el {formatSpanishLongDate(date)}, o ábrelo igualmente.
             </p>
           </header>
           <div className="pos-unclosedModal__list" data-testid="pos-unclosed-list">
             {unclosedPrevious.map((day) => (
               <article key={day.id} className="pos-unclosedCard" data-testid="pos-unclosed-card">
-                <div className="pos-unclosedCard__date">{formatSpanishLongDate(day.date)}</div>
+                <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-date" className="pos-unclosedCard__date">{formatSpanishLongDate(day.date)}</div>
                 <dl className="pos-unclosedCard__meta">
-                  <div className="pos-unclosedCard__field">
+                  <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
                     <dt>Apertura</dt>
                     <dd>{formatTime(day.openedAt)}</dd>
                   </div>
-                  <div className="pos-unclosedCard__field">
+                  <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
                     <dt>Usuario</dt>
                     <dd>{day.openedByName || "—"}</dd>
                   </div>
-                  <div className="pos-unclosedCard__field">
+                  <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
                     <dt>Facturación</dt>
                     <dd>{euros(day.totalGrossCents)}</dd>
                   </div>
-                  <div className="pos-unclosedCard__field">
+                  <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
                     <dt>Afluencia</dt>
                     <dd>{day.covers ?? 0}</dd>
                   </div>
@@ -96,7 +96,7 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
             ))}
           </div>
           {error ? <p className="pos-unclosedModal__error" role="alert" data-testid="pos-unclosed-error">{error}</p> : null}
-          <div className="pos-unclosedModal__actions">
+          <div data-slot="pOSUnclosedDaysModal-pos-unclosedModal-actions" className="pos-unclosedModal__actions">
             <a href="/app/pos?section=reports" className="pos-unclosedModal__link" data-testid="pos-unclosed-go-reports">
               Ir a Informes
             </a>

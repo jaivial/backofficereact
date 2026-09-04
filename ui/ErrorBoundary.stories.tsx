@@ -22,8 +22,8 @@ function ProblemChild({ message }: { message?: string }) {
 /** Component that works normally */
 function WorkingChild() {
   return (
-    <div style={{ padding: "16px", background: "#f0fdf4", borderRadius: "8px" }}>
-      <p style={{ color: "#166534", margin: 0 }}>Componente funcionando correctamente</p>
+    <div data-slot="errorBoundary.stories-div" style={{ padding: "16px", background: "#f0fdf4", borderRadius: "8px" }}>
+      <p data-slot="errorBoundary.stories-p" style={{ color: "#166534", margin: 0 }}>Componente funcionando correctamente</p>
     </div>
   );
 }
@@ -43,7 +43,7 @@ export const WithCustomFallback: Story = {
     <ErrorBoundary
       page="dashboard"
       fallback={
-        <div
+        <div data-slot="errorBoundary.stories-div"
           style={{
             padding: "32px",
             background: "#fef2f2",
@@ -51,11 +51,11 @@ export const WithCustomFallback: Story = {
             textAlign: "center",
           }}
         >
-          <h3 style={{ color: "#dc2626", margin: "0 0 8px" }}>Error personalizado</h3>
-          <p style={{ color: "#991b1b", margin: "0 0 16px" }}>
+          <h3 data-slot="errorBoundary.stories-h3" style={{ color: "#dc2626", margin: "0 0 8px" }}>Error personalizado</h3>
+          <p data-slot="errorBoundary.stories-p" style={{ color: "#991b1b", margin: "0 0 16px" }}>
             Este es un mensaje de error personalizado definido por el usuario.
           </p>
-          <button
+          <button data-testid="accion-personalizada"
             style={{
               padding: "8px 16px",
               background: "#dc2626",
@@ -90,8 +90,8 @@ export const WithOnErrorCallback: Story = {
     const [errorLogged, setErrorLogged] = React.useState(false);
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        <p style={{ margin: 0 }}>
+      <div data-slot="errorBoundary.stories-div" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <p data-slot="errorBoundary.stories-p" style={{ margin: 0 }}>
           El callback onError fue llamado: <strong>{errorLogged ? "Si" : "No"}</strong>
         </p>
         <ErrorBoundary
@@ -124,8 +124,8 @@ export const RetryFunctionality: Story = {
     const [shouldError, setShouldError] = React.useState(true);
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        <p style={{ margin: 0 }}>
+      <div data-slot="errorBoundary.stories-div" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <p data-slot="errorBoundary.stories-p" style={{ margin: 0 }}>
           Haga clic en "Reintentar" para restaurar el estado normal.
         </p>
         <ErrorBoundary page="usuarios">
@@ -135,7 +135,7 @@ export const RetryFunctionality: Story = {
             <WorkingChild />
           )}
         </ErrorBoundary>
-        <button
+        <button data-testid="forzar-error-de-nuevo"
           onClick={() => setShouldError(true)}
           style={{
             padding: "8px 16px",

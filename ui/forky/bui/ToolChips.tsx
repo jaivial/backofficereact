@@ -124,9 +124,9 @@ export default function ToolChips() {
     });
 
   return (
-    <div className="min-h-[220px] w-full max-w-80 pb-1">
+    <div data-slot="toolChips-pb-1" className="min-h-[220px] w-full max-w-80 pb-1">
       {/* collapsed run header */}
-      <button
+      <button data-testid="hover-bg-hover-2"
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
@@ -135,26 +135,26 @@ export default function ToolChips() {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200" style={{ transform: open ? "rotate(0deg)" : "rotate(-90deg)" }}>
           <path d="M6 9l6 6 6-6" />
         </svg>
-        <span className="tabular-nums">4 tool calls, 2 messages</span>
+        <span data-slot="toolChips-tabular-nums" className="tabular-nums">4 tool calls, 2 messages</span>
       </button>
 
       {/* tool call rows */}
-      <div className="grid transition-[grid-template-rows,opacity] duration-300" style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}>
+      <div data-slot="toolChips-duration-300" className="grid transition-[grid-template-rows,opacity] duration-300" style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}>
         {/* -mx-1 + px-1.5 keeps content at the same x while giving the
             row hover pills room inside this overflow-hidden clip box */}
-        <div className="-mx-1 overflow-hidden px-1.5 pb-1">
-        <div className="mt-1.5 flex flex-col gap-1">
+        <div data-slot="toolChips-pb-1" className="-mx-1 overflow-hidden px-1.5 pb-1">
+        <div data-slot="toolChips-gap-1" className="mt-1.5 flex flex-col gap-1">
           {ROWS.slice(0, step).map((row) => {
             const rowOpen = openRows.has(row.label);
             return (
-            <div key={row.label} style={{ animation: "fade-up 300ms cubic-bezier(0.23,1,0.32,1) both" }}>
-              <button
+            <div data-slot="toolChips-div" key={row.label} style={{ animation: "fade-up 300ms cubic-bezier(0.23,1,0.32,1) both" }}>
+              <button data-testid="hover-bg-hover-2-2"
                 type="button"
                 aria-expanded={rowOpen}
                 onClick={() => toggleRow(row.label)}
                 className="group/row -mx-[3px] flex h-7 w-[calc(100%+6px)] min-w-0 items-center gap-2 rounded-control px-[3px] text-left transition-colors duration-100 hover:bg-hover-2"
               >
-                <span className="relative flex size-4 shrink-0 items-center justify-center text-ink-3">
+                <span data-slot="toolChips-text-ink-3" className="relative flex size-4 shrink-0 items-center justify-center text-ink-3">
                   <svg
                     width="13" height="13" viewBox="0 0 24 24" fill={row.icon === "think" ? "currentColor" : "none"} stroke="currentColor"
                     className={`transition-opacity duration-100 group-hover/row:opacity-0 ${rowOpen ? "opacity-0" : ""}`}
@@ -169,8 +169,8 @@ export default function ToolChips() {
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </span>
-                <span className="shrink-0 text-[12.5px] font-medium text-ink">{row.label}</span>
-                <span
+                <span data-slot="toolChips-text-ink" className="shrink-0 text-[12.5px] font-medium text-ink">{row.label}</span>
+                <span data-slot="toolChips-span"
                   className={`inline-flex h-5.5 min-w-0 flex-1 cursor-pointer items-center truncate rounded-chip bg-field px-1.5
                     text-[11.5px] text-ink-2 shadow-hairline transition-colors duration-100 hover:bg-hover-2
                     ${row.mono ? "font-mono" : ""}`}
@@ -180,14 +180,14 @@ export default function ToolChips() {
               </button>
 
               {/* expanded detail */}
-              <div
+              <div data-slot="toolChips-duration-300"
                 className="grid transition-[grid-template-rows,opacity] duration-300"
                 style={{ gridTemplateRows: rowOpen ? "1fr" : "0fr", opacity: rowOpen ? 1 : 0, transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }}
               >
-                <div className="min-h-0 overflow-hidden">
-                  <div className="mt-0.5 mb-1 ml-2 flex flex-col gap-0.5 border-l border-line py-0.5 pl-3.5">
+                <div data-slot="toolChips-overflow-hidden" className="min-h-0 overflow-hidden">
+                  <div data-slot="toolChips-pl-3.5" className="mt-0.5 mb-1 ml-2 flex flex-col gap-0.5 border-l border-line py-0.5 pl-3.5">
                     {row.detail.map((line) => (
-                      <span
+                      <span data-slot="toolChips-span"
                         key={line.text}
                         className={`truncate text-[11.5px] leading-[1.6] ${row.detailMono ? "font-mono" : ""} ${line.tone === "add" ? "text-green" : "text-ink-2"}`}
                       >
@@ -204,16 +204,16 @@ export default function ToolChips() {
 
       {/* file-diff chips */}
       {step >= total && (
-        <div className="mt-2.5 flex max-w-full flex-wrap gap-1.5 border-t border-line pt-2.5">
+        <div data-slot="toolChips-pt-2.5" className="mt-2.5 flex max-w-full flex-wrap gap-1.5 border-t border-line pt-2.5">
           {DIFFS.map((d, i) => (
-            <span
+            <span data-slot="toolChips-relative"
               key={d.file}
               data-diffchip
               className="relative"
               onMouseEnter={openPreview(d.file)}
               onMouseLeave={closePreview(d.file)}
             >
-              <button
+              <button data-testid="hover-bg-hover"
                 type="button"
                 aria-expanded={preview?.file === d.file}
                 aria-label={`Show diff for ${d.file}`}
@@ -224,14 +224,14 @@ export default function ToolChips() {
                   transition-colors duration-100 hover:bg-hover"
                 style={{ animation: `pop-in 250ms cubic-bezier(0.23,1,0.32,1) ${i * 80}ms both` }}
               >
-                <span className="min-w-0 truncate">{d.file}</span>
-                <span className="shrink-0 text-green tabular-nums">+{d.add}</span>
+                <span data-slot="toolChips-truncate" className="min-w-0 truncate">{d.file}</span>
+                <span data-slot="toolChips-tabular-nums" className="shrink-0 text-green tabular-nums">+{d.add}</span>
                 {d.del > 0 && <span className="shrink-0 text-red tabular-nums">−{d.del}</span>}
               </button>
 
             </span>
           ))}
-          <button
+          <button data-testid="2-more"
             type="button"
             className="inline-flex h-7 items-center rounded-chip px-1.5 font-mono text-[11.5px] text-ink-3
               underline decoration-transparent underline-offset-2 transition-colors duration-100
@@ -245,7 +245,7 @@ export default function ToolChips() {
         </div>
       </div>
       {preview && typeof document !== "undefined" && createPortal(
-        <div
+        <div data-slot="toolChips-shadow-overlay"
           className="fixed z-50 w-72 overflow-hidden rounded-[10px] bg-surface shadow-overlay"
           style={{
             left: preview.x,
@@ -255,18 +255,18 @@ export default function ToolChips() {
             transformOrigin: preview.top === undefined ? "bottom left" : "top left",
           }}
         >
-          <div className="flex items-center justify-between border-b border-line px-2.5 py-1.5 font-mono text-[11px]">
-            <span className="min-w-0 truncate text-ink-2">{preview.file}</span>
-            <span className="shrink-0 tabular-nums">
-              <span className="text-green">+{DIFFS.find((diff) => diff.file === preview.file)?.add}</span>
+          <div data-slot="toolChips-text-[11px]" className="flex items-center justify-between border-b border-line px-2.5 py-1.5 font-mono text-[11px]">
+            <span data-slot="toolChips-text-ink-2" className="min-w-0 truncate text-ink-2">{preview.file}</span>
+            <span data-slot="toolChips-tabular-nums" className="shrink-0 tabular-nums">
+              <span data-slot="toolChips-text-green" className="text-green">+{DIFFS.find((diff) => diff.file === preview.file)?.add}</span>
               {(DIFFS.find((diff) => diff.file === preview.file)?.del ?? 0) > 0 && (
-                <span className="text-red"> −{DIFFS.find((diff) => diff.file === preview.file)?.del}</span>
+                <span data-slot="toolChips-text-red" className="text-red"> −{DIFFS.find((diff) => diff.file === preview.file)?.del}</span>
               )}
             </span>
           </div>
-          <div className="py-1 font-mono text-[11px] leading-[1.8]">
+          <div data-slot="toolChips-leading-[1.8]" className="py-1 font-mono text-[11px] leading-[1.8]">
             {(DIFF_LINES[preview.file] ?? []).map((line, index) => (
-              <div
+              <div data-slot="toolChips-div"
                 key={index}
                 className={`flex gap-2 px-2.5 whitespace-pre ${
                   line.tone === "add"
@@ -276,8 +276,8 @@ export default function ToolChips() {
                       : "text-ink-2"
                 }`}
               >
-                <span className="w-3 shrink-0 select-none">{line.tone === "add" ? "+" : line.tone === "del" ? "−" : " "}</span>
-                <span className="min-w-0 truncate">{line.text}</span>
+                <span data-slot="toolChips-select-none" className="w-3 shrink-0 select-none">{line.tone === "add" ? "+" : line.tone === "del" ? "−" : " "}</span>
+                <span data-slot="toolChips-truncate" className="min-w-0 truncate">{line.text}</span>
               </div>
             ))}
           </div>

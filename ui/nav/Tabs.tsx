@@ -70,7 +70,7 @@ export function Tabs({
                 onNavigate?.("#", t.id, null as any);
               }}
             >
-              <span className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
+              <span data-slot="tabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
               <span className="bo-tabInner" data-slot="tab-inner">
                 {t.icon != null && (
                   <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
@@ -101,7 +101,7 @@ export function Tabs({
               onNavigate(href, t.id, ev);
             }}
           >
-            <span className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
+            <span data-slot="tabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
             <span className="bo-tabInner" data-slot="tab-inner">
               {t.icon != null && (
                 <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">

@@ -127,14 +127,14 @@ export function IngredientPickerPopover({
       className={className}
       data-testid="ingredient-picker-popover"
     >
-      <div className="bo-popover__head">
-        <h4 className="bo-popover__title">Anadir ingrediente</h4>
+      <div data-slot="ingredientPickerPopover-popover-head" className="bo-popover__head">
+        <h4 data-slot="ingredientPickerPopover-popover-title" className="bo-popover__title">Anadir ingrediente</h4>
       </div>
 
-      <div className="bo-popover__body">
-        <div className="bo-sheetSearchField">
+      <div data-slot="ingredientPickerPopover-popover-body" className="bo-popover__body">
+        <div data-slot="ingredientPickerPopover-sheetSearchField" className="bo-sheetSearchField">
           <Search size={14} aria-hidden="true" />
-          <input
+          <input data-testid="buscar-producto"
             type="search"
             className="bo-input"
             aria-label="Buscar producto"
@@ -147,21 +147,21 @@ export function IngredientPickerPopover({
         {error ? <InlineAlert kind="error" title={error} /> : null}
 
         {searched && results.length === 0 ? (
-          <p className="bo-popover__empty">Ningun producto coincide con la busqueda.</p>
+          <p data-slot="ingredientPickerPopover-popover-empty" className="bo-popover__empty">Ningun producto coincide con la busqueda.</p>
         ) : null}
 
         {results.length > 0 ? (
-          <ul className="bo-sheetSearchList">
+          <ul data-slot="ingredientPickerPopover-sheetSearchList" className="bo-sheetSearchList">
             {results.map((item) => (
-              <li key={item.id}>
-                <button
+              <li data-slot="ingredientPickerPopover-li" key={item.id}>
+                <button data-testid="button"
                   type="button"
                   className={`bo-sheetSearchItem${selected?.id === item.id ? " is-selected" : ""}`}
                   aria-pressed={selected?.id === item.id}
                   onClick={() => setSelected(item)}
                 >
-                  <span className="bo-sheetSearchItem__name">{item.name}</span>
-                  <span className="bo-sheetSearchItem__unit">
+                  <span data-slot="ingredientPickerPopover-sheetSearchItem-name" className="bo-sheetSearchItem__name">{item.name}</span>
+                  <span data-slot="ingredientPickerPopover-sheetSearchItem-unit" className="bo-sheetSearchItem__unit">
                     {item.displayUnit?.code || item.baseUnit}
                   </span>
                 </button>
@@ -171,12 +171,12 @@ export function IngredientPickerPopover({
         ) : null}
 
         {selected ? (
-          <div className="bo-sheetSearchForm">
-            <div className="bo-field">
-              <label className="bo-label" htmlFor="ingredient-qty">
+          <div data-slot="ingredientPickerPopover-sheetSearchForm" className="bo-sheetSearchForm">
+            <div data-slot="ingredientPickerPopover-field" className="bo-field">
+              <label data-slot="ingredientPickerPopover-label" className="bo-label" htmlFor="ingredient-qty">
                 Cantidad ({selected.displayUnit?.code || selected.baseUnit})
               </label>
-              <input
+              <input data-testid="0"
                 id="ingredient-qty"
                 type="number"
                 min="0"
@@ -187,11 +187,11 @@ export function IngredientPickerPopover({
                 placeholder="0"
               />
             </div>
-            <div className="bo-field">
-              <label className="bo-label" htmlFor="ingredient-waste">
+            <div data-slot="ingredientPickerPopover-field" className="bo-field">
+              <label data-slot="ingredientPickerPopover-label" className="bo-label" htmlFor="ingredient-waste">
                 Merma (%)
               </label>
-              <input
+              <input data-testid="0-2"
                 id="ingredient-waste"
                 type="number"
                 min="0"

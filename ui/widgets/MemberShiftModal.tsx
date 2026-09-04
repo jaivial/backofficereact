@@ -266,7 +266,7 @@ export function MemberShiftModal({
     return (
       <div className="bo-timeManualControl" data-slot="time-manual-control">
         <Select value={draft.hour} onChange={(value) => setManualTime({ ...draft, hour: value })} options={hourOptions.map((value) => ({ value, label: value }))} ariaLabel={`Hora de ${field === "startTime" ? "entrada" : "salida"}`} menuMinWidthPx={64} listMaxHeightPx={132} />
-        <span aria-hidden="true">:</span>
+        <span data-slot="memberShiftModal-span" aria-hidden="true">:</span>
         <Select value={draft.minute} onChange={(value) => void saveManualTime(schedule.id, field, draft.hour, value)} options={minuteOptions.map((value) => ({ value, label: value }))} ariaLabel={`Minutos de ${field === "startTime" ? "entrada" : "salida"}`} menuMinWidthPx={64} listMaxHeightPx={132} />
       </div>
     );
@@ -525,7 +525,7 @@ export function MemberShiftModal({
                       <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de entrada</div>
                       <div className="bo-shiftModalTimePair" data-slot="shift-modal-wheel-row">
                         <TimeSelect value={assignEntryHour} options={HOUR_OPTIONS} onChange={(v) => setAssignEntryTime(v, assignEntryMinute)} ariaLabel="Hora de entrada" />
-                        <span className="bo-shiftModalTimeColon" aria-hidden="true">:</span>
+                        <span data-slot="memberShiftModal-shiftModalTimeColon" className="bo-shiftModalTimeColon" aria-hidden="true">:</span>
                         <TimeSelect value={assignEntryMinute} options={MINUTE_OPTIONS} onChange={(v) => setAssignEntryTime(assignEntryHour, v)} ariaLabel="Minutos de entrada" />
                       </div>
                     </div>
@@ -533,7 +533,7 @@ export function MemberShiftModal({
                       <div className="bo-shiftModalWheelLabel" data-slot="shift-modal-wheel-label">Hora de salida</div>
                       <div className="bo-shiftModalTimePair" data-slot="shift-modal-wheel-row">
                         <TimeSelect value={assignExitHour} options={exitHourOptions} onChange={setAssignExitHour} ariaLabel="Hora de salida" />
-                        <span className="bo-shiftModalTimeColon" aria-hidden="true">:</span>
+                        <span data-slot="memberShiftModal-shiftModalTimeColon" className="bo-shiftModalTimeColon" aria-hidden="true">:</span>
                         <TimeSelect value={assignExitMinute} options={exitMinuteOptions} onChange={setAssignExitMinute} ariaLabel="Minutos de salida" />
                       </div>
                     </div>

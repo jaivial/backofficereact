@@ -13,7 +13,7 @@ export function FloatingActionButton({
   ...rest
 }: FloatingActionButtonProps) {
   return (
-    <button
+    <button data-testid="button"
       type="button"
       className={cn("bo-menuFab", className)}
       {...rest}

@@ -101,7 +101,7 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           <div className="bo-mergeList" data-slot="merge-invoice-list">
             <h4 data-slot="mergeInvoicesModal-nar">Facturas a fusionar</h4>
             <ScrollArea dataSlot="merge-invoice-list-items">
-              <div className="bo-mergeListItems">
+              <div data-slot="mergeInvoicesModal-mergeListItems" className="bo-mergeListItems">
               {invoices.map((inv) => (
                 <div key={inv.id} className="bo-mergeListItem" data-slot="merge-invoice-list-item">
                   <div className="bo-mergeListItemMain" data-slot="merge-invoice-list-item-main">

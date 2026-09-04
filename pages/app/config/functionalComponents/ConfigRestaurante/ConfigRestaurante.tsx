@@ -572,13 +572,13 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
         onClose={() => setAforoFloor(null)}
         size="sm"
       >
-        <div className="bo-form">
-          <p className="bo-mutedText" style={{ marginBottom: 12 }}>
+        <div data-slot="configRestaurante-form" className="bo-form">
+          <p data-slot="configRestaurante-mutedText" className="bo-mutedText" style={{ marginBottom: 12 }}>
             Define el aforo máximo de esta planta. La suma de los aforos de sus salones no podrá superar este valor.
           </p>
 
-          <div className="bo-configSalonToggle">
-            <span className="bo-label">Planta con aforo limitado</span>
+          <div data-slot="configRestaurante-configSalonToggle" className="bo-configSalonToggle">
+            <span data-slot="configRestaurante-label" className="bo-label">Planta con aforo limitado</span>
             <Switch
               checked={aforoCapped}
               disabled={busy}
@@ -604,7 +604,7 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             />
           )}
 
-          <div className="bo-modalActions">
+          <div data-slot="configRestaurante-modalActions" className="bo-modalActions">
             <Button variant="ghost" onClick={() => setAforoFloor(null)} disabled={busy}>Cancelar</Button>
             <Button variant="primary" onClick={() => void saveAforo()} disabled={busy} data-ui="floor-aforo-save" data-testid="floor-aforo-save">
               Guardar

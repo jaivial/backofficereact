@@ -33,7 +33,7 @@ export function StatusBadge({
   ...rest
 }: StatusBadgeProps) {
   return (
-    <span className={cn(badgeVariants({ variant, size }), className)} {...rest}>
+    <span data-slot="statusBadge-span" className={cn(badgeVariants({ variant, size }), className)} {...rest}>
       {children}
     </span>
   );
