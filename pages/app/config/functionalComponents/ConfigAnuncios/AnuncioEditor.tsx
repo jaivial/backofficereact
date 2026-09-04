@@ -371,7 +371,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   if (loading) {
     return (
       <Panel data-slot="ads-loading" meta="Cargando anuncio...">
-        <p className="bo-mutedText">Recuperando el anuncio solicitado.</p>
+        <p data-slot="anuncioEditor-mutedText" className="bo-mutedText">Recuperando el anuncio solicitado.</p>
       </Panel>
     );
   }
@@ -379,7 +379,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   if (!ad) {
     return (
       <Panel data-slot="ads-not-found" className="bo-panel--empty" meta="Anuncio no encontrado" title="No se pudo cargar el anuncio">
-        <p className="bo-mutedText" style={{ textAlign: "center", paddingBlock: 16 }}>
+        <p data-slot="anuncioEditor-mutedText" className="bo-mutedText" style={{ textAlign: "center", paddingBlock: 16 }}>
           El anuncio solicitado no existe o fue eliminado.
         </p>
       </Panel>
@@ -434,7 +434,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
               data-testid="ad-mode-editor"
             >
               <Settings2 size={14} aria-hidden="true" />
-              <span className="bo-anunciosPreviewSwitchLabel">Editor</span>
+              <span data-slot="anuncioEditor-anunciosPreviewSwitchLabel" className="bo-anunciosPreviewSwitchLabel">Editor</span>
             </button>
             <button
               type="button"
@@ -444,7 +444,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
               data-testid="ad-mode-preview"
             >
               <Eye size={14} aria-hidden="true" />
-              <span className="bo-anunciosPreviewSwitchLabel">Preview</span>
+              <span data-slot="anuncioEditor-anunciosPreviewSwitchLabel" className="bo-anunciosPreviewSwitchLabel">Preview</span>
             </button>
           </div>
           <SaveStatusBadge state={saveState} />
@@ -532,8 +532,8 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
           </Reorder.Group>
 
           <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
-            <div className="bo-anunciosCtasTitle">Duración</div>
-            <div className="bo-anunciosCtasHint">El anuncio se mostrará durante este periodo. Déjalo vacío para mostrarlo siempre.</div>
+            <div data-slot="anuncioEditor-anunciosCtasTitle" className="bo-anunciosCtasTitle">Duración</div>
+            <div data-slot="anuncioEditor-anunciosCtasHint" className="bo-anunciosCtasHint">El anuncio se mostrará durante este periodo. Déjalo vacío para mostrarlo siempre.</div>
             <InlineDateRangeCalendar from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
               if (range.from && range.to && sendAdScheduleCheck) {
                 const reqId = `ad-schedule-${Date.now()}-${++reqCounter.current}`;
@@ -547,10 +547,10 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
           </div>
 
           <div className="bo-anunciosCtasSection" data-slot="ads-cta-section">
-            <div className="bo-anunciosCtasHead">
-              <div>
-                <div className="bo-anunciosCtasTitle">Llamadas a la acción</div>
-                <div className="bo-anunciosCtasHint">Siempre se muestran al final del anuncio.</div>
+            <div data-slot="anuncioEditor-anunciosCtasHead" className="bo-anunciosCtasHead">
+              <div data-slot="anuncioEditor-div">
+                <div data-slot="anuncioEditor-anunciosCtasTitle" className="bo-anunciosCtasTitle">Llamadas a la acción</div>
+                <div data-slot="anuncioEditor-anunciosCtasHint" className="bo-anunciosCtasHint">Siempre se muestran al final del anuncio.</div>
               </div>
             </div>
             <Reorder.Group
@@ -577,7 +577,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
         {previewOpen ? (
           <div className="bo-anunciosPreviewCol" data-slot="ads-preview-column">
             <div className="bo-anunciosDeviceSwitch" role="group" aria-label="Vista del dispositivo" data-slot="ad-preview-device-switch">
-              <div className="bo-anunciosPreviewSwitch">
+              <div data-slot="anuncioEditor-anunciosPreviewSwitch" className="bo-anunciosPreviewSwitch">
                 <button type="button" className={`bo-anunciosPreviewSwitchBtn ${previewDevice === "mobile" ? "is-active" : ""}`} onClick={() => setPreviewDevice("mobile")} aria-pressed={previewDevice === "mobile"} aria-label="Ver versión móvil" data-testid="ad-preview-device-mobile"><Smartphone size={14} aria-hidden="true" /><span className="bo-anunciosPreviewSwitchLabel">Móvil</span></button>
                 <button type="button" className={`bo-anunciosPreviewSwitchBtn ${previewDevice === "desktop" ? "is-active" : ""}`} onClick={() => setPreviewDevice("desktop")} aria-pressed={previewDevice === "desktop"} aria-label="Ver versión ordenador" data-testid="ad-preview-device-desktop"><Monitor size={14} aria-hidden="true" /><span className="bo-anunciosPreviewSwitchLabel">Ordenador</span></button>
               </div>
@@ -607,9 +607,9 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
               data-slot={`ad-add-${item.type}`}
               data-testid={`ad-add-${item.type}-popover`}
             >
-              <span className="bo-anunciosAddItemIcon">{item.icon}</span>
-              <span>{item.label}</span>
-              <span className="bo-anunciosAddItemMeta">{item.meta}</span>
+              <span data-slot="anuncioEditor-anunciosAddItemIcon" className="bo-anunciosAddItemIcon">{item.icon}</span>
+              <span data-slot="anuncioEditor-span">{item.label}</span>
+              <span data-slot="anuncioEditor-anunciosAddItemMeta" className="bo-anunciosAddItemMeta">{item.meta}</span>
             </button>
           ))}
           <div className="bo-anunciosAddDivider" role="separator" data-slot="ad-add-content-divider" />
@@ -620,9 +620,9 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
             className="bo-anunciosAddItem"
             data-slot="ad-cta-add-confirm"
           >
-            <span className="bo-anunciosAddItemIcon"><Plus size={16} aria-hidden="true" /></span>
-            <span>Añadir nuevo CTA</span>
-            <span className="bo-anunciosAddItemMeta">Botón</span>
+            <span data-slot="anuncioEditor-anunciosAddItemIcon" className="bo-anunciosAddItemIcon"><Plus size={16} aria-hidden="true" /></span>
+            <span data-slot="anuncioEditor-span">Añadir nuevo CTA</span>
+            <span data-slot="anuncioEditor-anunciosAddItemMeta" className="bo-anunciosAddItemMeta">Botón</span>
           </button>
         </div>
       </Popover>
@@ -716,7 +716,7 @@ function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "erro
         aria-live="polite"
         data-slot="ad-save-status"
       >
-        <span className="bo-anunciosSaveLabel">Guardado</span>
+        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Guardado</span>
       </span>
     );
   }
@@ -730,8 +730,8 @@ function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "erro
         aria-busy="true"
         data-slot="ad-save-status"
       >
-        <span className="bo-anunciosSaveSpinner" aria-hidden="true" />
-        <span className="bo-anunciosSaveLabel">Guardando...</span>
+        <span data-slot="anuncioEditor-anunciosSaveSpinner" className="bo-anunciosSaveSpinner" aria-hidden="true" />
+        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Guardando...</span>
       </span>
     );
   }
@@ -745,14 +745,14 @@ function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "erro
         data-slot="ad-save-status"
       >
         <CircleAlert size={14} aria-hidden="true" />
-        <span className="bo-anunciosSaveLabel">Error</span>
+        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Error</span>
       </span>
     );
   }
   return (
     <span className="bo-anunciosSaveStatus" data-state="saved" data-testid="ad-save-status" aria-live="polite" data-slot="ad-save-status">
       <Check size={14} aria-hidden="true" />
-      <span className="bo-anunciosSaveLabel">Guardado</span>
+      <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Guardado</span>
     </span>
   );
 }
@@ -872,26 +872,26 @@ function CTARowCard({
         <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
       </button>
       <div className="bo-anunciosRowField bo-anunciosRowField-2col" data-slot={`ad-cta-${cta.id}-fields`}>
-        <label className="grid gap-1 text-xs text-bo-muted">
-          <span>Texto botón {index + 1}</span>
+        <label data-slot="anuncioEditor-text-bo-muted" className="grid gap-1 text-xs text-bo-muted">
+          <span data-slot="anuncioEditor-span">Texto botón {index + 1}</span>
           <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" data-slot={`ad-cta-${cta.id}-text`} />
         </label>
-        <label className="grid gap-1 text-xs text-bo-muted">
-          <span>Color</span>
+        <label data-slot="anuncioEditor-text-bo-muted" className="grid gap-1 text-xs text-bo-muted">
+          <span data-slot="anuncioEditor-span">Color</span>
           <input type="color" value={cta.color || "#436754"} onChange={(event) => onChange({ color: event.target.value })} className="h-10 w-full rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-slot={`ad-cta-${cta.id}-color`} />
         </label>
-        <label className="grid gap-1 text-xs text-bo-muted">
-          <span>Navegación</span>
+        <label data-slot="anuncioEditor-text-bo-muted" className="grid gap-1 text-xs text-bo-muted">
+          <span data-slot="anuncioEditor-span">Navegación</span>
           <Select value={cta.navigation_mode} onChange={(value) => onChange({ navigation_mode: value === "custom" ? "custom" : "route" })} options={[{ value: "route", label: "Ruta de la web" }, { value: "custom", label: "URL personalizada" }]} ariaLabel={`Navegación CTA ${index + 1}`} />
         </label>
         {cta.navigation_mode === "route" ? (
-          <label className="grid gap-1 text-xs text-bo-muted">
-            <span>Ruta</span>
+          <label data-slot="anuncioEditor-text-bo-muted" className="grid gap-1 text-xs text-bo-muted">
+            <span data-slot="anuncioEditor-span">Ruta</span>
             <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} ariaLabel={`Ruta CTA ${index + 1}`} />
           </label>
         ) : (
-          <label className="grid gap-1 text-xs text-bo-muted">
-            <span>URL personalizada</span>
+          <label data-slot="anuncioEditor-text-bo-muted" className="grid gap-1 text-xs text-bo-muted">
+            <span data-slot="anuncioEditor-span">URL personalizada</span>
             <input type="url" value={cta.custom_url} onChange={(event) => onChange({ custom_url: event.target.value })} className="bo-input" placeholder="https://..." data-slot={`ad-cta-${cta.id}-custom-url`} />
           </label>
         )}

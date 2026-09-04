@@ -116,8 +116,8 @@ export function PortionWastePanel() {
 
   return (
     <section className="bo-stack" data-ui="portion-waste-panel" data-testid="portion-waste-panel">
-      <h3 className="bo-sectionTitle">Registrar merma de raciones</h3>
-      <p className="bo-muted">
+      <h3 data-slot="portionWastePanel-sectionTitle" className="bo-sectionTitle">Registrar merma de raciones</h3>
+      <p data-slot="portionWastePanel-muted" className="bo-muted">
         Las raciones producidas y no vendidas se dan de baja aqui. Los ingredientes ya se
         descontaron al producir, por lo que esta baja afecta al producto terminado.
       </p>

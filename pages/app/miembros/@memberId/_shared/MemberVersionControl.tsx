@@ -50,7 +50,7 @@ export function MemberVersionControl({ boUserId, initialVersion, memberName, can
   if (!canChange || boUserId == null) {
     return (
       <div className="bo-memberRoleReadonly" data-slot="@memberId-versionReadonly" data-testid="miembro-detail-version-readonly">
-        <span className="bo-memberRoleReadonlyValue">{`v${appVersion}`}</span>
+        <span data-slot="memberVersionControl-memberRoleReadonlyValue" className="bo-memberRoleReadonlyValue">{`v${appVersion}`}</span>
       </div>
     );
   }

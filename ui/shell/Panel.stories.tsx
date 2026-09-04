@@ -50,9 +50,9 @@ export const WithActions: Story = {
   args: {
     title: "Panel with Actions",
     actions: (
-      <div style={{ display: "flex", gap: "8px" }}>
-        <button onClick={() => {}}>Edit</button>
-        <button onClick={() => {}}>Delete</button>
+      <div data-slot="panel.stories-div" style={{ display: "flex", gap: "8px" }}>
+        <button data-testid="edit" onClick={() => {}}>Edit</button>
+        <button data-testid="delete" onClick={() => {}}>Delete</button>
       </div>
     ),
     children: <p>This panel has action buttons in the header.</p>,
@@ -65,14 +65,14 @@ export const WithFullHeader: Story = {
     title: "Complete Panel",
     meta: "Version 1.0",
     actions: (
-      <div style={{ display: "flex", gap: "8px" }}>
-        <button onClick={() => {}}>Settings</button>
+      <div data-slot="panel.stories-div" style={{ display: "flex", gap: "8px" }}>
+        <button data-testid="settings" onClick={() => {}}>Settings</button>
       </div>
     ),
     children: (
-      <div>
-        <p>This panel has all header elements: title, meta, and actions.</p>
-        <p>Additional content can go here.</p>
+      <div data-slot="panel.stories-div">
+        <p data-slot="panel.stories-p">This panel has all header elements: title, meta, and actions.</p>
+        <p data-slot="panel.stories-p">Additional content can go here.</p>
       </div>
     ),
   },
@@ -85,7 +85,7 @@ export const GlassWithFullHeader: Story = {
     title: "Glass Panel",
     meta: "Premium feature",
     actions: (
-      <button onClick={() => {}}>Upgrade</button>
+      <button data-testid="upgrade" onClick={() => {}}>Upgrade</button>
     ),
     children: <p>Glass panels work great with all header elements.</p>,
   },
@@ -104,14 +104,14 @@ export const RichContent: Story = {
     title: "Rich Content Panel",
     meta: "Documentation",
     children: (
-      <div>
-        <h3>Features</h3>
-        <ul>
-          <li>Feature one</li>
-          <li>Feature two</li>
-          <li>Feature three</li>
+      <div data-slot="panel.stories-div">
+        <h3 data-slot="panel.stories-h3">Features</h3>
+        <ul data-slot="panel.stories-ul">
+          <li data-slot="panel.stories-li">Feature one</li>
+          <li data-slot="panel.stories-li">Feature two</li>
+          <li data-slot="panel.stories-li">Feature three</li>
         </ul>
-        <p>This panel demonstrates rich HTML content in the body.</p>
+        <p data-slot="panel.stories-p">This panel demonstrates rich HTML content in the body.</p>
       </div>
     ),
   },

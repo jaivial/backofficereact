@@ -65,8 +65,8 @@ export function AllergenPickerPopover({
       className={className}
       data-testid="allergen-picker-popover"
     >
-      <div className="bo-popover__head">
-        <h4 className="bo-popover__title">Alergenos</h4>
+      <div data-slot="allergenPickerPopover-popover-head" className="bo-popover__head">
+        <h4 data-slot="allergenPickerPopover-popover-title" className="bo-popover__title">Alergenos</h4>
       </div>
 
       {/* Compact variant of the very same grid used in the Informacion tab. */}

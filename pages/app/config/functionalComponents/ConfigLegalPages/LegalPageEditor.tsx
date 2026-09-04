@@ -154,7 +154,7 @@ export function LegalPageEditor({ slug }: { slug: LegalPageSlug }) {
 
       {activeTab === "preview" ? (
         <div className="bo-card" data-slot="legal-page-editor-previewPane">
-          <div className="bo-cardBody">
+          <div data-slot="legalPageEditor-cardBody" className="bo-cardBody">
             <div
               className="wrapperavisolegal"
               data-testid="legal-page-editor-preview"

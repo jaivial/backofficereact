@@ -41,7 +41,7 @@ export function Card({
   // and direct-child layout). When you need a styled body slot, apply
   // bo-cardBody/--noPadding via the outer `className` prop instead.
   return (
-    <div
+    <div data-slot="card-div"
       className={cn(
         variantClasses[variant],
         padding && "p-4",

@@ -31,10 +31,10 @@ export function InfoHint({ title, children }: { title: string; children: React.R
         maxWidthPx={340}
         minWidthPx={260}
       >
-        <div className="bo-popover__head">
-          <h4 className="bo-popover__title">{title}</h4>
+        <div data-slot="infoHint-popover-head" className="bo-popover__head">
+          <h4 data-slot="infoHint-popover-title" className="bo-popover__title">{title}</h4>
         </div>
-        <div className="bo-popover__body">{children}</div>
+        <div data-slot="infoHint-popover-body" className="bo-popover__body">{children}</div>
       </Popover>
     </>
   );

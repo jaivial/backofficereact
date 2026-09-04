@@ -97,7 +97,7 @@ function MobileNavWithSession({
 // Container for visual testing
 function StoryContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background pb-16 flex items-center justify-center">
+    <div data-slot="mobileNav.stories-justify-center" className="min-h-screen bg-background pb-16 flex items-center justify-center">
       {children}
     </div>
   );

@@ -49,7 +49,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div style={{ minHeight: "400px" }}>
+      <div data-slot="shiftModal.stories-div" style={{ minHeight: "400px" }}>
         <Story />
       </div>
     ),

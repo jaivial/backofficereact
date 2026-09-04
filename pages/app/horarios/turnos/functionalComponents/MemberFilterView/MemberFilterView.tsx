@@ -292,7 +292,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
 
         {/* Día/Semana switcher */}
         <div data-slot="viewTabs" className="flex items-center gap-2">
-          <button
+          <button data-testid="vista-diaria"
             type="button"
             onClick={() => handleViewChange("diario")}
             aria-label="Vista diaria"
@@ -302,7 +302,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
           >
             Día
           </button>
-          <button
+          <button data-testid="vista-semanal"
             type="button"
             onClick={() => handleViewChange("semanal")}
             aria-label="Vista semanal"
@@ -316,7 +316,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       </div>
 
       {/* Sidebar + schedule area */}
-      <div className="flex flex-col md:flex-row gap-4 w-full md:items-start">
+      <div data-slot="memberFilterView-md:items-start" className="flex flex-col md:flex-row gap-4 w-full md:items-start">
       {/* Mobile: dropdown selector above schedule */}
       <div className="md:hidden w-full min-w-0" data-ui="mobile-member-selector">
         <Select
@@ -359,7 +359,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
             <span data-slot="count" className="sidebar-count ml-auto text-xs text-[var(--bo-faint)]">
               {filteredMembers.length}
             </span>
-            <button
+            <button data-testid="ocultar-miembros"
               type="button"
               onClick={() => setSidebarOpen(false)}
               aria-label="Ocultar miembros"
@@ -383,7 +383,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
           </div>
 
           <ScrollArea dataSlot="memberList" maxHeight="auto" className="grow min-h-0 !h-auto">
-            <div className="space-y-1">
+            <div data-slot="memberFilterView-space-y-1" className="space-y-1">
               {filteredMembers.map((member) => (
                 <button
                   key={member.id}
@@ -413,7 +413,7 @@ export function MemberFilterView({ members, className }: MemberFilterViewProps) 
       {/* Reopen sidebar button for desktop only */}
       {!sidebarOpen && (
         <div className="hidden md:flex mb-3" data-slot="sidebarRail">
-          <button
+          <button data-testid="mostrar-miembros"
             type="button"
             onClick={() => setSidebarOpen(true)}
             aria-label="Mostrar miembros"

@@ -127,14 +127,14 @@ export function StepImagePopover({
       className={className}
       data-testid="step-image-popover"
     >
-      <div className="bo-popover__head">
-        <h4 className="bo-popover__title">Imagen del paso {step.stepNo}</h4>
+      <div data-slot="stepImagePopover-popover-head" className="bo-popover__head">
+        <h4 data-slot="stepImagePopover-popover-title" className="bo-popover__title">Imagen del paso {step.stepNo}</h4>
       </div>
 
-      <div className="bo-popover__body">
+      <div data-slot="stepImagePopover-popover-body" className="bo-popover__body">
         {error ? <InlineAlert kind="error" title={error} /> : null}
 
-        <input
+        <input data-testid="archivo-de-imagen"
           ref={fileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
@@ -146,11 +146,11 @@ export function StepImagePopover({
         {pending ? (
           <>
             <img className="bo-stepImagePreview" src={pending.preview} alt="Imagen optimizada" />
-            <p className="bo-muted">
+            <p data-slot="stepImagePopover-muted" className="bo-muted">
               Mejorar la foto con IA puede hacer la ficha mas clara para la cocina. La imagen ya
               esta optimizada en WebP.
             </p>
-            <div className="bo-stepImageChoice">
+            <div data-slot="stepImagePopover-stepImageChoice" className="bo-stepImageChoice">
               <Button variant="ghost" disabled={busy} onClick={() => void upload(false)}>
                 Continuar sin mejorar
               </Button>
@@ -180,7 +180,7 @@ export function StepImagePopover({
               Generar con IA
             </Button>
             {prompt === "" ? (
-              <p className="bo-popover__empty">
+              <p data-slot="stepImagePopover-popover-empty" className="bo-popover__empty">
                 Escribe el titulo o la descripcion del paso para poder generar la imagen.
               </p>
             ) : null}
