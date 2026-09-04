@@ -47,6 +47,8 @@ import {
 } from "../helpers/menuEditor.helpers";
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB } from "../constants/menuEditor.constants";
 import type { BeverageOption, BeverageDeleteTarget } from "../types/menuEditor.types";
+import { extractBeverageOptionsFromPayload } from "./extractBeverageOptionsFromPayload";
+import { buildPreviewMenuPayload } from "./buildPreviewMenuPayload";
 import {
   BasicsDraft,
   BasicsPayload,
@@ -805,23 +807,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     };
 
     const applyBeverageOptions = (payload: Record<string, unknown>) => {
-      const optionsRaw = payload.options;
-      if (!Array.isArray(optionsRaw)) return;
-      const next = optionsRaw
-        .map((raw) => {
-          const row = raw as Record<string, unknown>;
-          const id = Number(row.id ?? 0);
-          const name = String(row.name ?? "").trim();
-          if (!id || !name) return null;
-          return {
-            id,
-            slug: String(row.slug ?? ""),
-            name,
-            is_custom: row.is_custom === true || row.is_custom === 1,
-            selected: row.selected === true || row.selected === 1,
-          } as BeverageOption;
-        })
-        .filter((row): row is BeverageOption => row !== null);
+      const next = extractBeverageOptionsFromPayload(payload);
       setBeverageOptions(next);
       // Named observation point: frontend state updated from a backend frame.
       console.log(`[checkpoint] beverage_options_applied count=${next.length}`);
@@ -929,70 +915,65 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const previewUrl = "/menu-preview/index.html";
 
   const previewMenuPayload = useMemo(
-    () => ({
-      id: menuId,
-      menu_title: title,
-      menu_type: menuType || "closed_conventional",
-      price,
-      active,
-      menu_subtitle: subtitles,
-      show_dish_images: showDishImages,
-      show_menu_preview_image: showMenuPreviewImage,
-      menu_preview_image_url: menuPreviewImageUrl || "",
-      menu_preview_ai_requested: menuPreviewAIRequested,
-      menu_preview_ai_generating: menuPreviewAIGenerating,
-      ai_requested_img: menuPreviewAIRequested,
-      ai_generating_img: menuPreviewAIGenerating,
-      ai_generated_img: menuPreviewImageUrl || null,
-      settings: {
-        included_coffee: includedCoffee,
-        beverage: {
-          type: beverageType,
-          price_per_person: toNumOrNull(beveragePrice),
-          has_supplement: beverageHasSupplement,
-          supplement_price: toNumOrNull(beverageSupplementPrice),
-        },
+    () =>
+      buildPreviewMenuPayload({
+        menuId,
+        title,
+        menuType,
+        price,
+        active,
+        subtitles,
+        showDishImages,
+        showMenuPreviewImage,
+        menuPreviewImageUrl,
+        menuPreviewAIRequested,
+        menuPreviewAIGenerating,
+        beverageType,
+        beveragePrice,
+        beverageHasSupplement,
+        beverageSupplementPrice,
+        beverageOptions,
+        includedCoffee,
+        minPartySize,
+        mainLimit,
+        mainLimitNum,
         comments,
-        min_party_size: Number.parseInt(minPartySize || "0", 10) || 0,
-        main_dishes_limit: mainLimit,
-        main_dishes_limit_number: Number.parseInt(mainLimitNum || "0", 10) || 0,
-      },
-      ai_images: menuAITracker,
-      sections: sections.map((section, sectionIdx) => ({
-        id: section.id ?? null,
-        title: section.title,
-        kind: section.kind,
-        position: section.position ?? sectionIdx,
-        annotations: normalizeSectionAnnotations(section.annotations),
-        dishes: section.dishes.map((dish, dishIdx) => {
-          const tracked = dish.id ? menuAIDishesById.get(dish.id) : null;
-          const aiRequested = tracked?.ai_requested ?? dish.ai_requested;
-          const aiGenerating = tracked?.ai_generating ?? dish.ai_generating;
-          const aiGeneratedImg = tracked?.ai_generated_img ?? dish.ai_generated_img ?? null;
-          return {
-            id: dish.id ?? null,
-            title: dish.title,
-            description: dish.description,
-            description_enabled: dish.description_enabled,
-            allergens: dish.allergens,
-            supplement_enabled: dish.supplement_enabled,
-            supplement_price: dish.supplement_price,
-            active: dish.active,
-            price: dish.price,
-            position: dish.position ?? dishIdx,
-            foto_url: dish.foto_url,
-            ai_requested: aiRequested,
-            ai_generating: aiGenerating,
-            ai_requested_img: aiRequested,
-            ai_generating_img: aiGenerating,
-            ai_generated_img: aiGeneratedImg,
-          };
-        }),
-      })),
-      special_menu_image_url: specialMenuImage || "",
-    }),
-    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, includedCoffee, mainLimit, mainLimitNum, menuAIDishesById, menuAITracker, menuId, menuType, minPartySize, price, sections, showDishImages, showMenuPreviewImage, menuPreviewImageUrl, menuPreviewAIRequested, menuPreviewAIGenerating, specialMenuImage, subtitles, title],
+        specialMenuImage,
+        menuAITracker,
+        sections,
+        normalizeSectionAnnotations,
+        menuAIDishesById,
+        toNumOrNull,
+      }),
+    [
+      active,
+      beverageHasSupplement,
+      beverageOptions,
+      beveragePrice,
+      beverageSupplementPrice,
+      beverageType,
+      comments,
+      includedCoffee,
+      mainLimit,
+      mainLimitNum,
+      menuAIDishesById,
+      menuAITracker,
+      menuId,
+      menuType,
+      minPartySize,
+      price,
+      sections,
+      showDishImages,
+      showMenuPreviewImage,
+      menuPreviewImageUrl,
+      menuPreviewAIRequested,
+      menuPreviewAIGenerating,
+      specialMenuImage,
+      subtitles,
+      title,
+    ],
   );
+
 
   // --- preview theme fetch ---
   useEffect(() => {
