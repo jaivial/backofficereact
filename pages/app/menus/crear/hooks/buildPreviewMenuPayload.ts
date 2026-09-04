@@ -125,8 +125,10 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
       },
       // Forward the live beverage option list so the preview iframe can
       // render custom beverages in the parenthetical line. Without this the
-      // iframe used a hardcoded 4-default fallback.
-      beverage_options: beverageOptions,
+      // iframe used a hardcoded 4-default fallback. `?? []` keeps the
+      // contract stable before the first `beverage_options` WS frame arrives
+      // (otherwise `selectedBeverageNames` in the iframe gets `undefined`).
+      beverage_options: beverageOptions ?? [],
       comments,
       min_party_size: Number.parseInt(minPartySize || '0', 10) || 0,
       main_dishes_limit: mainLimit,
