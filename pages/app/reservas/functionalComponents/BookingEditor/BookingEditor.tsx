@@ -565,7 +565,7 @@ export function BookingEditor({
               </div>
               <a
                 className="bo-btn bo-btn--primary"
-                href="/app/menus"
+                href="/app/comida/menus"
                 style={{ justifySelf: "center", textDecoration: "none" }}
                 data-slot="booking-editor-menu-create-link"
               >
