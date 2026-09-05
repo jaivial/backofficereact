@@ -591,6 +591,9 @@ export function getSectionsFingerprint(sections: EditorSection[]): string {
     sections.map((sec) => ({
       id: sec.id || null,
       title: sec.title,
+      displayTitle: sec.displayTitle.trim(),
+      subtitle: sec.subtitle,
+      tabLabel: sec.tabLabel,
       kind: sec.kind,
       annotations: sec.annotations,
       dishes: sec.dishes.map((d) => ({
