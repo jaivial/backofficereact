@@ -17,7 +17,7 @@ import { useFoodTypePage } from "./hooks/useFoodTypePage";
 import { useFilterOptions } from "./hooks/useFilterOptions";
 import { FoodList } from "./functionalComponents/FoodList";
 import { useBreadcrumbFadeout } from "../_components/hooks/useBreadcrumbFadeout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../ui/shadcn/tabs";
+import { Tabs } from "../../../../ui/nav/Tabs";
 import { FoodPageSettings } from "./functionalComponents/FoodPageSettings";
 
 function FoodTypePage() {
@@ -75,6 +75,8 @@ function FoodTypePage() {
     pageVisibilityLoading,
     showPageVisibilityToggle,
     showSettingsTab,
+    settingsTab,
+    setSettingsTab,
     showImages,
     setShowImages,
     foodType,
@@ -217,17 +219,21 @@ function FoodTypePage() {
         </div>
 
         {showSettingsTab ? (
-          <Tabs defaultValue="platos" data-testid="food-type-tabs">
-            <TabsList data-testid="food-type-tabs-list">
-              <TabsTrigger value="platos" data-testid="food-type-tab-platos">Platos</TabsTrigger>
-              <TabsTrigger value="configuracion" data-testid="food-type-tab-configuracion">Configuracion</TabsTrigger>
-            </TabsList>
+          <>
+            <div className="bo-menuEditorTabs" data-testid="food-type-editor-tabs">
+              <Tabs
+                tabs={[
+                  { id: "platos", label: "Platos", href: "#" },
+                  { id: "configuracion", label: "Configuracion", href: "#" },
+                ]}
+                activeId={settingsTab}
+                ariaLabel="Secciones de la pagina de comida"
+                mode="button"
+                onNavigate={(_href, id) => setSettingsTab(id === "configuracion" ? "configuracion" : "platos")}
+              />
+            </div>
 
-            <TabsContent value="platos" data-testid="food-type-tab-panel-platos">
-              {listPanel}
-            </TabsContent>
-
-            <TabsContent value="configuracion" data-testid="food-type-tab-panel-configuracion">
+            {settingsTab === "configuracion" ? (
               <FoodPageSettings
                 pageActive={pageActive}
                 webPlacement={webPlacement}
@@ -235,8 +241,10 @@ function FoodTypePage() {
                 onTogglePageActive={togglePageActive}
                 onChangeWebPlacement={changeWebPlacement}
               />
-            </TabsContent>
-          </Tabs>
+            ) : (
+              listPanel
+            )}
+          </>
         ) : (
           listPanel
         )}
