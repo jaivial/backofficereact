@@ -414,7 +414,11 @@ export default function Page() {
   return (
     <section aria-label="Menus" className={cn("bo-menuV2Page", showTypeSelector && "is-selector")} data-testid="menus-page-section">
       {showTypeSelector ? (
-        <MenuTypePanelGrid countsByType={menuTypeCounts} onSelect={handleTypePanelClick} />
+        <>
+          <MenuTypePanelGrid countsByType={menuTypeCounts} onSelect={handleTypePanelClick} />
+          {/* Coordination id: menu_section_public_placement_v1 */}
+          <a className="bo-btn bo-btn--ghost" href="/app/comida/menus/postres" data-testid="menus-page-postres-link">Postres</a>
+        </>
       ) : (
         <>
           <button className="bo-menuBackBtn" type="button" onClick={handleBackToPanels} data-testid="menus-page-back-button">
