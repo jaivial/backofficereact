@@ -1489,6 +1489,12 @@
   margin-top: 2px;
 }
 
+/* "Add new section" row under the accordion list in the platos pane */
+.bo-menuWizardActions--platosAddSection {
+  justify-content: flex-start;
+  margin-top: 14px;
+}
+
 .bo-previewHead {
   display: flex;
   align-items: center;
