@@ -17,6 +17,8 @@ import { useFoodTypePage } from "./hooks/useFoodTypePage";
 import { useFilterOptions } from "./hooks/useFilterOptions";
 import { FoodList } from "./functionalComponents/FoodList";
 import { useBreadcrumbFadeout } from "../_components/hooks/useBreadcrumbFadeout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../ui/shadcn/tabs";
+import { FoodPageSettings } from "./functionalComponents/FoodPageSettings";
 
 function FoodTypePage() {
   const pageContext = usePageContext();
@@ -69,14 +71,17 @@ function FoodTypePage() {
     deleteConfirm,
     setDeleteConfirm,
     pageActive,
+    webPlacement,
     pageVisibilityLoading,
     showPageVisibilityToggle,
+    showSettingsTab,
     showImages,
     setShowImages,
     foodType,
     totalPages,
     showPagerBtns,
     togglePageActive,
+    changeWebPlacement,
     onResetFilters,
     onOpenCreate,
     onOpenEdit,
@@ -107,6 +112,73 @@ function FoodTypePage() {
   const showCategoryCreate = foodType === "platos" || foodType === "bebidas";
   const showItemModal = foodType !== "vinos";
 
+  const listPanel = (
+    <>
+      <FoodFilters
+        foodType={foodType}
+        search={search}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        tipoFilter={tipoFilter}
+        onTipoChange={(value) => {
+          setTipoFilter(value);
+          setPage(1);
+        }}
+        tipoOptions={tipoOptions}
+        activeFilter={activeFilter}
+        onActiveChange={(value) => {
+          setActiveFilter(value);
+          setPage(1);
+        }}
+        categoryFilter={categoryFilter}
+        onCategoryChange={(value) => {
+          setCategoryFilter(value);
+          setPage(1);
+        }}
+        categoryOptions={categoryOptions}
+        alergenoFilter={alergenoFilter}
+        onAlergenoChange={(value) => {
+          setAlergenoFilter(value);
+          setPage(1);
+        }}
+        alergenoOptions={alergenoOptions}
+        suplementoFilter={suplementoFilter}
+        onSuplementoChange={(value) => {
+          setSuplementoFilter(value);
+          setPage(1);
+        }}
+        onReset={onResetFilters}
+        count={total}
+        showImages={showImages}
+        onShowImagesChange={setShowImages}
+      />
+
+      <FoodList
+        items={items}
+        loading={loading}
+        processing={processing}
+        foodType={foodType}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        totalPages={totalPages}
+        showPagerBtns={showPagerBtns}
+        singularLabel={singularLabel}
+        listLabel={listLabel}
+        showMedia={showImages}
+        onOpenDetail={onOpenDetail}
+        onOpenEdit={onOpenEdit}
+        onDelete={(item) => setDeleteConfirm({ open: true, item })}
+        onToggle={onToggle}
+        onOpenCreate={onOpenCreate}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
+    </>
+  );
+
   return (
     <section
       ref={sectionRef}
@@ -125,7 +197,7 @@ function FoodTypePage() {
                 Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.
               </p>
             </div>
-            {showPageVisibilityToggle && (
+            {showPageVisibilityToggle && !showSettingsTab && (
               <div className="bo-foodPageVisibility" data-ui="food-page-visibility">
                 <div className="bo-foodPageVisibilityRow" data-ui="food-page-visibility-row">
                   <span className="bo-foodPageVisibilityTitle" data-slot="@foodType-foodPageVisibilityTitle">
@@ -144,68 +216,30 @@ function FoodTypePage() {
 
         </div>
 
-        <FoodFilters
-          foodType={foodType}
-          search={search}
-          onSearchChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-          tipoFilter={tipoFilter}
-          onTipoChange={(value) => {
-            setTipoFilter(value);
-            setPage(1);
-          }}
-          tipoOptions={tipoOptions}
-          activeFilter={activeFilter}
-          onActiveChange={(value) => {
-            setActiveFilter(value);
-            setPage(1);
-          }}
-          categoryFilter={categoryFilter}
-          onCategoryChange={(value) => {
-            setCategoryFilter(value);
-            setPage(1);
-          }}
-          categoryOptions={categoryOptions}
-          alergenoFilter={alergenoFilter}
-          onAlergenoChange={(value) => {
-            setAlergenoFilter(value);
-            setPage(1);
-          }}
-          alergenoOptions={alergenoOptions}
-          suplementoFilter={suplementoFilter}
-          onSuplementoChange={(value) => {
-            setSuplementoFilter(value);
-            setPage(1);
-          }}
-          onReset={onResetFilters}
-          count={total}
-          showImages={showImages}
-          onShowImagesChange={setShowImages}
-        />
+        {showSettingsTab ? (
+          <Tabs defaultValue="platos" data-testid="food-type-tabs">
+            <TabsList data-testid="food-type-tabs-list">
+              <TabsTrigger value="platos" data-testid="food-type-tab-platos">Platos</TabsTrigger>
+              <TabsTrigger value="configuracion" data-testid="food-type-tab-configuracion">Configuracion</TabsTrigger>
+            </TabsList>
 
-        <FoodList
-          items={items}
-          loading={loading}
-          processing={processing}
-          foodType={foodType}
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          totalPages={totalPages}
-          showPagerBtns={showPagerBtns}
-          singularLabel={singularLabel}
-          listLabel={listLabel}
-          showMedia={showImages}
-          onOpenDetail={onOpenDetail}
-          onOpenEdit={onOpenEdit}
-          onDelete={(item) => setDeleteConfirm({ open: true, item })}
-          onToggle={onToggle}
-          onOpenCreate={onOpenCreate}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-        />
+            <TabsContent value="platos" data-testid="food-type-tab-panel-platos">
+              {listPanel}
+            </TabsContent>
+
+            <TabsContent value="configuracion" data-testid="food-type-tab-panel-configuracion">
+              <FoodPageSettings
+                pageActive={pageActive}
+                webPlacement={webPlacement}
+                busy={pageVisibilityLoading}
+                onTogglePageActive={togglePageActive}
+                onChangeWebPlacement={changeWebPlacement}
+              />
+            </TabsContent>
+          </Tabs>
+        ) : (
+          listPanel
+        )}
       </div>
 
       {showItemModal ? (
