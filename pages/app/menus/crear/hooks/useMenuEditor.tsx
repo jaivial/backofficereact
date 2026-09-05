@@ -1198,17 +1198,23 @@ export function useMenuEditor(): UseMenuEditorReturn {
     }));
   }, []);
 
+  // Coordination id: menu-section-description-enabled-v1. Switching the section off
+  // cascades to every dish of that section and clears the description text, exactly as
+  // the per-dish switch does, so both entry points leave the same state behind.
   const setSectionDescriptionsEnabled = useCallback((sectionClientId: string, enabled: boolean) => {
     setSections((prev) => {
       let changed = false;
       const next = prev.map((sec) => {
         if (sec.clientId !== sectionClientId) return sec;
+        let sectionChanged = false;
         const dishes = sec.dishes.map((dish) => {
           if (dish.description_enabled === enabled) return dish;
-          changed = true;
-          return { ...dish, description_enabled: enabled };
+          sectionChanged = true;
+          return { ...dish, description_enabled: enabled, description: enabled ? dish.description : "" };
         });
-        return changed ? { ...sec, dishes } : sec;
+        if (!sectionChanged) return sec;
+        changed = true;
+        return { ...sec, dishes };
       });
       return changed ? next : prev;
     });
