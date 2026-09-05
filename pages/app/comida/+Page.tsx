@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react";
+import { useAtomValue } from "jotai";
 import { UtensilsCrossed } from "lucide-react";
 import { FloatingActionButton } from "../../../ui/actions/FloatingActionButton";
+import { hasSectionAccess } from "../../../lib/access-policy";
+import { sessionAtom } from "../../../state/atoms";
 
 import { FOOD_ENTRIES } from "./@foodType/constants/index";
 import { FoodItemModal } from "./_components/FoodItemModal";
@@ -11,7 +14,15 @@ type CreateStep = "picker" | CreateFoodType | null;
 
 export default function Page() {
   const [createStep, setCreateStep] = useState<CreateStep>(null);
+  const session = useAtomValue(sessionAtom);
   const closeCreate = useCallback(() => setCreateStep(null), []);
+  const canOpenMenus = !!session && hasSectionAccess(
+    session.user.role,
+    "menus",
+    session.user.sectionAccess,
+    session.user.roleImportance,
+    session.user.appVersion,
+  );
 
   return (
     <section className="bo-foodHome" aria-label="Categorias de comida" data-ui="food-hub-section" data-testid="food-hub-section">
@@ -34,17 +45,19 @@ export default function Page() {
               </a>
             );
           })}
-          <a
-            className="bo-foodHubCard"
-            href="/app/comida/menus"
-            aria-label="Abrir Menus"
-            data-ui="food-hub-card"
-            data-testid="food-hub-card-menus"
-          >
-            <UtensilsCrossed className="bo-foodHubIcon" size={20} aria-hidden="true" data-ui="food-hub-icon" data-testid="food-hub-icon-menus" />
-            <span className="bo-foodHubLabel" data-ui="food-hub-label" data-testid="food-hub-label-menus">Menus</span>
-            <span className="bo-foodHubHint" data-ui="food-hub-hint" data-testid="food-hub-hint-menus">Gestiona los menus del restaurante</span>
-          </a>
+          {canOpenMenus ? (
+            <a
+              className="bo-foodHubCard"
+              href="/app/comida/menus"
+              aria-label="Abrir Menus"
+              data-ui="food-hub-card"
+              data-testid="food-hub-card-menus"
+            >
+              <UtensilsCrossed className="bo-foodHubIcon" size={20} aria-hidden="true" data-ui="food-hub-icon" data-testid="food-hub-icon-menus" />
+              <span className="bo-foodHubLabel" data-ui="food-hub-label" data-testid="food-hub-label-menus">Menus</span>
+              <span className="bo-foodHubHint" data-ui="food-hub-hint" data-testid="food-hub-hint-menus">Gestiona los menus del restaurante</span>
+            </a>
+          ) : null}
         </div>
       </div>
 
