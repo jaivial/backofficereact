@@ -2443,14 +2443,16 @@ svg {
     background: transparent;
 }
 
-.wineTabsSticky {
+.wineTabsSticky,
+.stickyTabsSticky {
     position: sticky;
     top: calc(var(--header-h) + 10px);
     z-index: 70;
     padding: 6px 0 14px;
 }
 
-.wineTabs {
+.wineTabs,
+.stickyTabs {
     margin: 0 auto;
     width: min(560px, 100%);
     display: flex;
@@ -2465,7 +2467,8 @@ svg {
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
-.wineTab {
+.wineTab,
+.stickyTab {
     flex: 1;
     border: 0;
     background: transparent;
@@ -2485,7 +2488,8 @@ svg {
         color 180ms ease;
 }
 
-.wineTabLabel {
+.wineTabLabel,
+.stickyTabLabel {
     position: relative;
     z-index: 1;
     display: inline-block;
@@ -2493,7 +2497,8 @@ svg {
     text-align: center;
 }
 
-.wineTabBubble {
+.wineTabBubble,
+.stickyTabBubble {
     position: absolute;
     inset: 0;
     border-radius: 999px;
@@ -2501,17 +2506,20 @@ svg {
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
 }
 
-.wineTab.is-active {
+.wineTab.is-active,
+.stickyTab.is-active {
     color: rgba(255, 255, 255, 0.96);
 }
 
 @media (hover: hover) {
-    .wineTab:hover {
+    .wineTab:hover,
+    .stickyTab:hover {
         transform: translateY(-1px);
     }
 }
 
-.wineTab:focus-visible {
+.wineTab:focus-visible,
+.stickyTab:focus-visible {
     outline: 2px solid rgba(20, 37, 32, 0.35);
     outline-offset: 3px;
 }
@@ -2567,6 +2575,7 @@ svg {
 
 @media (prefers-reduced-motion: reduce) {
     .wineTab,
+    .stickyTab,
     .wineCard {
         transition: none !important;
     }
@@ -2687,12 +2696,14 @@ svg {
 }
 
 @media (max-width: 480px) {
-    .wineTabs {
+    .wineTabs,
+    .stickyTabs {
         padding: 7px;
         gap: 7px;
     }
 
-    .wineTab {
+    .wineTab,
+    .stickyTab {
         padding: 11px 12px;
         font-size: 11px;
         letter-spacing: 0.16em;
@@ -4555,4 +4566,25 @@ svg {
   min-height: 100dvh;
   padding: 0;
   background: var(--bg);
+}
+
+/* Coordination id: menu_section_tabs_flag
+   Preview-only additions on top of the shared sticky tab styling: the bubble is
+   always in the DOM (no shared-layout animation in the iframe) and inactive
+   section panels stay hidden. */
+.stickyTabBubble {
+    opacity: 0;
+    transition: opacity 180ms ease;
+}
+
+.stickyTab.is-active .stickyTabBubble {
+    opacity: 1;
+}
+
+.stickyTabPanel {
+    display: none;
+}
+
+.stickyTabPanel.is-active {
+    display: block;
 }
