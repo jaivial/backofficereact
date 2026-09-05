@@ -220,7 +220,7 @@ export default function Page() {
   const disableGlobalActions = deletingMenuId !== null || changingMenuTypeId !== null;
 
   const openEditor = useCallback((id: number) => {
-    window.location.href = `/app/menus/crear?menuId=${encodeURIComponent(String(id))}`;
+    window.location.href = `/app/comida/menus/crear?menuId=${encodeURIComponent(String(id))}`;
   }, []);
 
   const openCreateModal = useCallback(() => setCreateModalOpen(true), []);
@@ -402,13 +402,13 @@ export default function Page() {
     setShowTypeSelector(false);
     setMenuTypeFilter(type);
     const query = new URLSearchParams({ menutype: menuTypeQuerySlug(type) });
-    window.history.pushState({}, "", `/app/menus?${query.toString()}`);
+    window.history.pushState({}, "", `/app/comida/menus?${query.toString()}`);
   }, []);
 
   const handleBackToPanels = useCallback(() => {
     setShowTypeSelector(true);
     resetFilters();
-    window.history.pushState({}, "", "/app/menus");
+    window.history.pushState({}, "", "/app/comida/menus");
   }, [resetFilters]);
 
   return (

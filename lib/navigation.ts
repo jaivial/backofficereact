@@ -12,7 +12,6 @@ export type SidebarItem = {
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "reservas", href: "/app/reservas", label: "Reservas" },
-  { key: "menus", href: "/app/menus", label: "Menus" },
   { key: "comida", href: "/app/comida", label: "Carta" },
   { key: "stock", href: "/app/stock", label: "Stock" },
   { key: "pos", href: "/app/pos", label: "TPV" },
@@ -26,7 +25,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 
 const SECTION_HOME: Record<BOSection, string> = {
   reservas: "/app/reservas",
-  menus: "/app/menus",
+  menus: "/app/comida/menus",
   comida: "/app/comida",
   stock: "/app/stock",
   pos: "/app/pos",
@@ -49,7 +48,7 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (!pathname.startsWith("/app")) return null;
   if (pathname === "/app" || pathname.startsWith("/app/dashboard")) return "reservas";
   if (pathname.startsWith("/app/reservas") || pathname.startsWith("/app/config") || pathname.startsWith("/app/comsit")) return "reservas";
-  if (pathname.startsWith("/app/menus")) return "menus";
+  if (pathname.startsWith("/app/comida/menus")) return "menus";
   if (pathname.startsWith("/app/comida")) return "comida";
   if (pathname.startsWith("/app/stock")) return "stock";
   if (pathname.startsWith("/app/pos")) return "pos";
