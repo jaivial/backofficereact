@@ -614,6 +614,9 @@ export function getSectionsStructureFingerprint(sections: EditorSection[]): stri
       id: sec.id || null,
       clientId: sec.clientId,
       title: sec.title.trim(),
+      displayTitle: sec.displayTitle.trim(),
+      subtitle: sec.subtitle,
+      tabLabel: sec.tabLabel,
       kind: sec.kind,
       position: idx,
     })),
@@ -784,10 +787,21 @@ export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): Edit
     if (dish.id) prevDishByID.set(dish.id, dish);
   }
 
+  const apiDisplayTitle = String(s.display_title || "").trim();
+  const apiSubtitle = String(s.subtitle || "");
+  const apiTabLabel = String(s.tab_label || "");
+  // Backwards compatibility: sections that pre-date the display fields fall
+  // back to the existing `title` for both the backoffice title input and the
+  // new `display_title` field so nothing blanks out.
+  const fallbackDisplayTitle = apiDisplayTitle || s.title || prev?.displayTitle || "";
+
   return {
     clientId: prev?.clientId || uid("section"),
     id: s.id,
     title: s.title,
+    displayTitle: fallbackDisplayTitle,
+    subtitle: apiSubtitle || prev?.subtitle || "",
+    tabLabel: apiTabLabel || prev?.tabLabel || "",
     kind: s.kind,
     position: s.position || 0,
     annotations: toEditorSectionAnnotations(s.annotations, prev?.annotations),
