@@ -37,7 +37,7 @@ export function FoodPageSettings({
         />
       </div>
 
-      <div className="bo-foodPageVisibilityRow" data-testid="food-page-settings-placement-row">
+      <div className="bo-foodPageVisibilityRow bo-foodPageVisibilityRow--stacked" data-testid="food-page-settings-placement-row">
         <span className="bo-foodPageVisibilityTitle" data-testid="food-page-settings-placement-label">
           Posicionamiento visibilidad en web
         </span>
@@ -47,6 +47,8 @@ export function FoodPageSettings({
           disabled={busy || !pageActive}
           ariaLabel="Posicionamiento visibilidad en web"
           onChange={onChangeWebPlacement}
+          className="bo-foodPageVisibilitySelect"
+          menuMinWidthPx={0}
           data-testid="food-page-settings-placement-select"
         />
       </div>
