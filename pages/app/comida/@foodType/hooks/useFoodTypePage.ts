@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { createClient } from "../../../../../api/client";
-import type { FoodCategory, FoodItem, Vino } from "../../../../../api/types";
+import type { FoodCategory, FoodItem, PageVisibility, Vino } from "../../../../../api/types";
 import type { ActiveFilter, ListItem, SuplementoFilter } from "../types";
 import type { FoodType } from "../../_components/foodTypes";
 import { normalizePostres, buildDeleteApiCall, buildToggleApiCall, buildTargetApi } from "../helpers";
@@ -42,8 +42,13 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
 
   // Page visibility state (only for cafes/bebidas)
   const [pageActive, setPageActive] = useState(true);
+  const [webPlacement, setWebPlacement] = useState("inside_menus");
   const [pageVisibilityLoading, setPageVisibilityLoading] = useState(false);
-  const showPageVisibilityToggle = foodType === "cafes" || foodType === "bebidas";
+  const showPageVisibilityToggle = foodType === "cafes" || foodType === "bebidas" || foodType === "postres";
+  // Only postres owns a public placement setting, so it is the only food type
+  // that needs a dedicated "Configuracion" tab next to its dish list.
+  // Coordination id: postres_page_visibility_v1
+  const showSettingsTab = foodType === "postres";
 
   // Local UI toggle: show/hide the dish card image media block on the list page.
   // No persistence — resets to true on every mount, like an accordion/filter.
@@ -88,7 +93,12 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
       try {
         const res = await api.settings.getPageVisibility();
         if (res.success) {
-          setPageActive(foodType === "cafes" ? Boolean(res.cafe_page_active) : Boolean(res.bebidas_page_active));
+          setPageActive(Boolean(
+            foodType === "cafes" ? res.cafe_page_active
+              : foodType === "postres" ? res.postres_page_active
+                : res.bebidas_page_active,
+          ));
+          setWebPlacement(res.postres_web_placement || "inside_menus");
         }
       } catch {
         // ignore
@@ -97,14 +107,23 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     void load();
   }, [api.settings, foodType, showPageVisibilityToggle]);
 
-  const togglePageActive = useCallback(async (checked: boolean) => {
+  // Single writer for every page visibility setting, so the toggle and the
+  // placement dropdown share one request path and one loading flag.
+  const savePageVisibility = useCallback(async (
+    patch: Partial<PageVisibility>,
+    successTitle: string,
+  ) => {
     setPageVisibilityLoading(true);
     try {
-      const payload = foodType === "cafes" ? { cafe_page_active: checked } : { bebidas_page_active: checked };
-      const res = await api.settings.setPageVisibility(payload);
+      const res = await api.settings.setPageVisibility(patch);
       if (res.success) {
-        setPageActive(checked);
-        pushToast({ kind: "success", title: checked ? "Pagina activada" : "Pagina desactivada" });
+        setPageActive(Boolean(
+          foodType === "cafes" ? res.cafe_page_active
+            : foodType === "postres" ? res.postres_page_active
+              : res.bebidas_page_active,
+        ));
+        setWebPlacement(res.postres_web_placement || "inside_menus");
+        pushToast({ kind: "success", title: successTitle });
       } else {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar" });
       }
@@ -114,6 +133,19 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
       setPageVisibilityLoading(false);
     }
   }, [api.settings, foodType, pushToast]);
+
+  const togglePageActive = useCallback(async (checked: boolean) => {
+    const patch: Partial<PageVisibility> = foodType === "cafes"
+      ? { cafe_page_active: checked }
+      : foodType === "postres"
+        ? { postres_page_active: checked }
+        : { bebidas_page_active: checked };
+    await savePageVisibility(patch, checked ? "Pagina activada" : "Pagina desactivada");
+  }, [foodType, savePageVisibility]);
+
+  const changeWebPlacement = useCallback(async (value: string) => {
+    await savePageVisibility({ postres_web_placement: value }, "Posicionamiento actualizado");
+  }, [savePageVisibility]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / pageSize)), [pageSize, total]);
   const showPagerBtns = totalPages > 1;
@@ -311,8 +343,10 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     categories,
     page,
     pageActive,
+    webPlacement,
     pageVisibilityLoading,
     showPageVisibilityToggle,
+    showSettingsTab,
     showImages,
     setShowImages,
     setPage,
@@ -347,6 +381,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     showPagerBtns,
     // Handlers
     togglePageActive,
+    changeWebPlacement,
     loadItems,
     onResetFilters,
     onOpenCreate,
