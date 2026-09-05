@@ -60,6 +60,9 @@ export type EditorSection = {
   expanded?: boolean;
   dishesLoaded?: boolean;
   dishesLoading?: boolean;
+  // Coordination id: menu_section_public_placement_v1
+  public_page_active?: boolean;
+  web_placement?: string;
 };
 
 export type PersistedEditorSection = EditorSection & { id: number };

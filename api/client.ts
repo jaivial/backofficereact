@@ -101,6 +101,22 @@ function isBrowser(): boolean {
   return typeof window !== "undefined" && typeof document !== "undefined";
 }
 
+// Session-persistent correlation id, shared with the group-menu AI websocket so
+// browser calls, backend checkpoints and DB writes can be joined for one session.
+// Coordination id: bo_correlation_id_v1 (browser -> x-correlation-id -> backend logCheckpoint)
+export function currentCorrelationId(): string {
+  if (!isBrowser()) return "";
+  try {
+    const existing = window.sessionStorage.getItem("vcCorrelationId");
+    if (existing) return existing;
+    const minted = `bo-${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+    window.sessionStorage.setItem("vcCorrelationId", minted);
+    return minted;
+  } catch {
+    return "";
+  }
+}
+
 async function readJSON(res: Response): Promise<any> {
   const txt = await res.text();
   try {
@@ -132,6 +148,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
 
     if (!isBrowser()) {
       if (normalizedOpts.cookieHeader) headers.set("cookie", normalizedOpts.cookieHeader);
+    } else if (!headers.has("x-correlation-id")) {
+      const cid = currentCorrelationId();
+      if (cid) headers.set("x-correlation-id", cid);
     }
     // Browser: always include cookies (same-origin via /api proxy).
     const withCreds = isBrowser() ? { credentials: "include" as RequestCredentials } : {};
@@ -1676,6 +1695,29 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ sections }),
+          });
+        },
+        // Coordination id: menu_section_public_placement_v1
+        // Resolves (creating when missing) the Postres carrier menu for the active restaurant.
+        async resolvePostres(): Promise<APISuccess<{ menu_id: number }> | APIError> {
+          return json(`/api/admin/group-menus-v2/postres/resolve`, { method: "POST" });
+        },
+        // Coordination id: menu_section_delete_v1 (modal -> DELETE -> DB -> public snapshot)
+        async deleteSection(id: number, sectionId: number): Promise<APISuccess<{ section_id: number }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}`, {
+            method: "DELETE",
+          });
+        },
+        // Coordination id: menu_section_public_placement_v1
+        async patchSectionVisibility(
+          id: number,
+          sectionId: number,
+          input: { public_page_active?: boolean; web_placement?: string },
+        ): Promise<APISuccess<Record<string, never>> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/visibility`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
           });
         },
         async patchSectionAnnotations(

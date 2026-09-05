@@ -20,6 +20,7 @@ import { Reorder } from "motion/react";
 import { useDragControls } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
 
+import { createClient } from "../../../../api/client";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
@@ -35,6 +36,7 @@ import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 
 import { useMenuEditor } from "./hooks/useMenuEditor";
 import { MenuPreview } from "./functionalComponents/MenuPreview/MenuPreview";
+import { MenuSectionVisibilityPanel, type SectionVisibilityPatch } from "./functionalComponents/MenuSectionVisibilityPanel/MenuSectionVisibilityPanel";
 import { MenuPublishPanel } from "./functionalComponents/MenuPublishPanel/MenuPublishPanel";
 import { MenuSliderPanel, deriveSliderPreview } from "./functionalComponents/MenuSliderPanel/MenuSliderPanel";
 import type { SliderPreviewState } from "./functionalComponents/MenuSliderPanel/MenuSliderPanel";
@@ -257,6 +259,48 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   const requestDishDelete = useCallback((sectionClientId: string, dishClientId: string, dishLabel: string) => {
     setPendingDishDelete({ sectionClientId, dishClientId, dishLabel });
   }, []);
+
+  const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const [pendingSectionDelete, setPendingSectionDelete] = useState<{ sectionClientId: string; sectionLabel: string } | null>(null);
+
+  // Coordination id: menu_section_delete_v1 (backoffice modal -> DELETE -> DB -> public snapshot)
+  const requestSectionDelete = useCallback((sectionClientId: string, sectionLabel: string) => {
+    console.log("[checkpoint] section_delete_requested", `section=${sectionClientId}`);
+    setPendingSectionDelete({ sectionClientId, sectionLabel });
+  }, []);
+
+  const confirmSectionDelete = useCallback(async () => {
+    if (!pendingSectionDelete) return;
+    const target = sections.find((sec) => sec.clientId === pendingSectionDelete.sectionClientId);
+    setPendingSectionDelete(null);
+    console.log("[checkpoint] section_delete_confirmed", `section=${target?.id ?? "unsaved"}`);
+    if (menuId && target?.id) {
+      try {
+        const res = await api.menus.gruposV2.deleteSection(menuId, target.id);
+        if (!("success" in res) || !res.success) throw new Error("delete failed");
+      } catch (err) {
+        pushToast({ kind: "error", title: "Error", message: "No se pudo eliminar la seccion" });
+        console.log("[checkpoint] section_delete_failed", `section=${target.id}`);
+        return;
+      }
+    }
+    removeSection(pendingSectionDelete.sectionClientId);
+    console.log("[checkpoint] section_delete_persisted", `section=${target?.id ?? "unsaved"}`);
+    pushToast({ kind: "success", title: "Seccion eliminada" });
+  }, [api, menuId, pendingSectionDelete, pushToast, removeSection, sections]);
+
+  // Coordination id: menu_section_public_placement_v1
+  const changeSectionVisibility = useCallback(async (sectionClientId: string, patch: SectionVisibilityPatch) => {
+    const target = sections.find((sec) => sec.clientId === sectionClientId);
+    if (!menuId || !target?.id) return;
+    const res = await api.menus.gruposV2.patchSectionVisibility(menuId, target.id, patch);
+    if (!("success" in res) || !res.success) {
+      pushToast({ kind: "error", title: "Error", message: "No se pudo guardar la visibilidad" });
+      return;
+    }
+    setSections((prev) => prev.map((sec) => (sec.clientId === sectionClientId ? { ...sec, ...patch } : sec)));
+    console.log("[checkpoint] section_visibility_persisted", `section=${target.id}`);
+  }, [api, menuId, pushToast, sections, setSections]);
 
   const [sliderPreview, setSliderPreview] = useState<SliderPreviewState>(() => deriveSliderPreview(initialSlider));
   const sliderPreviewMenuPayload = useMemo(
@@ -566,6 +610,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     reorderDishes={reorderDishes}
                     setAllergenModal={setAllergenModal}
                     requestDishDelete={requestDishDelete}
+                    requestSectionDelete={requestSectionDelete}
                     updateDish={updateDish}
                     updateSectionAnnotation={updateSectionAnnotation}
                     addSectionAnnotation={addSectionAnnotation}
@@ -599,6 +644,13 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
           </motion.div>
 
           <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane bo-editorPane--config ${editorTab === "configuracion" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane-config">
+              {sections.filter((sec) => sec.id).map((sec) => (
+                <MenuSectionVisibilityPanel
+                  key={`visibility-${sec.clientId}`}
+                  section={sec}
+                  onChange={(patch) => changeSectionVisibility(sec.clientId, patch)}
+                />
+              ))}
               <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead" data-testid="menu-crear-editor-panel">
                 <div className="bo-panelHead" data-slot="crear-panelHead">
                   <div data-slot="crear-div">
@@ -929,6 +981,21 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
           </div>
         </div>
       </Modal>
+
+      {/* Section delete confirmation modal */}
+      <ConfirmDialog
+        title="Eliminar seccion"
+        message={pendingSectionDelete
+          ? `¿Eliminar la seccion "${pendingSectionDelete.sectionLabel}" y todos sus platos? Esta accion no se puede deshacer.`
+          : ""}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        danger
+        open={!!pendingSectionDelete}
+        onCancel={() => setPendingSectionDelete(null)}
+        onClose={() => setPendingSectionDelete(null)}
+        onConfirm={() => { void confirmSectionDelete(); }}
+      />
 
       {/* Dish delete confirmation modal */}
       <ConfirmDialog
