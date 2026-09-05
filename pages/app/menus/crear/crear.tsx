@@ -538,7 +538,8 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                 ))}
               </div>
             ) : (
-              <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsEditor bo-reorderGroup">
+              <>
+                <Reorder.Group axis="y" values={sectionOrder} onReorder={reorderSections} className="bo-sectionsEditor bo-reorderGroup">
                 {sections.map((sec, secIdx) => (
                   <MenuSectionEditor
                     key={sec.clientId}
@@ -571,8 +572,13 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     onReorderSectionStartDrag={handleReorderSectionStartDrag}
                     toggleSameDayBooking={toggleSameDayBooking}
                   />
-                ))}
-              </Reorder.Group>
+                ))}                </Reorder.Group>
+                <div className="bo-menuWizardActions bo-menuWizardActions--platosAddSection" data-testid="menu-crear-platos-add-section-row">
+                  <button className="bo-btn bo-btn--ghost" type="button" onClick={addSection} data-testid="menu-crear-platos-add-section">
+                    <Plus size={14} /> Añadir seccion
+                  </button>
+                </div>
+              </>
             )}
 
             {isDraft ? (
