@@ -16,6 +16,7 @@ const baseInput = (overrides: Partial<BuildPreviewMenuPayloadInput> = {}): Build
   active: true,
   subtitles: ['Linea 1'],
   showDishImages: true,
+  showSectionTabs: false,
   showMenuPreviewImage: false,
   menuPreviewImageUrl: '',
   menuPreviewAIRequested: false,
