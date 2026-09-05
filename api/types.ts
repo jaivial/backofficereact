@@ -508,7 +508,9 @@ export type GroupMenuV2 = {
   menu_type: string;
   menu_subtitle: string[];
   show_dish_images: boolean;
+  show_section_tabs: boolean;
   show_menu_preview_image?: boolean;
+  editor_preview_open?: boolean;
   ai_images?: GroupMenuV2AIImages | GroupMenuV2AIDish[] | null;
   menu_preview_image_url?: string;
   menu_preview_ai_requested?: boolean;

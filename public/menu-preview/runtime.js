@@ -339,6 +339,7 @@
       menu_type: state.menuType,
       price: "0",
       show_dish_images: false,
+      show_section_tabs: false,
       settings: {
         comments: [],
         beverage: { type: "no_incluida", price_per_person: null, has_supplement: false, supplement_price: null },
@@ -362,6 +363,8 @@
       sections: Array.isArray(menu.sections) ? menu.sections : [],
       menu_subtitle: Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle : [],
       show_dish_images: parseLooseBool(menu.show_dish_images, fallback.show_dish_images),
+      // Coordination id: menu_section_tabs_flag (backoffice editor -> preview iframe)
+      show_section_tabs: parseLooseBool(menu.show_section_tabs, fallback.show_section_tabs),
       show_menu_preview_image: parseLooseBool(menu.show_menu_preview_image, fallback.show_menu_preview_image),
       menu_preview_image_url: String(menu.menu_preview_image_url || "").trim(),
     };
@@ -634,6 +637,82 @@
     return rows ? '<ul class="menuSectionAnnotations" role="list">' + rows + "</ul>" : "";
   }
 
+  // Coordination id: menu_section_tabs_flag
+  // Selected tab index, kept outside render so it survives editor re-renders.
+  let activeSectionTabIndex = 0;
+
+  // Sticky tab bar shared by every section-based villa-carmen preview branch.
+  // Mirrors the public site markup (`stickyTabsSticky` / `stickyTab`) so the
+  // preview and preactvillacarmen render the same UI from the same flag.
+  function renderSectionTabsVC(sections, blocks) {
+    const filled = blocks
+      .map(function (html, idx) { return { section: sections[idx], html: html }; })
+      .filter(function (entry) { return sectionHasDishes(entry.section) && !!entry.html; });
+    if (filled.length < 2) return filled.map(function (entry) { return entry.html; }).join("");
+    if (activeSectionTabIndex >= filled.length) activeSectionTabIndex = 0;
+    const tabs = filled
+      .map(function (entry, idx) {
+        const title = entry.section.title;
+        const active = idx === activeSectionTabIndex;
+        return (
+          '<button type="button" class="' + (active ? "stickyTab is-active" : "stickyTab") + '" role="tab"' +
+          ' aria-selected="' + (active ? "true" : "false") + '" data-vc-section-tab="' + idx + '"' +
+          ' data-testid="menu-preview-section-tab-' + idx + '">' +
+          '<span class="stickyTabBubble"></span>' +
+          '<span class="stickyTabLabel">' + escapeHtml(title) + "</span></button>"
+        );
+      })
+      .join("");
+    const panels = filled
+      .map(function (entry, idx) {
+        return (
+          '<div class="stickyTabPanel' + (idx === activeSectionTabIndex ? " is-active" : "") + '" role="tabpanel"' +
+          ' data-vc-section-panel="' + idx + '" data-testid="menu-preview-section-panel-' + idx + '">' +
+          entry.html +
+          "</div>"
+        );
+      })
+      .join("");
+    return (
+      '<div class="stickyTabsSticky" role="tablist" aria-label="Secciones del menu" data-testid="menu-preview-section-tabs">' +
+      '<div class="stickyTabs">' + tabs + "</div></div>" + panels
+    );
+  }
+
+  function useSectionTabs(menu, sections) {
+    return parseLooseBool(menu.show_section_tabs, false) && Array.isArray(sections) && sections.filter(sectionHasDishes).length > 1;
+  }
+
+  // A section with no dishes renders to empty or title-only markup, which would
+  // otherwise become a tab with a blank panel.
+  function sectionHasDishes(section) {
+    return !!section && Array.isArray(section.dishes) && section.dishes.length > 0;
+  }
+
+  function attachSectionTabHandlers() {
+    if (!root) return;
+    const bar = root.querySelector(".stickyTabs");
+    if (!bar || bar.dataset.vcSectionTabsBound === "1") return;
+    bar.dataset.vcSectionTabsBound = "1";
+    bar.addEventListener("click", function (event) {
+      const button = event.target && event.target.closest ? event.target.closest("[data-vc-section-tab]") : null;
+      if (!button) return;
+      const index = button.getAttribute("data-vc-section-tab");
+      // Survives the full re-render triggered by the next editor keystroke.
+      activeSectionTabIndex = Number(index) || 0;
+      root.querySelectorAll("[data-vc-section-tab]").forEach(function (node) {
+        const isActive = node.getAttribute("data-vc-section-tab") === index;
+        node.classList.toggle("is-active", isActive);
+        node.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+      root.querySelectorAll("[data-vc-section-panel]").forEach(function (node) {
+        node.classList.toggle("is-active", node.getAttribute("data-vc-section-panel") === index);
+      });
+      // Named observation point: preview tab switched.
+      console.log("[checkpoint] preview_section_tab_selected index=" + index);
+    });
+  }
+
   function renderMenuSectionVC(title, dishes, notes, options) {
     if (!Array.isArray(dishes) || dishes.length === 0) return "";
     const notesHtml = Array.isArray(notes) && notes.length
@@ -813,7 +892,7 @@
         "Si en mesas inferiores de 9 personas desean pedir dos tipos de arroces distintos, siendo uno seco y otro meloso, tendrían un suplemento de 12€ en la cuenta total, por servicio extra.",
       ];
       let riceLeadShown = false;
-      const sectionBlocks = sections
+      const sectionHtmlList = sections
         .map(function (section) {
           const titleLower = String(section.title || "").toLowerCase();
           const kind = String(section.kind || "").toLowerCase();
@@ -830,8 +909,10 @@
             annotations: section.annotations,
           });
           return html;
-        })
-        .join("");
+        });
+      const sectionBlocks = useSectionTabs(menu, sections)
+        ? renderSectionTabsVC(sections, sectionHtmlList)
+        : sectionHtmlList.join("");
 
       const hasContent = sections.some(function (section) {
         return Array.isArray(section.dishes) && section.dishes.length > 0;
@@ -866,7 +947,7 @@
       if (sections.length === 0) {
         body = '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay contenido disponible.</p></div>';
       } else {
-        const cards = sections
+        const cardList = sections
           .map(function (section) {
             if (showDishImages) {
               return '<article class="menuSectionCard"><h2 class="menuSectionTitle">' + escapeHtml(section.title) + "</h2>" + renderDishGrid(section.dishes, {
@@ -879,8 +960,10 @@
               return renderMenuDishItem(dish, { withAllergens: true, showPriceLabel: true });
             }).join("");
             return '<article class="menuSectionCard"><h2 class="menuSectionTitle">' + escapeHtml(section.title) + '</h2><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</article>";
-          })
-          .join("");
+          });
+        const cards = useSectionTabs(menu, sections)
+          ? renderSectionTabsVC(sections, cardList)
+          : cardList.join("");
 
         const notesLines = ['<p class="menuDishText menuMuted">' + escapeHtml(beverageLabel(menu.settings)) + "</p>"];
         comments.forEach(function (comment) {
@@ -913,7 +996,7 @@
       if (sections.length === 0) {
         body = '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay contenido disponible.</p></div>';
       } else {
-        const sectionsHtml = sections
+        const sectionHtmlList = sections
           .map(function (section) {
             if (showDishImages) {
               return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + "</h3>" + renderDishGrid(section.dishes, {
@@ -925,8 +1008,10 @@
               return renderMenuDishItem(dish, { withAllergens: false, showPriceLabel: true });
             }).join("");
             return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + '</h3><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</section>";
-          })
-          .join("");
+          });
+        const sectionsHtml = useSectionTabs(menu, sections)
+          ? renderSectionTabsVC(sections, sectionHtmlList)
+          : sectionHtmlList.join("");
 
         const subtitleBlock = subtitles.length
           ? '<div class="groupSubtitles">' + subtitles.map(function (line) { return '<p class="menuDishText menuMuted">' + escapeHtml(line) + "</p>"; }).join("") + "</div>"
@@ -981,12 +1066,14 @@
       const priceValue = Number(menu.price);
       const beverageLines = groupBeverageLines(menu);
 
-      const sectionsHtml = sections
+      const sectionHtmlList = sections
         .map(function (section) {
           const rows = section.dishes.map(function (dish) { return renderMenuDishItem(dish, { withAllergens: false, showPriceLabel: false }); }).join("");
           return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + '</h3><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</section>";
-        })
-        .join("");
+        });
+      const sectionsHtml = useSectionTabs(menu, sections)
+        ? renderSectionTabsVC(sections, sectionHtmlList)
+        : sectionHtmlList.join("");
 
       const subtitleBlock = subtitles.length
         ? '<div class="groupSubtitles">' + subtitles.map(function (s) { return '<p class="menuDishText menuMuted">' + escapeHtml(s) + "</p>"; }).join("") + "</div>"
@@ -1056,7 +1143,17 @@
 
   function renderGeneric(menu) {
     const subtitle = menu.menu_subtitle[0] || "Preview en tiempo real";
-    const content = menu.sections.length ? menu.sections.map(sectionHtmlGeneric).join("") : '<article class="vc-card"><p class="vc-empty">Sin secciones aun</p></article>';
+    // Coordination id: menu_section_tabs_flag (same flag drives every theme,
+    // not just villa-carmen, so the preview matches the public site).
+    // Both branches render the same normalized sections, so the toggle only
+    // changes presentation and never which sections are visible.
+    const genericSections = getMenuViewSections(menu);
+    const genericBlocks = genericSections.map(sectionHtmlGeneric);
+    const content = genericBlocks.length
+      ? useSectionTabs(menu, genericSections)
+        ? renderSectionTabsVC(genericSections, genericBlocks)
+        : genericBlocks.join("")
+      : '<article class="vc-card"><p class="vc-empty">Sin secciones aun</p></article>';
     const comments = Array.isArray(menu.settings.comments)
       ? menu.settings.comments.filter(Boolean).map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("")
       : "";
@@ -1099,6 +1196,7 @@
       if (rendered) {
         attachDishCardImageFallbackHandlers();
         attachDishCardLightboxHandlers();
+        attachSectionTabHandlers();
         startHeroSliderIfPresent(heroSliderPaths(menu));
         return;
       }
@@ -1106,6 +1204,7 @@
     renderGeneric(menu);
     attachDishCardImageFallbackHandlers();
     attachDishCardLightboxHandlers();
+    attachSectionTabHandlers();
   }
 
   async function loadTemplate() {
