@@ -243,8 +243,9 @@ body {
 }
 
 .stickyTab {
-  flex: 1 1 auto;
-  min-width: max-content;
+  /* Take exactly the width the label needs and never shrink: an over-long row
+     wraps onto the next row instead of squeezing labels onto two lines. */
+  flex: 0 0 auto;
   white-space: nowrap;
   border: 0;
   background: transparent;
