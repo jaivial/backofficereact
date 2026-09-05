@@ -455,7 +455,6 @@ function IVAReportSection({
               activeId={ivaTab}
               ariaLabel="Vistas del reporte de IVA"
               mode="button"
-              layoutId="reportesIvaTabIndicator"
               onNavigate={(_href, id) => setIvaTab(id as IvaTab)}
             />
           </div>
@@ -611,7 +610,6 @@ export default function Page() {
             activeId={rootTab}
             ariaLabel="Secciones de reportes"
             mode="button"
-            layoutId="reportesRootTabIndicator"
             onNavigate={(_href, id) => setRootTab(id === "customer" ? "customer" : "iva")}
           />
         </div>
