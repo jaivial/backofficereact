@@ -208,7 +208,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   useErrorToast(H.error);
 
   const {
-    error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages,
+    error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages, showSectionTabs,
     showMenuPreviewImage, sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement,
     beverageOptions, beverageModalOpen, beverageDeleteTarget,
     beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, specialMenuImage,
@@ -223,7 +223,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     previewThemeId, previewThemeLabel, previewNeedsUpgrade, previewMenuPayload, previewUrl,
     previewFrameRef, dishImageInputRef, menuPreviewImageInputRef, specialMenuImageInputRef,
     setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
-    setShowDishImages, setShowMenuPreviewImage, setSections, setIncludedCoffee, setBeverageType,
+    setShowDishImages, setShowSectionTabs, setShowMenuPreviewImage, setSections, setIncludedCoffee, setBeverageType,
     refreshBeverageOptions, setBeverageOptionSelected, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeveragePrice, setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize,
@@ -640,6 +640,12 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Visibilidad de platos</div>
                       <Select className="bo-menuSettingSelect" value={showDishImages ? "with_image" : "without_image"} onChange={(value) => setShowDishImages(value === "with_image")} options={dishVisibilityOptions} size="sm" ariaLabel="Visibilidad de platos en preview" />
+                    </div>
+                  ) : null}
+                  {!isSpecial ? (
+                    <div className="bo-field bo-field--inline" data-slot="crear-field">
+                      <div className="bo-label" data-slot="crear-label">Visibilidad con pestañas</div>
+                      <Switch checked={showSectionTabs} onCheckedChange={setShowSectionTabs} data-testid="menu-crear-section-tabs-switch" />
                     </div>
                   ) : null}
                   {!isSpecial ? <MenuSliderPanel menuId={menuId} initialSlider={initialSlider} onSliderChange={setSliderPreview} /> : null}
