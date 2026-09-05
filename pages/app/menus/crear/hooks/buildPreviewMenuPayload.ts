@@ -21,6 +21,7 @@ export type BuildPreviewMenuPayloadInput = {
   active: boolean
   subtitles: string[]
   showDishImages: boolean
+  showSectionTabs?: boolean
   showMenuPreviewImage: boolean
   menuPreviewImageUrl: string
   menuPreviewAIRequested: boolean
@@ -78,6 +79,7 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
     active,
     subtitles,
     showDishImages,
+    showSectionTabs,
     showMenuPreviewImage,
     menuPreviewImageUrl,
     menuPreviewAIRequested,
@@ -108,6 +110,7 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
     active,
     menu_subtitle: subtitles,
     show_dish_images: showDishImages,
+    show_section_tabs: !!showSectionTabs,
     show_menu_preview_image: showMenuPreviewImage,
     menu_preview_image_url: menuPreviewImageUrl || '',
     menu_preview_ai_requested: menuPreviewAIRequested,

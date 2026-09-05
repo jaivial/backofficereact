@@ -71,6 +71,7 @@ export type BasicsDraft = {
   menuType: string;
   subtitles: string[];
   showDishImages: boolean;
+  showSectionTabs: boolean;
   showMenuPreviewImage: boolean;
   includedCoffee: boolean;
   beverageType: string;
@@ -90,6 +91,7 @@ export type BasicsPayload = {
   menu_type: string;
   menu_subtitle: string[];
   show_dish_images: boolean;
+  show_section_tabs: boolean;
   show_menu_preview_image: boolean;
   included_coffee: boolean;
   beverage: {
