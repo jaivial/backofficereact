@@ -196,15 +196,19 @@ export function MenuSectionEditor({
           data-testid={`menu-section-editor-toggle-${secIdx}`}
         >
           <span className="bo-accordionHeadLeft" data-slot="menuSectionEditor-accordionHeadLeft">
-            <label className="bo-label" htmlFor={`menu-section-editor-title-input-${secIdx}`} data-slot="menuSectionEditor-titleLabel" data-testid={`menu-section-editor-title-label-${secIdx}`}>
+            <span
+              className="bo-label"
+              data-slot="menuSectionEditor-titleLabel"
+              data-testid={`menu-section-editor-title-label-${secIdx}`}
+            >
               Titulo
-            </label>
+            </span>
             <input
-              id={`menu-section-editor-title-input-${secIdx}`}
               className="bo-input"
               value={sec.title}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => updateSection(sec.clientId, { title: e.target.value })}
+              aria-label={`Titulo de la seccion ${secIdx + 1}`}
               data-testid={`menu-section-editor-title-${secIdx}`}
             />
           </span>
@@ -364,13 +368,13 @@ export function MenuSectionEditor({
                     value={sec.displayTitle}
                     onChange={(e) => updateSection(sec.clientId, { displayTitle: e.target.value })}
                     placeholder="Titulo visible en la web"
-                    required
+                    aria-required="true"
                     data-testid={`menu-section-editor-settings-display-title-${sec.clientId}`}
                     data-coordination-id="menu-section-display-title-v1"
                   />
                   {sec.displayTitle.trim().length === 0 ? (
                     <div className="bo-mutedText" data-testid={`menu-section-editor-settings-display-title-error-${sec.clientId}`}>
-                      El titulo a mostrar es obligatorio.
+                      El titulo a mostrar es obligatorio (el guardado lo rechaza).
                     </div>
                   ) : null}
                 </div>

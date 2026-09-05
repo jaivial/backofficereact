@@ -788,8 +788,11 @@ export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): Edit
   }
 
   const apiDisplayTitle = String(s.display_title || "").trim();
-  const apiSubtitle = String(s.subtitle || "");
-  const apiTabLabel = String(s.tab_label || "");
+  // Subtitle and tab_label fall back to prev only when the API omitted them
+  // entirely (undefined). An empty string from the API is treated as an
+  // intentional clear so server round-trips stay honest.
+  const apiSubtitle = s.subtitle === undefined ? prev?.subtitle ?? "" : String(s.subtitle);
+  const apiTabLabel = s.tab_label === undefined ? prev?.tabLabel ?? "" : String(s.tab_label);
   // Backwards compatibility: sections that pre-date the display fields fall
   // back to the existing `title` for both the backoffice title input and the
   // new `display_title` field so nothing blanks out.
@@ -800,8 +803,8 @@ export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): Edit
     id: s.id,
     title: s.title,
     displayTitle: fallbackDisplayTitle,
-    subtitle: apiSubtitle || prev?.subtitle || "",
-    tabLabel: apiTabLabel || prev?.tabLabel || "",
+    subtitle: apiSubtitle,
+    tabLabel: apiTabLabel,
     kind: s.kind,
     position: s.position || 0,
     annotations: toEditorSectionAnnotations(s.annotations, prev?.annotations),
