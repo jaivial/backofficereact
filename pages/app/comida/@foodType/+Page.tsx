@@ -112,6 +112,73 @@ function FoodTypePage() {
   const showCategoryCreate = foodType === "platos" || foodType === "bebidas";
   const showItemModal = foodType !== "vinos";
 
+  const listPanel = (
+    <>
+      <FoodFilters
+        foodType={foodType}
+        search={search}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        tipoFilter={tipoFilter}
+        onTipoChange={(value) => {
+          setTipoFilter(value);
+          setPage(1);
+        }}
+        tipoOptions={tipoOptions}
+        activeFilter={activeFilter}
+        onActiveChange={(value) => {
+          setActiveFilter(value);
+          setPage(1);
+        }}
+        categoryFilter={categoryFilter}
+        onCategoryChange={(value) => {
+          setCategoryFilter(value);
+          setPage(1);
+        }}
+        categoryOptions={categoryOptions}
+        alergenoFilter={alergenoFilter}
+        onAlergenoChange={(value) => {
+          setAlergenoFilter(value);
+          setPage(1);
+        }}
+        alergenoOptions={alergenoOptions}
+        suplementoFilter={suplementoFilter}
+        onSuplementoChange={(value) => {
+          setSuplementoFilter(value);
+          setPage(1);
+        }}
+        onReset={onResetFilters}
+        count={total}
+        showImages={showImages}
+        onShowImagesChange={setShowImages}
+      />
+
+      <FoodList
+        items={items}
+        loading={loading}
+        processing={processing}
+        foodType={foodType}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        totalPages={totalPages}
+        showPagerBtns={showPagerBtns}
+        singularLabel={singularLabel}
+        listLabel={listLabel}
+        showMedia={showImages}
+        onOpenDetail={onOpenDetail}
+        onOpenEdit={onOpenEdit}
+        onDelete={(item) => setDeleteConfirm({ open: true, item })}
+        onToggle={onToggle}
+        onOpenCreate={onOpenCreate}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
+    </>
+  );
+
   return (
     <section
       ref={sectionRef}
@@ -157,68 +224,7 @@ function FoodTypePage() {
             </TabsList>
 
             <TabsContent value="platos" data-testid="food-type-tab-panel-platos">
-            <FoodFilters
-              foodType={foodType}
-              search={search}
-              onSearchChange={(value) => {
-                setSearch(value);
-                setPage(1);
-              }}
-              tipoFilter={tipoFilter}
-              onTipoChange={(value) => {
-                setTipoFilter(value);
-                setPage(1);
-              }}
-              tipoOptions={tipoOptions}
-              activeFilter={activeFilter}
-              onActiveChange={(value) => {
-                setActiveFilter(value);
-                setPage(1);
-              }}
-              categoryFilter={categoryFilter}
-              onCategoryChange={(value) => {
-                setCategoryFilter(value);
-                setPage(1);
-              }}
-              categoryOptions={categoryOptions}
-              alergenoFilter={alergenoFilter}
-              onAlergenoChange={(value) => {
-                setAlergenoFilter(value);
-                setPage(1);
-              }}
-              alergenoOptions={alergenoOptions}
-              suplementoFilter={suplementoFilter}
-              onSuplementoChange={(value) => {
-                setSuplementoFilter(value);
-                setPage(1);
-              }}
-              onReset={onResetFilters}
-              count={total}
-              showImages={showImages}
-              onShowImagesChange={setShowImages}
-            />
-
-            <FoodList
-              items={items}
-              loading={loading}
-              processing={processing}
-              foodType={foodType}
-              page={page}
-              pageSize={pageSize}
-              total={total}
-              totalPages={totalPages}
-              showPagerBtns={showPagerBtns}
-              singularLabel={singularLabel}
-              listLabel={listLabel}
-              showMedia={showImages}
-              onOpenDetail={onOpenDetail}
-              onOpenEdit={onOpenEdit}
-              onDelete={(item) => setDeleteConfirm({ open: true, item })}
-              onToggle={onToggle}
-              onOpenCreate={onOpenCreate}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-            />
+              {listPanel}
             </TabsContent>
 
             <TabsContent value="configuracion" data-testid="food-type-tab-panel-configuracion">
@@ -232,70 +238,7 @@ function FoodTypePage() {
             </TabsContent>
           </Tabs>
         ) : (
-          <>
-        <FoodFilters
-          foodType={foodType}
-          search={search}
-          onSearchChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-          tipoFilter={tipoFilter}
-          onTipoChange={(value) => {
-            setTipoFilter(value);
-            setPage(1);
-          }}
-          tipoOptions={tipoOptions}
-          activeFilter={activeFilter}
-          onActiveChange={(value) => {
-            setActiveFilter(value);
-            setPage(1);
-          }}
-          categoryFilter={categoryFilter}
-          onCategoryChange={(value) => {
-            setCategoryFilter(value);
-            setPage(1);
-          }}
-          categoryOptions={categoryOptions}
-          alergenoFilter={alergenoFilter}
-          onAlergenoChange={(value) => {
-            setAlergenoFilter(value);
-            setPage(1);
-          }}
-          alergenoOptions={alergenoOptions}
-          suplementoFilter={suplementoFilter}
-          onSuplementoChange={(value) => {
-            setSuplementoFilter(value);
-            setPage(1);
-          }}
-          onReset={onResetFilters}
-          count={total}
-          showImages={showImages}
-          onShowImagesChange={setShowImages}
-        />
-
-        <FoodList
-          items={items}
-          loading={loading}
-          processing={processing}
-          foodType={foodType}
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          totalPages={totalPages}
-          showPagerBtns={showPagerBtns}
-          singularLabel={singularLabel}
-          listLabel={listLabel}
-          showMedia={showImages}
-          onOpenDetail={onOpenDetail}
-          onOpenEdit={onOpenEdit}
-          onDelete={(item) => setDeleteConfirm({ open: true, item })}
-          onToggle={onToggle}
-          onOpenCreate={onOpenCreate}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-        />
-          </>
+          listPanel
         )}
       </div>
 
