@@ -23,6 +23,7 @@ export type MenuSectionEditorProps = {
   sectionsCount: number;
   isALaCarte: boolean;
   showDishImages: boolean;
+  showSectionTabs: boolean;
   reorderTransition: any;
   reorderWhileDrag: any;
   chevronHover: any;
@@ -81,7 +82,7 @@ function ReorderSectionContainer({ value, className, transition, whileDrag, chil
 }
 
 export function MenuSectionEditor({
-  sec, secIdx, sectionsCount, isALaCarte, showDishImages,
+  sec, secIdx, sectionsCount, isALaCarte, showDishImages, showSectionTabs,
   reorderTransition, reorderWhileDrag, chevronHover, chevronTapUp, chevronTapDown,
   moveSection, handleSectionToggle, updateSection, reorderDishes,
   setAllergenModal, requestDishDelete, updateDish,
@@ -195,11 +196,19 @@ export function MenuSectionEditor({
           data-testid={`menu-section-editor-toggle-${secIdx}`}
         >
           <span className="bo-accordionHeadLeft" data-slot="menuSectionEditor-accordionHeadLeft">
+            <span
+              className="bo-label"
+              data-slot="menuSectionEditor-titleLabel"
+              data-testid={`menu-section-editor-title-label-${secIdx}`}
+            >
+              Titulo
+            </span>
             <input
               className="bo-input"
               value={sec.title}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => updateSection(sec.clientId, { title: e.target.value })}
+              aria-label={`Titulo de la seccion ${secIdx + 1}`}
               data-testid={`menu-section-editor-title-${secIdx}`}
             />
           </span>
@@ -344,20 +353,89 @@ export function MenuSectionEditor({
                 </div>
               </div>
             ) : dishTab === "settings" ? (
-              <div className="bo-field bo-field--inline" data-testid={`menu-section-editor-settings-${sec.clientId}`}>
-                <div data-testid={`menu-section-editor-settings-description-copy-${sec.clientId}`}>
-                  <div className="bo-label" data-testid={`menu-section-editor-settings-description-title-${sec.clientId}`}>Descripciones</div>
-                  <div className="bo-mutedText" data-testid={`menu-section-editor-settings-description-state-${sec.clientId}`}>
-                    {anyDescriptionEnabled ? "Mostrar todas las descripciones" : "No mostrar descripciones"}
-                  </div>
+              <div className="bo-stackFields" data-testid={`menu-section-editor-settings-${sec.clientId}`} data-coordination-id="menu-section-settings-v1">
+                <div className="bo-field bo-field--full" data-slot="menuSectionEditor-settings-displayTitleField">
+                  <label
+                    className="bo-label"
+                    htmlFor={`menu-section-editor-settings-display-title-${sec.clientId}`}
+                    data-slot="menuSectionEditor-settings-displayTitleLabel"
+                  >
+                    Titulo a mostrar
+                  </label>
+                  <input
+                    id={`menu-section-editor-settings-display-title-${sec.clientId}`}
+                    className="bo-input"
+                    value={sec.displayTitle}
+                    onChange={(e) => updateSection(sec.clientId, { displayTitle: e.target.value })}
+                    placeholder="Titulo visible en la web"
+                    aria-required="true"
+                    data-testid={`menu-section-editor-settings-display-title-${sec.clientId}`}
+                    data-coordination-id="menu-section-display-title-v1"
+                  />
+                  {sec.displayTitle.trim().length === 0 ? (
+                    <div className="bo-mutedText" data-testid={`menu-section-editor-settings-display-title-error-${sec.clientId}`}>
+                      El titulo a mostrar es obligatorio (el guardado lo rechaza).
+                    </div>
+                  ) : null}
                 </div>
-                <Switch
-                  checked={anyDescriptionEnabled}
-                  onCheckedChange={(enabled) => setSectionDescriptionsEnabled(sec.clientId, enabled)}
-                  aria-label={anyDescriptionEnabled ? "No mostrar descripciones" : "Mostrar todas las descripciones"}
-                  data-testid={`menu-section-editor-settings-description-switch-${sec.clientId}`}
-                  data-coordination-id="menu-section-description-enabled-v1"
-                />
+
+                <div className="bo-field bo-field--full" data-slot="menuSectionEditor-settings-subtitleField">
+                  <label
+                    className="bo-label"
+                    htmlFor={`menu-section-editor-settings-subtitle-${sec.clientId}`}
+                    data-slot="menuSectionEditor-settings-subtitleLabel"
+                  >
+                    Subtitulo
+                  </label>
+                  <textarea
+                    id={`menu-section-editor-settings-subtitle-${sec.clientId}`}
+                    className="bo-input bo-textarea"
+                    value={sec.subtitle}
+                    onChange={(e) => updateSection(sec.clientId, { subtitle: e.target.value })}
+                    placeholder="Descripcion breve que aparece debajo del titulo en cursiva"
+                    rows={2}
+                    style={{ minHeight: "3em", fontSize: "16px", resize: "vertical" }}
+                    data-testid={`menu-section-editor-settings-subtitle-${sec.clientId}`}
+                    data-coordination-id="menu-section-subtitle-v1"
+                  />
+                </div>
+
+                {showSectionTabs ? (
+                  <div className="bo-field bo-field--full" data-slot="menuSectionEditor-settings-tabLabelField">
+                    <label
+                      className="bo-label"
+                      htmlFor={`menu-section-editor-settings-tab-label-${sec.clientId}`}
+                      data-slot="menuSectionEditor-settings-tabLabelLabel"
+                    >
+                      Texto de la pestana
+                    </label>
+                    <input
+                      id={`menu-section-editor-settings-tab-label-${sec.clientId}`}
+                      className="bo-input"
+                      value={sec.tabLabel}
+                      onChange={(e) => updateSection(sec.clientId, { tabLabel: e.target.value })}
+                      placeholder="Etiqueta de la pestana"
+                      data-testid={`menu-section-editor-settings-tab-label-${sec.clientId}`}
+                      data-coordination-id="menu-section-tab-label-v1"
+                    />
+                  </div>
+                ) : null}
+
+                <div className="bo-field bo-field--inline" data-slot="menuSectionEditor-settings-descriptionField">
+                  <div data-testid={`menu-section-editor-settings-description-copy-${sec.clientId}`}>
+                    <div className="bo-label" data-testid={`menu-section-editor-settings-description-title-${sec.clientId}`}>Descripciones</div>
+                    <div className="bo-mutedText" data-testid={`menu-section-editor-settings-description-state-${sec.clientId}`}>
+                      {anyDescriptionEnabled ? "Mostrar todas las descripciones" : "No mostrar descripciones"}
+                    </div>
+                  </div>
+                  <Switch
+                    checked={anyDescriptionEnabled}
+                    onCheckedChange={(enabled) => setSectionDescriptionsEnabled(sec.clientId, enabled)}
+                    aria-label={anyDescriptionEnabled ? "No mostrar descripciones" : "Mostrar todas las descripciones"}
+                    data-testid={`menu-section-editor-settings-description-switch-${sec.clientId}`}
+                    data-coordination-id="menu-section-description-enabled-v1"
+                  />
+                </div>
               </div>
             ) : visibleDishes.length > 0 ? (
               <Reorder.Group
