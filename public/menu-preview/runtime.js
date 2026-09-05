@@ -638,13 +638,22 @@
   }
 
   // Coordination id: menu_section_tabs_flag
+  // Selected tab index, kept outside render so it survives editor re-renders.
+  let activeSectionTabIndex = 0;
+
   // Sticky tab bar shared by every section-based villa-carmen preview branch.
   // Mirrors the public site markup (`stickyTabsSticky` / `stickyTab`) so the
   // preview and preactvillacarmen render the same UI from the same flag.
-  function renderSectionTabsVC(titles, blocks) {
-    const tabs = titles
-      .map(function (title, idx) {
-        const active = idx === 0;
+  function renderSectionTabsVC(sections, blocks) {
+    const filled = blocks
+      .map(function (html, idx) { return { section: sections[idx], html: html }; })
+      .filter(function (entry) { return sectionHasDishes(entry.section) && !!entry.html; });
+    if (filled.length < 2) return filled.map(function (entry) { return entry.html; }).join("");
+    if (activeSectionTabIndex >= filled.length) activeSectionTabIndex = 0;
+    const tabs = filled
+      .map(function (entry, idx) {
+        const title = entry.section.title;
+        const active = idx === activeSectionTabIndex;
         return (
           '<button type="button" class="' + (active ? "stickyTab is-active" : "stickyTab") + '" role="tab"' +
           ' aria-selected="' + (active ? "true" : "false") + '" data-vc-section-tab="' + idx + '"' +
@@ -654,12 +663,12 @@
         );
       })
       .join("");
-    const panels = blocks
-      .map(function (html, idx) {
+    const panels = filled
+      .map(function (entry, idx) {
         return (
-          '<div class="stickyTabPanel' + (idx === 0 ? " is-active" : "") + '" role="tabpanel"' +
+          '<div class="stickyTabPanel' + (idx === activeSectionTabIndex ? " is-active" : "") + '" role="tabpanel"' +
           ' data-vc-section-panel="' + idx + '" data-testid="menu-preview-section-panel-' + idx + '">' +
-          html +
+          entry.html +
           "</div>"
         );
       })
@@ -671,7 +680,13 @@
   }
 
   function useSectionTabs(menu, sections) {
-    return parseLooseBool(menu.show_section_tabs, false) && Array.isArray(sections) && sections.length > 1;
+    return parseLooseBool(menu.show_section_tabs, false) && Array.isArray(sections) && sections.filter(sectionHasDishes).length > 1;
+  }
+
+  // A section with no dishes renders to empty or title-only markup, which would
+  // otherwise become a tab with a blank panel.
+  function sectionHasDishes(section) {
+    return !!section && Array.isArray(section.dishes) && section.dishes.length > 0;
   }
 
   function attachSectionTabHandlers() {
@@ -683,6 +698,8 @@
       const button = event.target && event.target.closest ? event.target.closest("[data-vc-section-tab]") : null;
       if (!button) return;
       const index = button.getAttribute("data-vc-section-tab");
+      // Survives the full re-render triggered by the next editor keystroke.
+      activeSectionTabIndex = Number(index) || 0;
       root.querySelectorAll("[data-vc-section-tab]").forEach(function (node) {
         const isActive = node.getAttribute("data-vc-section-tab") === index;
         node.classList.toggle("is-active", isActive);
@@ -894,7 +911,7 @@
           return html;
         });
       const sectionBlocks = useSectionTabs(menu, sections)
-        ? renderSectionTabsVC(sections.map(function (section) { return section.title; }), sectionHtmlList)
+        ? renderSectionTabsVC(sections, sectionHtmlList)
         : sectionHtmlList.join("");
 
       const hasContent = sections.some(function (section) {
@@ -945,7 +962,7 @@
             return '<article class="menuSectionCard"><h2 class="menuSectionTitle">' + escapeHtml(section.title) + '</h2><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</article>";
           });
         const cards = useSectionTabs(menu, sections)
-          ? renderSectionTabsVC(sections.map(function (section) { return section.title; }), cardList)
+          ? renderSectionTabsVC(sections, cardList)
           : cardList.join("");
 
         const notesLines = ['<p class="menuDishText menuMuted">' + escapeHtml(beverageLabel(menu.settings)) + "</p>"];
@@ -993,7 +1010,7 @@
             return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + '</h3><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</section>";
           });
         const sectionsHtml = useSectionTabs(menu, sections)
-          ? renderSectionTabsVC(sections.map(function (section) { return section.title; }), sectionHtmlList)
+          ? renderSectionTabsVC(sections, sectionHtmlList)
           : sectionHtmlList.join("");
 
         const subtitleBlock = subtitles.length
@@ -1055,7 +1072,7 @@
           return '<section class="menuSubSection"><h3 class="menuSubTitle">' + escapeHtml(section.title) + '</h3><ul class="menuDishList">' + rows + "</ul>" + renderSectionAnnotations(section.annotations) + "</section>";
         });
       const sectionsHtml = useSectionTabs(menu, sections)
-        ? renderSectionTabsVC(sections.map(function (section) { return section.title; }), sectionHtmlList)
+        ? renderSectionTabsVC(sections, sectionHtmlList)
         : sectionHtmlList.join("");
 
       const subtitleBlock = subtitles.length
