@@ -2449,6 +2449,10 @@ svg {
     top: calc(var(--header-h) + 10px);
     z-index: 70;
     padding: 6px 0 14px;
+    /* When the bar lands in a grid track, the automatic minimum size would
+       clamp it and force the tab labels to wrap instead of the bar wrapping
+       onto another row. */
+    min-width: 0;
 }
 
 .wineTabs,
