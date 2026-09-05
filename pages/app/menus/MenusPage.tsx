@@ -417,7 +417,7 @@ export default function Page() {
         <>
           <MenuTypePanelGrid countsByType={menuTypeCounts} onSelect={handleTypePanelClick} />
           {/* Coordination id: menu_section_public_placement_v1 */}
-          <a className="bo-btn bo-btn--ghost" href="/app/comida/menus/postres" data-testid="menus-page-postres-link">Postres</a>
+          <a className="bo-btn bo-btn--ghost" href="/app/comida/postres" data-testid="menus-page-postres-link">Postres</a>
         </>
       ) : (
         <>
