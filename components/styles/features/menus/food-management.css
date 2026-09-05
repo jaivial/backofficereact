@@ -1755,3 +1755,25 @@ body.is-navigating .bo-fadeout {
   justify-content: flex-end;
 }
 
+
+/* The placement setting stacks its label above a fit-content select so the row
+   stays readable on narrow screens instead of overflowing.
+   Coordination id: postres_page_visibility_v1 */
+.bo-foodPageVisibilityRow--stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  white-space: normal;
+}
+
+/* Select applies its className to the trigger button, and the dropdown copies
+   the wrapper width, so both need to shrink to their content. */
+.bo-foodPageVisibilityRow--stacked .bo-selectWrapper {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.bo-foodPageVisibilitySelect {
+  width: fit-content;
+  max-width: 100%;
+}
