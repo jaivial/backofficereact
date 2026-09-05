@@ -236,7 +236,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     setSectionLoadingState, setMenuPreviewImageBusy, setSpecialMenuImageBusy,
     patchBasics, syncSectionsAndDishes, createDraftAndContinue, addSection, removeSection,
     updateSection, handleSectionToggle, updateSectionAnnotation, addSectionAnnotation,
-    removeSectionAnnotation, moveSection, reorderSections, addDish, updateDish, removeDish,
+    removeSectionAnnotation, setSectionDescriptionsEnabled, moveSection, reorderSections, addDish, updateDish, removeDish,
     reorderDishes, handleSearch, pickDishImage, onDishImageFileSelected, onDishImageAdvisorImprove,
     onDishImageCropConfirm, onPublish, openSpecialMenuImagePicker, onSpecialMenuImageFileSelected,
     openMenuPreviewImagePicker, onMenuPreviewImageFileSelected, onMenuPreviewImageAdvisorImprove,
@@ -306,8 +306,8 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     <section className="bo-menuWizardPage" aria-label="Editor de menu" data-testid="menu-crear-page">
       <Breadcrumbs
         items={[
-          { label: "Menus", href: `/app/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
-          { label: menuTypeFullLabel(menuType), href: `/app/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
+          { label: "Menus", href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
+          { label: menuTypeFullLabel(menuType), href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
           { label: title.trim() || "Nuevo menu" },
         ]}
         className="bo-menuWizardBreadcrumbs"
@@ -521,7 +521,13 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
 
           <div className="bo-previewDesktopSwitch" data-testid="menu-crear-preview-toggle">
             <span className="bo-previewDesktopSwitchLabel" data-slot="crear-previewDesktopSwitchLabel"><Eye size={14} aria-hidden="true" /> Preview web</span>
-            <Switch checked={desktopPreviewOpen} onCheckedChange={setDesktopPreviewOpen} aria-label={desktopPreviewOpen ? "Ocultar preview web" : "Mostrar preview web"} data-testid="menu-crear-preview-switch" />
+            <Switch
+              checked={desktopPreviewOpen}
+              onCheckedChange={setDesktopPreviewOpen}
+              aria-label={desktopPreviewOpen ? "Ocultar preview web" : "Mostrar preview web"}
+              data-testid="menu-crear-preview-switch"
+              data-coordination-id="menu-editor-preview-open-v1"
+            />
           </div>
 
           <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane bo-editorPane--platos ${mobileTab === "editor" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane">
@@ -563,6 +569,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     updateSectionAnnotation={updateSectionAnnotation}
                     addSectionAnnotation={addSectionAnnotation}
                     removeSectionAnnotation={removeSectionAnnotation}
+                    setSectionDescriptionsEnabled={setSectionDescriptionsEnabled}
                     pickDishImage={pickDishImage}
                     addDish={addDish}
                     handleSearch={handleSearch}

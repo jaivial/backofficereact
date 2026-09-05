@@ -535,6 +535,7 @@ export function buildBasicsPayload(draft: BasicsDraft): BasicsPayload {
     menu_subtitle: draft.subtitles.map((s) => s.trim()).filter(Boolean),
     show_dish_images: draft.showDishImages,
     show_menu_preview_image: draft.showMenuPreviewImage,
+    editor_preview_open: draft.desktopPreviewOpen,
     included_coffee: draft.includedCoffee,
     beverage: {
       type: draft.beverageType,
@@ -816,6 +817,7 @@ export function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []
   };
   showDishImages: boolean;
   showMenuPreviewImage: boolean;
+  desktopPreviewOpen: boolean;
   menuPreviewImageUrl: string;
   menuPreviewAIRequested: boolean;
   menuPreviewAIGenerating: boolean;
@@ -837,6 +839,7 @@ export function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []
     subtitles: menu.menu_subtitle || [],
     showDishImages: !!menu.show_dish_images,
     showMenuPreviewImage: previewState.showMenuPreviewImage,
+    desktopPreviewOpen: menu.editor_preview_open !== false,
     menuPreviewImageUrl: previewState.menuPreviewImageUrl,
     menuPreviewAIRequested: previewState.menuPreviewAIRequested,
     menuPreviewAIGenerating: previewState.menuPreviewAIGenerating,

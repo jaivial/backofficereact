@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, GripVertical, MessageSquareText, Plus, Search, Trash2 } from "lucide-react";
-import { motion } from "motion/react";
-import { Reorder } from "motion/react";
+import { ChevronDown, ChevronUp, GripVertical, MessageSquareText, Plus, Search, Settings2, Trash2 } from "lucide-react";
+import { AnimatePresence, motion, Reorder } from "motion/react";
 import type { EditorSection } from "../../types/menuEditor.types";
 import type { DishCatalogItem } from "../../../../../../api/types";
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
 import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
+import { Switch } from "../../../../../../ui/shadcn/Switch";
 import { MenuItemEditor } from "../MenuItemEditor/MenuItemEditor";
 import { ALLERGENS } from "../../constants/menuEditor.constants";
 import { useDragControls } from "motion/react";
 
-export type SectionDishTab = "active" | "inactive" | "annotations";
+export type SectionDishTab = "active" | "inactive" | "annotations" | "settings";
 
 const ALLERGEN_ALIASES: Record<string, string> = {
   lacteos: "leche",
@@ -38,6 +38,7 @@ export type MenuSectionEditorProps = {
   updateSectionAnnotation: (sectionClientId: string, annotationIdx: number, value: string) => void;
   addSectionAnnotation: (sectionClientId: string) => void;
   removeSectionAnnotation: (sectionClientId: string, annotationIdx: number) => void;
+  setSectionDescriptionsEnabled: (sectionClientId: string, enabled: boolean) => void;
   pickDishImage: (sectionClientId: string, dishClientId: string) => void;
   addDish: (sectionClientId: string, fromCatalog?: DishCatalogItem) => void;
   handleSearch: (sectionClientId: string, term: string) => void;
@@ -85,6 +86,7 @@ export function MenuSectionEditor({
   moveSection, handleSectionToggle, updateSection, reorderDishes,
   setAllergenModal, requestDishDelete, updateDish,
   updateSectionAnnotation, addSectionAnnotation, removeSectionAnnotation,
+  setSectionDescriptionsEnabled,
   pickDishImage, addDish, handleSearch, searchTerm, searchItems,
   sectionLoadingState, onReorderSectionStartDrag, toggleSameDayBooking,
 }: MenuSectionEditorProps) {
@@ -97,7 +99,7 @@ export function MenuSectionEditor({
     return sec.annotations.filter((v) => v.trim().length > 0).length;
   }, [sec.annotations]);
   const visibleDishes = useMemo(
-    () => (dishTab === "annotations"
+    () => (dishTab === "annotations" || dishTab === "settings"
       ? []
       : sec.dishes.filter((dish) => (dishTab === "active" ? dish.active : !dish.active))),
     [dishTab, sec.dishes],
@@ -105,10 +107,12 @@ export function MenuSectionEditor({
   const activeTabId = `bo-section-dishes-active-${sec.clientId}`;
   const inactiveTabId = `bo-section-dishes-inactive-${sec.clientId}`;
   const annotationsTabId = `bo-section-dishes-annotations-${sec.clientId}`;
+  const settingsTabId = `bo-section-dishes-settings-${sec.clientId}`;
   const dishPanelId = `bo-section-dishes-panel-${sec.clientId}`;
+  const allDescriptionsEnabled = sec.dishes.length > 0 && sec.dishes.every((dish) => dish.description_enabled);
 
   useEffect(() => {
-    if (dishTab === "annotations") return;
+    if (dishTab === "annotations" || dishTab === "settings") return;
     if (dishTab === "active" && activeDishCount > 0) return;
     if (dishTab === "inactive" && inactiveDishCount > 0) return;
     if (activeDishCount > 0) { setDishTab("active"); return; }
@@ -198,13 +202,29 @@ export function MenuSectionEditor({
           </span>
           <span className="bo-accordionHeadRight" data-slot="menuSectionEditor-accordionHeadRight">
             <span className="bo-accordionBadge" data-slot="menuSectionEditor-accordionBadge">{sec.dishes.length}</span>
-            <ChevronDown size={14} />
+            <motion.span
+              animate={{ rotate: sec.expanded ? 180 : 0 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              data-testid={`menu-section-editor-chevron-${sec.clientId}`}
+            >
+              <ChevronDown size={14} data-testid={`menu-section-editor-chevron-icon-${sec.clientId}`} />
+            </motion.span>
           </span>
         </button>
       </div>
 
+      <AnimatePresence initial={false}>
       {sec.expanded ? (
-        <div className="bo-accordionBody" data-slot="menuSectionEditor-accordionBody">
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          style={{ overflow: "hidden" }}
+          className="bo-accordionBody"
+          data-slot="menuSectionEditor-accordionBody"
+          data-testid={`menu-section-editor-body-${sec.clientId}`}
+        >
           <div className="bo-sectionDishTabs" role="tablist" aria-label="Filtro de platos" data-testid={`menu-section-editor-tabs-${sec.clientId}`}>
             <button
               id={activeTabId}
@@ -252,6 +272,21 @@ export function MenuSectionEditor({
               <span className="bo-sectionDishTabIcon" data-slot="menuSectionEditor-sectionDishTabIcon"><MessageSquareText size={14} /></span>
               <span className="bo-sectionDishTabCount" data-slot="menuSectionEditor-sectionDishTabCount">{annotationCount}</span>
             </button>
+            <button
+              id={settingsTabId}
+              className={`bo-sectionDishTab ${dishTab === "settings" ? "is-active" : ""}`}
+              type="button"
+              role="tab"
+              aria-label="Ajustes de platos"
+              aria-selected={dishTab === "settings"}
+              aria-controls={dishPanelId}
+              tabIndex={dishTab === "settings" ? 0 : -1}
+              onClick={() => handleDishTabChange("settings")}
+              data-testid={`menu-section-editor-tab-settings-${sec.clientId}`}
+            >
+              <span className="bo-sectionDishTabLabel" data-testid={`menu-section-editor-tab-settings-label-${sec.clientId}`}>Ajustes</span>
+              <span className="bo-sectionDishTabIcon" data-testid={`menu-section-editor-tab-settings-icon-${sec.clientId}`}><Settings2 size={14} /></span>
+            </button>
           </div>
 
           <div
@@ -260,7 +295,13 @@ export function MenuSectionEditor({
             data-slot="menu-section-dish-panel"
             role="tabpanel"
             aria-labelledby={
-              dishTab === "active" ? activeTabId : dishTab === "inactive" ? inactiveTabId : annotationsTabId
+              dishTab === "active"
+                ? activeTabId
+                : dishTab === "inactive"
+                  ? inactiveTabId
+                  : dishTab === "annotations"
+                    ? annotationsTabId
+                    : settingsTabId
             }
           >
             {dishTab === "annotations" ? (
@@ -268,12 +309,14 @@ export function MenuSectionEditor({
                 <div className="bo-stackFields" data-slot="menuSectionEditor-stackFields">
                   {sec.annotations.map((line, idx) => (
                     <div key={`${sec.clientId}-annotation-${idx}`} className="bo-inlineField" data-slot="menuSectionEditor-inlineField">
-                      <input
-                        className="bo-input"
+                      <textarea
+                        className="bo-input bo-textarea"
                         value={line}
                         onChange={(e) => updateSectionAnnotation(sec.clientId, idx, e.target.value)}
                         placeholder="Anotacion"
-                        data-testid={`menu-section-editor-annotation-input-${sec.clientId}-${idx}`}
+                        rows={2}
+                        style={{ minHeight: "2.8em", fontSize: "16px", resize: "vertical" }}
+                        data-testid={`menu-section-editor-annotation-textarea-${sec.clientId}-${idx}`}
                       />
                       <button
                         className="bo-btn bo-btn--ghost"
@@ -296,6 +339,22 @@ export function MenuSectionEditor({
                     <Plus size={14} /> Añadir anotacion
                   </button>
                 </div>
+              </div>
+            ) : dishTab === "settings" ? (
+              <div className="bo-field bo-field--inline" data-testid={`menu-section-editor-settings-${sec.clientId}`}>
+                <div data-testid={`menu-section-editor-settings-description-copy-${sec.clientId}`}>
+                  <div className="bo-label" data-testid={`menu-section-editor-settings-description-title-${sec.clientId}`}>Descripciones</div>
+                  <div className="bo-mutedText" data-testid={`menu-section-editor-settings-description-state-${sec.clientId}`}>
+                    {allDescriptionsEnabled ? "Mostrar todas las descripciones" : "No mostrar descripciones"}
+                  </div>
+                </div>
+                <Switch
+                  checked={allDescriptionsEnabled}
+                  onCheckedChange={(enabled) => setSectionDescriptionsEnabled(sec.clientId, enabled)}
+                  aria-label={allDescriptionsEnabled ? "No mostrar descripciones" : "Mostrar todas las descripciones"}
+                  data-testid={`menu-section-editor-settings-description-switch-${sec.clientId}`}
+                  data-coordination-id="menu-section-description-enabled-v1"
+                />
               </div>
             ) : visibleDishes.length > 0 ? (
               <Reorder.Group
@@ -335,7 +394,7 @@ export function MenuSectionEditor({
             )}
           </div>
 
-          {dishTab !== "annotations" ? (
+          {dishTab === "active" || dishTab === "inactive" ? (
             <>
               <div className="bo-dishAddRow" data-slot="menuSectionEditor-dishAddRow">
                 <div className="bo-dishSearchWrap" data-slot="menuSectionEditor-dishSearchWrap">
@@ -390,8 +449,9 @@ export function MenuSectionEditor({
               </div>
             </>
           ) : null}
-        </div>
+        </motion.div>
       ) : null}
+      </AnimatePresence>
     </div>
   );
 }
