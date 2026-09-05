@@ -109,7 +109,10 @@ export function MenuSectionEditor({
   const annotationsTabId = `bo-section-dishes-annotations-${sec.clientId}`;
   const settingsTabId = `bo-section-dishes-settings-${sec.clientId}`;
   const dishPanelId = `bo-section-dishes-panel-${sec.clientId}`;
-  const allDescriptionsEnabled = sec.dishes.length > 0 && sec.dishes.every((dish) => dish.description_enabled);
+  // Coordination id: menu-section-description-enabled-v1. The section switch is a
+  // summary of its dishes: it reads on as soon as a single dish description is on,
+  // so enabling one dish flips it back without any extra state to keep in sync.
+  const anyDescriptionEnabled = sec.dishes.some((dish) => dish.description_enabled);
 
   useEffect(() => {
     if (dishTab === "annotations" || dishTab === "settings") return;
@@ -345,13 +348,13 @@ export function MenuSectionEditor({
                 <div data-testid={`menu-section-editor-settings-description-copy-${sec.clientId}`}>
                   <div className="bo-label" data-testid={`menu-section-editor-settings-description-title-${sec.clientId}`}>Descripciones</div>
                   <div className="bo-mutedText" data-testid={`menu-section-editor-settings-description-state-${sec.clientId}`}>
-                    {allDescriptionsEnabled ? "Mostrar todas las descripciones" : "No mostrar descripciones"}
+                    {anyDescriptionEnabled ? "Mostrar todas las descripciones" : "No mostrar descripciones"}
                   </div>
                 </div>
                 <Switch
-                  checked={allDescriptionsEnabled}
+                  checked={anyDescriptionEnabled}
                   onCheckedChange={(enabled) => setSectionDescriptionsEnabled(sec.clientId, enabled)}
-                  aria-label={allDescriptionsEnabled ? "No mostrar descripciones" : "Mostrar todas las descripciones"}
+                  aria-label={anyDescriptionEnabled ? "No mostrar descripciones" : "Mostrar todas las descripciones"}
                   data-testid={`menu-section-editor-settings-description-switch-${sec.clientId}`}
                   data-coordination-id="menu-section-description-enabled-v1"
                 />
