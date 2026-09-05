@@ -48,7 +48,7 @@ vi.mock("../../../ui/widgets/menus/MenuTypePanelGrid", () => ({
 vi.mock("../../../ui/widgets/menus/MenuSummaryCard", () => ({ MenuSummaryCard: () => null }));
 vi.mock("./crear/crear", () => ({ CrearPage: ({ onClose }: { onClose?: () => void }) => React.createElement("button", { onClick: onClose, "data-testid": "mock-menu-editor-close" }, "Editor") }));
 
-import Page from "./+Page";
+import Page from "./MenusPage";
 
 describe("MenusPage create flow", () => {
   beforeEach(() => {
