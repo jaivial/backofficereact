@@ -598,6 +598,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     sectionsCount={sections.length}
                     isALaCarte={isALaCarte}
                     showDishImages={showDishImages}
+                    showSectionTabs={showSectionTabs}
                     reorderTransition={reorderTransition}
                     reorderWhileDrag={reorderWhileDrag}
                     chevronHover={chevronHover}

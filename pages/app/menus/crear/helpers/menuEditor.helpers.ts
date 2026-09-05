@@ -591,6 +591,9 @@ export function getSectionsFingerprint(sections: EditorSection[]): string {
     sections.map((sec) => ({
       id: sec.id || null,
       title: sec.title,
+      displayTitle: sec.displayTitle.trim(),
+      subtitle: sec.subtitle,
+      tabLabel: sec.tabLabel,
       kind: sec.kind,
       annotations: sec.annotations,
       dishes: sec.dishes.map((d) => ({
@@ -614,6 +617,9 @@ export function getSectionsStructureFingerprint(sections: EditorSection[]): stri
       id: sec.id || null,
       clientId: sec.clientId,
       title: sec.title.trim(),
+      displayTitle: sec.displayTitle.trim(),
+      subtitle: sec.subtitle,
+      tabLabel: sec.tabLabel,
       kind: sec.kind,
       position: idx,
     })),
@@ -784,10 +790,24 @@ export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): Edit
     if (dish.id) prevDishByID.set(dish.id, dish);
   }
 
+  const apiDisplayTitle = String(s.display_title || "").trim();
+  // Subtitle and tab_label fall back to prev only when the API omitted them
+  // entirely (undefined). An empty string from the API is treated as an
+  // intentional clear so server round-trips stay honest.
+  const apiSubtitle = s.subtitle === undefined ? prev?.subtitle ?? "" : String(s.subtitle);
+  const apiTabLabel = s.tab_label === undefined ? prev?.tabLabel ?? "" : String(s.tab_label);
+  // Backwards compatibility: sections that pre-date the display fields fall
+  // back to the existing `title` for both the backoffice title input and the
+  // new `display_title` field so nothing blanks out.
+  const fallbackDisplayTitle = apiDisplayTitle || s.title || prev?.displayTitle || "";
+
   return {
     clientId: prev?.clientId || uid("section"),
     id: s.id,
     title: s.title,
+    displayTitle: fallbackDisplayTitle,
+    subtitle: apiSubtitle,
+    tabLabel: apiTabLabel,
     kind: s.kind,
     position: s.position || 0,
     annotations: toEditorSectionAnnotations(s.annotations, prev?.annotations),
