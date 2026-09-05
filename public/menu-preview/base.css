@@ -219,6 +219,8 @@ body {
    inside a pill; the bar wraps to more rows when they no longer fit. */
 .stickyTabsSticky {
   position: sticky;
+  /* The generic preview shell has no fixed header to clear, unlike the
+     villa-carmen theme which offsets by --header-h. */
   top: 0;
   z-index: 20;
   padding: 6px 0 12px;

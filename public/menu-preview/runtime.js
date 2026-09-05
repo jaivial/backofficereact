@@ -1145,11 +1145,14 @@
     const subtitle = menu.menu_subtitle[0] || "Preview en tiempo real";
     // Coordination id: menu_section_tabs_flag (same flag drives every theme,
     // not just villa-carmen, so the preview matches the public site).
+    // Both branches render the same normalized sections, so the toggle only
+    // changes presentation and never which sections are visible.
     const genericSections = getMenuViewSections(menu);
-    const content = menu.sections.length
+    const genericBlocks = genericSections.map(sectionHtmlGeneric);
+    const content = genericBlocks.length
       ? useSectionTabs(menu, genericSections)
-        ? renderSectionTabsVC(genericSections, genericSections.map(sectionHtmlGeneric))
-        : menu.sections.map(sectionHtmlGeneric).join("")
+        ? renderSectionTabsVC(genericSections, genericBlocks)
+        : genericBlocks.join("")
       : '<article class="vc-card"><p class="vc-empty">Sin secciones aun</p></article>';
     const comments = Array.isArray(menu.settings.comments)
       ? menu.settings.comments.filter(Boolean).map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("")
