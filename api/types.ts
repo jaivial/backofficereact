@@ -456,6 +456,9 @@ export type GroupMenuV2Section = {
   tab_label?: string;
   kind: string;
   position: number;
+  // Coordination id: menu_section_public_placement_v1 (DB -> BO -> public nav)
+  public_page_active?: boolean;
+  web_placement?: string;
   annotations: string[];
   dishes: GroupMenuV2Dish[];
 };

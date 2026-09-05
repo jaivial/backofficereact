@@ -48,6 +48,7 @@ export type MenuSectionEditorProps = {
   sectionLoadingState?: "loading" | "error" | null;
   onReorderSectionStartDrag: (sectionClientId: string, event: React.PointerEvent<Element>) => void;
   toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => void;
+  requestSectionDelete: (sectionClientId: string, sectionLabel: string) => void;
 };
 
 function ReorderSectionContainer({ value, className, transition, whileDrag, children }: {
@@ -89,7 +90,7 @@ export function MenuSectionEditor({
   updateSectionAnnotation, addSectionAnnotation, removeSectionAnnotation,
   setSectionDescriptionsEnabled,
   pickDishImage, addDish, handleSearch, searchTerm, searchItems,
-  sectionLoadingState, onReorderSectionStartDrag, toggleSameDayBooking,
+  sectionLoadingState, onReorderSectionStartDrag, toggleSameDayBooking, requestSectionDelete,
 }: MenuSectionEditorProps) {
   const [dishTab, setDishTab] = useState<SectionDishTab>("active");
   const sectionLabel = sec.title.trim() || `seccion ${secIdx + 1}`;
@@ -436,6 +437,16 @@ export function MenuSectionEditor({
                     data-coordination-id="menu-section-description-enabled-v1"
                   />
                 </div>
+
+                <button
+                  type="button"
+                  className="bo-btn bo-btn--danger bo-btn--block"
+                  onClick={() => requestSectionDelete(sec.clientId, sec.title)}
+                  data-testid={`menu-section-editor-settings-delete-${sec.clientId}`}
+                  data-coordination-id="menu-section-delete-v1"
+                >
+                  <Trash2 size={14} /> Eliminar seccion
+                </button>
               </div>
             ) : visibleDishes.length > 0 ? (
               <Reorder.Group
