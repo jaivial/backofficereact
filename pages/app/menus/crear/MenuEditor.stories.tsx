@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import Page from "./+Page";
+import { CrearPage as Page } from "./crear";
 
 const shell = (data: Record<string, unknown>) => ({
   layout: "fullscreen" as const,

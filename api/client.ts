@@ -1641,6 +1641,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             show_dish_images: boolean;
             show_section_tabs: boolean;
             show_menu_preview_image: boolean;
+            editor_preview_open: boolean;
             beverage: {
               type: string;
               price_per_person?: number | null;

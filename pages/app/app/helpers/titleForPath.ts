@@ -1,6 +1,6 @@
 export function titleForPath(pathname: string): string {
   if (pathname.startsWith("/app/reservas")) return "Reservas";
-  if (pathname.startsWith("/app/menus")) return "Menus";
+  if (pathname.startsWith("/app/comida/menus")) return "Menus";
   if (pathname.startsWith("/app/config")) return "Configuracion";
   if (pathname.startsWith("/app/comsit")) return "Configuracion";
   if (pathname.startsWith("/app/settings")) return "Ajustes";
