@@ -4,7 +4,7 @@ export * from "./inputs";
 export * from "./nav";
 export * from "./overlays";
 export * from "./shell";
-export { cn, Input, Label, Progress, Card as ShadcnCard, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, TabsList, TabsTrigger, TabsContent, Switch } from "./shadcn";
+export { cn, Input, Label, Progress, Card as ShadcnCard, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Switch } from "./shadcn";
 export type { ButtonProps } from "./shadcn";
 export * from "./theme";
 export * from "./session";
