@@ -4,11 +4,13 @@ import { UtensilsCrossed } from "lucide-react";
 import { FloatingActionButton } from "../../../ui/actions/FloatingActionButton";
 import { hasSectionAccess } from "../../../lib/access-policy";
 import { sessionAtom } from "../../../state/atoms";
+import { Modal } from "../../../ui/overlays/Modal";
 
 import { FOOD_ENTRIES } from "./@foodType/constants/index";
 import { FoodItemModal } from "./_components/FoodItemModal";
 import { FoodCreatePickerModal, type CreateFoodType } from "./_components/FoodCreatePickerModal";
 import { WineModal } from "./_components/WineModal";
+import { CrearPage } from "../menus/crear/crear";
 
 type CreateStep = "picker" | CreateFoodType | null;
 
@@ -74,7 +76,13 @@ export default function Page() {
         onSelect={setCreateStep}
       />
 
-      {createStep && createStep !== "picker" ? (
+      {createStep === "menus" ? (
+        <Modal open title="Crear menu" onClose={closeCreate} widthPx={1400} data-ui="food-hub-create-menu-modal" data-testid="food-hub-create-menu-modal">
+          <CrearPage onClose={closeCreate} />
+        </Modal>
+      ) : null}
+
+      {createStep && createStep !== "picker" && createStep !== "menus" ? (
         createStep === "vinos" ? (
           <WineModal open wine={null} onClose={closeCreate} onSave={closeCreate} />
         ) : (
