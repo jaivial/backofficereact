@@ -50,6 +50,9 @@ export type EditorSection = {
   clientId: string;
   id?: number;
   title: string;
+  displayTitle: string;
+  subtitle: string;
+  tabLabel: string;
   kind: string;
   position: number;
   annotations: string[];

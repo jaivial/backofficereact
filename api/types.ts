@@ -451,6 +451,9 @@ export type GroupMenuV2Dish = {
 export type GroupMenuV2Section = {
   id: number;
   title: string;
+  display_title?: string;
+  subtitle?: string;
+  tab_label?: string;
   kind: string;
   position: number;
   annotations: string[];
