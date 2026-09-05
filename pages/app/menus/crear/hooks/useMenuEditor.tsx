@@ -221,6 +221,7 @@ export type UseMenuEditorReturn = {
   updateSectionAnnotation: (sectionClientId: string, annotationIdx: number, value: string) => void;
   addSectionAnnotation: (sectionClientId: string) => void;
   removeSectionAnnotation: (sectionClientId: string, annotationIdx: number) => void;
+  setSectionDescriptionsEnabled: (sectionClientId: string, enabled: boolean) => void;
   moveSection: (from: number, to: number) => void;
   reorderSections: (orderedClientIds: string[]) => void;
   addDish: (sectionClientId: string, fromCatalog?: DishCatalogItem) => void;
@@ -296,7 +297,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
-  const [desktopPreviewOpen, setDesktopPreviewOpen] = useState(true);
+  const [desktopPreviewOpen, setDesktopPreviewOpen] = useState(data.menu?.editor_preview_open !== false);
   const [desktopPreviewDocked, setDesktopPreviewDocked] = useState(true);
   const [previewThemeConfig, setPreviewThemeConfig] = useState<PreviewThemeConfig | null>(null);
   const [previewThemeLoading, setPreviewThemeLoading] = useState(true);
@@ -362,6 +363,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       subtitles,
       showDishImages,
       showMenuPreviewImage,
+      desktopPreviewOpen,
       includedCoffee,
       beverageType,
       beveragePrice,
@@ -372,7 +374,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       mainLimit,
       mainLimitNum,
     }),
-    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showMenuPreviewImage, subtitles, title],
+    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, desktopPreviewOpen, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showMenuPreviewImage, subtitles, title],
   );
   const basicsPayload = useMemo(() => buildBasicsPayload(basicsDraft), [basicsDraft]);
   const basicsFingerprint = useMemo(() => JSON.stringify(basicsPayload), [basicsPayload]);
@@ -1021,6 +1023,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       setSubtitles(mapped.subtitles.length ? mapped.subtitles : [""]);
       setShowDishImages(mapped.showDishImages);
       setShowMenuPreviewImage(mapped.showMenuPreviewImage);
+      setDesktopPreviewOpen(mapped.desktopPreviewOpen);
       setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
       setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
       setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
@@ -1038,7 +1041,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
       const mappedBasicsPayload = buildBasicsPayload({
         title: mapped.title, price: mapped.price || "0", active: mapped.active, menuType: mapped.menuType,
         subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages,
-        showMenuPreviewImage: mapped.showMenuPreviewImage, includedCoffee: mapped.settings.included_coffee,
+        showMenuPreviewImage: mapped.showMenuPreviewImage, desktopPreviewOpen: mapped.desktopPreviewOpen,
+        includedCoffee: mapped.settings.included_coffee,
         beverageType: mapped.settings.beverage.type,
         beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
         beverageHasSupplement: mapped.settings.beverage.has_supplement,
@@ -1059,7 +1063,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       inFlightSectionAnnotationsRef.current = {};
       syncRequestSeqRef.current = 0;
       setSaveState("idle");
-      window.history.replaceState({}, "", `/app/menus/crear?menuId=${created.menu_id}`);
+      window.history.replaceState({}, "", `/app/comida/menus/crear?menuId=${created.menu_id}`);
       setStep(1);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo crear borrador");
@@ -1184,6 +1188,22 @@ export function useMenuEditor(): UseMenuEditorReturn {
       const annotations = sec.annotations.filter((_, idx) => idx !== annotationIdx);
       return { ...sec, annotations: annotations.length > 0 ? annotations : [""] };
     }));
+  }, []);
+
+  const setSectionDescriptionsEnabled = useCallback((sectionClientId: string, enabled: boolean) => {
+    setSections((prev) => {
+      let changed = false;
+      const next = prev.map((sec) => {
+        if (sec.clientId !== sectionClientId) return sec;
+        const dishes = sec.dishes.map((dish) => {
+          if (dish.description_enabled === enabled) return dish;
+          changed = true;
+          return { ...dish, description_enabled: enabled };
+        });
+        return changed ? { ...sec, dishes } : sec;
+      });
+      return changed ? next : prev;
+    });
   }, []);
 
   // --- moveSection ---
@@ -1737,6 +1757,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setSubtitles(mapped.subtitles.length ? mapped.subtitles : [""]);
     setShowDishImages(mapped.showDishImages);
     setShowMenuPreviewImage(mapped.showMenuPreviewImage);
+    setDesktopPreviewOpen(mapped.desktopPreviewOpen);
     setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
     setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
     setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
@@ -1755,7 +1776,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
     const mappedBasicsPayload = buildBasicsPayload({
       title: mapped.title, price: mapped.price, active: mapped.active, menuType: mapped.menuType,
       subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages,
-      showMenuPreviewImage: mapped.showMenuPreviewImage, includedCoffee: mapped.settings.included_coffee,
+      showMenuPreviewImage: mapped.showMenuPreviewImage, desktopPreviewOpen: mapped.desktopPreviewOpen,
+      includedCoffee: mapped.settings.included_coffee,
       beverageType: mapped.settings.beverage.type,
       beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
       beverageHasSupplement: mapped.settings.beverage.has_supplement,
@@ -1930,7 +1952,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     patchBasics, syncSectionsAndDishes, applyDishAIState, applyMenuPreviewAIState,
     applyAITrackerSnapshot, createDraftAndContinue, addSection, removeSection, updateSection,
     fetchSectionDishes, handleSectionToggle, updateSectionAnnotation, addSectionAnnotation,
-    removeSectionAnnotation, moveSection, reorderSections, addDish, updateDish, removeDish,
+    removeSectionAnnotation, setSectionDescriptionsEnabled, moveSection, reorderSections, addDish, updateDish, removeDish,
     reorderDishes, handleSearch, pickDishImage, onDishImageFileSelected, onDishImageAdvisorImprove,
     onDishImageCropConfirm, onPublish, openSpecialMenuImagePicker, onSpecialMenuImageFileSelected,
     openMenuPreviewImagePicker, onMenuPreviewImageFileSelected, onMenuPreviewImageAdvisorImprove,

@@ -72,6 +72,7 @@ export type BasicsDraft = {
   subtitles: string[];
   showDishImages: boolean;
   showMenuPreviewImage: boolean;
+  desktopPreviewOpen: boolean;
   includedCoffee: boolean;
   beverageType: string;
   beveragePrice: string;
@@ -91,6 +92,7 @@ export type BasicsPayload = {
   menu_subtitle: string[];
   show_dish_images: boolean;
   show_menu_preview_image: boolean;
+  editor_preview_open: boolean;
   included_coffee: boolean;
   beverage: {
     type: string;
