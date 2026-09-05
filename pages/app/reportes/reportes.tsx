@@ -3,7 +3,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
 import type { TaxReport, TaxReportQuarterlyBreakdown, CustomerStatement } from "../../../api/types";
 import { formatCurrency } from "../../../api/types";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../ui/shadcn/tabs";
+import { Tabs } from "../../../ui/nav/Tabs";
 import { StatCard } from "../../../ui/widgets/StatCard";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -292,6 +292,8 @@ function CustomerStatementSection({
 
 // ─── IVA Report Section ───────────────────────────────────────────────────────
 
+type IvaTab = "breakdown" | "quarterly" | "invoices";
+
 function IVAReportSection({
   initialReport,
   quarterlyBreakdown,
@@ -306,6 +308,7 @@ function IVAReportSection({
   const { pushToast } = useToasts();
   const errorToast = useErrorToast();
 
+  const [ivaTab, setIvaTab] = useState<IvaTab>("breakdown");
   const [report, setReport] = useState<TaxReport | null>(initialReport);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -442,14 +445,21 @@ function IVAReportSection({
             </>
           )}
 
-          <Tabs defaultValue="breakdown">
-            <TabsList>
-              <TabsTrigger value="breakdown">Desglose por IVA</TabsTrigger>
-              <TabsTrigger value="quarterly">Trimestral</TabsTrigger>
-              <TabsTrigger value="invoices">Facturas</TabsTrigger>
-            </TabsList>
+          <div className="bo-menuEditorTabs" data-testid="reportes-iva-tabs">
+            <Tabs
+              tabs={[
+                { id: "breakdown", label: "Desglose por IVA", href: "#" },
+                { id: "quarterly", label: "Trimestral", href: "#" },
+                { id: "invoices", label: "Facturas", href: "#" },
+              ]}
+              activeId={ivaTab}
+              ariaLabel="Vistas del reporte de IVA"
+              mode="button"
+              onNavigate={(_href, id) => setIvaTab(id as IvaTab)}
+            />
+          </div>
 
-            <TabsContent value="breakdown">
+            {ivaTab === "breakdown" && (
               <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <table className="min-w-full divide-y divide-[var(--bo-border)]" data-slot="reportes-divide-[var(--bo-border)]">
                   <thead className="bg-[var(--bo-surface-2)]" data-slot="reportes-bg-[var(--bo-surface-2)]"><tr>
@@ -482,9 +492,9 @@ function IVAReportSection({
                   </tr></tfoot>
                 </table>
               </Card>
-            </TabsContent>
+            )}
 
-            <TabsContent value="quarterly">
+            {ivaTab === "quarterly" && (
               <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <table className="min-w-full divide-y divide-[var(--bo-border)]" data-slot="reportes-divide-[var(--bo-border)]">
                   <thead className="bg-[var(--bo-surface-2)]" data-slot="reportes-bg-[var(--bo-surface-2)]"><tr>
@@ -513,9 +523,9 @@ function IVAReportSection({
                   </tbody>
                 </table>
               </Card>
-            </TabsContent>
+            )}
 
-            <TabsContent value="invoices">
+            {ivaTab === "invoices" && (
               <Card variant="tailwind" className="overflow-hidden" data-slot="reportes-overflow-hidden">
                 <button onClick={() => setExpandedInvoices(!expandedInvoices)} className="w-full px-6 py-4 flex items-center justify-between bg-[var(--bo-surface-2)] hover:bg-[var(--bo-surface-3)]"
                   data-testid="reportes-toggle-invoices-button">
@@ -553,8 +563,8 @@ function IVAReportSection({
                   </table>
                 )}
               </Card>
-            </TabsContent>
-          </Tabs>
+            )}
+
         </>
       ) : (
         <EmptyState variant="tailwind" data-slot="reportes-text-center"
@@ -578,6 +588,7 @@ export default function Page() {
   const pageContext = usePageContext();
   const data = pageContext.data as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const [rootTab, setRootTab] = useState<"iva" | "customer">("iva");
   const currentYear = data.currentYear || new Date().getFullYear();
 
   return (
@@ -590,20 +601,27 @@ export default function Page() {
       </div>
 
       <Card variant="tailwind" className="mb-6" data-slot="reportes-mb-6">
-        <Tabs defaultValue="iva">
-          <TabsList className="flex w-full min-w-0 flex-wrap justify-start border-b">
-            <TabsTrigger value="iva">Reportes de IVA</TabsTrigger>
-            <TabsTrigger value="customer">Estado de Cuenta Cliente</TabsTrigger>
-          </TabsList>
+        <div className="bo-menuEditorTabs" data-testid="reportes-root-tabs">
+          <Tabs
+            tabs={[
+              { id: "iva", label: "Reportes de IVA", href: "#" },
+              { id: "customer", label: "Estado de Cuenta Cliente", href: "#" },
+            ]}
+            activeId={rootTab}
+            ariaLabel="Secciones de reportes"
+            mode="button"
+            onNavigate={(_href, id) => setRootTab(id === "customer" ? "customer" : "iva")}
+          />
+        </div>
 
-          <TabsContent value="customer">
+          {rootTab === "customer" && (
             <CustomerStatementSection api={api} customers={data.customers || []} currentYear={currentYear} />
-          </TabsContent>
+          )}
 
-          <TabsContent value="iva">
+          {rootTab === "iva" && (
             <IVAReportSection initialReport={data.report} quarterlyBreakdown={data.quarterlyBreakdown} currentYear={currentYear} api={api} />
-          </TabsContent>
-        </Tabs>
+          )}
+
       </Card>
     </div>
   );

@@ -49,6 +49,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
   // that needs a dedicated "Configuracion" tab next to its dish list.
   // Coordination id: postres_page_visibility_v1
   const showSettingsTab = foodType === "postres";
+  const [settingsTab, setSettingsTab] = useState<"platos" | "configuracion">("platos");
 
   // Local UI toggle: show/hide the dish card image media block on the list page.
   // No persistence — resets to true on every mount, like an accordion/filter.
@@ -347,6 +348,8 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     pageVisibilityLoading,
     showPageVisibilityToggle,
     showSettingsTab,
+    settingsTab,
+    setSettingsTab,
     showImages,
     setShowImages,
     setPage,
