@@ -81,6 +81,7 @@ export type UseMenuEditorReturn = {
   subtitles: string[];
   active: boolean;
   showDishImages: boolean;
+  showSectionTabs: boolean;
   showMenuPreviewImage: boolean;
   menuPreviewImageUrl: string;
   menuPreviewAIRequested: boolean;
@@ -160,6 +161,7 @@ export type UseMenuEditorReturn = {
   setSubtitles: React.Dispatch<React.SetStateAction<string[]>>;
   setActive: (active: boolean) => void;
   setShowDishImages: (show: boolean) => void;
+  setShowSectionTabs: (show: boolean) => void;
   setShowMenuPreviewImage: (show: boolean) => void;
   setMenuPreviewImageUrl: (url: string) => void;
   setMenuPreviewAIRequested: (v: boolean) => void;
@@ -273,6 +275,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [subtitles, setSubtitles] = useState<string[]>(data.menu?.menu_subtitle?.length ? data.menu.menu_subtitle : [""]);
   const [active, setActive] = useState<boolean>(data.menu?.active ?? false);
   const [showDishImages, setShowDishImages] = useState<boolean>(!!data.menu?.show_dish_images);
+  // Coordination id: menu_section_tabs_flag (backoffice -> DB -> public API -> preact)
+  const [showSectionTabs, setShowSectionTabs] = useState<boolean>(!!data.menu?.show_section_tabs);
   const [showMenuPreviewImage, setShowMenuPreviewImage] = useState<boolean>(initialMenuPreviewState.showMenuPreviewImage);
   const [sections, setSections] = useState<EditorSection[]>([]);
   const [includedCoffee, setIncludedCoffee] = useState<boolean>(false);
@@ -362,6 +366,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       menuType,
       subtitles,
       showDishImages,
+      showSectionTabs,
       showMenuPreviewImage,
       desktopPreviewOpen,
       includedCoffee,
@@ -374,7 +379,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       mainLimit,
       mainLimitNum,
     }),
-    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, desktopPreviewOpen, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showMenuPreviewImage, subtitles, title],
+    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, desktopPreviewOpen, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showSectionTabs, showMenuPreviewImage, subtitles, title],
   );
   const basicsPayload = useMemo(() => buildBasicsPayload(basicsDraft), [basicsDraft]);
   const basicsFingerprint = useMemo(() => JSON.stringify(basicsPayload), [basicsPayload]);
@@ -926,6 +931,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         active,
         subtitles,
         showDishImages,
+        showSectionTabs,
         showMenuPreviewImage,
         menuPreviewImageUrl,
         menuPreviewAIRequested,
@@ -966,6 +972,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       price,
       sections,
       showDishImages,
+      showSectionTabs,
       showMenuPreviewImage,
       menuPreviewImageUrl,
       menuPreviewAIRequested,
@@ -1022,6 +1029,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       setActive(mapped.active);
       setSubtitles(mapped.subtitles.length ? mapped.subtitles : [""]);
       setShowDishImages(mapped.showDishImages);
+      setShowSectionTabs(mapped.showSectionTabs);
       setShowMenuPreviewImage(mapped.showMenuPreviewImage);
       setDesktopPreviewOpen(mapped.desktopPreviewOpen);
       setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
@@ -1040,7 +1048,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       setComments(mapped.settings.comments.length ? mapped.settings.comments : [""]);
       const mappedBasicsPayload = buildBasicsPayload({
         title: mapped.title, price: mapped.price || "0", active: mapped.active, menuType: mapped.menuType,
-        subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages,
+        subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages, showSectionTabs: mapped.showSectionTabs,
         showMenuPreviewImage: mapped.showMenuPreviewImage, desktopPreviewOpen: mapped.desktopPreviewOpen,
         includedCoffee: mapped.settings.included_coffee,
         beverageType: mapped.settings.beverage.type,
@@ -1756,6 +1764,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setMenuType(mapped.menuType);
     setSubtitles(mapped.subtitles.length ? mapped.subtitles : [""]);
     setShowDishImages(mapped.showDishImages);
+    setShowSectionTabs(mapped.showSectionTabs);
     setShowMenuPreviewImage(mapped.showMenuPreviewImage);
     setDesktopPreviewOpen(mapped.desktopPreviewOpen);
     setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
@@ -1775,7 +1784,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setComments(mapped.settings.comments.length ? mapped.settings.comments : [""]);
     const mappedBasicsPayload = buildBasicsPayload({
       title: mapped.title, price: mapped.price, active: mapped.active, menuType: mapped.menuType,
-      subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages,
+      subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages, showSectionTabs: mapped.showSectionTabs,
       showMenuPreviewImage: mapped.showMenuPreviewImage, desktopPreviewOpen: mapped.desktopPreviewOpen,
       includedCoffee: mapped.settings.included_coffee,
       beverageType: mapped.settings.beverage.type,
@@ -1918,7 +1927,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
 
   return {
     // State
-    error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages,
+    error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages, showSectionTabs,
     showMenuPreviewImage, menuPreviewImageUrl, menuPreviewAIRequested, menuPreviewAIGenerating,
     sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement, beverageSupplementPrice,
     beverageOptions, beverageModalOpen, beverageDeleteTarget,
@@ -1937,7 +1946,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     previewFrameRef, dishImageInputRef, menuPreviewImageInputRef, specialMenuImageInputRef,
     // Setters
     setMenuId, setIsDraft, setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
-    setShowDishImages, setShowMenuPreviewImage, setMenuPreviewImageUrl, setMenuPreviewAIRequested,
+    setShowDishImages, setShowSectionTabs, setShowMenuPreviewImage, setMenuPreviewImageUrl, setMenuPreviewAIRequested,
     setMenuPreviewAIGenerating, setSections, setIncludedCoffee, setBeverageType, setBeveragePrice,
     refreshBeverageOptions, setBeverageOptionSelected, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
