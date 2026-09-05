@@ -1670,7 +1670,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         },
         async putSections(
           id: number,
-          sections: Array<{ id?: number; title: string; kind: string; position?: number; annotations?: string[] }>,
+          sections: Array<{ id?: number; title: string; display_title: string; subtitle: string; tab_label: string; kind: string; position?: number; annotations?: string[] }>,
         ): Promise<APISuccess<{ sections: GroupMenuV2Section[] }> | APIError> {
           return json(`/api/admin/group-menus-v2/${id}/sections`, {
             method: "PUT",

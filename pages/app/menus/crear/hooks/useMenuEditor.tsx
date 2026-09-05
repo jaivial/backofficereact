@@ -482,6 +482,9 @@ export function useMenuEditor(): UseMenuEditorReturn {
           const structure = rebuilt.map((sec, idx) => ({
             id: sec.id,
             title: sec.title.trim() || "Seccion",
+            display_title: sec.displayTitle.trim(),
+            subtitle: sec.subtitle.trim(),
+            tab_label: sec.tabLabel.trim(),
             kind: sec.kind,
             position: idx,
             annotations: normalizeSectionAnnotations(sec.annotations),
@@ -1082,9 +1085,12 @@ export function useMenuEditor(): UseMenuEditorReturn {
 
   // --- addSection ---
   const addSection = useCallback(() => {
+    // New sections start with display_title seeded from the backoffice title so
+    // the public heading is never blank. subtitle and tab_label stay empty
+    // until the operator fills them in the settings tab.
     setSections((prev) => [
       ...prev,
-      { clientId: uid("section"), title: "Nueva seccion", kind: "custom", position: prev.length, annotations: [""], dishes: [], expanded: true },
+      { clientId: uid("section"), title: "Nueva seccion", displayTitle: "Nueva seccion", subtitle: "", tabLabel: "", kind: "custom", position: prev.length, annotations: [""], dishes: [], expanded: true } as EditorSection,
     ]);
   }, []);
 
