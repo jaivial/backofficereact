@@ -811,6 +811,9 @@ export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): Edit
     kind: s.kind,
     position: s.position || 0,
     annotations: toEditorSectionAnnotations(s.annotations, prev?.annotations),
+    // Coordination id: menu_section_public_placement_v1
+    public_page_active: s.public_page_active ?? prev?.public_page_active ?? false,
+    web_placement: s.web_placement ?? prev?.web_placement ?? "inside_menus",
     expanded: prev?.expanded ?? false,
     dishes: (s.dishes || []).map((dish) => mapApiDish(dish, dish.id ? prevDishByID.get(dish.id) : undefined)),
   };
