@@ -1121,7 +1121,21 @@ export function useMenuEditor(): UseMenuEditorReturn {
       if (sectionLoadingState[clientId] === "loading") return;
       setSectionLoadingState((prev) => ({ ...prev, [clientId]: "loading" }));
       try {
-        const res = await api.menus.gruposV2.getSectionDishes(menuId, section.id);
+        // Coordination id: menu-section-dishes-fetch-v1. A structure autosave can
+        // replace the persisted section rows while this request is in flight, which
+        // leaves the captured id pointing at a row the backend has already removed.
+        // Read the id back from the live ref at call time and retry once against the
+        // refreshed id, so a stale capture is corrected instead of surfaced.
+        const liveSection = sectionsRef.current.find((s) => s.clientId === clientId);
+        const requestedSectionId = liveSection?.id || section.id;
+        let res = await api.menus.gruposV2.getSectionDishes(menuId, requestedSectionId);
+        if (!res.success) {
+          const retrySection = sectionsRef.current.find((s) => s.clientId === clientId);
+          const retrySectionId = retrySection?.id;
+          if (retrySectionId && retrySectionId !== requestedSectionId) {
+            res = await api.menus.gruposV2.getSectionDishes(menuId, retrySectionId);
+          }
+        }
         if (res.success && res.dishes) {
           setSections((prev) => prev.map((sec) => {
             if (sec.clientId !== clientId) return sec;
@@ -1133,7 +1147,12 @@ export function useMenuEditor(): UseMenuEditorReturn {
               }),
             };
           }));
-          setSectionLoadedDishes((prev) => new Set(prev).add(cacheKey));
+          setSectionLoadedDishes((prev) => {
+            const next = new Set(prev).add(cacheKey);
+            const settledSection = sectionsRef.current.find((s) => s.clientId === clientId);
+            if (settledSection?.id) next.add(String(settledSection.id));
+            return next;
+          });
           setSectionLoadingState((prev) => ({ ...prev, [clientId]: null }));
         } else {
           setSectionLoadingState((prev) => ({ ...prev, [clientId]: "error" }));
