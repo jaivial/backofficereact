@@ -1143,7 +1143,14 @@
 
   function renderGeneric(menu) {
     const subtitle = menu.menu_subtitle[0] || "Preview en tiempo real";
-    const content = menu.sections.length ? menu.sections.map(sectionHtmlGeneric).join("") : '<article class="vc-card"><p class="vc-empty">Sin secciones aun</p></article>';
+    // Coordination id: menu_section_tabs_flag (same flag drives every theme,
+    // not just villa-carmen, so the preview matches the public site).
+    const genericSections = getMenuViewSections(menu);
+    const content = menu.sections.length
+      ? useSectionTabs(menu, genericSections)
+        ? renderSectionTabsVC(genericSections, genericSections.map(sectionHtmlGeneric))
+        : menu.sections.map(sectionHtmlGeneric).join("")
+      : '<article class="vc-card"><p class="vc-empty">Sin secciones aun</p></article>';
     const comments = Array.isArray(menu.settings.comments)
       ? menu.settings.comments.filter(Boolean).map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("")
       : "";
@@ -1194,6 +1201,7 @@
     renderGeneric(menu);
     attachDishCardImageFallbackHandlers();
     attachDishCardLightboxHandlers();
+    attachSectionTabHandlers();
   }
 
   async function loadTemplate() {

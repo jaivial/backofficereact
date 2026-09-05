@@ -212,3 +212,85 @@ body {
     animation: none;
   }
 }
+
+/* Coordination id: menu_section_tabs_flag
+   Section tabs for themes that render through the generic preview. The
+   villa-carmen theme overrides these in its own theme.css. Labels never wrap
+   inside a pill; the bar wraps to more rows when they no longer fit. */
+.stickyTabsSticky {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 6px 0 12px;
+}
+
+.stickyTabs {
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  row-gap: 6px;
+  padding: 8px;
+  border-radius: 28px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.stickyTab {
+  flex: 1 1 auto;
+  min-width: max-content;
+  white-space: nowrap;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  padding: 10px 14px;
+  cursor: pointer;
+  position: relative;
+  color: rgba(0, 0, 0, 0.78);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.stickyTabLabel {
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+
+.stickyTabBubble {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.82);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.stickyTab.is-active {
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.stickyTab.is-active .stickyTabBubble {
+  opacity: 1;
+}
+
+.stickyTabPanel {
+  display: none;
+}
+
+.stickyTabPanel.is-active {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stickyTabBubble {
+    transition: none;
+  }
+}
