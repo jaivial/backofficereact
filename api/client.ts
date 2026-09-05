@@ -2,6 +2,7 @@ import { createPOSModule } from "./modules/pos";
 import type {
   APIError,
   APISuccess,
+  PageVisibility,
   Booking,
   CancelledBookingItem,
   ModifiedBookingItem,
@@ -1096,10 +1097,10 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
-      async getPageVisibility(): Promise<APISuccess<{ cafe_page_active: boolean; bebidas_page_active: boolean }> | APIError> {
+      async getPageVisibility(): Promise<APISuccess<PageVisibility> | APIError> {
         return json("/api/admin/restaurant/pages/visibility", { method: "GET" });
       },
-      async setPageVisibility(input: { cafe_page_active?: boolean; bebidas_page_active?: boolean }): Promise<APISuccess<{ cafe_page_active: boolean; bebidas_page_active: boolean }> | APIError> {
+      async setPageVisibility(input: Partial<PageVisibility>): Promise<APISuccess<PageVisibility> | APIError> {
         return json("/api/admin/restaurant/pages/visibility", {
           method: "PATCH",
           headers: { "content-type": "application/json" },
