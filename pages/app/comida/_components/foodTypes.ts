@@ -1,5 +1,6 @@
 // Canonical FoodType imported from shared constants.
 import type { FoodType } from "../@foodType/constants/index";
+import type { PageVisibility } from "../../../../api/types";
 export type { FoodType };
 
 // All food type categories in display order.
@@ -64,3 +65,21 @@ export function parseFoodType(raw: string): FoodType | null {
   if (value === "bebidas") return "bebidas";
   return null;
 }
+
+/**
+ * Food types that own a public page whose visibility and web placement are
+ * configurable from the backoffice "Configuracion" tab.
+ * Coordination id: foodtype_page_visibility_v1
+ * (backoffice food type settings -> backend page visibility -> public site nav)
+ */
+export type FoodTypeWithPublicPage = "cafes" | "vinos" | "bebidas" | "postres";
+
+export const FOOD_TYPE_VISIBILITY_KEYS: Record<
+  FoodTypeWithPublicPage,
+  { active: keyof PageVisibility; placement: keyof PageVisibility }
+> = {
+  cafes: { active: "cafe_page_active", placement: "cafes_web_placement" },
+  vinos: { active: "vinos_page_active", placement: "vinos_web_placement" },
+  bebidas: { active: "bebidas_page_active", placement: "bebidas_web_placement" },
+  postres: { active: "postres_page_active", placement: "postres_web_placement" },
+};
