@@ -2454,14 +2454,29 @@ export type Campaign = {
   audience: "bookings" | "manual";
   audience_days: number;
   manual_recipients: string[];
+  email_per_minute: number;
+  whatsapp_per_minute: number;
   status: "draft" | "sending" | "sent";
   sent_at?: string;
   created_at?: string;
   updated_at?: string;
   stats: CampaignStats;
 };
-export type CampaignInput = Pick<Campaign, "name" | "subject" | "body_markdown" | "theme" | "channels" | "audience" | "audience_days" | "manual_recipients">;
-export type CampaignAudiencePreview = { total: number; emails: number; whatsapp: number; sample: { channel: CampaignChannel; target: string; name: string }[] };
+export type CampaignInput = Pick<
+  Campaign,
+  "name" | "subject" | "body_markdown" | "theme" | "channels" | "audience" | "audience_days" | "manual_recipients" | "email_per_minute" | "whatsapp_per_minute"
+>;
+export type CampaignAudiencePreview = { total: number; emails: number; whatsapp: number; sample: { channel: CampaignChannel; target: string; name: string; booking_id?: number }[] };
+export type CampaignRecipient = {
+  id: number;
+  channel: CampaignChannel;
+  target: string;
+  name: string;
+  booking_id: number;
+  status: "pending" | "sent" | "failed";
+  error: string;
+  sent_at: string;
+};
 
 /**
  * Public page visibility toggles for one restaurant.

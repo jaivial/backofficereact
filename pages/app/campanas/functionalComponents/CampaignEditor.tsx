@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "vike/client/router";
 import { Mail, MessageCircle, Send, Trash2, Users } from "lucide-react";
-import type { Campaign, CampaignChannel, CampaignInput } from "../../../../api/types";
+import type { Campaign, CampaignChannel, CampaignInput, CampaignRecipient } from "../../../../api/types";
 import { Button } from "../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { Panel } from "../../../../ui/shell/Panel";
 import { MarkdownEditor } from "../../../../ui/inputs/MarkdownEditor";
 import { useToasts } from "../../../../ui/feedback/useToasts";
-import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, createCampaignsAPI, emptyCampaignInput } from "./campaignsApi";
+import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_RATE_LIMITS, createCampaignsAPI, emptyCampaignInput, estimatedMinutes, ratePlan } from "./campaignsApi";
 
 const LIST_HREF = "/app/campanas";
 
@@ -29,6 +29,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const [audience, setAudience] = useState<{ total: number; emails: number; whatsapp: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [testTarget, setTestTarget] = useState("");
+  const [recipients, setRecipients] = useState<CampaignRecipient[]>([]);
   const coordId = campaign?.coord_id ?? "camp-new";
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -91,6 +92,15 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     if (result.success) setAudience({ total: result.total, emails: result.emails, whatsapp: result.whatsapp });
   }, [api, campaign]);
 
+  const loadRecipients = useCallback(async () => {
+    if (!campaign) return;
+    const result = await api.recipients(campaign.id);
+    if (result.success) setRecipients(result.recipients ?? []);
+  }, [api, campaign]);
+
+  const emailPlan = ratePlan(form.email_per_minute);
+  const whatsappPlan = ratePlan(form.whatsapp_per_minute);
+
   const sendTest = useCallback(async () => {
     if (!campaign || !testTarget.trim()) return;
     const channel: CampaignChannel = testTarget.includes("@") ? "email" : "whatsapp";
@@ -116,14 +126,16 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         const status = await api.status(campaign.id);
         if (!status.success) return;
         setCampaign((prev) => (prev ? { ...prev, status: status.status as Campaign["status"], stats: status.stats } : prev));
+        void loadRecipients();
         if (status.status === "sent" && pollRef.current) clearInterval(pollRef.current);
       }, 3000);
     } finally {
       setBusy(false);
     }
-  }, [api, campaign, pushToast]);
+  }, [api, campaign, loadRecipients, pushToast]);
 
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
+  useEffect(() => { void loadRecipients(); }, [loadRecipients]);
 
   const remove = useCallback(async () => {
     if (!campaign) return;
@@ -316,6 +328,47 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         </div>
       </Panel>
 
+      <Panel title="Ritmo de envio" meta="Mensajes por minuto por canal" data-testid="campaign-rate-panel">
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-1 text-sm" data-testid="campaign-rate-email-block">
+            <label className="grid gap-1" data-testid="campaign-rate-email-field">
+              Emails por minuto (max {CAMPAIGN_RATE_LIMITS.email.max})
+              <input
+                type="number"
+                min={CAMPAIGN_RATE_LIMITS.email.min}
+                max={CAMPAIGN_RATE_LIMITS.email.max}
+                className="bo-input"
+                value={form.email_per_minute}
+                onChange={(e) => patch("email_per_minute", Number(e.currentTarget.value) || CAMPAIGN_RATE_LIMITS.email.fallback)}
+                data-testid="campaign-rate-email-input"
+              />
+            </label>
+            <p className="opacity-70" data-testid="campaign-rate-email-summary">
+              {emailPlan.perHour.toLocaleString("es-ES")} por hora · {emailPlan.perDay.toLocaleString("es-ES")} por dia
+              {audience ? ` · ${estimatedMinutes(audience.emails, emailPlan.perMinute)} min para ${audience.emails}` : ""}
+            </p>
+          </div>
+          <div className="grid gap-1 text-sm" data-testid="campaign-rate-whatsapp-block">
+            <label className="grid gap-1" data-testid="campaign-rate-whatsapp-field">
+              WhatsApp por minuto (max {CAMPAIGN_RATE_LIMITS.whatsapp.max})
+              <input
+                type="number"
+                min={CAMPAIGN_RATE_LIMITS.whatsapp.min}
+                max={CAMPAIGN_RATE_LIMITS.whatsapp.max}
+                className="bo-input"
+                value={form.whatsapp_per_minute}
+                onChange={(e) => patch("whatsapp_per_minute", Number(e.currentTarget.value) || CAMPAIGN_RATE_LIMITS.whatsapp.fallback)}
+                data-testid="campaign-rate-whatsapp-input"
+              />
+            </label>
+            <p className="opacity-70" data-testid="campaign-rate-whatsapp-summary">
+              {whatsappPlan.perHour.toLocaleString("es-ES")} por hora · {whatsappPlan.perDay.toLocaleString("es-ES")} por dia
+              {audience ? ` · ${estimatedMinutes(audience.whatsapp, whatsappPlan.perMinute)} min para ${audience.whatsapp}` : ""}
+            </p>
+          </div>
+        </div>
+      </Panel>
+
       <Panel title="Envio" data-testid="campaign-send-panel">
         {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campana para poder probar y enviar." />}
         <div className="mt-2 grid gap-3 md:grid-cols-2">
@@ -340,6 +393,42 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             )}
           </div>
         </div>
+      </Panel>
+
+      <Panel
+        title="Registro de envios"
+        meta="Reserva, canal y estado por destinatario"
+        actions={<Button variant="ghost" size="sm" onClick={() => void loadRecipients()} disabled={!campaign} data-testid="campaign-recipients-refresh-btn">Actualizar</Button>}
+        data-testid="campaign-recipients-panel"
+      >
+        {recipients.length === 0 ? (
+          <p className="text-sm opacity-70" data-testid="campaign-recipients-empty">Sin envios registrados todavia.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm" data-testid="campaign-recipients-table">
+              <thead>
+                <tr>
+                  <th className="text-left" data-testid="campaign-recipients-th-booking">Reserva</th>
+                  <th className="text-left" data-testid="campaign-recipients-th-channel">Canal</th>
+                  <th className="text-left" data-testid="campaign-recipients-th-target">Destino</th>
+                  <th className="text-left" data-testid="campaign-recipients-th-status">Estado</th>
+                  <th className="text-left" data-testid="campaign-recipients-th-sentat">Enviado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recipients.map((row) => (
+                  <tr key={row.id} data-testid={`campaign-recipient-row-${row.id}`} data-booking-id={row.booking_id || ""} data-coord-id={coordId}>
+                    <td>{row.booking_id || "—"}</td>
+                    <td>{row.channel}</td>
+                    <td>{row.target}</td>
+                    <td title={row.error}>{row.status}</td>
+                    <td>{row.sent_at || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Panel>
     </section>
   );
