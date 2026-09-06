@@ -2143,6 +2143,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async deleteCampaign(id: number): Promise<APISuccess | APIError> {
         return json(`/api/admin/campanas/${id}`, { method: "DELETE" });
       },
+      async campaignTemplate(): Promise<APISuccess<{ theme: import("./types").CampaignTheme; brand_name: string; logo_url: string }> | APIError> {
+        return json("/api/admin/campanas/template", { method: "GET" });
+      },
       async previewCampaign(input: import("./types").CampaignInput): Promise<APISuccess<{ html: string; whatsapp: string }> | APIError> {
         return json("/api/admin/campanas/preview", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
       },
