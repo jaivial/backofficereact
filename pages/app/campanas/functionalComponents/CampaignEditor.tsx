@@ -6,6 +6,7 @@ import { Button } from "../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { Panel } from "../../../../ui/shell/Panel";
 import { MarkdownEditor } from "../../../../ui/inputs/MarkdownEditor";
+import { InlineCounter } from "../../../../ui/widgets/InlineCounter";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_RATE_LIMITS, createCampaignsAPI, emptyCampaignInput, estimatedMinutes, ratePlan } from "./campaignsApi";
 import { CampaignPreview } from "./CampaignPreview";
@@ -272,17 +273,15 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             </select>
           </label>
           {form.audience === "bookings" ? (
-            <label className="grid gap-1 text-sm" data-testid="campaign-audience-days-field">
-              Ultimos dias
-              <input
-                type="number"
-                min={1}
-                className="bo-input"
-                value={form.audience_days}
-                onChange={(e) => patch("audience_days", Number(e.currentTarget.value) || 365)}
-                data-testid="campaign-audience-days-input"
-              />
-            </label>
+            <InlineCounter
+              label="Ultimos dias"
+              value={form.audience_days}
+              min={1}
+              max={3650}
+              step={30}
+              testId="campaign-audience-days-counter"
+              onChange={(next) => patch("audience_days", next)}
+            />
           ) : (
             <label className="grid gap-1 text-sm md:col-span-2" data-testid="campaign-audience-manual-field">
               Emails o telefonos (uno por linea)
@@ -328,42 +327,30 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
       <Panel title="Ritmo de envio" meta="Mensajes por minuto por canal" data-testid="campaign-rate-panel">
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="grid gap-1 text-sm" data-testid="campaign-rate-email-block">
-            <label className="grid gap-1" data-testid="campaign-rate-email-field">
-              Emails por minuto (max {CAMPAIGN_RATE_LIMITS.email.max})
-              <input
-                type="number"
-                min={CAMPAIGN_RATE_LIMITS.email.min}
-                max={CAMPAIGN_RATE_LIMITS.email.max}
-                className="bo-input"
-                value={form.email_per_minute}
-                onChange={(e) => patch("email_per_minute", Number(e.currentTarget.value) || CAMPAIGN_RATE_LIMITS.email.fallback)}
-                data-testid="campaign-rate-email-input"
-              />
-            </label>
-            <p className="opacity-70" data-testid="campaign-rate-email-summary">
-              {emailPlan.perHour.toLocaleString("es-ES")} por hora · {emailPlan.perDay.toLocaleString("es-ES")} por dia
-              {audience ? ` · ${estimatedMinutes(audience.emails, emailPlan.perMinute)} min para ${audience.emails}` : ""}
-            </p>
-          </div>
-          <div className="grid gap-1 text-sm" data-testid="campaign-rate-whatsapp-block">
-            <label className="grid gap-1" data-testid="campaign-rate-whatsapp-field">
-              WhatsApp por minuto (max {CAMPAIGN_RATE_LIMITS.whatsapp.max})
-              <input
-                type="number"
-                min={CAMPAIGN_RATE_LIMITS.whatsapp.min}
-                max={CAMPAIGN_RATE_LIMITS.whatsapp.max}
-                className="bo-input"
-                value={form.whatsapp_per_minute}
-                onChange={(e) => patch("whatsapp_per_minute", Number(e.currentTarget.value) || CAMPAIGN_RATE_LIMITS.whatsapp.fallback)}
-                data-testid="campaign-rate-whatsapp-input"
-              />
-            </label>
-            <p className="opacity-70" data-testid="campaign-rate-whatsapp-summary">
-              {whatsappPlan.perHour.toLocaleString("es-ES")} por hora · {whatsappPlan.perDay.toLocaleString("es-ES")} por dia
-              {audience ? ` · ${estimatedMinutes(audience.whatsapp, whatsappPlan.perMinute)} min para ${audience.whatsapp}` : ""}
-            </p>
-          </div>
+          <InlineCounter
+            label={`Emails por minuto (max ${CAMPAIGN_RATE_LIMITS.email.max})`}
+            value={form.email_per_minute}
+            min={CAMPAIGN_RATE_LIMITS.email.min}
+            max={CAMPAIGN_RATE_LIMITS.email.max}
+            step={5}
+            testId="campaign-rate-email-counter"
+            onChange={(next) => patch("email_per_minute", next)}
+            helperText={`${emailPlan.perHour.toLocaleString("es-ES")} por hora · ${emailPlan.perDay.toLocaleString("es-ES")} por dia${
+              audience ? ` · ${estimatedMinutes(audience.emails, emailPlan.perMinute)} min para ${audience.emails}` : ""
+            }`}
+          />
+          <InlineCounter
+            label={`WhatsApp por minuto (max ${CAMPAIGN_RATE_LIMITS.whatsapp.max})`}
+            value={form.whatsapp_per_minute}
+            min={CAMPAIGN_RATE_LIMITS.whatsapp.min}
+            max={CAMPAIGN_RATE_LIMITS.whatsapp.max}
+            step={1}
+            testId="campaign-rate-whatsapp-counter"
+            onChange={(next) => patch("whatsapp_per_minute", next)}
+            helperText={`${whatsappPlan.perHour.toLocaleString("es-ES")} por hora · ${whatsappPlan.perDay.toLocaleString("es-ES")} por dia${
+              audience ? ` · ${estimatedMinutes(audience.whatsapp, whatsappPlan.perMinute)} min para ${audience.whatsapp}` : ""
+            }`}
+          />
         </div>
       </Panel>
 
