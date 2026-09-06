@@ -327,3 +327,42 @@
   color: var(--bo-text);
   text-transform: capitalize;
 }
+
+/* Opt-in sizing: the trigger reserves the width of the widest option so the
+   selected label never wraps or truncates when the value changes.
+   The sizer is laid out in a zero-height grid whose columns stack every label
+   on top of each other, so the wrapper's intrinsic width is the widest one. */
+.bo-selectWrapper--fitWidest {
+  display: inline-grid;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.bo-selectWrapper--fitWidest > .bo-selectWidestSizer,
+.bo-selectWrapper--fitWidest > .bo-selectBtn {
+  grid-area: 1 / 1;
+}
+
+.bo-selectWidestSizer {
+  display: grid;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+  /* Matches .bo-selectBtn padding and gap plus the chevron box, so the
+     reserved width covers the whole trigger and not just its text. */
+  padding: 0 10px 0 12px;
+  margin-inline-end: 26px;
+}
+
+.bo-selectWidestSizerItem {
+  grid-area: 1 / 1;
+  font-size: 12px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.bo-selectWrapper--fitWidest > .bo-selectBtn {
+  width: 100%;
+  justify-content: space-between;
+}
