@@ -111,10 +111,19 @@ export function MenuSectionEditor({
   const annotationsTabId = `bo-section-dishes-annotations-${sec.clientId}`;
   const settingsTabId = `bo-section-dishes-settings-${sec.clientId}`;
   const dishPanelId = `bo-section-dishes-panel-${sec.clientId}`;
-  // Coordination id: menu-section-description-enabled-v1. The section switch is a
-  // summary of its dishes: it reads on as soon as a single dish description is on,
-  // so enabling one dish flips it back without any extra state to keep in sync.
+  // Coordination id: menu-section-description-enabled-v1. The section switch means
+  // "descriptions are allowed in this section", not "show every description". It reads
+  // on when a single dish description is on, or when the operator armed it without
+  // having opted any dish in yet, so turning one dish on never disturbs the others.
+  const [descriptionsArmed, setDescriptionsArmed] = useState(false);
   const anyDescriptionEnabled = sec.dishes.some((dish) => dish.description_enabled);
+  const descriptionsEnabled = anyDescriptionEnabled || descriptionsArmed;
+
+  // Turning the last dish description off disarms the section, so the switch and the
+  // dishes never disagree once the section holds no visible description at all.
+  useEffect(() => {
+    if (anyDescriptionEnabled) setDescriptionsArmed(false);
+  }, [anyDescriptionEnabled]);
 
   useEffect(() => {
     if (dishTab === "annotations" || dishTab === "settings") return;
@@ -426,13 +435,16 @@ export function MenuSectionEditor({
                   <div data-testid={`menu-section-editor-settings-description-copy-${sec.clientId}`}>
                     <div className="bo-label" data-testid={`menu-section-editor-settings-description-title-${sec.clientId}`}>Descripciones</div>
                     <div className="bo-mutedText" data-testid={`menu-section-editor-settings-description-state-${sec.clientId}`}>
-                      {anyDescriptionEnabled ? "Mostrar todas las descripciones" : "No mostrar descripciones"}
+                      {descriptionsEnabled ? "Descripciones activadas por plato" : "No mostrar descripciones"}
                     </div>
                   </div>
                   <Switch
-                    checked={anyDescriptionEnabled}
-                    onCheckedChange={(enabled) => setSectionDescriptionsEnabled(sec.clientId, enabled)}
-                    aria-label={anyDescriptionEnabled ? "No mostrar descripciones" : "Mostrar todas las descripciones"}
+                    checked={descriptionsEnabled}
+                    onCheckedChange={(enabled) => {
+                      setDescriptionsArmed(enabled);
+                      setSectionDescriptionsEnabled(sec.clientId, enabled);
+                    }}
+                    aria-label={descriptionsEnabled ? "No mostrar descripciones" : "Permitir descripciones"}
                     data-testid={`menu-section-editor-settings-description-switch-${sec.clientId}`}
                     data-coordination-id="menu-section-description-enabled-v1"
                   />

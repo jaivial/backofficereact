@@ -1223,19 +1223,24 @@ export function useMenuEditor(): UseMenuEditorReturn {
     }));
   }, []);
 
-  // Coordination id: menu-section-description-enabled-v1. Switching the section off
-  // cascades to every dish of that section and clears the description text, exactly as
-  // the per-dish switch does, so both entry points leave the same state behind.
+  // Coordination id: menu-section-description-enabled-v1. The section switch is
+  // asymmetric on purpose. Switching it OFF cascades to every dish and clears the
+  // description text, exactly as the per-dish switch does. Switching it ON only
+  // enables the capability: it never turns dish descriptions on, so a dish that was
+  // left off stays off and the operator opts each dish in from the per-dish switch.
+  // Because the switch reads as on whenever a single dish description is on, enabling
+  // one dish flips it back with no extra state to keep in sync.
   const setSectionDescriptionsEnabled = useCallback((sectionClientId: string, enabled: boolean) => {
+    if (enabled) return;
     setSections((prev) => {
       let changed = false;
       const next = prev.map((sec) => {
         if (sec.clientId !== sectionClientId) return sec;
         let sectionChanged = false;
         const dishes = sec.dishes.map((dish) => {
-          if (dish.description_enabled === enabled) return dish;
+          if (!dish.description_enabled) return dish;
           sectionChanged = true;
-          return { ...dish, description_enabled: enabled, description: enabled ? dish.description : "" };
+          return { ...dish, description_enabled: false, description: "" };
         });
         if (!sectionChanged) return sec;
         changed = true;
