@@ -350,9 +350,11 @@
   visibility: hidden;
   pointer-events: none;
   /* Matches .bo-selectBtn padding and gap plus the chevron box, so the
-     reserved width covers the whole trigger and not just its text. */
+     reserved width covers the whole trigger and not just its text. The extra
+     inline-end room keeps the longest option clear of the chevron instead of
+     ending flush against it. */
   padding: 0 10px 0 12px;
-  margin-inline-end: 26px;
+  margin-inline-end: 50px;
 }
 
 .bo-selectWidestSizerItem {

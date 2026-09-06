@@ -151,7 +151,10 @@ export function Select({
     const desiredHeight = maxHeight;
     const opensUp = spaceBelow < desiredHeight && spaceAbove > spaceBelow;
 
-    const width = Math.min(Math.max(rect.width, minWidth), Math.max(160, window.innerWidth - 16));
+    // The list is never narrower than the trigger it drops from; the viewport
+    // cap only applies when the trigger itself already fits on screen.
+    const desiredWidth = Math.max(rect.width, minWidth);
+    const width = Math.min(desiredWidth, Math.max(rect.width, 160, window.innerWidth - 16));
     const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - width - 8));
     setListPosition({
       top: opensUp ? rect.top - desiredHeight - 6 : rect.bottom + 6,
