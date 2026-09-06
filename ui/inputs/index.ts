@@ -8,5 +8,6 @@ export { ImageDropInput } from "./ImageDropInput";
 export { PhoneInput } from "./PhoneInput";
 export { Select } from "./Select";
 export { Slider } from "./Slider";
+export { SwitchField } from "./SwitchField";
 export { SpinWheel } from "./SpinWheel";
 export { TimePicker } from "./TimePicker";
