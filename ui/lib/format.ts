@@ -74,6 +74,55 @@ export function formatArrozShort(typesRaw: string | null, servingsRaw: string | 
   return parts.join(", ");
 }
 
+// Splits "a|b" at the first top-level pipe (outside brackets/strings), or null.
+function splitTopLevelPipe(s: string): [string, string] | null {
+  let depth = 0;
+  let inStr = false;
+  let esc = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === "\\") esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') inStr = true;
+    else if (c === "[") depth++;
+    else if (c === "]") depth = Math.max(0, depth - 1);
+    else if (c === "|" && depth === 0) return [s.slice(0, i), s.slice(i + 1)];
+  }
+  return null;
+}
+
+function isStoredNil(v: string): boolean {
+  const t = v.trim();
+  return !t || t.toLowerCase() === "null" || t === "<nil>";
+}
+
+// Coordination id: modificadas-value-format.
+// Formats booking_modifications old/new values for the Modificadas tab.
+// Arroz changes are stored as `typesJSON|servingsJSON` and are rendered with
+// the same "type x N" convention as formatArrozShort; a fully empty pair shows
+// as "Sin arroz". Any other value passes through untouched.
+export function formatModificationValue(raw: string | null | undefined): string {
+  const s = String(raw ?? "").trim();
+  if (!s) return "";
+  const pair = splitTopLevelPipe(s);
+  if (!pair) return s;
+  const [leftRaw, rightRaw] = pair.map((p) => p.trim());
+  const isJsonSide = (v: string) => isStoredNil(v) || v.startsWith("[");
+  if (!isJsonSide(leftRaw) || !isJsonSide(rightRaw)) return s;
+  const names = isStoredNil(leftRaw) ? [] : parseJSONArrayOrScalarString(leftRaw);
+  const servs = isStoredNil(rightRaw) ? [] : parseJSONArrayOrScalarInt(rightRaw);
+  if (!names.length && !servs.length) return "Sin arroz";
+  const parts: string[] = [];
+  const n = Math.min(names.length, servs.length);
+  for (let i = 0; i < n; i++) parts.push(`${names[i]} x ${servs[i]}`);
+  for (let i = n; i < names.length; i++) parts.push(names[i]);
+  return parts.join(", ");
+}
+
 function onlyDigits(s: string): string {
   return String(s || "").replace(/[^0-9]/g, "");
 }
