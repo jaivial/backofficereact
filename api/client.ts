@@ -2160,6 +2160,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async sendCampaign(id: number): Promise<APISuccess<{ queued: number; coord_id: string }> | APIError> {
         return json(`/api/admin/campanas/${id}/send`, { method: "POST" });
       },
+      async campaignRecipients(id: number, status?: "sent" | "failed" | "pending"): Promise<APISuccess<{ recipients: import("./types").CampaignRecipient[] }> | APIError> {
+        return json(`/api/admin/campanas/${id}/recipients${status ? `?status=${status}` : ""}`, { method: "GET" });
+      },
       async campaignStatus(id: number): Promise<APISuccess<{ status: string; stats: import("./types").CampaignStats }> | APIError> {
         return json(`/api/admin/campanas/${id}/status`, { method: "GET" });
       },

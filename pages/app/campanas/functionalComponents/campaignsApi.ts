@@ -18,7 +18,25 @@ export function createCampaignsAPI() {
     test: config.testCampaign.bind(config),
     send: config.sendCampaign.bind(config),
     status: config.campaignStatus.bind(config),
+    recipients: config.campaignRecipients.bind(config),
   };
+}
+
+export const CAMPAIGN_RATE_LIMITS = {
+  email: { min: 1, max: 600, fallback: 60 },
+  whatsapp: { min: 1, max: 120, fallback: 12 },
+} as const;
+
+/** Derives the hour/day throughput an operator is choosing with a per-minute rate. */
+export function ratePlan(perMinute: number) {
+  const safe = Number.isFinite(perMinute) && perMinute > 0 ? perMinute : 1;
+  return { perMinute: safe, perHour: safe * 60, perDay: safe * 60 * 24 };
+}
+
+/** Estimated minutes to drain a queue of `count` messages at `perMinute`. */
+export function estimatedMinutes(count: number, perMinute: number): number {
+  const plan = ratePlan(perMinute);
+  return Math.ceil(count / plan.perMinute);
 }
 
 export const DEFAULT_CAMPAIGN_THEME: CampaignTheme = {
@@ -46,6 +64,8 @@ export function campaignToInput(campaign: Campaign): CampaignInput {
     audience: campaign.audience ?? "bookings",
     audience_days: campaign.audience_days || 365,
     manual_recipients: campaign.manual_recipients ?? [],
+    email_per_minute: campaign.email_per_minute || 60,
+    whatsapp_per_minute: campaign.whatsapp_per_minute || 12,
   };
 }
 
@@ -59,6 +79,8 @@ export function emptyCampaignInput(): CampaignInput {
     audience: "bookings",
     audience_days: 365,
     manual_recipients: [],
+    email_per_minute: 60,
+    whatsapp_per_minute: 12,
   };
 }
 
