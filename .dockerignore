@@ -10,3 +10,4 @@ backup
 tmp
 test-results
 e2e/screenshots
+wt-*
