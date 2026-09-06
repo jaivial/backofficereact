@@ -24,6 +24,12 @@ type InlineCounterProps = {
   min?: number;
   /** Maximum allowed value (default: 10000) */
   max?: number;
+  /** Amount added or removed per button press (default: 1) */
+  step?: number;
+  /** Unique test id prefix; keeps data-testid unique when several counters share a page */
+  testId?: string;
+  /** Text rendered under the counter, e.g. a derived rate summary */
+  helperText?: React.ReactNode;
   /** Whether the counter is disabled */
   disabled?: boolean;
   /** Optional CSS class name for the field container */
@@ -40,6 +46,9 @@ export function InlineCounter({
   onChange,
   min = 0,
   max = 10000,
+  step = 1,
+  testId = "inline-counter",
+  helperText,
   disabled = false,
   className,
   decrementAriaLabel,
@@ -59,15 +68,15 @@ export function InlineCounter({
   // Stable handlers
   const handleDecrease = useCallback(() => {
     if (canDecrease && !disabled) {
-      onChange(Math.max(min, safeValue - 1));
+      onChange(Math.max(min, safeValue - step));
     }
-  }, [canDecrease, disabled, min, safeValue, onChange]);
+  }, [canDecrease, disabled, min, safeValue, step, onChange]);
 
   const handleIncrease = useCallback(() => {
     if (canIncrease && !disabled) {
-      onChange(Math.min(max, safeValue + 1));
+      onChange(Math.min(max, safeValue + step));
     }
-  }, [canIncrease, disabled, max, safeValue, onChange]);
+  }, [canIncrease, disabled, max, safeValue, step, onChange]);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,6 +93,7 @@ export function InlineCounter({
     <div
       className={cn("bo-field", "bo-field--counter", className)}
       data-ui="inline-counter"
+      data-testid={testId}
     >
       <div className="bo-label" data-slot="inlineCounter-label">{label}</div>
       <div className="bo-counter" data-slot="inlineCounter-counter">
@@ -94,7 +104,7 @@ export function InlineCounter({
           disabled={disabled || !canDecrease}
           aria-label={decrementAriaLabel || `Disminuir ${label}`}
           data-action="decrease"
-          data-testid="inline-counter-minus"
+          data-testid={`${testId}-minus`}
         >
           <Minus size={16} strokeWidth={2} />
         </button>
@@ -107,6 +117,7 @@ export function InlineCounter({
           disabled={disabled}
           aria-label={label}
           data-slot="value"
+          data-testid={`${testId}-value`}
         />
         <button
           type="button"
@@ -115,11 +126,16 @@ export function InlineCounter({
           disabled={disabled || !canIncrease}
           aria-label={incrementAriaLabel || `Aumentar ${label}`}
           data-action="increase"
-          data-testid="inline-counter-plus"
+          data-testid={`${testId}-plus`}
         >
           <Plus size={16} strokeWidth={2} />
         </button>
       </div>
+      {helperText ? (
+        <div className="bo-mutedText" style={{ marginTop: 6, fontSize: 12 }} data-slot="inlineCounter-helper" data-testid={`${testId}-helper`}>
+          {helperText}
+        </div>
+      ) : null}
     </div>
   );
 }
