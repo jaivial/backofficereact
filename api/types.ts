@@ -2431,6 +2431,38 @@ export type RestaurantAd = {
 };
 export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas" | "starts_at" | "ends_at">;
 
+// Campanas: one markdown body broadcast to email + WhatsApp (coord id camp-*).
+export type CampaignChannel = "email" | "whatsapp";
+export type CampaignTheme = {
+  background: string;
+  surface: string;
+  text: string;
+  accent: string;
+  fontFamily: string;
+  maxWidth: number;
+  align: "left" | "center" | "right";
+};
+export type CampaignStats = { total: number; sent: number; failed: number; pending: number };
+export type Campaign = {
+  id: number;
+  coord_id: string;
+  name: string;
+  subject: string;
+  body_markdown: string;
+  theme: CampaignTheme;
+  channels: CampaignChannel[];
+  audience: "bookings" | "manual";
+  audience_days: number;
+  manual_recipients: string[];
+  status: "draft" | "sending" | "sent";
+  sent_at?: string;
+  created_at?: string;
+  updated_at?: string;
+  stats: CampaignStats;
+};
+export type CampaignInput = Pick<Campaign, "name" | "subject" | "body_markdown" | "theme" | "channels" | "audience" | "audience_days" | "manual_recipients">;
+export type CampaignAudiencePreview = { total: number; emails: number; whatsapp: number; sample: { channel: CampaignChannel; target: string; name: string }[] };
+
 /**
  * Public page visibility toggles for one restaurant.
  * `postres_web_placement` decides whether the public site renders the postres
