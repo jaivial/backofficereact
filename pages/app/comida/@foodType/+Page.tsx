@@ -1,4 +1,5 @@
 import React, { useMemo, useRef } from "react";
+import { Settings2, UtensilsCrossed } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
@@ -220,11 +221,11 @@ function FoodTypePage() {
 
         {showSettingsTab ? (
           <>
-            <div className="bo-menuEditorTabs" data-testid="food-type-editor-tabs">
+            <div className="bo-foodTypeTabs" data-testid="food-type-editor-tabs">
               <Tabs
                 tabs={[
-                  { id: "platos", label: "Platos", href: "#" },
-                  { id: "configuracion", label: "Configuracion", href: "#" },
+                  { id: "platos", label: "Platos", href: "#", icon: <UtensilsCrossed size={16} strokeWidth={1.8} /> },
+                  { id: "configuracion", label: "Configuracion", href: "#", icon: <Settings2 size={16} strokeWidth={1.8} /> },
                 ]}
                 activeId={settingsTab}
                 ariaLabel="Secciones de la pagina de comida"
