@@ -36,7 +36,6 @@ import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 
 import { useMenuEditor } from "./hooks/useMenuEditor";
 import { MenuPreview } from "./functionalComponents/MenuPreview/MenuPreview";
-import { MenuSectionVisibilityPanel, type SectionVisibilityPatch } from "./functionalComponents/MenuSectionVisibilityPanel/MenuSectionVisibilityPanel";
 import { MenuPublishPanel } from "./functionalComponents/MenuPublishPanel/MenuPublishPanel";
 import { MenuSliderPanel, deriveSliderPreview } from "./functionalComponents/MenuSliderPanel/MenuSliderPanel";
 import type { SliderPreviewState } from "./functionalComponents/MenuSliderPanel/MenuSliderPanel";
@@ -288,19 +287,6 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     console.log("[checkpoint] section_delete_persisted", `section=${target?.id ?? "unsaved"}`);
     pushToast({ kind: "success", title: "Seccion eliminada" });
   }, [api, menuId, pendingSectionDelete, pushToast, removeSection, sections]);
-
-  // Coordination id: menu_section_public_placement_v1
-  const changeSectionVisibility = useCallback(async (sectionClientId: string, patch: SectionVisibilityPatch) => {
-    const target = sections.find((sec) => sec.clientId === sectionClientId);
-    if (!menuId || !target?.id) return;
-    const res = await api.menus.gruposV2.patchSectionVisibility(menuId, target.id, patch);
-    if (!("success" in res) || !res.success) {
-      pushToast({ kind: "error", title: "Error", message: "No se pudo guardar la visibilidad" });
-      return;
-    }
-    setSections((prev) => prev.map((sec) => (sec.clientId === sectionClientId ? { ...sec, ...patch } : sec)));
-    console.log("[checkpoint] section_visibility_persisted", `section=${target.id}`);
-  }, [api, menuId, pushToast, sections, setSections]);
 
   const [sliderPreview, setSliderPreview] = useState<SliderPreviewState>(() => deriveSliderPreview(initialSlider));
   const sliderPreviewMenuPayload = useMemo(
@@ -644,13 +630,6 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
           </motion.div>
 
           <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane bo-editorPane--config ${editorTab === "configuracion" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane-config">
-              {sections.filter((sec) => sec.id).map((sec) => (
-                <MenuSectionVisibilityPanel
-                  key={`visibility-${sec.clientId}`}
-                  section={sec}
-                  onChange={(patch) => changeSectionVisibility(sec.clientId, patch)}
-                />
-              ))}
               <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-menuEditorHead" data-testid="menu-crear-editor-panel">
                 <div className="bo-panelHead" data-slot="crear-panelHead">
                   <div data-slot="crear-div">
