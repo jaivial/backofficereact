@@ -173,9 +173,11 @@ export function Select({
       {fitWidestOption ? (
         // Reserves the width of the widest option so the trigger keeps a stable
         // size and the selected label is never wrapped or clipped.
-        <span className="bo-selectWidestSizer" aria-hidden="true" data-ui="select-widest-sizer">
+        <span className="bo-selectWidestSizer" aria-hidden="true" data-ui="select-widest-sizer"
+          data-testid={dataTestId ? `${dataTestId}-widest-sizer` : undefined}>
           {options.map((o) => (
-            <span key={o.value} className="bo-selectWidestSizerItem" data-ui="select-widest-sizer-item">
+            <span key={o.value} className="bo-selectWidestSizerItem" data-ui="select-widest-sizer-item"
+              data-testid={dataTestId ? `${dataTestId}-widest-sizer-${o.value}` : undefined}>
               {o.label}
             </span>
           ))}
