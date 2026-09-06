@@ -763,6 +763,13 @@ export type RestaurantIntegrations = {
   restaurantWhatsappNumbers: string[];
 };
 
+/** WhatsApp booking notification settings (coordination id: bkg-wa-notif). */
+export type BookingNotificationSettings = {
+  sendConfirmation: boolean;
+  sendReconfirmation: boolean;
+  reconfirmationDaysBefore: number;
+};
+
 export type RestaurantBranding = {
   brandName: string;
   logoUrl: string;

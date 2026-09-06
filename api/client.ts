@@ -4,6 +4,7 @@ import type {
   APISuccess,
   PageVisibility,
   Booking,
+  BookingNotificationSettings,
   CancelledBookingItem,
   ModifiedBookingItem,
   BOSession,
@@ -1054,6 +1055,17 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(integrations),
+        });
+      },
+      // Booking WhatsApp notifications — coordination id: bkg-wa-notif.
+      async getBookingNotifications(): Promise<APISuccess<{ settings: BookingNotificationSettings }> | APIError> {
+        return json("/api/admin/booking-notifications", { method: "GET" });
+      },
+      async setBookingNotifications(settings: BookingNotificationSettings): Promise<APISuccess<{ settings: BookingNotificationSettings }> | APIError> {
+        return json("/api/admin/booking-notifications", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(settings),
         });
       },
       async getBranding(): Promise<APISuccess<{ branding: RestaurantBranding }> | APIError> {
