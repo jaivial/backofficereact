@@ -428,6 +428,16 @@
   min-width: 210px;
 }
 
+.bo-table--reservas th.col-rice-cancelled,
+.bo-table--reservas td.col-rice-cancelled {
+  min-width: 260px;
+}
+
+.bo-table--reservas th.col-mod-value,
+.bo-table--reservas td.col-mod-value {
+  min-width: 320px;
+}
+
 .bo-table--reservas th.col-comment,
 .bo-table--reservas td.col-comment {
   min-width: 320px;
