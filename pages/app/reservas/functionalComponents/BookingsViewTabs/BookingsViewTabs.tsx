@@ -10,7 +10,7 @@ import type { TabItem } from "../../../../../ui/nav/Tabs";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { cn } from "../../../../../ui/shadcn/utils";
-import { formatHHMM } from "../../../../../ui/lib/format";
+import { formatHHMM, formatModificationValue } from "../../../../../ui/lib/format";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -54,8 +54,8 @@ const MODIFIED_COLS = [
   { key: "customer_name", label: "Cliente" },
   { key: "original_reservation_date", label: "Fecha original" },
   { key: "field_modified", label: "Campo", fmt: (v: string) => <FieldChip field={v} /> },
-  { key: "old_value", label: "Valor anterior" },
-  { key: "new_value", label: "Valor nuevo" },
+  { key: "old_value", label: "Valor anterior", fmt: (v: string) => formatModificationValue(v) },
+  { key: "new_value", label: "Valor nuevo", fmt: (v: string) => formatModificationValue(v) },
 ];
 
 function FieldChip({ field }: { field: string }) {
