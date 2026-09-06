@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, GripVertical, MessageSquareText, Plus, Search, Settings2, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Eye, EyeOff, GripVertical, MessageSquareText, Plus, Search, Settings2, Trash2 } from "lucide-react";
 import { AnimatePresence, motion, Reorder } from "motion/react";
 import type { EditorSection } from "../../types/menuEditor.types";
 import type { DishCatalogItem } from "../../../../../../api/types";
@@ -261,6 +261,7 @@ export function MenuSectionEditor({
               data-testid={`menu-section-editor-tab-active-${sec.clientId}`}
             >
               <span className="bo-sectionDishTabLabel" data-slot="menuSectionEditor-sectionDishTabLabel">Activos</span>
+              <span className="bo-sectionDishTabIcon" data-slot="menuSectionEditor-sectionDishTabIcon" data-testid={`menu-section-editor-tab-active-icon-${sec.clientId}`}><Eye size={14} /></span>
               <span className="bo-sectionDishTabCount" data-slot="menuSectionEditor-sectionDishTabCount">{activeDishCount}</span>
             </button>
             <button
@@ -276,6 +277,7 @@ export function MenuSectionEditor({
               data-testid={`menu-section-editor-tab-inactive-${sec.clientId}`}
             >
               <span className="bo-sectionDishTabLabel" data-slot="menuSectionEditor-sectionDishTabLabel">Inactivos</span>
+              <span className="bo-sectionDishTabIcon" data-slot="menuSectionEditor-sectionDishTabIcon" data-testid={`menu-section-editor-tab-inactive-icon-${sec.clientId}`}><EyeOff size={14} /></span>
               <span className="bo-sectionDishTabCount" data-slot="menuSectionEditor-sectionDishTabCount">{inactiveDishCount}</span>
             </button>
             <button
