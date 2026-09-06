@@ -11,7 +11,8 @@ import { ImageDropInput } from "../../../../../ui/inputs/ImageDropInput";
 import EmailProviderConfigInner from "../EmailProviderConfig/EmailProviderConfig";
 import { useEmailProviderConfig } from "../EmailProviderConfig/hooks/useEmailProviderConfig";
 import { useBranding } from "./hooks/useBranding";
-import { WhatsAppConnection } from "../WhatsAppConnection/WhatsAppConnection";
+import { WhatsAppConnection, type ConnState } from "../WhatsAppConnection/WhatsAppConnection";
+import { BookingNotifications } from "../BookingNotifications/BookingNotifications";
 
 function normalizeWebsiteInput(value: string): string {
   const trimmed = value.trim();
@@ -31,6 +32,9 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
   const [logoPreviewNonce, setLogoPreviewNonce] = useState(0);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const [logoError, setLogoError] = useState(false);
+  // Pairing state lifted from WhatsAppConnection so the notification panel can
+  // stay hidden until the bot is actually paired (coordination id: bkg-wa-notif).
+  const [whatsappState, setWhatsappState] = useState<ConnState>("loading");
   const [websiteCheck, setWebsiteCheck] = useState<"idle" | "loading" | "success" | "error">("idle");
   const websiteCheckRequest = useRef(0);
 
@@ -399,7 +403,9 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
           </div>
       </Panel>
 
-      <WhatsAppConnection />
+      <WhatsAppConnection onStateChange={setWhatsappState} />
+
+      <BookingNotifications connected={whatsappState === "connected"} />
 
       <Panel title="Información fiscal" meta="Datos para facturación" bodyClassName="bo-stack" data-ui="config-contacto-fiscal-panel" data-slot="config-contacto-fiscal-panel">
           <div className="bo-field" data-ui="config-contacto-cif-field" data-slot="config-contacto-cif-field">

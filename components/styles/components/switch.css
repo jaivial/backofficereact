@@ -81,3 +81,16 @@
   pointer-events: none;
 }
 
+
+/* Labelled switch row used by ui/inputs/SwitchField. */
+.bo-switchRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.bo-switchRow .bo-label {
+  margin: 0;
+  cursor: pointer;
+}
