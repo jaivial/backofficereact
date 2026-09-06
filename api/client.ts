@@ -2128,6 +2128,44 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async uploadAdImage(id: number, file: File): Promise<APISuccess<{ url: string }> | APIError> { const form = new FormData(); form.append("image", file, file.name || "ad.webp"); return json(`/api/admin/config/ads/${id}/image/upload`, { method: "POST", body: form }); },
       async enhanceAdImage(id: number, file: File): Promise<APISuccess<{ url: string }> | APIError> { const form = new FormData(); form.append("image", file, file.name || "ad.webp"); return json(`/api/admin/config/ads/${id}/image/enhance`, { method: "POST", body: form }); },
       async generateAdImage(id: number): Promise<APISuccess<{ url: string }> | APIError> { return json(`/api/admin/config/ads/${id}/image/generate`, { method: "POST" }); },
+      async listCampaigns(): Promise<APISuccess<{ campaigns: import("./types").Campaign[] }> | APIError> {
+        return json("/api/admin/campanas", { method: "GET" });
+      },
+      async getCampaign(id: number): Promise<APISuccess<{ campaign: import("./types").Campaign }> | APIError> {
+        return json(`/api/admin/campanas/${id}`, { method: "GET" });
+      },
+      async createCampaign(input: import("./types").CampaignInput): Promise<APISuccess<{ campaign: import("./types").Campaign }> | APIError> {
+        return json("/api/admin/campanas", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      async updateCampaign(id: number, input: import("./types").CampaignInput): Promise<APISuccess<{ campaign: import("./types").Campaign }> | APIError> {
+        return json(`/api/admin/campanas/${id}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      async deleteCampaign(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/campanas/${id}`, { method: "DELETE" });
+      },
+      async previewCampaign(input: import("./types").CampaignInput): Promise<APISuccess<{ html: string; whatsapp: string }> | APIError> {
+        return json("/api/admin/campanas/preview", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      async uploadCampaignImage(id: number, file: File): Promise<APISuccess<{ url: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "campana.webp");
+        return json(`/api/admin/campanas/${id}/image`, { method: "POST", body: form });
+      },
+      async campaignAudience(id: number): Promise<APISuccess<import("./types").CampaignAudiencePreview> | APIError> {
+        return json(`/api/admin/campanas/${id}/audience`, { method: "GET" });
+      },
+      async testCampaign(id: number, channel: import("./types").CampaignChannel, target: string): Promise<APISuccess | APIError> {
+        return json(`/api/admin/campanas/${id}/test`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ channel, target }) });
+      },
+      async sendCampaign(id: number): Promise<APISuccess<{ queued: number; coord_id: string }> | APIError> {
+        return json(`/api/admin/campanas/${id}/send`, { method: "POST" });
+      },
+      async campaignRecipients(id: number, status?: "sent" | "failed" | "pending"): Promise<APISuccess<{ recipients: import("./types").CampaignRecipient[] }> | APIError> {
+        return json(`/api/admin/campanas/${id}/recipients${status ? `?status=${status}` : ""}`, { method: "GET" });
+      },
+      async campaignStatus(id: number): Promise<APISuccess<{ status: string; stats: import("./types").CampaignStats }> | APIError> {
+        return json(`/api/admin/campanas/${id}/status`, { method: "GET" });
+      },
       async checkRestaurantWebsite(website: string): Promise<APISuccess<{ website: string }> | APIError> {
         return json("/api/admin/config/check-website", {
           method: "POST",

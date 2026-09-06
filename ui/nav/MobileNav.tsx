@@ -9,6 +9,7 @@ import {
   Boxes,
   MonitorSmartphone,
   BarChart3,
+  Megaphone,
   type LucideIcon,
 } from "lucide-react";
 import { sessionAtom } from "../../state/atoms";
@@ -32,6 +33,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   stock: Boxes,
   pos: MonitorSmartphone,
   estadisticas: BarChart3,
+  campanas: Megaphone,
 };
 
 function iconForSection(key: string, size = 22, strokeWidth = 1.8): React.ReactNode {
@@ -46,6 +48,7 @@ const MOBILE_NAV_ITEMS: NavItem[] = [
   { key: "stock", label: "Stock", href: "/app/stock", icon: Boxes },
   { key: "pos", label: "TPV", href: "/app/pos", icon: MonitorSmartphone },
   { key: "estadisticas", label: "Estadisticas", href: "/app/estadisticas", icon: BarChart3 },
+  { key: "campanas", label: "Campanas", href: "/app/campanas", icon: Megaphone },
 ];
 
 function isActive(pathname: string, href: string): boolean {
