@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "../../../../../api/client";
 import type { FoodCategory, FoodItem, PageVisibility, Vino } from "../../../../../api/types";
 import type { ActiveFilter, ListItem, SuplementoFilter } from "../types";
-import type { FoodType } from "../../_components/foodTypes";
+import { FOOD_TYPE_VISIBILITY_KEYS } from "../../_components/foodTypes";
+import type { FoodTypeWithPublicPage } from "../../_components/foodTypes";
 import { normalizePostres, buildDeleteApiCall, buildToggleApiCall, buildTargetApi } from "../helpers";
 import { useComidaAIUnified, type ComidaAIWSMessage } from "../../_components/hooks/useComidaAIUnified";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
@@ -40,15 +41,18 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
 
   const foodType = data.foodType;
 
-  // Page visibility state (only for cafes/bebidas)
+  // Page visibility state, for every food type that owns a public page.
   const [pageActive, setPageActive] = useState(true);
   const [webPlacement, setWebPlacement] = useState("inside_menus");
   const [pageVisibilityLoading, setPageVisibilityLoading] = useState(false);
-  const showPageVisibilityToggle = foodType === "cafes" || foodType === "bebidas" || foodType === "postres";
-  // Only postres owns a public placement setting, so it is the only food type
-  // that needs a dedicated "Configuracion" tab next to its dish list.
-  // Coordination id: postres_page_visibility_v1
-  const showSettingsTab = foodType === "postres";
+  // Each public food-type page maps to the pair of API keys that store its
+  // toggle and its placement, so one code path serves every type.
+  // Coordination id: foodtype_page_visibility_v1
+  const visibilityKeys = FOOD_TYPE_VISIBILITY_KEYS[foodType as FoodTypeWithPublicPage];
+  const showPageVisibilityToggle = Boolean(visibilityKeys);
+  // Every food type with a public page owns a placement setting, so each one
+  // gets a dedicated "Configuracion" tab next to its item list.
+  const showSettingsTab = Boolean(visibilityKeys);
   const [settingsTab, setSettingsTab] = useState<"platos" | "configuracion">("platos");
 
   // Local UI toggle: show/hide the dish card image media block on the list page.
@@ -88,25 +92,33 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
 
   useComidaAIUnified({ scope: "list", onEvent: handleAIWSEvent });
 
+  // Reads this food type's pair of visibility fields off any API response that
+  // carries them, so load and save share one mapping.
+  // Coordination id: foodtype_page_visibility_v1
+  const applyVisibility = useCallback((res: Partial<PageVisibility>) => {
+    if (!visibilityKeys) return;
+    const active = Boolean(res[visibilityKeys.active]);
+    const placement = String(res[visibilityKeys.placement] || "inside_menus");
+    setPageActive(active);
+    setWebPlacement(placement);
+    console.log("[checkpoint] food_page_visibility_applied", `type=${foodType}`,
+      `active=${active}`, `placement=${placement}`);
+  }, [foodType, visibilityKeys]);
+
   useEffect(() => {
     if (!showPageVisibilityToggle) return;
     const load = async () => {
       try {
         const res = await api.settings.getPageVisibility();
-        if (res.success) {
-          setPageActive(Boolean(
-            foodType === "cafes" ? res.cafe_page_active
-              : foodType === "postres" ? res.postres_page_active
-                : res.bebidas_page_active,
-          ));
-          setWebPlacement(res.postres_web_placement || "inside_menus");
+        if (res.success && visibilityKeys) {
+          applyVisibility(res);
         }
       } catch {
         // ignore
       }
     };
     void load();
-  }, [api.settings, foodType, showPageVisibilityToggle]);
+  }, [api.settings, applyVisibility, showPageVisibilityToggle, visibilityKeys]);
 
   // Single writer for every page visibility setting, so the toggle and the
   // placement dropdown share one request path and one loading flag.
@@ -117,36 +129,36 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     setPageVisibilityLoading(true);
     try {
       const res = await api.settings.setPageVisibility(patch);
-      if (res.success) {
-        setPageActive(Boolean(
-          foodType === "cafes" ? res.cafe_page_active
-            : foodType === "postres" ? res.postres_page_active
-              : res.bebidas_page_active,
-        ));
-        setWebPlacement(res.postres_web_placement || "inside_menus");
+      if (res.success && visibilityKeys) {
+        applyVisibility(res);
+        console.log("[checkpoint] food_page_visibility_saved", `type=${foodType}`,
+          `patch=${JSON.stringify(patch)}`);
         pushToast({ kind: "success", title: successTitle });
       } else {
-        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar" });
+        pushToast({ kind: "error", title: "Error", message: "No se pudo actualizar" });
       }
     } catch {
       pushToast({ kind: "error", title: "Error", message: "No se pudo actualizar la visibilidad" });
     } finally {
       setPageVisibilityLoading(false);
     }
-  }, [api.settings, foodType, pushToast]);
+  }, [api.settings, applyVisibility, foodType, pushToast, visibilityKeys]);
 
   const togglePageActive = useCallback(async (checked: boolean) => {
-    const patch: Partial<PageVisibility> = foodType === "cafes"
-      ? { cafe_page_active: checked }
-      : foodType === "postres"
-        ? { postres_page_active: checked }
-        : { bebidas_page_active: checked };
-    await savePageVisibility(patch, checked ? "Pagina activada" : "Pagina desactivada");
-  }, [foodType, savePageVisibility]);
+    if (!visibilityKeys) return;
+    await savePageVisibility(
+      { [visibilityKeys.active]: checked } as Partial<PageVisibility>,
+      checked ? "Pagina activada" : "Pagina desactivada",
+    );
+  }, [savePageVisibility, visibilityKeys]);
 
   const changeWebPlacement = useCallback(async (value: string) => {
-    await savePageVisibility({ postres_web_placement: value }, "Posicionamiento actualizado");
-  }, [savePageVisibility]);
+    if (!visibilityKeys) return;
+    await savePageVisibility(
+      { [visibilityKeys.placement]: value } as Partial<PageVisibility>,
+      "Posicionamiento actualizado",
+    );
+  }, [savePageVisibility, visibilityKeys]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / pageSize)), [pageSize, total]);
   const showPagerBtns = totalPages > 1;
