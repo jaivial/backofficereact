@@ -13,7 +13,7 @@ const CAPABILITY_MIN_VERSION: Record<AppCapability, AppVersion> = {
   estadisticas: "0.2",
   plataforma: "0.2",
   ads: "0.2",
-  campanas: "0.2",
+  campanas: "0.0.1",
 };
 
 const SECTION_CAPABILITY: Partial<Record<BOSection, AppCapability>> = {

@@ -73,7 +73,7 @@ export function hasRoleSectionAccess(
 ): boolean {
   if (!sectionAllowedByImportance(section, roleImportanceRaw)) return false;
   const role = normalizeRole(roleRaw);
-  if ((role === "root" || role === "admin") && (section === "stock" || section === "pos" || section === "estadisticas")) return true;
+  if ((role === "root" || role === "admin") && (section === "stock" || section === "pos" || section === "estadisticas" || section === "campanas")) return true;
   const explicit = normalizeSectionAccess(sectionAccessRaw);
   if (explicit.length > 0) return explicit.includes(section);
   return (ROLE_SECTION_ACCESS[role] ?? []).includes(section);
