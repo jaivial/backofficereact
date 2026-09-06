@@ -10,7 +10,7 @@ import type { TabItem } from "../../../../../ui/nav/Tabs";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { cn } from "../../../../../ui/shadcn/utils";
-import { formatHHMM, formatModificationValue } from "../../../../../ui/lib/format";
+import { formatArrozShort, formatHHMM, formatModificationValue } from "../../../../../ui/lib/format";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ const CANCELLED_COLS = [
   { key: "party_size", label: "Pax" },
   { key: "reservation_time", label: "Hora", fmt: (v: string) => formatHHMM(v) },
   { key: "contact_phone", label: "Teléfono" },
-  { key: "arroz_type", label: "Arroz" },
+  { key: "arroz_type", label: "Arroz", cls: "col-rice-cancelled", fmtRow: (row: any) => formatArrozShort(row.arroz_type, row.arroz_servings) },
   { key: "babyStrollers", label: "Carros" },
   { key: "highChairs", label: "Tronas" },
 ];
@@ -54,8 +54,8 @@ const MODIFIED_COLS = [
   { key: "customer_name", label: "Cliente" },
   { key: "original_reservation_date", label: "Fecha original" },
   { key: "field_modified", label: "Campo", fmt: (v: string) => <FieldChip field={v} /> },
-  { key: "old_value", label: "Valor anterior", fmt: (v: string) => formatModificationValue(v) },
-  { key: "new_value", label: "Valor nuevo", fmt: (v: string) => formatModificationValue(v) },
+  { key: "old_value", label: "Valor anterior", cls: "col-mod-value", fmt: (v: string) => formatModificationValue(v) },
+  { key: "new_value", label: "Valor nuevo", cls: "col-mod-value", fmt: (v: string) => formatModificationValue(v) },
 ];
 
 function FieldChip({ field }: { field: string }) {
@@ -139,12 +139,30 @@ function anyToString(v: any): string {
   return String(v);
 }
 
+// Observation point: `reservas.tabs.cell.render` - single cell renderer shared by
+// the cancelled and modified tables. `fmtRow` receives the whole row so columns
+// whose display value depends on sibling fields (rice type + servings) can be
+// parsed instead of dumped raw.
+type TableColumn = {
+  key: string;
+  label: string;
+  cls?: string;
+  fmt?: (v: any) => React.ReactNode;
+  fmtRow?: (row: any) => React.ReactNode;
+};
+
+function renderCell(c: TableColumn, row: any): React.ReactNode {
+  if (c.fmtRow) return c.fmtRow(row);
+  if (c.fmt) return c.fmt(row[c.key]);
+  return anyToString(row[c.key]);
+}
+
 // ─── Sub-table (reused for each group) ───────────────────────────────────────
 
 function TableGroup({ label, items, cols, date, onNavigateDate, onReactivate, groupKey, busy }: {
   label: string;
   items: any[];
-  cols: { key: string; label: string; fmt?: (v: any) => React.ReactNode }[];
+  cols: TableColumn[];
   date: string;
   onNavigateDate?: (d: string) => void;
   onReactivate?: (id: number) => void;
@@ -163,7 +181,7 @@ function TableGroup({ label, items, cols, date, onNavigateDate, onReactivate, gr
           <thead data-slot="tab-thead">
             <tr data-slot="tab-tr">
               {cols.map((c) => (
-                <th key={c.key} data-slot={`tab-th-${c.key}`}>{c.label}</th>
+                <th key={c.key} className={c.cls} data-slot={`tab-th-${c.key}`} data-testid={`reservas-tab-th-${groupKey}-${c.key}`}>{c.label}</th>
               ))}
               {onReactivate && <th className="end" data-slot="tab-th-actions">Acción</th>}
             </tr>
@@ -172,8 +190,8 @@ function TableGroup({ label, items, cols, date, onNavigateDate, onReactivate, gr
             {items.map((row: any, i: number) => (
               <tr key={row.id || i} data-slot="tab-row">
                 {cols.map((c) => (
-                  <td key={c.key} data-slot={`tab-td-${c.key}`}>
-                    {c.fmt ? c.fmt(row[c.key]) : anyToString(row[c.key])}
+                  <td key={c.key} className={c.cls} data-slot={`tab-td-${c.key}`} data-testid={`reservas-tab-td-${groupKey}-${c.key}-${row.id || i}`}>
+                    {renderCell(c, row)}
                     {c.key === "new_value" && row.field_modified === "date" && onNavigateDate && (
                       <button
                         type="button"
