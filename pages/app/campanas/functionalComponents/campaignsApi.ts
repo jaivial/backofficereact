@@ -13,6 +13,7 @@ export function createCampaignsAPI() {
     update: config.updateCampaign.bind(config),
     remove: config.deleteCampaign.bind(config),
     preview: config.previewCampaign.bind(config),
+    template: config.campaignTemplate.bind(config),
     uploadImage: config.uploadCampaignImage.bind(config),
     audience: config.campaignAudience.bind(config),
     test: config.testCampaign.bind(config),
@@ -39,15 +40,39 @@ export function estimatedMinutes(count: number, perMinute: number): number {
   return Math.ceil(count / plan.perMinute);
 }
 
+// Mirrors the transactional email template of the reference restaurant so the
+// preview starts on the look customers already receive.
 export const DEFAULT_CAMPAIGN_THEME: CampaignTheme = {
-  background: "#f5f5f4",
+  background: "#f4f4f4",
   surface: "#ffffff",
-  text: "#1c1917",
-  accent: "#b45309",
-  fontFamily: "Helvetica, Arial, sans-serif",
+  text: "#333333",
+  accent: "#097969",
+  fontFamily: "Arial, Helvetica, sans-serif",
   maxWidth: 600,
   align: "left",
 };
+
+/** Client-side twin of the backend WhatsApp renderer, used for live preview. */
+export function toWhatsAppText(markdown: string): string {
+  return markdown
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((raw) => {
+      let line = raw.trim();
+      if (line === "---") return "———";
+      line = line.replace(/!\[[^\]]*\]\(([^)\s]+)\)/g, "$1");
+      line = line.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, "$1: $2");
+      line = line.replace(/^>\s/, "");
+      line = line.replace(/^#{1,3}\s+(.*)$/, "*$1*");
+      line = line.replace(/^\*\s/, "- ");
+      line = line.replace(/\*\*([^*]+)\*\*/g, "*$1*");
+      line = line.replace(/(^|[^*])\*([^*]+)\*/g, "$1_$2_");
+      return line.replace(/`([^`]+)`/g, "```$1```");
+    })
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 
 export const CAMPAIGN_CHANNELS: { key: CampaignChannel; label: string }[] = [
   { key: "email", label: "Email" },
