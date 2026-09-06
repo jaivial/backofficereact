@@ -2430,9 +2430,14 @@ export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content"
  * section inside the menus accordion or as its own navigation item.
  * Coordination id: postres_page_visibility_v1
  */
+// Coordination id: foodtype_page_visibility_v1
 export type PageVisibility = {
   cafe_page_active: boolean;
   bebidas_page_active: boolean;
   postres_page_active: boolean;
+  vinos_page_active: boolean;
   postres_web_placement: string;
+  cafes_web_placement: string;
+  vinos_web_placement: string;
+  bebidas_web_placement: string;
 };
