@@ -8,6 +8,7 @@ import { Panel } from "../../../../ui/shell/Panel";
 import { MarkdownEditor } from "../../../../ui/inputs/MarkdownEditor";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_RATE_LIMITS, createCampaignsAPI, emptyCampaignInput, estimatedMinutes, ratePlan } from "./campaignsApi";
+import { CampaignPreview } from "./CampaignPreview";
 
 const LIST_HREF = "/app/campanas";
 
@@ -17,14 +18,12 @@ type CampaignEditorProps = {
   initialCampaign?: Campaign | null;
 };
 
-type Preview = { html: string; whatsapp: string };
-
 export function CampaignEditor({ mode, campaignId, initialCampaign = null }: CampaignEditorProps) {
   const api = useMemo(() => createCampaignsAPI(), []);
   const { pushToast } = useToasts();
   const [form, setForm] = useState<CampaignInput>(initialCampaign ? campaignToInput(initialCampaign) : emptyCampaignInput());
   const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign);
-  const [preview, setPreview] = useState<Preview>({ html: "", whatsapp: "" });
+  const [template, setTemplate] = useState<{ brandName: string; logoURL: string }>({ brandName: "", logoURL: "" });
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const [audience, setAudience] = useState<{ total: number; emails: number; whatsapp: number } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -45,14 +44,16 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     });
   }, []);
 
-  // Preview keeps both channel renderings in sync with the shared markdown.
+  // The default look is the reference restaurant's transactional email
+  // template; a brand new campaign adopts its theme, brand and logo.
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      const result = await api.preview(form);
-      if (result.success) setPreview({ html: result.html ?? "", whatsapp: result.whatsapp ?? "" });
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [api, form]);
+    void (async () => {
+      const result = await api.template();
+      if (!result.success) return;
+      setTemplate({ brandName: result.brand_name ?? "", logoURL: result.logo_url ?? "" });
+      if (mode === "create" && result.theme) setForm((prev) => ({ ...prev, theme: result.theme }));
+    })();
+  }, [api, mode]);
 
   const save = useCallback(async () => {
     setBusy(true);
@@ -316,16 +317,13 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         }
         data-testid="campaign-preview-panel"
       >
-        <div className="grid gap-4 md:grid-cols-2">
-          <iframe
-            title="Previsualizacion email"
-            srcDoc={preview.html}
-            className="w-full rounded-xl border"
-            style={{ height: 420, maxWidth: device === "mobile" ? 380 : "100%" }}
-            data-testid="campaign-preview-email"
-          />
-          <pre className="whitespace-pre-wrap rounded-xl border p-3 text-sm" data-testid="campaign-preview-whatsapp">{preview.whatsapp}</pre>
-        </div>
+        <CampaignPreview
+          markdown={form.body_markdown}
+          theme={form.theme}
+          brandName={template.brandName || form.name}
+          logoURL={template.logoURL}
+          device={device}
+        />
       </Panel>
 
       <Panel title="Ritmo de envio" meta="Mensajes por minuto por canal" data-testid="campaign-rate-panel">
