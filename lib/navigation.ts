@@ -19,11 +19,13 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "horarios", href: "/app/horarios", label: "Horarios" },
   { key: "fichaje", href: "/app/fichaje", label: "Fichaje" },
   { key: "facturas", href: "/app/facturas", label: "Facturas" },
+  { key: "campanas", href: "/app/campanas", label: "Campanas" },
   { key: "estadisticas", href: "/app/estadisticas", label: "Estadisticas" },
   { key: "plataforma", href: "/app/plataforma", label: "Plataforma" },
 ];
 
 const SECTION_HOME: Record<BOSection, string> = {
+  campanas: "/app/campanas",
   reservas: "/app/reservas",
   menus: "/app/comida/menus",
   comida: "/app/comida",
@@ -63,6 +65,7 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (pathname.startsWith("/app/estadisticas")) return "estadisticas";
   if (pathname.startsWith("/app/estado-cuenta")) return "estado_cuenta";
   if (pathname.startsWith("/app/plataforma")) return "plataforma";
+  if (pathname.startsWith("/app/campanas")) return "campanas";
   return null;
 }
 
