@@ -20,6 +20,7 @@ export function Select({
   listMaxHeightPx,
   menuMinWidthPx,
   listClassName,
+  fitWidestOption,
   "data-testid": dataTestId,
 }: {
   value: string;
@@ -34,6 +35,8 @@ export function Select({
   listMaxHeightPx?: number;
   menuMinWidthPx?: number;
   listClassName?: string;
+  /** Sizes the trigger to the widest option so the label never wraps or truncates. */
+  fitWidestOption?: boolean;
   "data-testid"?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -161,7 +164,23 @@ export function Select({
   }, [listMaxHeightPx, maxHeight, minWidth, open, options, value]);
 
   return (
-    <div ref={wrapperRef} className="bo-selectWrapper" style={style} data-ui="select-wrapper">
+    <div
+      ref={wrapperRef}
+      className={cn("bo-selectWrapper", fitWidestOption && "bo-selectWrapper--fitWidest")}
+      style={style}
+      data-ui="select-wrapper"
+    >
+      {fitWidestOption ? (
+        // Reserves the width of the widest option so the trigger keeps a stable
+        // size and the selected label is never wrapped or clipped.
+        <span className="bo-selectWidestSizer" aria-hidden="true" data-ui="select-widest-sizer">
+          {options.map((o) => (
+            <span key={o.value} className="bo-selectWidestSizerItem" data-ui="select-widest-sizer-item">
+              {o.label}
+            </span>
+          ))}
+        </span>
+      ) : null}
       <button
         ref={btnRef}
         className={cn(btnClass, className)}

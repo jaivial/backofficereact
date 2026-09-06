@@ -1766,14 +1766,18 @@ body.is-navigating .bo-fadeout {
   white-space: normal;
 }
 
-/* Select applies its className to the trigger button, and the dropdown copies
-   the wrapper width, so both need to shrink to their content. */
+/* The select sizes itself to the widest placement option, so it only needs to
+   stay inside the card on narrow screens. The dropdown copies the wrapper
+   width, which gives both the same footprint. */
 .bo-foodPageVisibilityRow--stacked .bo-selectWrapper {
-  width: fit-content;
   max-width: 100%;
 }
 
-.bo-foodPageVisibilitySelect {
+/* The food-type page tabs sit above the list, so they need breathing room.
+   The shared Tabs component hides labels below 896px, which the icons cover.
+   Coordination id: postres_page_visibility_v1 */
+.bo-foodTypeTabs {
   width: fit-content;
   max-width: 100%;
+  margin-bottom: 18px;
 }
