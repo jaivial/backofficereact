@@ -76,7 +76,11 @@ function wsURL(): string {
   return url.toString();
 }
 
-export function WhatsAppConnection() {
+/**
+ * `onStateChange` lets sibling panels react to the pairing state without
+ * duplicating the connection polling. Optional, so existing usages are unchanged.
+ */
+export function WhatsAppConnection({ onStateChange }: { onStateChange?: (state: ConnState) => void } = {}) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const [state, setState] = useState<ConnState>("loading");
@@ -102,6 +106,10 @@ export function WhatsAppConnection() {
     },
     [],
   );
+
+  useEffect(() => {
+    onStateChange?.(state);
+  }, [onStateChange, state]);
 
   useEffect(() => {
     let alive = true;
