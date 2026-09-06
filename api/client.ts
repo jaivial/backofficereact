@@ -2143,8 +2143,19 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async deleteCampaign(id: number): Promise<APISuccess | APIError> {
         return json(`/api/admin/campanas/${id}`, { method: "DELETE" });
       },
-      async campaignTemplate(): Promise<APISuccess<{ theme: import("./types").CampaignTheme; brand_name: string; logo_url: string }> | APIError> {
-        return json("/api/admin/campanas/template", { method: "GET" });
+      async campaignTemplate(
+        theme?: Partial<import("./types").CampaignTheme>
+      ): Promise<APISuccess<{ theme: import("./types").CampaignTheme; brand_name: string; logo_url: string; shell: string; body_placeholder: string }> | APIError> {
+        const query = new URLSearchParams();
+        if (theme?.background) query.set("background", theme.background);
+        if (theme?.surface) query.set("surface", theme.surface);
+        if (theme?.text) query.set("text", theme.text);
+        if (theme?.accent) query.set("accent", theme.accent);
+        if (theme?.fontFamily) query.set("font_family", theme.fontFamily);
+        if (theme?.maxWidth) query.set("max_width", String(theme.maxWidth));
+        if (theme?.align) query.set("align", theme.align);
+        const suffix = query.toString() ? `?${query.toString()}` : "";
+        return json(`/api/admin/campanas/template${suffix}`, { method: "GET" });
       },
       async previewCampaign(input: import("./types").CampaignInput): Promise<APISuccess<{ html: string; whatsapp: string }> | APIError> {
         return json("/api/admin/campanas/preview", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });

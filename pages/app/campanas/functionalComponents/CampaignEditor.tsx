@@ -24,7 +24,8 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const { pushToast } = useToasts();
   const [form, setForm] = useState<CampaignInput>(initialCampaign ? campaignToInput(initialCampaign) : emptyCampaignInput());
   const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign);
-  const [template, setTemplate] = useState<{ brandName: string; logoURL: string }>({ brandName: "", logoURL: "" });
+  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string }>({ shell: "", bodyPlaceholder: "" });
+  const themeApplied = useRef(false);
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const [audience, setAudience] = useState<{ total: number; emails: number; whatsapp: number } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -45,16 +46,23 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     });
   }, []);
 
-  // The default look is the reference restaurant's transactional email
-  // template; a brand new campaign adopts its theme, brand and logo.
+  // The email shell always comes from the backend, which builds the same
+  // markup it sends. It is refetched only when the theme changes; typing stays
+  // fully local. A brand new campaign adopts the reference theme on first load.
+  const themeKey = JSON.stringify(form.theme);
   useEffect(() => {
-    void (async () => {
-      const result = await api.template();
+    const timer = setTimeout(async () => {
+      const result = await api.template(mode === "create" && !themeApplied.current ? undefined : form.theme);
       if (!result.success) return;
-      setTemplate({ brandName: result.brand_name ?? "", logoURL: result.logo_url ?? "" });
-      if (mode === "create" && result.theme) setForm((prev) => ({ ...prev, theme: result.theme }));
-    })();
-  }, [api, mode]);
+      setTemplate({ shell: result.shell ?? "", bodyPlaceholder: result.body_placeholder ?? "" });
+      if (mode === "create" && !themeApplied.current && result.theme) {
+        themeApplied.current = true;
+        setForm((prev) => ({ ...prev, theme: result.theme }));
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [api, mode, themeKey]);
 
   const save = useCallback(async () => {
     setBusy(true);
@@ -319,8 +327,8 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         <CampaignPreview
           markdown={form.body_markdown}
           theme={form.theme}
-          brandName={template.brandName || form.name}
-          logoURL={template.logoURL}
+          shell={template.shell}
+          bodyPlaceholder={template.bodyPlaceholder}
           device={device}
         />
       </Panel>
