@@ -151,10 +151,7 @@ export function Select({
     const desiredHeight = maxHeight;
     const opensUp = spaceBelow < desiredHeight && spaceAbove > spaceBelow;
 
-    // The list matches the trigger it drops from, widened to minWidth when the
-    // trigger is narrower, and finally clamped so it always fits on screen.
-    const desiredWidth = Math.max(rect.width, minWidth);
-    const width = Math.min(desiredWidth, Math.max(160, window.innerWidth - 16));
+    const width = Math.min(Math.max(rect.width, minWidth), Math.max(160, window.innerWidth - 16));
     const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - width - 8));
     setListPosition({
       top: opensUp ? rect.top - desiredHeight - 6 : rect.bottom + 6,
