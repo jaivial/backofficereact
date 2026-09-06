@@ -1,10 +1,10 @@
 export type BORole = string;
 
-export type BOSection = "reservas" | "menus" | "comida" | "stock" | "pos" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estadisticas" | "estado_cuenta" | "website" | "site-builder" | "plataforma";
+export type BOSection = "campanas" | "reservas" | "menus" | "comida" | "stock" | "pos" | "ajustes" | "miembros" | "fichaje" | "horarios" | "facturas" | "reportes" | "estadisticas" | "estado_cuenta" | "website" | "site-builder" | "plataforma";
 
 export const ROLE_SECTION_ACCESS: Record<string, BOSection[]> = {
-  root: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder", "plataforma"],
-  admin: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder"],
+  root: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder", "plataforma", "campanas"],
+  admin: ["reservas", "menus", "comida", "stock", "pos", "ajustes", "miembros", "horarios", "fichaje", "facturas", "reportes", "estadisticas", "estado_cuenta", "website", "site-builder", "campanas"],
   metre: ["reservas", "menus", "comida", "fichaje", "facturas"],
   jefe_cocina: ["reservas", "menus", "comida", "stock", "fichaje", "horarios"],
   arrocero: ["fichaje", "horarios"],
@@ -35,7 +35,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 function isSection(value: string): value is BOSection {
-  return value === "reservas" || value === "menus" || value === "comida" || value === "stock" || value === "pos" || value === "ajustes" || value === "website" || value === "site-builder" || value === "miembros" || value === "fichaje" || value === "horarios" || value === "facturas" || value === "reportes" || value === "estadisticas" || value === "estado_cuenta" || value === "plataforma";
+  return value === "campanas" || value === "reservas" || value === "menus" || value === "comida" || value === "stock" || value === "pos" || value === "ajustes" || value === "website" || value === "site-builder" || value === "miembros" || value === "fichaje" || value === "horarios" || value === "facturas" || value === "reportes" || value === "estadisticas" || value === "estado_cuenta" || value === "plataforma";
 }
 
 export function normalizeSectionAccess(sectionAccessRaw: string[] | null | undefined): BOSection[] {

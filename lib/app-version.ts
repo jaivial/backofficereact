@@ -4,7 +4,7 @@ import type { BOSection } from "./rbac";
 export const APP_VERSIONS = ["0.0.1", "0.1", "0.2"] as const;
 export type AppVersion = (typeof APP_VERSIONS)[number];
 
-export type AppCapability = "mobileNavOrder" | "stock" | "pos" | "estadisticas" | "plataforma" | "ads";
+export type AppCapability = "mobileNavOrder" | "stock" | "pos" | "estadisticas" | "plataforma" | "ads" | "campanas";
 
 const CAPABILITY_MIN_VERSION: Record<AppCapability, AppVersion> = {
   mobileNavOrder: "0.0.1",
@@ -13,6 +13,7 @@ const CAPABILITY_MIN_VERSION: Record<AppCapability, AppVersion> = {
   estadisticas: "0.2",
   plataforma: "0.2",
   ads: "0.2",
+  campanas: "0.2",
 };
 
 const SECTION_CAPABILITY: Partial<Record<BOSection, AppCapability>> = {
@@ -20,6 +21,7 @@ const SECTION_CAPABILITY: Partial<Record<BOSection, AppCapability>> = {
   pos: "pos",
   estadisticas: "estadisticas",
   plataforma: "plataforma",
+  campanas: "campanas",
 };
 
 export function isSupportedAppVersion(raw: unknown): raw is AppVersion {
