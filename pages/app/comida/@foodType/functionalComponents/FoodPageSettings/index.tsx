@@ -47,8 +47,7 @@ export function FoodPageSettings({
           disabled={busy || !pageActive}
           ariaLabel="Posicionamiento visibilidad en web"
           onChange={onChangeWebPlacement}
-          className="bo-foodPageVisibilitySelect"
-          menuMinWidthPx={0}
+          fitWidestOption
           data-testid="food-page-settings-placement-select"
         />
       </div>
