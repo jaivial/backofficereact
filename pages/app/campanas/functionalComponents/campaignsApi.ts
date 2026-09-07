@@ -23,10 +23,31 @@ export function createCampaignsAPI() {
   };
 }
 
+// Provider ceilings, identical to the backend clamp: 5 emails per minute is the
+// 300/hour Titan quota, 1 WhatsApp per minute is the only safe step above the
+// real 12/hour cap (the sender itself waits 300s between messages).
 export const CAMPAIGN_RATE_LIMITS = {
-  email: { min: 1, max: 600, fallback: 60 },
-  whatsapp: { min: 1, max: 120, fallback: 12 },
+  email: { min: 1, max: 5, fallback: 5 },
+  whatsapp: { min: 1, max: 1, fallback: 1 },
 } as const;
+
+/** Seconds each provider really waits between two sends (12s email, 300s WhatsApp). */
+export const CAMPAIGN_CHANNEL_PAUSE = { email: 12, whatsapp: 300 } as const;
+
+/** Quota copy so the operator sees the hard ceiling instead of discovering it. */
+export const CAMPAIGN_RATE_NOTES = {
+  email: "max 300 por hora (Titan) y 1000 por dia",
+  whatsapp: "max 12 por hora y 300 por dia",
+} as const;
+
+type RateLimits = { min: number; max: number; fallback: number };
+
+/** Brings a stored rate back inside the safe provider window (old campaigns can be higher). */
+export function clampRate(value: number | undefined, limits: RateLimits): number {
+  const rate = Math.trunc(Number(value ?? 0));
+  if (!Number.isFinite(rate) || rate < limits.min) return limits.fallback;
+  return Math.min(limits.max, rate);
+}
 
 /** Derives the hour/day throughput an operator is choosing with a per-minute rate. */
 export function ratePlan(perMinute: number) {
@@ -38,6 +59,19 @@ export function ratePlan(perMinute: number) {
 export function estimatedMinutes(count: number, perMinute: number): number {
   const plan = ratePlan(perMinute);
   return Math.ceil(count / plan.perMinute);
+}
+
+/**
+ * Human estimate to drain `count` messages honouring the provider spacing: the
+ * per-minute rate sets the floor, the provider pause can only make it slower
+ * (WhatsApp sends one every 5 min, so "1 por minuto" would be a lie).
+ */
+export function estimatedTime(count: number, perMinute: number, pauseSeconds: number): string {
+  const plan = ratePlan(perMinute);
+  const spacing = Math.max(60 / plan.perMinute, pauseSeconds);
+  const minutes = Math.ceil((Math.max(0, count) * spacing) / 60);
+  if (minutes < 60) return `${minutes} min`;
+  return `${Math.ceil(minutes / 60)} h`;
 }
 
 // Mirrors the transactional email template of the reference restaurant so the
@@ -89,8 +123,8 @@ export function campaignToInput(campaign: Campaign): CampaignInput {
     audience: campaign.audience ?? "bookings",
     audience_days: campaign.audience_days || 365,
     manual_recipients: campaign.manual_recipients ?? [],
-    email_per_minute: campaign.email_per_minute || 60,
-    whatsapp_per_minute: campaign.whatsapp_per_minute || 12,
+    email_per_minute: clampRate(campaign.email_per_minute, CAMPAIGN_RATE_LIMITS.email),
+    whatsapp_per_minute: clampRate(campaign.whatsapp_per_minute, CAMPAIGN_RATE_LIMITS.whatsapp),
   };
 }
 
@@ -104,8 +138,8 @@ export function emptyCampaignInput(): CampaignInput {
     audience: "bookings",
     audience_days: 365,
     manual_recipients: [],
-    email_per_minute: 60,
-    whatsapp_per_minute: 12,
+    email_per_minute: CAMPAIGN_RATE_LIMITS.email.max,
+    whatsapp_per_minute: CAMPAIGN_RATE_LIMITS.whatsapp.max,
   };
 }
 
