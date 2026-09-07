@@ -12,6 +12,11 @@ import { useToasts } from "../../../../ui/feedback/useToasts";
 import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_PAUSE, CAMPAIGN_RATE_LIMITS, CAMPAIGN_RATE_NOTES, createCampaignsAPI, emptyCampaignInput, estimatedTime } from "./campaignsApi";
 import { CampaignPreview } from "./CampaignPreview";
 
+/** Message of a rejected request, falling back to a copy the operator can act on. */
+function errorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error && err.message ? err.message : fallback;
+}
+
 const LIST_HREF = "/app/campanas";
 
 export type CampaignEditorTab = "editor" | "preview" | "settings";
@@ -35,6 +40,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign);
   const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string }>({ shell: "", bodyPlaceholder: "" });
   const themeApplied = useRef(false);
+  const navigated = useRef(false);
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
   const [tab, setTab] = useState<CampaignEditorTab>("editor");
   const [audience, setAudience] = useState<{ total: number; emails: number; whatsapp: number } | null>(null);
@@ -74,36 +80,54 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api, mode, themeKey]);
 
-  const save = useCallback(async () => {
+  // Persists without leaving the page. The API client throws on non-2xx, so the
+  // failure is caught here and always reported instead of dying silently.
+  const persist = useCallback(async () => {
     setBusy(true);
     try {
       const result = campaign ? await api.update(campaign.id, form) : await api.create(form);
-      if (!result.success || !result.campaign) {
-        pushToast({ kind: "error", title: "Campanas", message: apiMessage(result, "No se pudo guardar la campana") });
-        return null;
-      }
+      if (!result.success || !result.campaign) throw new Error(apiMessage(result, "No se pudo guardar la campana"));
       setCampaign(result.campaign);
-      if (!campaign) void navigate(`${LIST_HREF}/${result.campaign.id}`);
       pushToast({ kind: "success", title: "Campanas", message: "Campana guardada" });
       return result.campaign;
+    } catch (err) {
+      pushToast({ kind: "error", title: "Campanas", message: errorMessage(err, "No se pudo guardar la campana") });
+      return null;
     } finally {
       setBusy(false);
     }
   }, [api, campaign, form, pushToast]);
 
+  // Explicit save keeps the original behaviour of moving to the campaign route
+  // once the campaign exists, but never twice: an image upload may already have
+  // created it, in which case `campaign` is set and the route is still /nueva.
+  const save = useCallback(async () => {
+    const saved = await persist();
+    if (saved && !navigated.current && (mode === "create" || !campaign)) {
+      navigated.current = true;
+      void navigate(`${LIST_HREF}/${saved.id}`);
+    }
+    return saved;
+  }, [campaign, mode, persist]);
+
   const uploadImage = useCallback(
     async (file: File) => {
-      let target = campaign;
-      if (!target) target = await save();
-      if (!target) return "";
-      const result = await api.uploadImage(target.id, file);
-      if (!result.success || !result.url) {
-        pushToast({ kind: "error", title: "Imagen", message: apiMessage(result, "No se pudo subir la imagen") });
-        return "";
+      try {
+        // A brand new campaign needs an id first, but navigating here would
+        // unmount the editor mid-upload and the markdown would never land in
+        // the body: persist without navigating and stay on the same instance.
+        const target = campaign ?? (await persist());
+        if (!target) throw new Error("No se pudo guardar la campana antes de subir la imagen");
+        const result = await api.uploadImage(target.id, file);
+        if (!result.success || !result.url) throw new Error(apiMessage(result, "No se pudo subir la imagen"));
+        return result.url;
+      } catch (err) {
+        const message = errorMessage(err, "No se pudo subir la imagen");
+        pushToast({ kind: "error", title: "Imagen", message });
+        throw new Error(message);
       }
-      return result.url;
     },
-    [api, campaign, pushToast, save],
+    [api, campaign, persist, pushToast],
   );
 
   const loadAudience = useCallback(async () => {
