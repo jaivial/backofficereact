@@ -9,7 +9,7 @@ import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { MarkdownEditor } from "../../../../ui/inputs/MarkdownEditor";
 import { InlineCounter } from "../../../../ui/widgets/InlineCounter";
 import { useToasts } from "../../../../ui/feedback/useToasts";
-import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_RATE_LIMITS, createCampaignsAPI, emptyCampaignInput, estimatedMinutes, ratePlan } from "./campaignsApi";
+import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_PAUSE, CAMPAIGN_RATE_LIMITS, CAMPAIGN_RATE_NOTES, createCampaignsAPI, emptyCampaignInput, estimatedTime } from "./campaignsApi";
 import { CampaignPreview } from "./CampaignPreview";
 
 const LIST_HREF = "/app/campanas";
@@ -117,9 +117,6 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     const result = await api.recipients(campaign.id);
     if (result.success) setRecipients(result.recipients ?? []);
   }, [api, campaign]);
-
-  const emailPlan = ratePlan(form.email_per_minute);
-  const whatsappPlan = ratePlan(form.whatsapp_per_minute);
 
   const sendTest = useCallback(async () => {
     if (!campaign || !testTarget.trim()) return;
@@ -378,9 +375,11 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                 step={5}
                 testId="campaign-rate-email-counter"
                 onChange={(next) => patch("email_per_minute", next)}
-                helperText={`${emailPlan.perHour.toLocaleString("es-ES")} por hora · ${emailPlan.perDay.toLocaleString("es-ES")} por dia${
-                  audience ? ` · ${estimatedMinutes(audience.emails, emailPlan.perMinute)} min para ${audience.emails}` : ""
-                }`}
+                helperText={`${
+                  audience
+                    ? `${estimatedTime(audience.emails, form.email_per_minute, CAMPAIGN_CHANNEL_PAUSE.email)} para ${audience.emails} envios · `
+                    : ""
+                }${CAMPAIGN_RATE_NOTES.email} (${CAMPAIGN_RATE_LIMITS.email.max} por minuto)`}
               />
               <InlineCounter
                 label={`WhatsApp por minuto (max ${CAMPAIGN_RATE_LIMITS.whatsapp.max})`}
@@ -390,9 +389,11 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                 step={1}
                 testId="campaign-rate-whatsapp-counter"
                 onChange={(next) => patch("whatsapp_per_minute", next)}
-                helperText={`${whatsappPlan.perHour.toLocaleString("es-ES")} por hora · ${whatsappPlan.perDay.toLocaleString("es-ES")} por dia${
-                  audience ? ` · ${estimatedMinutes(audience.whatsapp, whatsappPlan.perMinute)} min para ${audience.whatsapp}` : ""
-                }`}
+                helperText={`${
+                  audience
+                    ? `${estimatedTime(audience.whatsapp, form.whatsapp_per_minute, CAMPAIGN_CHANNEL_PAUSE.whatsapp)} para ${audience.whatsapp} envios · `
+                    : ""
+                }${CAMPAIGN_RATE_NOTES.whatsapp} (un envio cada 5 min)`}
               />
             </div>
           </Panel>
