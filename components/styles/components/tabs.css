@@ -122,6 +122,24 @@
 }
 
 /* ============================================
+   Responsive: shrink-to-fit + centered below 769px
+   ============================================ */
+/* Under 769px the strip must hug its tabs and sit centered in the parent.
+   `.bo-tabs` already declares `width: fit-content`, but bo.css loads before
+   the Tailwind utilities, so call sites passing `w-full` (or a `className`
+   with `mx-auto` missing) win at equal specificity and stretch the strip edge
+   to edge. Scoping with `:is(.bo-app, #bo-portal)` out-specifies those single
+   utility classes so the behaviour is centralized here instead of being
+   hand-patched with `!w-fit mx-auto` at every call site. */
+@media (max-width: 768px) {
+  :is(.bo-app, #bo-portal) .bo-tabs {
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+}
+
+/* ============================================
    Responsive: Icons-only on small screens
    ============================================ */
 @media (max-width: 639px) {
