@@ -191,7 +191,6 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         activeId={tab}
         onNavigate={(_href, id) => setTab(id as CampaignEditorTab)}
         tabs={CAMPAIGN_EDITOR_TABS}
-        className="w-full"
       />
 
       {tab === "editor" && (
