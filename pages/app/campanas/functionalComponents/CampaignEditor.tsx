@@ -6,7 +6,7 @@ import { Button } from "../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { Panel } from "../../../../ui/shell/Panel";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
-import { MarkdownEditor } from "../../../../ui/inputs/MarkdownEditor";
+import { RichTextEditor } from "../../../../ui/inputs/RichTextEditor";
 import { InlineCounter } from "../../../../ui/widgets/InlineCounter";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_PAUSE, CAMPAIGN_RATE_LIMITS, CAMPAIGN_RATE_NOTES, createCampaignsAPI, emptyCampaignInput, estimatedTime } from "./campaignsApi";
@@ -38,7 +38,12 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const { pushToast } = useToasts();
   const [form, setForm] = useState<CampaignInput>(initialCampaign ? campaignToInput(initialCampaign) : emptyCampaignInput());
   const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign);
-  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string }>({ shell: "", bodyPlaceholder: "" });
+  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string; brandName: string; logoUrl: string }>({
+    shell: "",
+    bodyPlaceholder: "",
+    brandName: "",
+    logoUrl: "",
+  });
   const themeApplied = useRef(false);
   const navigated = useRef(false);
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
@@ -70,7 +75,12 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     const timer = setTimeout(async () => {
       const result = await api.template(mode === "create" && !themeApplied.current ? undefined : form.theme);
       if (!result.success) return;
-      setTemplate({ shell: result.shell ?? "", bodyPlaceholder: result.body_placeholder ?? "" });
+      setTemplate({
+        shell: result.shell ?? "",
+        bodyPlaceholder: result.body_placeholder ?? "",
+        brandName: result.brand_name ?? "",
+        logoUrl: result.logo_url ?? "",
+      });
       if (mode === "create" && !themeApplied.current && result.theme) {
         themeApplied.current = true;
         setForm((prev) => ({ ...prev, theme: result.theme }));
@@ -217,13 +227,13 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
       {tab === "editor" && (
         <div className="grid gap-4" role="tabpanel" aria-label="Editor" data-testid="campaign-tabpanel-editor">
           <Panel title="Contenido" data-testid="campaign-content-panel">
-            <MarkdownEditor
-              testId="campaign-markdown"
+            <RichTextEditor
+              testId="campaign-richtext"
               coordId={coordId}
               value={form.body_markdown}
               onChange={(value) => patch("body_markdown", value)}
               onUploadImage={uploadImage}
-              placeholder="Escribe el anuncio en markdown…"
+              placeholder="Escribe el anuncio…"
             />
           </Panel>
 
@@ -298,6 +308,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                 <Button variant={device === "desktop" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("desktop")} data-testid="campaign-preview-desktop-btn">Ordenador</Button>
               </div>
             }
+            className="mx-auto h-auto w-full max-w-5xl"
             data-testid="campaign-preview-panel"
           >
             <CampaignPreview
@@ -306,6 +317,9 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               shell={template.shell}
               bodyPlaceholder={template.bodyPlaceholder}
               device={device}
+              brandName={template.brandName}
+              logoUrl={template.logoUrl}
+              coordId={coordId}
             />
           </Panel>
         </div>
