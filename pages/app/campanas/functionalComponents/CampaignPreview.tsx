@@ -3,6 +3,8 @@ import type { CampaignTheme } from "../../../../api/types";
 import { toWhatsAppText } from "./campaignsApi";
 import { renderCampaignEmailBody } from "./campaignEmailBody";
 import { ensureCampaignEmailChrome } from "./campaignEmailChrome";
+import { IPhoneFrame, IPHONE_DEFAULT_TIME } from "./IPhoneFrame";
+import { WhatsAppPreview } from "./WhatsAppPreview";
 
 // Live preview: the markdown body is rendered in the browser on every keystroke
 // and injected into the email shell served by the backend, so what you see is
@@ -78,13 +80,23 @@ export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, devic
           data-preview-height={height}
         />
       </figure>
-      <figure className="m-0 grid content-start gap-2" data-testid="campaign-preview-whatsapp-block">
+      <figure className="m-0 grid content-start justify-items-center gap-2" data-testid="campaign-preview-whatsapp-block">
         <figcaption className="text-center text-sm font-semibold" data-testid="campaign-preview-whatsapp-label">
           WhatsApp
         </figcaption>
-        <pre className="whitespace-pre-wrap rounded-xl border p-3 text-sm" data-testid="campaign-preview-whatsapp">
-          {toWhatsAppText(markdown, brandName, websiteUrl)}
-        </pre>
+        {/* The same phone the customer holds: the composed WhatsApp text is the
+        only source of truth, the frame and the chat only style it. */}
+        <IPhoneFrame title={`WhatsApp ${brandName || "Restaurante"}`} time={IPHONE_DEFAULT_TIME} testId="campaign-preview-whatsapp-device">
+          <WhatsAppPreview
+            text={toWhatsAppText(markdown, brandName, websiteUrl)}
+            brandName={brandName}
+            logoUrl={logoUrl}
+            websiteUrl={websiteUrl}
+            accent={theme.accent}
+            time={IPHONE_DEFAULT_TIME}
+            coordId={coordId}
+          />
+        </IPhoneFrame>
       </figure>
     </div>
   );
