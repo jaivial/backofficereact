@@ -2,13 +2,16 @@ import React from "react";
 import { ArrowLeft, Check, MoreVertical, Phone, Plus, Search, Send, Smile, Video } from "lucide-react";
 import { cn } from "../../../../ui/shadcn/utils";
 import { CAMPAIGN_WEBSITE_COORD_ID } from "./campaignEmailChrome";
+import { CAMPAIGN_WHATSAPP_MEDIA_COORD_ID, toWhatsAppText, whatsappLeadImage } from "./campaignsApi";
 import { IPHONE_DEFAULT_TIME, IPHONE_STATUSBAR_HEIGHT } from "./IPhoneFrame";
 
 /*
- * WhatsApp chat clone for the campaign preview. It paints the *already composed*
- * text (`toWhatsAppText`, the same string the sender delivers) inside the app
- * chrome a customer sees, so the operator proof-reads the real message instead
- * of a raw block. Pure markup: no state, no browser APIs, deterministic output.
+ * WhatsApp chat clone for the campaign preview. The lead `https://` image of the
+ * markdown becomes a media bubble and the remaining markdown, composed with
+ * `toWhatsAppText` (the same string the sender delivers), is its caption: the
+ * same split the backend does, so the operator proof-reads the real message
+ * instead of a raw block. Pure markup: no state, no browser APIs, deterministic
+ * output.
  */
 
 // WhatsApp palette, light theme, kept in one place so the whole chat matches.
@@ -19,8 +22,8 @@ export const WHATSAPP_BUBBLE_BG = "#FFFFFF";
 export const WHATSAPP_LINK_COLOR = "#53BDEB";
 
 type WhatsAppPreviewProps = {
-  /** Composed message, i.e. the exact output of `toWhatsAppText`. */
-  text: string;
+  /** Raw campaign markdown: its lead `https://` image becomes the media bubble. */
+  markdown: string;
   /** Restaurant name: header contact and avatar initial. */
   brandName?: string;
   /** Restaurant logo; the avatar falls back to the brand initial without it. */
@@ -131,8 +134,12 @@ function Avatar({ brandName, logoUrl }: { brandName: string; logoUrl: string }) 
   );
 }
 
-export function WhatsAppPreview({ text, brandName = "", logoUrl = "", websiteUrl = "", accent = WHATSAPP_LINK_COLOR, time = IPHONE_DEFAULT_TIME, className, testId = "campaign-preview-whatsapp-screen", coordId }: WhatsAppPreviewProps) {
+export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websiteUrl = "", accent = WHATSAPP_LINK_COLOR, time = IPHONE_DEFAULT_TIME, className, testId = "campaign-preview-whatsapp-screen", coordId }: WhatsAppPreviewProps) {
   const brand = brandName.trim() || "Restaurante";
+  // The backend sends the first `https://` image as media and the rest as the
+  // caption, so the bubble shows exactly what the customer will receive.
+  const media = whatsappLeadImage(markdown);
+  const text = toWhatsAppText(media?.caption ?? markdown, brandName, websiteUrl);
   return (
     <div
       className={cn("flex h-full min-h-0 flex-col", className)}
@@ -182,6 +189,22 @@ export function WhatsAppPreview({ text, brandName = "", logoUrl = "", websiteUrl
           data-testid="campaign-preview-whatsapp-bubble"
           data-observe="campaign-preview-whatsapp-bubble"
         >
+          {media && (
+            <figure
+              className="m-0 -mx-2.5 -mt-1.5 mb-1.5 overflow-hidden rounded-t-lg"
+              data-testid="campaign-preview-whatsapp-media"
+              data-coord-id={CAMPAIGN_WHATSAPP_MEDIA_COORD_ID}
+              data-observe="campaign-preview-whatsapp-media"
+            >
+              <img
+                src={media.src}
+                alt={media.alt}
+                className="block aspect-[4/3] w-full bg-black/5 object-cover"
+                data-testid="campaign-preview-whatsapp-media-image"
+                data-observe="campaign-preview-whatsapp-media-image"
+              />
+            </figure>
+          )}
           <span
             aria-hidden="true"
             className="absolute -left-[7px] top-0 h-0 w-0 border-r-[8px] border-t-[10px]"
