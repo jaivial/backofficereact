@@ -3,7 +3,7 @@ import type { EnrichedTextInputInstance, EnrichedTextInputProps } from "react-na
 import { Bold, Code, Heading1, Heading2, Heading3, Image as ImageIcon, Italic, Link2, List, Minus, Quote } from "lucide-react";
 import { Button } from "../actions/Button";
 import { InlineAlert } from "../feedback/InlineAlert";
-import { htmlToMarkdown, markdownToHtml } from "../../lib/richText/markdownHtml";
+import { IMAGE_WIDTH_MIN, htmlToMarkdown, markdownImages, markdownToHtml, setHtmlImageWidth } from "../../lib/richText/markdownHtml";
 
 // Rich text editor built on `react-native-enriched-html` (TipTap on web).
 // It is imperative/uncontrolled by design: the value is pushed with
@@ -44,6 +44,22 @@ function autoGrowStyle(minHeight: number): AutoGrowStyle {
   return { height: "auto", minHeight, boxSizing: "border-box" };
 }
 
+/** Widest image the surface offers; the email itself never goes past 600px of content. */
+const IMAGE_WIDTH_CAP = 560;
+
+/** One-click widths of the "Ancho de imagen" strip, mirroring the email column widths. */
+const IMAGE_WIDTH_PRESETS = [
+  { id: "small", label: "Pequeno", width: 240 },
+  { id: "medium", label: "Mediano", width: 360 },
+  { id: "large", label: "Grande", width: 480 },
+  { id: "full", label: "Ancho completo", width: IMAGE_WIDTH_CAP },
+] as const;
+
+/** The hint only accepts a plain integer, so the free input is clamped the same way. */
+function clampImageWidth(width: number): number {
+  return Math.min(IMAGE_WIDTH_CAP, Math.max(IMAGE_WIDTH_MIN, Math.round(width)));
+}
+
 /** Natural size of an uploaded image, capped to the email content width. */
 async function measureImage(url: string, maxWidth: number): Promise<{ width: number; height: number }> {
   return new Promise((resolve) => {
@@ -70,6 +86,13 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
   // never reset while writing.
   const emittedRef = useRef(value);
   const seededRef = useRef(false);
+  // Image the "Ancho de imagen" strip acts on: the one clicked inside the body,
+  // otherwise the first one. Client only, so the server markup stays deterministic.
+  const [activeImage, setActiveImage] = useState(0);
+  const images = useMemo(() => markdownImages(value), [value]);
+  const imageCount = images.length;
+  const targetImage = imageCount ? Math.min(activeImage, imageCount - 1) : 0;
+  const targetWidth = images[targetImage]?.width ?? null;
 
   useEffect(() => {
     let alive = true;
@@ -123,6 +146,48 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
     [onChange],
   );
 
+  /**
+   * Pushes an HTML rewrite back into the editor and the model. Recording the markdown
+   * as "already emitted" keeps `onChangeHtml` from echoing the same content, so the
+   * caret never jumps while the operator keeps working.
+   */
+  const commitHtml = useCallback(
+    (html: string) => {
+      const markdown = htmlToMarkdown(html);
+      emittedRef.current = markdown;
+      editorRef.current?.setValue(html);
+      onChange(markdown);
+    },
+    [onChange],
+  );
+
+  /** Applies a pixel width to the selected image; the bridge stores it as `![alt](src =W)`. */
+  const applyImageWidth = useCallback(
+    async (width: number) => {
+      const editor = editorRef.current;
+      if (!editor || !imageCount) return;
+      commitHtml(setHtmlImageWidth(await editor.getHTML(), targetImage, clampImageWidth(width)));
+    },
+    [commitHtml, imageCount, targetImage],
+  );
+
+  /** Commits whatever the free numeric input holds, when it actually changed. */
+  const commitWidthDraft = useCallback(
+    (event: React.SyntheticEvent<HTMLInputElement>) => {
+      const width = Number.parseInt(event.currentTarget.value, 10);
+      if (Number.isFinite(width) && width !== targetWidth) void applyImageWidth(width);
+    },
+    [applyImageWidth, targetWidth],
+  );
+
+  /** Clicking an image of the body makes it the target of the width strip. */
+  const selectImage = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const node = event.target as HTMLElement | null;
+    if (!node || node.tagName !== "IMG") return;
+    const index = Array.from(event.currentTarget.querySelectorAll("img")).indexOf(node as HTMLImageElement);
+    if (index >= 0) setActiveImage(index);
+  }, []);
+
   const pickImage = useCallback(() => fileRef.current?.click(), []);
 
   const handleFile = useCallback(
@@ -135,17 +200,22 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
       try {
         const url = await onUploadImage(file);
         if (!url) throw new Error("La subida no devolvio ninguna URL de imagen");
-        const { width, height } = await measureImage(url, 560);
+        const { width, height } = await measureImage(url, IMAGE_WIDTH_CAP);
         // Inserting through the editor keeps the change flowing back out via
         // `onChangeHtml`, so the markdown body always receives the image.
-        editorRef.current?.setImage(url, width, height);
+        const editor = editorRef.current;
+        if (!editor) return;
+        editor.setImage(url, width, height);
+        // The measured width is stamped on the fresh image right away, so the
+        // markdown keeps it even before the operator touches the size strip.
+        commitHtml(setHtmlImageWidth(await editor.getHTML(), (src) => src === url, width));
       } catch (err) {
         setError(err instanceof Error && err.message ? err.message : "No se pudo insertar la imagen");
       } finally {
         setUploading(false);
       }
     },
-    [onUploadImage],
+    [commitHtml, onUploadImage],
   );
 
   const addLink = useCallback(() => {
@@ -229,11 +299,64 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
           data-testid={`${testId}-image-input`}
         />
       </div>
+      {Enriched && imageCount ? (
+        <div
+          className="flex flex-wrap items-center gap-2 text-sm"
+          data-testid={`${testId}-img-width-strip`}
+          data-observe="rich-text-editor-image-width"
+          data-coord-id={coordId ? `${coordId}-image-width` : undefined}
+        >
+          <span className="font-medium" data-testid={`${testId}-img-width-label`} data-observe="rich-text-editor-image-width-label">
+            Ancho de imagen
+          </span>
+          {imageCount > 1 ? (
+            <span className="text-muted-foreground" data-testid={`${testId}-img-width-target`} data-observe="rich-text-editor-image-width-target">
+              Imagen {targetImage + 1}/{imageCount}
+            </span>
+          ) : null}
+          {IMAGE_WIDTH_PRESETS.map((preset) => (
+            <Button
+              key={preset.id}
+              variant={targetWidth === preset.width ? "primary" : "ghost"}
+              size="sm"
+              title={`${preset.label} (${preset.width}px)`}
+              aria-label={`Ancho de imagen ${preset.label}, ${preset.width} pixeles`}
+              aria-pressed={targetWidth === preset.width}
+              onClick={() => void applyImageWidth(preset.width)}
+              data-testid={`${testId}-img-width-${preset.id}`}
+              data-observe={`rich-text-editor-image-width-${preset.id}`}
+            >
+              {preset.label} {preset.width}
+            </Button>
+          ))}
+          <label className="flex items-center gap-1" data-testid={`${testId}-img-width-field`} data-observe="rich-text-editor-image-width-field">
+            <input
+              key={`${targetImage}-${targetWidth ?? 0}`}
+              type="number"
+              className="bo-input w-20"
+              min={IMAGE_WIDTH_MIN}
+              max={IMAGE_WIDTH_CAP}
+              step={10}
+              defaultValue={targetWidth ?? IMAGE_WIDTH_CAP}
+              aria-label="Ancho de imagen en pixeles"
+              onBlur={commitWidthDraft}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") commitWidthDraft(event);
+              }}
+              data-testid={`${testId}-img-width-input`}
+              data-observe="rich-text-editor-image-width-input"
+              data-coord-id={coordId ? `${coordId}-image-width-input` : undefined}
+            />
+            px
+          </label>
+        </div>
+      ) : null}
       {error ? <InlineAlert kind="error" title="Imagen" message={error} className="text-sm" testId={`${testId}-image-error`} /> : null}
       {Enriched ? (
         <div
           className="bo-input p-0"
           style={autoGrowStyle(minHeight)}
+          onClick={selectImage}
           data-testid={`${testId}-surface`}
           data-observe="rich-text-editor-surface"
           data-coord-id={coordId ? `${coordId}-surface` : undefined}

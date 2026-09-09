@@ -9,10 +9,47 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+/**
+ * Image size contract shared with the Go renderer (`internal/api/campaign_markdown.go`):
+ * `![alt](URL =W)` carries an optional integer pixel width, separated by ONE space and
+ * without quotes. Height is never stored, the rendered `<img>` keeps `height:auto` so
+ * the aspect ratio always comes from the source image.
+ */
+export const IMAGE_WIDTH_MIN = 40;
+export const IMAGE_WIDTH_MAX = 600;
+
+/** `![alt](URL)` or `![alt](URL =W)`; the hint is anything after one whitespace. */
+const IMAGE_RE = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+([^\s)]+))?\)/g;
+
+/** A width counts only when it is an integer inside the agreed range, anything else means "none". */
+function usableImageWidth(raw: string | null | undefined): number | null {
+  const value = (raw ?? "").trim();
+  if (!/^\d+$/.test(value)) return null;
+  const width = Number.parseInt(value, 10);
+  return width >= IMAGE_WIDTH_MIN && width <= IMAGE_WIDTH_MAX ? width : null;
+}
+
+/** Validated pixel width of a markdown hint (`=W`), or null when there is no usable one. */
+export function imageWidthFromHint(hint: string | null | undefined): number | null {
+  return usableImageWidth((hint ?? "").trim().replace(/^=\s*/, ""));
+}
+
+/** Validated width hint of every image of a markdown body, in document order. */
+export function markdownImages(markdown: string): { alt: string; src: string; width: number | null }[] {
+  return Array.from((markdown || "").matchAll(IMAGE_RE), ([, alt, src, hint]) => ({
+    alt: alt ?? "",
+    src: src ?? "",
+    width: imageWidthFromHint(hint),
+  }));
+}
+
 /** Markdown inline marks to HTML, images and links included. */
 function inlineToHtml(text: string): string {
   return escapeHtml(text)
-    .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1"/>')
+    .replace(IMAGE_RE, (_match, alt: string, src: string, hint?: string) => {
+      const width = imageWidthFromHint(hint);
+      return `<img src="${src}" alt="${alt}"${width ? ` width="${width}"` : ""}/>`;
+    })
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>")
@@ -79,8 +116,10 @@ function inlineToMarkdown(node: Node): string {
   switch (el.tagName) {
     case "BR":
       return "\n";
-    case "IMG":
-      return `![${el.getAttribute("alt") ?? ""}](${el.getAttribute("src") ?? ""})`;
+    case "IMG": {
+      const width = usableImageWidth(el.getAttribute("width"));
+      return `![${el.getAttribute("alt") ?? ""}](${el.getAttribute("src") ?? ""}${width ? ` =${width}` : ""})`;
+    }
     case "A":
       return `[${inner || (el.getAttribute("href") ?? "")}](${el.getAttribute("href") ?? ""})`;
     case "STRONG":
@@ -171,4 +210,19 @@ export function htmlToMarkdown(html: string): string {
   const doc = new DOMParser().parseFromString(`<body>${source}</body>`, "text/html");
   if (!doc.body) return source;
   return blocksToMarkdown(doc.body).replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/**
+ * Rewrites the width attribute of one `<img>` of an HTML fragment, addressed either by
+ * its position or by its `src`. Used by the editor to persist the width the operator
+ * chose: the markdown bridge turns that attribute back into the `=W` hint.
+ */
+export function setHtmlImageWidth(html: string, target: number | ((src: string) => boolean), width: number): string {
+  let index = -1;
+  return (html || "").replace(/<img\b[^>]*>/gi, (tag) => {
+    index += 1;
+    const matches = typeof target === "function" ? target(/\ssrc="([^"]*)"/i.exec(tag)?.[1] ?? "") : index === target;
+    if (!matches) return tag;
+    return tag.replace(/\s+width="[^"]*"/i, "").replace(/<img/i, `<img width="${width}"`);
+  });
 }
