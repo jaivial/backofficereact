@@ -18,7 +18,7 @@ import { IPHONE_DEFAULT_TIME, IPHONE_STATUSBAR_HEIGHT } from "./IPhoneFrame";
  * `toWhatsAppText` (the same string the sender delivers), is its caption: the
  * same split the backend does, so the operator proof-reads the real message
  * instead of a raw block. The website is not part of that text: like the sender,
- * it is a native URL button drawn below the bubble. Pure markup: no state, no
+ * it is a native URL button closing the bubble. Pure markup: no state, no
  * browser APIs, deterministic output.
  */
 
@@ -125,12 +125,14 @@ function renderBubbleText(text: string, websiteUrl: string, accent: string): Rea
 }
 
 /**
- * WhatsApp call-to-action URL button, the way the app draws one: light surface
- * over the chat, centred label, a hairline on top and the chain icon on its
- * left. Rendered below the bubble, never inside the text. Null without a
- * website, the same contract `toWhatsAppText` used to have with its URL line.
+ * WhatsApp call-to-action URL button, the way the app draws one: the last strip
+ * of the bubble, full-bleed edge to edge (negative margins cancel the bubble
+ * padding, `rounded-b-lg` takes its bottom corners), a hairline on top and a
+ * centred link-blue label with the chain icon. No surface of its own: it
+ * inherits the bubble. Null without a website, the same contract
+ * `toWhatsAppText` used to have with its URL line.
  */
-function WebsiteButton({ websiteUrl, accent }: { websiteUrl: string; accent: string }) {
+function WebsiteButton({ websiteUrl }: { websiteUrl: string }) {
   const href = whatsappWebsiteHref(websiteUrl);
   if (!href) return null;
   return (
@@ -138,8 +140,8 @@ function WebsiteButton({ websiteUrl, accent }: { websiteUrl: string; accent: str
       href={href}
       target="_blank"
       rel="noreferrer noopener"
-      className="flex w-full max-w-[88%] items-center justify-center gap-1.5 self-start rounded-lg px-3 py-2 text-[13px] font-medium no-underline"
-      style={{ backgroundColor: WHATSAPP_BUBBLE_BG, borderTop: "1px solid rgba(0,0,0,0.08)", color: accent }}
+      className="clear-both -mx-2.5 -mb-1.5 mt-1.5 flex items-center justify-center gap-1.5 rounded-b-lg py-2 text-[13px] font-medium no-underline"
+      style={{ borderTop: "1px solid rgba(0,0,0,0.08)", color: WHATSAPP_LINK_COLOR }}
       data-testid="campaign-preview-whatsapp-website-btn"
       data-coord-id={CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID}
       data-observe="campaign-preview-whatsapp-website-btn"
@@ -248,8 +250,8 @@ export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websit
           <span className="whitespace-pre-wrap" data-testid="campaign-preview-whatsapp">
             {renderBubbleText(text, websiteUrl, accent)}
           </span>
+          <WebsiteButton websiteUrl={websiteUrl} />
         </div>
-        <WebsiteButton websiteUrl={websiteUrl} accent={accent} />
       </div>
 
       <div
