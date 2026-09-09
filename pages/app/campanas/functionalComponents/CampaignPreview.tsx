@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CampaignTheme } from "../../../../api/types";
-import { toWhatsAppText } from "./campaignsApi";
 import { renderCampaignEmailBody } from "./campaignEmailBody";
 import { ensureCampaignEmailChrome } from "./campaignEmailChrome";
 import { IPhoneFrame, IPHONE_DEFAULT_TIME } from "./IPhoneFrame";
@@ -84,11 +83,11 @@ export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, devic
         <figcaption className="text-center text-sm font-semibold" data-testid="campaign-preview-whatsapp-label">
           WhatsApp
         </figcaption>
-        {/* The same phone the customer holds: the composed WhatsApp text is the
-        only source of truth, the frame and the chat only style it. */}
+        {/* The same phone the customer holds: the markdown is the only source of
+        truth, the chat splits its lead image like the sender does. */}
         <IPhoneFrame title={`WhatsApp ${brandName || "Restaurante"}`} time={IPHONE_DEFAULT_TIME} testId="campaign-preview-whatsapp-device">
           <WhatsAppPreview
-            text={toWhatsAppText(markdown, brandName, websiteUrl)}
+            markdown={markdown}
             brandName={brandName}
             logoUrl={logoUrl}
             websiteUrl={websiteUrl}

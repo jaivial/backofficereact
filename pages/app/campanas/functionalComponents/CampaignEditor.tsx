@@ -5,7 +5,7 @@ import type { Campaign, CampaignChannel, CampaignInput, CampaignRecipient } from
 import { Button } from "../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { Panel } from "../../../../ui/shell/Panel";
-import { CampaignField, CampaignFieldCell, CampaignSection, CampaignStatusBadge, CAMPAIGN_CAPTION_CLASS, CAMPAIGN_FIELD_CELL } from "./campaignUi";
+import { CampaignField, CampaignFieldCell, CampaignSection, CampaignStatusBadge, CAMPAIGN_CAPTION_CLASS } from "./campaignUi";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { RichTextEditor } from "../../../../ui/inputs/RichTextEditor";
 import { Select } from "../../../../ui/inputs/Select";
@@ -227,26 +227,12 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
           <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-faint">
             {mode === "create" ? "Nueva campana" : "Editar campana"}
           </span>
-          <label className={CAMPAIGN_FIELD_CELL} data-testid="campaign-name-field">
-            <input
-              className="bo-input h-11 border-transparent bg-[rgba(255,255,255,0.03)] text-lg font-semibold"
-              value={form.name}
-              placeholder="Nombre interno de la campana"
-              aria-label="Nombre interno de la campana"
-              onChange={(e) => patch("name", e.currentTarget.value)}
-              data-testid="campaign-name-input"
-            />
-          </label>
-          <label className={CAMPAIGN_FIELD_CELL} data-testid="campaign-subject-field">
-            <input
-              className="bo-input h-10 border-transparent bg-[rgba(255,255,255,0.02)] text-sm"
-              value={form.subject}
-              placeholder="Asunto del email"
-              aria-label="Asunto del email"
-              onChange={(e) => patch("subject", e.currentTarget.value)}
-              data-testid="campaign-subject-input"
-            />
-          </label>
+          <span className="truncate text-lg font-semibold" data-testid="campaign-name-field" data-observe="campaign-editor-name">
+            {form.name || "Campana sin nombre"}
+          </span>
+          <span className="truncate text-sm text-bo-muted" data-testid="campaign-subject-field" data-observe="campaign-editor-subject">
+            {form.subject || "Sin asunto"}
+          </span>
         </div>
 
         <div className="grid content-start gap-2 md:justify-items-end">
@@ -396,18 +382,28 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
       {tab === "settings" && (
         <div className="grid gap-4" role="tabpanel" aria-label="Ajustes" data-testid="campaign-tabpanel-settings">
-          <CampaignSection icon={<FileText size={15} aria-hidden="true" />} title="Datos de la campana" helper="Nombre y asunto se editan en la cabecera" data-testid="campaign-data-panel">
+          <CampaignSection icon={<FileText size={15} aria-hidden="true" />} title="Datos de la campana" helper="Como se guarda la campana y el asunto que lee el cliente" data-testid="campaign-data-panel">
             <div className="grid content-start gap-4">
-              <dl className="grid gap-2 rounded-bo-md border border-bo-border bg-[rgba(255,255,255,0.02)] p-3 text-sm sm:grid-cols-2">
-                <div className="grid gap-0.5" data-testid="campaign-data-name">
-                  <dt className={CAMPAIGN_CAPTION_CLASS}>Nombre interno</dt>
-                  <dd className="truncate font-medium">{form.name || "Sin nombre"}</dd>
-                </div>
-                <div className="grid gap-0.5" data-testid="campaign-data-subject">
-                  <dt className={CAMPAIGN_CAPTION_CLASS}>Asunto del email</dt>
-                  <dd className="truncate">{form.subject || "Sin asunto"}</dd>
-                </div>
-              </dl>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <CampaignField label="Nombre interno" helper="Solo para el equipo, no llega al cliente" data-testid="campaign-data-name">
+                  <input
+                    className="bo-input h-10 w-full"
+                    value={form.name}
+                    placeholder="Nombre interno de la campana"
+                    onChange={(e) => patch("name", e.currentTarget.value)}
+                    data-testid="campaign-name-input"
+                  />
+                </CampaignField>
+                <CampaignField label="Asunto del email" helper="Linea que el cliente ve en su bandeja" data-testid="campaign-data-subject">
+                  <input
+                    className="bo-input h-10 w-full"
+                    value={form.subject}
+                    placeholder="Asunto del email"
+                    onChange={(e) => patch("subject", e.currentTarget.value)}
+                    data-testid="campaign-subject-input"
+                  />
+                </CampaignField>
+              </div>
               <div className="grid content-start gap-2">
                 <span className={CAMPAIGN_CAPTION_CLASS}>Canales de envio</span>
                 <div className="flex flex-wrap gap-2" data-testid="campaign-channels">
