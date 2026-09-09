@@ -39,6 +39,14 @@ export function CampaignsUnsubscribed() {
         setData({ items: [], page: target, totalPages: 1, total: 0 });
         return;
       }
+      // Rows can disappear while browsing (recipients re-subscribing), so an
+      // out-of-range page would come back empty: fall back to the last one.
+      const totalPages = Math.max(result.total_pages, 1);
+      const effectivePage = result.items.length === 0 && target > totalPages ? totalPages : result.page;
+      if (effectivePage !== result.page) {
+        await load(effectivePage);
+        return;
+      }
       setData({
         items: result.items.map((item, index) => ({ ...item, key: `${item.booking_id}-${item.channel}-${item.contact}-${index}` })),
         page: result.page,
