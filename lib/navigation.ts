@@ -19,7 +19,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "horarios", href: "/app/horarios", label: "Horarios" },
   { key: "fichaje", href: "/app/fichaje", label: "Fichaje" },
   { key: "facturas", href: "/app/facturas", label: "Facturas" },
-  { key: "campanas", href: "/app/campanas", label: "Campanas" },
+  { key: "campanas", href: "/app/campanas", label: "Campañas" },
   { key: "estadisticas", href: "/app/estadisticas", label: "Estadisticas" },
   { key: "plataforma", href: "/app/plataforma", label: "Plataforma" },
 ];
