@@ -1,4 +1,5 @@
 import type { CampaignTheme } from "../../../../api/types";
+import { imageWidthFromHint } from "../../../../lib/richText/markdownHtml";
 
 // Client twin of the backend markdown-to-email renderer (campaign_markdown.go).
 // It only produces the body: the surrounding document is the shell served by
@@ -15,9 +16,13 @@ function escapeHTML(value: string): string {
 function renderInline(line: string, theme: CampaignTheme): string {
   return escapeHTML(line)
     .replace(
-      /!\[([^\]]*)\]\(([^)\s]+)\)/g,
-      '<img src="$2" alt="$1" style="max-width:100%;height:auto;border-radius:10px;display:block;margin:12px 0" />'
-    )
+      /!\[([^\]]*)\]\(([^)\s]+)(?:\s+([^\s)]+))?\)/g,
+      (_match, alt: string, src: string, hint?: string) => {
+        // Same contract as the Go renderer: `![alt](URL =W)` sets the pixel width,
+        // anything else keeps the natural size capped by max-width:100%.
+        const width = imageWidthFromHint(hint);
+        return `<img src="${src}" alt="${alt}" style="max-width:100%;height:auto;border-radius:10px;display:block;margin:12px 0${width ? `;width:${width}px` : ""}" />`;
+      })
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, `<a href="$2" style="color:${theme.accent};text-decoration:underline">$1</a>`)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>")
