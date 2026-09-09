@@ -1,8 +1,19 @@
 import { createClient } from "../../../../api/client";
-import type { Campaign, CampaignChannel, CampaignInput, CampaignTheme } from "../../../../api/types";
+import type { APISuccess, APIError, Campaign, CampaignChannel, CampaignInput, CampaignTheme } from "../../../../api/types";
 
 // Single access point to the campaign endpoints so pages stay presentational.
 export type CampaignsAPI = ReturnType<typeof createCampaignsAPI>;
+
+/** Payload of `/api/admin/campanas/template`: shell plus reference restaurant branding. */
+export type CampaignTemplatePayload = {
+  theme: CampaignTheme;
+  brand_name: string;
+  logo_url: string;
+  /** Public website of the restaurant; empty when it has none (button omitted). */
+  website: string;
+  shell: string;
+  body_placeholder: string;
+};
 
 export function createCampaignsAPI() {
   const config = createClient({ baseUrl: "" }).config;
@@ -13,7 +24,10 @@ export function createCampaignsAPI() {
     update: config.updateCampaign.bind(config),
     remove: config.deleteCampaign.bind(config),
     preview: config.previewCampaign.bind(config),
-    template: config.campaignTemplate.bind(config),
+    // The payload type is declared here so the preview can read `website` even
+    // before api/client.ts learns about the backend key.
+    template: (theme?: Partial<CampaignTheme>): Promise<APISuccess<CampaignTemplatePayload> | APIError> =>
+      config.campaignTemplate(theme) as Promise<APISuccess<CampaignTemplatePayload> | APIError>,
     uploadImage: config.uploadCampaignImage.bind(config),
     audience: config.campaignAudience.bind(config),
     test: config.testCampaign.bind(config),
@@ -86,9 +100,14 @@ export const DEFAULT_CAMPAIGN_THEME: CampaignTheme = {
   align: "left",
 };
 
-/** Client-side twin of the backend WhatsApp renderer, used for live preview. */
-export function toWhatsAppText(markdown: string): string {
-  return markdown
+/**
+ * Client-side twin of the backend WhatsApp renderer, used for live preview.
+ * `brandName` becomes the bold first line the email shows in its accent band and
+ * `websiteUrl` the "Visita nuestra web" line placed after the body, right where
+ * the sender appends the opt-out link; anything missing is simply omitted.
+ */
+export function toWhatsAppText(markdown: string, brandName = "", websiteUrl = ""): string {
+  const body = markdown
     .replace(/\r\n/g, "\n")
     .split("\n")
     .map((raw) => {
@@ -106,6 +125,11 @@ export function toWhatsAppText(markdown: string): string {
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+  const brand = brandName.trim();
+  const website = websiteUrl.trim();
+  const header = brand ? `*${brand}*\n\n` : "";
+  const websiteLine = website ? `${body ? "\n\n" : ""}Visita nuestra web: ${website}` : "";
+  return `${header}${body}${websiteLine}`;
 }
 
 export const CAMPAIGN_CHANNELS: { key: CampaignChannel; label: string }[] = [
