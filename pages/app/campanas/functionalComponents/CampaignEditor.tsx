@@ -7,6 +7,7 @@ import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { Panel } from "../../../../ui/shell/Panel";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { RichTextEditor } from "../../../../ui/inputs/RichTextEditor";
+import { Select } from "../../../../ui/inputs/Select";
 import { InlineCounter } from "../../../../ui/widgets/InlineCounter";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_PAUSE, CAMPAIGN_RATE_LIMITS, CAMPAIGN_RATE_NOTES, createCampaignsAPI, emptyCampaignInput, estimatedTime } from "./campaignsApi";
@@ -25,6 +26,13 @@ const CAMPAIGN_EDITOR_TABS: TabItem[] = [
   { id: "editor", label: "Editor", href: "#", icon: <PenLine size={16} aria-hidden="true" /> },
   { id: "preview", label: "Previsualizacion", href: "#", icon: <Eye size={16} aria-hidden="true" /> },
   { id: "settings", label: "Ajustes", href: "#", icon: <Settings size={16} aria-hidden="true" /> },
+];
+
+type SelectOption = { value: string; label: string };
+
+const AUDIENCE_SOURCE_OPTIONS: SelectOption[] = [
+  { value: "bookings", label: "Clientes con reserva" },
+  { value: "manual", label: "Lista manual" },
 ];
 
 type CampaignEditorProps = {
@@ -217,6 +225,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
       <Tabs
         mode="button"
+        className="mx-auto"
         ariaLabel="Secciones de la campana"
         layoutId="campaignEditorTabs"
         activeId={tab}
@@ -357,18 +366,23 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
           <Panel title="Destinatarios" data-testid="campaign-audience-panel">
             <div className="grid gap-3 md:grid-cols-3">
-              <label className="grid gap-1 text-sm" data-testid="campaign-audience-source-field">
-                Origen
-                <select
-                  className="bo-input"
+              <div
+                className="grid gap-1 text-sm"
+                data-testid="campaign-audience-source-field"
+                data-observe="campaign-audience-source-field"
+              >
+                <span data-testid="campaign-audience-source-caption" data-observe="campaign-audience-source-caption">
+                  Origen
+                </span>
+                <Select
+                  className="w-full"
                   value={form.audience}
-                  onChange={(e) => patch("audience", e.currentTarget.value as CampaignInput["audience"])}
+                  onChange={(value) => patch("audience", value as CampaignInput["audience"])}
+                  options={AUDIENCE_SOURCE_OPTIONS}
+                  ariaLabel="Origen de los destinatarios"
                   data-testid="campaign-audience-source-select"
-                >
-                  <option value="bookings">Clientes con reserva</option>
-                  <option value="manual">Lista manual</option>
-                </select>
-              </label>
+                />
+              </div>
               {form.audience === "bookings" ? (
                 <InlineCounter
                   label="Ultimos dias"
