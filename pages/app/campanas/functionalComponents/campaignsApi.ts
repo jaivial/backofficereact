@@ -1,4 +1,5 @@
 import { createClient } from "../../../../api/client";
+import { markdownImages } from "../../../../lib/richText/markdownHtml";
 import type { APISuccess, APIError, Campaign, CampaignChannel, CampaignInput, CampaignTheme } from "../../../../api/types";
 
 // Single access point to the campaign endpoints so pages stay presentational.
@@ -99,6 +100,32 @@ export const DEFAULT_CAMPAIGN_THEME: CampaignTheme = {
   maxWidth: 600,
   align: "left",
 };
+
+/** Coordination id of the WhatsApp lead media, shared with the sender. */
+export const CAMPAIGN_WHATSAPP_MEDIA_COORD_ID = "camp-wa-media";
+
+// One markdown image token, the exact shape `markdownImages` parses
+// (`![alt](URL =W)`); it only locates the token so it can be dropped.
+const MARKDOWN_IMAGE_TOKEN_RE = /!\[[^\]]*\]\([^)\s]+(?:\s+[^\s)]+)?\)/g;
+
+/**
+ * Lead media of a WhatsApp message, mirroring `splitCampaignLeadImage`
+ * (`internal/api/campaign_markdown.go`): the FIRST `https://` markdown image
+ * becomes the media and the markdown without it is the caption. Images without
+ * an `https://` URL and any extra one stay in the caption as their URL, the same
+ * degradation the backend applies. Null when there is nothing to attach.
+ */
+export function whatsappLeadImage(markdown: string): { src: string; alt: string; caption: string } | null {
+  const lead = markdownImages(markdown).find((image) => image.src.toLowerCase().startsWith("https://"));
+  if (!lead) return null;
+  let dropped = false;
+  const caption = (markdown || "").replace(MARKDOWN_IMAGE_TOKEN_RE, (token) => {
+    if (dropped || markdownImages(token)[0]?.src !== lead.src) return token;
+    dropped = true;
+    return "";
+  });
+  return { src: lead.src, alt: lead.alt, caption };
+}
 
 /**
  * Client-side twin of the backend WhatsApp renderer, used for live preview.
