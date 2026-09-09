@@ -1,7 +1,7 @@
 import type { BOSection } from "./rbac";
 
 /** Supported A/B versions assignable per user+restaurant. */
-export const APP_VERSIONS = ["0.0.1", "0.1", "0.2"] as const;
+export const APP_VERSIONS = ["0.0.1", "0.1", "0.2", "0.3"] as const;
 export type AppVersion = (typeof APP_VERSIONS)[number];
 
 export type AppCapability = "mobileNavOrder" | "stock" | "pos" | "estadisticas" | "plataforma" | "ads" | "campanas";
@@ -13,7 +13,7 @@ const CAPABILITY_MIN_VERSION: Record<AppCapability, AppVersion> = {
   estadisticas: "0.2",
   plataforma: "0.2",
   ads: "0.2",
-  campanas: "0.0.1",
+  campanas: "0.3",
 };
 
 const SECTION_CAPABILITY: Partial<Record<BOSection, AppCapability>> = {
