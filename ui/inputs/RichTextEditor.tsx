@@ -89,12 +89,16 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
   // The fallback textarea grows exactly like the rich surface, so the box does
   // not jump when the library finishes loading and TipTap takes over.
   // Measured after mount only: nothing here runs during server render.
-  useEffect(() => {
+  const growFallback = useCallback(() => {
     const node = fallbackRef.current;
     if (!node) return;
     node.style.height = "auto";
     node.style.height = `${Math.max(minHeight, node.scrollHeight)}px`;
-  }, [minHeight, value]);
+  }, [minHeight]);
+
+  useEffect(() => {
+    growFallback();
+  }, [growFallback, value]);
 
   // Pushes external values in (edit mode hydration, programmatic resets).
   useEffect(() => {
@@ -245,6 +249,7 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
         </div>
       ) : (
         <textarea
+          ref={fallbackRef}
           className="bo-input w-full font-mono text-sm"
           style={{ ...autoGrowStyle(minHeight), padding: SURFACE_PADDING, overflow: "hidden" }}
           value={value}
@@ -252,6 +257,7 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
           onChange={(event) => {
             emittedRef.current = event.currentTarget.value;
             onChange(event.currentTarget.value);
+            growFallback();
           }}
           data-testid={`${testId}-fallback-textarea`}
         />
