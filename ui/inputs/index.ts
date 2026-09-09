@@ -6,6 +6,7 @@ export { FormField } from "./FormField";
 export { ImageAdvisorOverlay } from "./ImageAdvisorOverlay";
 export { ImageDropInput } from "./ImageDropInput";
 export { PhoneInput } from "./PhoneInput";
+export { RichTextEditor } from "./RichTextEditor";
 export { Select } from "./Select";
 export { Slider } from "./Slider";
 export { SwitchField } from "./SwitchField";
