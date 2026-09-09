@@ -12,7 +12,7 @@ export default function CampanaEditPage() {
   return (
     <section className="grid gap-4" aria-label="Campana" data-testid="campaign-edit-page">
       <a href="/app/campanas" className="inline-flex items-center gap-2 text-sm" data-testid="campaign-edit-back-link">
-        <ArrowLeft size={16} aria-hidden="true" /> Volver a campanas
+        <ArrowLeft size={16} aria-hidden="true" /> Volver a campañas
       </a>
       {data.campaignId ? (
         <CampaignEditor mode="edit" campaignId={data.campaignId} initialCampaign={data.initialCampaign} />

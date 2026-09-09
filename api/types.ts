@@ -2466,6 +2466,17 @@ export type CampaignInput = Pick<
   Campaign,
   "name" | "subject" | "body_markdown" | "theme" | "channels" | "audience" | "audience_days" | "manual_recipients" | "email_per_minute" | "whatsapp_per_minute"
 >;
+export type CampaignUnsubscribed = {
+  booking_id: number;
+  customer_name: string;
+  contact: string;
+  channel: "email" | "whatsapp";
+  reason: string;
+  since: string;
+  reservation_date: string;
+  party_size: number;
+};
+
 export type CampaignAudiencePreview = { total: number; emails: number; whatsapp: number; sample: { channel: CampaignChannel; target: string; name: string; booking_id?: number }[] };
 export type CampaignRecipient = {
   id: number;

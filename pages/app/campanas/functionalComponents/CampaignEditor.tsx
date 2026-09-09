@@ -47,12 +47,13 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const { pushToast } = useToasts();
   const [form, setForm] = useState<CampaignInput>(initialCampaign ? campaignToInput(initialCampaign) : emptyCampaignInput());
   const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign);
-  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string; brandName: string; logoUrl: string; website: string }>({
+  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string; brandName: string; logoUrl: string; website: string; unsubscribeUrl: string }>({
     shell: "",
     bodyPlaceholder: "",
     brandName: "",
     logoUrl: "",
     website: "",
+    unsubscribeUrl: "",
   });
   const themeApplied = useRef(false);
   const navigated = useRef(false);
@@ -91,6 +92,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         brandName: result.brand_name ?? "",
         logoUrl: result.logo_url ?? "",
         website: result.website ?? "",
+        unsubscribeUrl: result.unsubscribe_url ?? "",
       });
       if (mode === "create" && !themeApplied.current && result.theme) {
         themeApplied.current = true;
@@ -107,12 +109,12 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     setBusy(true);
     try {
       const result = campaign ? await api.update(campaign.id, form) : await api.create(form);
-      if (!result.success || !result.campaign) throw new Error(apiMessage(result, "No se pudo guardar la campana"));
+      if (!result.success || !result.campaign) throw new Error(apiMessage(result, "No se pudo guardar la campaña"));
       setCampaign(result.campaign);
-      pushToast({ kind: "success", title: "Campanas", message: "Campana guardada" });
+      pushToast({ kind: "success", title: "Campañas", message: "Campaña guardada" });
       return result.campaign;
     } catch (err) {
-      pushToast({ kind: "error", title: "Campanas", message: errorMessage(err, "No se pudo guardar la campana") });
+      pushToast({ kind: "error", title: "Campañas", message: errorMessage(err, "No se pudo guardar la campaña") });
       return null;
     } finally {
       setBusy(false);
@@ -138,7 +140,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         // unmount the editor mid-upload and the markdown would never land in
         // the body: persist without navigating and stay on the same instance.
         const target = campaign ?? (await persist());
-        if (!target) throw new Error("No se pudo guardar la campana antes de subir la imagen");
+        if (!target) throw new Error("No se pudo guardar la campaña antes de subir la imagen");
         const result = await api.uploadImage(target.id, file);
         if (!result.success || !result.url) throw new Error(apiMessage(result, "No se pudo subir la imagen"));
         return result.url;
@@ -214,7 +216,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
   return (
     <section className="grid gap-4" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
-      <h2 className="sr-only">Editor de campana</h2>
+      <h2 className="sr-only">Editor de campaña</h2>
 
       {/* Header: identity on the left, status + actions on the right. Sticky on
           desktop so Guardar is always one click away while scrolling. */}
@@ -225,10 +227,10 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
       >
         <div className="grid min-w-0 gap-1.5" data-testid="campaign-editor-title">
           <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-faint">
-            {mode === "create" ? "Nueva campana" : "Editar campana"}
+            {mode === "create" ? "Nueva campaña" : "Editar campaña"}
           </span>
           <span className="truncate text-lg font-semibold" data-testid="campaign-name-field" data-observe="campaign-editor-name">
-            {form.name || "Campana sin nombre"}
+            {form.name || "Campaña sin nombre"}
           </span>
           <span className="truncate text-sm text-bo-muted" data-testid="campaign-subject-field" data-observe="campaign-editor-subject">
             {form.subject || "Sin asunto"}
@@ -261,7 +263,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
       <Tabs
         mode="button"
         className="mx-auto"
-        ariaLabel="Secciones de la campana"
+        ariaLabel="Secciones de la campaña"
         layoutId="campaignEditorTabs"
         activeId={tab}
         onNavigate={(_href, id) => setTab(id as CampaignEditorTab)}
@@ -374,6 +376,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               brandName={template.brandName}
               logoUrl={template.logoUrl}
               websiteUrl={template.website}
+              unsubscribeUrl={template.unsubscribeUrl}
               coordId={coordId}
             />
           </Panel>
@@ -389,7 +392,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                   <input
                     className="bo-input h-10 w-full"
                     value={form.name}
-                    placeholder="Nombre interno de la campana"
+                    placeholder="Nombre interno de la campaña"
                     onChange={(e) => patch("name", e.currentTarget.value)}
                     data-testid="campaign-name-input"
                   />
@@ -529,7 +532,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
           <CampaignSection icon={<Send size={15} aria-hidden="true" />} title="Envio" helper="Prueba la campana y sigue el progreso" data-testid="campaign-send-panel">
             <div className="grid content-start gap-3">
-              {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campana para poder probar y enviar." />}
+              {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campaña para poder probar y enviar." />}
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="flex flex-wrap gap-2">
                   <input
