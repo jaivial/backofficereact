@@ -80,6 +80,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.2.0",
     "react-is": "^19.2.0",
+    "react-native-enriched-html": "^1.1.1",
     "reactflow": "^11.11.4",
     "recharts": "^3.7.0",
     "remark-gfm": "^4.0.1",

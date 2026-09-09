@@ -6,11 +6,14 @@ export function InlineAlert({
   title,
   message,
   className,
+  testId,
 }: {
   kind: "error" | "success" | "info";
   title: string;
   message?: string;
   className?: string;
+  /** Unique hook for tests; alerts are often the only proof an action failed. */
+  testId?: string;
 }) {
   const cls =
     kind === "error"
@@ -19,7 +22,7 @@ export function InlineAlert({
         ? "bo-alert bo-alert--glass bo-alert--success"
         : "bo-alert bo-alert--glass";
   return (
-    <div className={cn(cls, className)} role="status" aria-live="polite" aria-label={title} data-ui="inline-alert">
+    <div className={cn(cls, className)} role="status" aria-live="polite" aria-label={title} data-ui="inline-alert" data-testid={testId}>
       <div className="bo-alertTitle" data-slot="alert-title">{title}</div>
       {message ? <div className="bo-alertMsg" data-slot="alert-message">{message}</div> : null}
     </div>
