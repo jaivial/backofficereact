@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "vike/client/router";
-import { Eye, Mail, MessageCircle, PenLine, Send, Settings, Trash2, Users } from "lucide-react";
+import { Eye, FileText, Gauge, Mail, MessageCircle, Palette, PenLine, ScrollText, Send, Settings, Trash2, Users } from "lucide-react";
 import type { Campaign, CampaignChannel, CampaignInput, CampaignRecipient } from "../../../../api/types";
 import { Button } from "../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { Panel } from "../../../../ui/shell/Panel";
+import { CampaignField, CampaignFieldCell, CampaignSection, CampaignStatusBadge, CAMPAIGN_CAPTION_CLASS, CAMPAIGN_FIELD_CELL } from "./campaignUi";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
 import { RichTextEditor } from "../../../../ui/inputs/RichTextEditor";
 import { Select } from "../../../../ui/inputs/Select";
@@ -204,24 +205,70 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     if (result.success) void navigate(LIST_HREF);
   }, [api, campaign]);
 
+  const themeKeys = [
+    ["accent", "Color principal"],
+    ["text", "Color texto"],
+    ["surface", "Fondo tarjeta"],
+    ["background", "Fondo exterior"],
+  ] as const;
+
   return (
     <section className="grid gap-4" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
-      <div className="flex flex-wrap items-center justify-between gap-3" data-testid="campaign-editor-header">
-        <div className="grid gap-0.5">
-          <h2 className="text-lg font-semibold" data-testid="campaign-editor-title">
-            {mode === "create" ? "Nueva campana" : form.name || "Campana"}
-          </h2>
-          <span className="text-sm opacity-70" data-testid="campaign-editor-meta">
-            {campaign ? `${campaign.status} · ${campaign.stats?.sent ?? 0}/${campaign.stats?.total ?? 0} enviados` : "Borrador"}
+      <h2 className="sr-only">Editor de campana</h2>
+
+      {/* Header: identity on the left, status + actions on the right. Sticky on
+          desktop so Guardar is always one click away while scrolling. */}
+      <div
+        className="grid content-start gap-3 rounded-bo-lg border border-bo-border bg-bo-shell p-3 shadow-[var(--bo-shadow-soft)] md:sticky md:top-0 md:z-30 md:flex md:items-center md:justify-between md:gap-4"
+        data-testid="campaign-editor-header"
+        data-observe="campaign-editor-header"
+      >
+        <div className="grid min-w-0 gap-1.5" data-testid="campaign-editor-title">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-faint">
+            {mode === "create" ? "Nueva campana" : "Editar campana"}
           </span>
+          <label className={CAMPAIGN_FIELD_CELL} data-testid="campaign-name-field">
+            <input
+              className="bo-input h-11 border-transparent bg-[rgba(255,255,255,0.03)] text-lg font-semibold"
+              value={form.name}
+              placeholder="Nombre interno de la campana"
+              aria-label="Nombre interno de la campana"
+              onChange={(e) => patch("name", e.currentTarget.value)}
+              data-testid="campaign-name-input"
+            />
+          </label>
+          <label className={CAMPAIGN_FIELD_CELL} data-testid="campaign-subject-field">
+            <input
+              className="bo-input h-10 border-transparent bg-[rgba(255,255,255,0.02)] text-sm"
+              value={form.subject}
+              placeholder="Asunto del email"
+              aria-label="Asunto del email"
+              onChange={(e) => patch("subject", e.currentTarget.value)}
+              data-testid="campaign-subject-input"
+            />
+          </label>
         </div>
-        <div className="flex gap-2">
-          <Button variant="primary" onClick={() => void save()} disabled={busy} data-testid="campaign-save-btn">Guardar</Button>
-          {campaign && (
-            <Button variant="danger" onClick={() => void remove()} data-testid="campaign-delete-btn">
-              <Trash2 size={16} aria-hidden="true" />
+
+        <div className="grid content-start gap-2 md:justify-items-end">
+          <span className="flex flex-wrap items-center gap-2" data-testid="campaign-editor-meta">
+            <CampaignStatusBadge status={campaign?.status} testId="campaign-editor-status" />
+            <span className="text-xs text-bo-muted">
+              {campaign ? `${campaign.stats?.sent ?? 0}/${campaign.stats?.total ?? 0} enviados` : "Borrador sin guardar"}
+            </span>
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="primary" onClick={() => void save()} disabled={busy} data-testid="campaign-save-btn">
+              <PenLine size={16} aria-hidden="true" /> Guardar
             </Button>
-          )}
+            <Button variant="secondary" onClick={() => void sendAll()} disabled={!campaign || busy} data-testid="campaign-send-btn">
+              <Send size={16} aria-hidden="true" /> Enviar
+            </Button>
+            {campaign && (
+              <Button variant="danger" aria-label="Eliminar campana" title="Eliminar campana" onClick={() => void remove()} data-testid="campaign-delete-btn">
+                <Trash2 size={16} aria-hidden="true" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -237,7 +284,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
       {tab === "editor" && (
         <div className="grid gap-4" role="tabpanel" aria-label="Editor" data-testid="campaign-tabpanel-editor">
-          <Panel title="Contenido" data-testid="campaign-content-panel">
+          <CampaignSection icon={<PenLine size={15} aria-hidden="true" />} title="Contenido del mensaje" helper="El texto que leera cada cliente" data-testid="campaign-content-panel">
             <RichTextEditor
               testId="campaign-richtext"
               coordId={coordId}
@@ -246,66 +293,76 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               onUploadImage={uploadImage}
               placeholder="Escribe el anuncio…"
             />
-          </Panel>
+          </CampaignSection>
 
-          <Panel title="Estilo del email" data-testid="campaign-theme-panel">
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {([
-                ["accent", "Color principal"],
-                ["text", "Color texto"],
-                ["surface", "Fondo tarjeta"],
-                ["background", "Fondo exterior"],
-              ] as const).map(([key, label]) => (
-                <label key={key} className="grid gap-1 text-sm" data-testid={`campaign-theme-${key}-field`}>
-                  {label}
-                  <input
-                    type="color"
-                    value={form.theme[key]}
-                    onChange={(e) => patch("theme", { ...form.theme, [key]: e.currentTarget.value })}
-                    data-testid={`campaign-theme-${key}-input`}
+          <CampaignSection
+            icon={<Palette size={15} aria-hidden="true" />}
+            title="Estilo del email"
+            helper="Colores, alineacion y tipografia del correo"
+            data-testid="campaign-theme-panel"
+          >
+            <div className="grid content-start gap-4">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                {themeKeys.map(([key, label]) => (
+                  <CampaignField key={key} label={label} data-testid={`campaign-theme-${key}-field`}>
+                    <span className="flex min-w-0 items-center gap-2 rounded-bo-md border border-bo-border bg-[rgba(255,255,255,0.03)] p-1.5 transition hover:border-[var(--bo-border-2)] hover:bg-[rgba(255,255,255,0.05)]">
+                      <input
+                        type="color"
+                        className="size-8 shrink-0 cursor-pointer rounded-bo-sm border border-bo-border-2 bg-transparent p-0"
+                        value={form.theme[key]}
+                        aria-label={label}
+                        onChange={(e) => patch("theme", { ...form.theme, [key]: e.currentTarget.value })}
+                        data-testid={`campaign-theme-${key}-input`}
+                      />
+                      <span className="min-w-0 truncate font-mono text-[11px] uppercase text-bo-muted">{form.theme[key]}</span>
+                    </span>
+                  </CampaignField>
+                ))}
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <CampaignField label="Alineacion" helper="Alinea el texto del mensaje" data-testid="campaign-theme-align-field">
+                  <Select
+                    className="w-full"
+                    value={form.theme.align}
+                    onChange={(value) => patch("theme", { ...form.theme, align: value as CampaignInput["theme"]["align"] })}
+                    options={[
+                      { value: "left", label: "Izquierda" },
+                      { value: "center", label: "Centro" },
+                      { value: "right", label: "Derecha" },
+                    ]}
+                    ariaLabel="Alineacion del texto"
+                    data-testid="campaign-theme-align-select"
                   />
-                </label>
-              ))}
-              <label className="grid gap-1 text-sm" data-testid="campaign-theme-align-field">
-                Alineacion
-                <select
-                  className="bo-input"
-                  value={form.theme.align}
-                  onChange={(e) => patch("theme", { ...form.theme, align: e.currentTarget.value as CampaignInput["theme"]["align"] })}
-                  data-testid="campaign-theme-align-select"
-                >
-                  <option value="left">Izquierda</option>
-                  <option value="center">Centro</option>
-                  <option value="right">Derecha</option>
-                </select>
-              </label>
-              <label className="grid gap-1 text-sm" data-testid="campaign-theme-font-field">
-                Tipografia
-                <select
-                  className="bo-input"
-                  value={form.theme.fontFamily}
-                  onChange={(e) => patch("theme", { ...form.theme, fontFamily: e.currentTarget.value })}
-                  data-testid="campaign-theme-font-select"
-                >
-                  <option value="Helvetica, Arial, sans-serif">Sans</option>
-                  <option value="Georgia, 'Times New Roman', serif">Serif</option>
-                  <option value="'Courier New', monospace">Mono</option>
-                </select>
-              </label>
-              <label className="grid gap-1 text-sm" data-testid="campaign-theme-width-field">
-                Ancho (px)
-                <input
-                  type="number"
-                  min={320}
-                  max={900}
-                  className="bo-input"
-                  value={form.theme.maxWidth}
-                  onChange={(e) => patch("theme", { ...form.theme, maxWidth: Number(e.currentTarget.value) || 600 })}
-                  data-testid="campaign-theme-width-input"
-                />
-              </label>
+                </CampaignField>
+                <CampaignField label="Tipografia" helper="Fuente del cuerpo del email" data-testid="campaign-theme-font-field">
+                  <Select
+                    className="w-full"
+                    value={form.theme.fontFamily}
+                    onChange={(value) => patch("theme", { ...form.theme, fontFamily: value })}
+                    options={[
+                      { value: "Helvetica, Arial, sans-serif", label: "Sans" },
+                      { value: "Georgia, 'Times New Roman', serif", label: "Serif" },
+                      { value: "'Courier New', monospace", label: "Mono" },
+                    ]}
+                    ariaLabel="Tipografia del email"
+                    data-testid="campaign-theme-font-select"
+                  />
+                </CampaignField>
+                <CampaignField label="Ancho (px)" helper="Entre 320 y 900" data-testid="campaign-theme-width-field">
+                  <input
+                    type="number"
+                    min={320}
+                    max={900}
+                    className="bo-input"
+                    value={form.theme.maxWidth}
+                    onChange={(e) => patch("theme", { ...form.theme, maxWidth: Number(e.currentTarget.value) || 600 })}
+                    data-testid="campaign-theme-width-input"
+                  />
+                </CampaignField>
+              </div>
             </div>
-          </Panel>
+          </CampaignSection>
         </div>
       )}
 
@@ -313,15 +370,15 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         <div className="grid gap-4" role="tabpanel" aria-label="Previsualizacion" data-testid="campaign-tabpanel-preview">
           <Panel
             title="Previsualizacion"
-            actions={
-              <div className="flex gap-2">
-                <Button variant={device === "mobile" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("mobile")} data-testid="campaign-preview-mobile-btn">Movil</Button>
-                <Button variant={device === "desktop" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("desktop")} data-testid="campaign-preview-desktop-btn">Ordenador</Button>
-              </div>
-            }
+            meta="El email y el WhatsApp tal y como los recibe el cliente"
             className="mx-auto h-auto w-full max-w-5xl"
+            bodyClassName="grid content-start gap-3"
             data-testid="campaign-preview-panel"
           >
+            <div className="flex flex-wrap items-center justify-center gap-2" data-testid="campaign-preview-device-toggle">
+              <Button variant={device === "mobile" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("mobile")} data-testid="campaign-preview-mobile-btn">Movil</Button>
+              <Button variant={device === "desktop" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("desktop")} data-testid="campaign-preview-desktop-btn">Ordenador</Button>
+            </div>
             <CampaignPreview
               markdown={form.body_markdown}
               theme={form.theme}
@@ -339,44 +396,52 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
       {tab === "settings" && (
         <div className="grid gap-4" role="tabpanel" aria-label="Ajustes" data-testid="campaign-tabpanel-settings">
-          <Panel title="Datos de la campana" data-testid="campaign-data-panel">
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="grid gap-1 text-sm" data-testid="campaign-name-field">
-                Nombre interno
-                <input className="bo-input" value={form.name} onChange={(e) => patch("name", e.currentTarget.value)} data-testid="campaign-name-input" />
-              </label>
-              <label className="grid gap-1 text-sm" data-testid="campaign-subject-field">
-                Asunto del email
-                <input className="bo-input" value={form.subject} onChange={(e) => patch("subject", e.currentTarget.value)} data-testid="campaign-subject-input" />
-              </label>
+          <CampaignSection icon={<FileText size={15} aria-hidden="true" />} title="Datos de la campana" helper="Nombre y asunto se editan en la cabecera" data-testid="campaign-data-panel">
+            <div className="grid content-start gap-4">
+              <dl className="grid gap-2 rounded-bo-md border border-bo-border bg-[rgba(255,255,255,0.02)] p-3 text-sm sm:grid-cols-2">
+                <div className="grid gap-0.5" data-testid="campaign-data-name">
+                  <dt className={CAMPAIGN_CAPTION_CLASS}>Nombre interno</dt>
+                  <dd className="truncate font-medium">{form.name || "Sin nombre"}</dd>
+                </div>
+                <div className="grid gap-0.5" data-testid="campaign-data-subject">
+                  <dt className={CAMPAIGN_CAPTION_CLASS}>Asunto del email</dt>
+                  <dd className="truncate">{form.subject || "Sin asunto"}</dd>
+                </div>
+              </dl>
+              <div className="grid content-start gap-2">
+                <span className={CAMPAIGN_CAPTION_CLASS}>Canales de envio</span>
+                <div className="flex flex-wrap gap-2" data-testid="campaign-channels">
+                  {CAMPAIGN_CHANNELS.map((channel) => (
+                    <Button
+                      key={channel.key}
+                      variant={form.channels.includes(channel.key) ? "primary" : "ghost"}
+                      size="sm"
+                      aria-pressed={form.channels.includes(channel.key)}
+                      onClick={() => toggleChannel(channel.key)}
+                      data-testid={`campaign-channel-${channel.key}`}
+                    >
+                      {channel.key === "email" ? <Mail size={14} aria-hidden="true" /> : <MessageCircle size={14} aria-hidden="true" />}
+                      {channel.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
+          </CampaignSection>
 
-            <div className="mt-3 flex flex-wrap gap-2" data-testid="campaign-channels">
-              {CAMPAIGN_CHANNELS.map((channel) => (
-                <Button
-                  key={channel.key}
-                  variant={form.channels.includes(channel.key) ? "primary" : "ghost"}
-                  size="sm"
-                  onClick={() => toggleChannel(channel.key)}
-                  data-testid={`campaign-channel-${channel.key}`}
-                >
-                  {channel.key === "email" ? <Mail size={14} aria-hidden="true" /> : <MessageCircle size={14} aria-hidden="true" />}
-                  {channel.label}
-                </Button>
-              ))}
-            </div>
-          </Panel>
-
-          <Panel title="Destinatarios" data-testid="campaign-audience-panel">
-            <div className="grid gap-3 md:grid-cols-3">
-              <div
-                className="grid gap-1 text-sm"
-                data-testid="campaign-audience-source-field"
-                data-observe="campaign-audience-source-field"
-              >
-                <span data-testid="campaign-audience-source-caption" data-observe="campaign-audience-source-caption">
-                  Origen
-                </span>
+          <CampaignSection
+            icon={<Users size={15} aria-hidden="true" />}
+            title="Destinatarios"
+            helper="De donde salen los contactos y a cuantos se enviara"
+            actions={
+              <Button variant="ghost" size="sm" onClick={() => void loadAudience()} disabled={!campaign} data-testid="campaign-audience-refresh-btn">
+                <Users size={14} aria-hidden="true" /> Calcular
+              </Button>
+            }
+            data-testid="campaign-audience-panel"
+          >
+            <div className="grid content-start gap-3 md:grid-cols-2">
+              <CampaignField as="div" label={<span data-testid="campaign-audience-source-caption" data-observe="campaign-audience-source-caption">Origen</span>} helper="Reservas recientes o una lista propia" data-testid="campaign-audience-source-field">
                 <Select
                   className="w-full"
                   value={form.audience}
@@ -385,118 +450,134 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                   ariaLabel="Origen de los destinatarios"
                   data-testid="campaign-audience-source-select"
                 />
-              </div>
+              </CampaignField>
               {form.audience === "bookings" ? (
-                <InlineCounter
-                  label="Ultimos dias"
-                  value={form.audience_days}
-                  min={1}
-                  max={3650}
-                  step={30}
-                  testId="campaign-audience-days-counter"
-                  onChange={(next) => patch("audience_days", next)}
-                />
+                <CampaignFieldCell>
+                  <InlineCounter
+                    label="Ultimos dias"
+                    value={form.audience_days}
+                    min={1}
+                    max={3650}
+                    step={30}
+                    testId="campaign-audience-days-counter"
+                    onChange={(next) => patch("audience_days", next)}
+                  />
+                </CampaignFieldCell>
               ) : (
-                <label className="grid gap-1 text-sm md:col-span-2" data-testid="campaign-audience-manual-field">
-                  Emails o telefonos (uno por linea)
+                <CampaignField
+                  className="md:col-span-2"
+                  label="Emails o telefonos (uno por linea)"
+                  data-testid="campaign-audience-manual-field"
+                >
                   <textarea
-                    className="bo-input min-h-[110px]"
+                    className="bo-input min-h-[110px] h-auto py-2"
                     value={form.manual_recipients.join("\n")}
                     onChange={(e) => patch("manual_recipients", e.currentTarget.value.split("\n"))}
                     data-testid="campaign-audience-manual-input"
                   />
-                </label>
+                </CampaignField>
               )}
-              <div className="flex items-end gap-2">
-                <Button variant="ghost" onClick={() => void loadAudience()} disabled={!campaign} data-testid="campaign-audience-refresh-btn">
-                  <Users size={16} aria-hidden="true" /> Calcular
-                </Button>
-                {audience && (
-                  <span className="text-sm" data-testid="campaign-audience-count">
+              <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+                {audience ? (
+                  <span className="text-xs text-bo-muted" data-testid="campaign-audience-count">
                     {audience.total} destinos ({audience.emails} email / {audience.whatsapp} WhatsApp)
                   </span>
+                ) : (
+                  <span className="text-xs text-bo-faint">Pulsa Calcular para ver cuantos destinos se alcanzaran.</span>
                 )}
               </div>
             </div>
-          </Panel>
+          </CampaignSection>
 
-          <Panel title="Ritmo de envio" meta="Mensajes por minuto por canal" data-testid="campaign-rate-panel">
+          <CampaignSection
+            icon={<Gauge size={15} aria-hidden="true" />}
+            title="Ritmo de envio"
+            helper="Mensajes por minuto por canal"
+            data-testid="campaign-rate-panel"
+          >
             <div className="grid gap-3 md:grid-cols-2">
-              <InlineCounter
-                label={`Emails por minuto (max ${CAMPAIGN_RATE_LIMITS.email.max})`}
-                value={form.email_per_minute}
-                min={CAMPAIGN_RATE_LIMITS.email.min}
-                max={CAMPAIGN_RATE_LIMITS.email.max}
-                step={5}
-                testId="campaign-rate-email-counter"
-                onChange={(next) => patch("email_per_minute", next)}
-                helperText={`${
-                  audience
-                    ? `${estimatedTime(audience.emails, form.email_per_minute, CAMPAIGN_CHANNEL_PAUSE.email)} para ${audience.emails} envios · `
-                    : ""
-                }${CAMPAIGN_RATE_NOTES.email} (${CAMPAIGN_RATE_LIMITS.email.max} por minuto)`}
-              />
-              <InlineCounter
-                label={`WhatsApp por minuto (max ${CAMPAIGN_RATE_LIMITS.whatsapp.max})`}
-                value={form.whatsapp_per_minute}
-                min={CAMPAIGN_RATE_LIMITS.whatsapp.min}
-                max={CAMPAIGN_RATE_LIMITS.whatsapp.max}
-                step={1}
-                testId="campaign-rate-whatsapp-counter"
-                onChange={(next) => patch("whatsapp_per_minute", next)}
-                helperText={`${
-                  audience
-                    ? `${estimatedTime(audience.whatsapp, form.whatsapp_per_minute, CAMPAIGN_CHANNEL_PAUSE.whatsapp)} para ${audience.whatsapp} envios · `
-                    : ""
-                }${CAMPAIGN_RATE_NOTES.whatsapp} (un envio cada 5 min)`}
-              />
-            </div>
-          </Panel>
-
-          <Panel title="Envio" data-testid="campaign-send-panel">
-            {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campana para poder probar y enviar." />}
-            <div className="mt-2 grid gap-3 md:grid-cols-2">
-              <div className="flex gap-2">
-                <input
-                  className="bo-input flex-1"
-                  placeholder="email o telefono de prueba"
-                  value={testTarget}
-                  onChange={(e) => setTestTarget(e.currentTarget.value)}
-                  data-testid="campaign-test-input"
+              <CampaignFieldCell>
+                <InlineCounter
+                  label={`Emails por minuto (max ${CAMPAIGN_RATE_LIMITS.email.max})`}
+                  value={form.email_per_minute}
+                  min={CAMPAIGN_RATE_LIMITS.email.min}
+                  max={CAMPAIGN_RATE_LIMITS.email.max}
+                  step={5}
+                  testId="campaign-rate-email-counter"
+                  onChange={(next) => patch("email_per_minute", next)}
+                  helperText={`${
+                    audience
+                      ? `${estimatedTime(audience.emails, form.email_per_minute, CAMPAIGN_CHANNEL_PAUSE.email)} para ${audience.emails} envios \u00b7 `
+                      : ""
+                  }${CAMPAIGN_RATE_NOTES.email} (${CAMPAIGN_RATE_LIMITS.email.max} por minuto)`}
                 />
-                <Button variant="ghost" onClick={() => void sendTest()} disabled={!campaign} data-testid="campaign-test-btn">Probar</Button>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button variant="primary" onClick={() => void sendAll()} disabled={!campaign || busy} data-testid="campaign-send-btn">
-                  <Send size={16} aria-hidden="true" /> Enviar a todos
-                </Button>
-                {campaign && (
-                  <span className="text-sm" data-testid="campaign-send-progress">
-                    {campaign.stats?.sent ?? 0} enviados · {campaign.stats?.failed ?? 0} fallidos · {campaign.stats?.pending ?? 0} pendientes
-                  </span>
-                )}
+              </CampaignFieldCell>
+              <CampaignFieldCell>
+                <InlineCounter
+                  label={`WhatsApp por minuto (max ${CAMPAIGN_RATE_LIMITS.whatsapp.max})`}
+                  value={form.whatsapp_per_minute}
+                  min={CAMPAIGN_RATE_LIMITS.whatsapp.min}
+                  max={CAMPAIGN_RATE_LIMITS.whatsapp.max}
+                  step={1}
+                  testId="campaign-rate-whatsapp-counter"
+                  onChange={(next) => patch("whatsapp_per_minute", next)}
+                  helperText={`${
+                    audience
+                      ? `${estimatedTime(audience.whatsapp, form.whatsapp_per_minute, CAMPAIGN_CHANNEL_PAUSE.whatsapp)} para ${audience.whatsapp} envios \u00b7 `
+                      : ""
+                  }${CAMPAIGN_RATE_NOTES.whatsapp} (un envio cada 5 min)`}
+                />
+              </CampaignFieldCell>
+            </div>
+          </CampaignSection>
+
+          <CampaignSection icon={<Send size={15} aria-hidden="true" />} title="Envio" helper="Prueba la campana y sigue el progreso" data-testid="campaign-send-panel">
+            <div className="grid content-start gap-3">
+              {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campana para poder probar y enviar." />}
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    className="bo-input min-w-0 flex-1"
+                    placeholder="email o telefono de prueba"
+                    aria-label="Destino de la prueba"
+                    value={testTarget}
+                    onChange={(e) => setTestTarget(e.currentTarget.value)}
+                    data-testid="campaign-test-input"
+                  />
+                  <Button variant="ghost" onClick={() => void sendTest()} disabled={!campaign || !testTarget.trim()} data-testid="campaign-test-btn">Probar</Button>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  {campaign ? (
+                    <span className="text-xs text-bo-muted" data-testid="campaign-send-progress">
+                      {campaign.stats?.sent ?? 0} enviados &middot; {campaign.stats?.failed ?? 0} fallidos &middot; {campaign.stats?.pending ?? 0} pendientes
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </div>
-          </Panel>
+          </CampaignSection>
 
-          <Panel
+          <CampaignSection
+            icon={<ScrollText size={15} aria-hidden="true" />}
             title="Registro de envios"
-            meta="Reserva, canal y estado por destinatario"
-            actions={<Button variant="ghost" size="sm" onClick={() => void loadRecipients()} disabled={!campaign} data-testid="campaign-recipients-refresh-btn">Actualizar</Button>}
+            helper="Reserva, canal y estado por destinatario"
+            actions={
+              <Button variant="ghost" size="sm" onClick={() => void loadRecipients()} disabled={!campaign} data-testid="campaign-recipients-refresh-btn">Actualizar</Button>
+            }
             data-testid="campaign-recipients-panel"
           >
             {recipients.length === 0 ? (
-              <p className="text-sm opacity-70" data-testid="campaign-recipients-empty">Sin envios registrados todavia.</p>
+              <p className="text-xs text-bo-faint" data-testid="campaign-recipients-empty">Sin envios registrados todavia.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm" data-testid="campaign-recipients-table">
+              <div className="overflow-x-auto rounded-bo-md border border-bo-border">
+                <table className="bo-table w-full" data-testid="campaign-recipients-table">
                   <thead>
                     <tr>
-                      <th className="text-left" data-testid="campaign-recipients-th-booking">Reserva</th>
-                      <th className="text-left" data-testid="campaign-recipients-th-channel">Canal</th>
-                      <th className="text-left" data-testid="campaign-recipients-th-target">Destino</th>
-                      <th className="text-left" data-testid="campaign-recipients-th-status">Estado</th>
-                      <th className="text-left" data-testid="campaign-recipients-th-sentat">Enviado</th>
+                      <th data-testid="campaign-recipients-th-booking">Reserva</th>
+                      <th data-testid="campaign-recipients-th-channel">Canal</th>
+                      <th data-testid="campaign-recipients-th-target">Destino</th>
+                      <th data-testid="campaign-recipients-th-status">Estado</th>
+                      <th data-testid="campaign-recipients-th-sentat">Enviado</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -504,7 +585,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                       <tr key={row.id} data-testid={`campaign-recipient-row-${row.id}`} data-booking-id={row.booking_id || ""} data-coord-id={coordId}>
                         <td>{row.booking_id || "—"}</td>
                         <td>{row.channel}</td>
-                        <td>{row.target}</td>
+                        <td className="max-w-[220px] truncate">{row.target}</td>
                         <td title={row.error}>{row.status}</td>
                         <td>{row.sent_at || "—"}</td>
                       </tr>
@@ -513,7 +594,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                 </table>
               </div>
             )}
-          </Panel>
+          </CampaignSection>
         </div>
       )}
     </section>
