@@ -17,7 +17,7 @@ import {
 } from "./campaignUi";
 
 /** One responsive column on phones, two from md, three from xl. */
-const CAMPAIGNS_GRID_CLASS = "grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3";
+const CAMPAIGNS_GRID_CLASS = "list-none m-0 grid grid-cols-1 gap-3 p-0 md:grid-cols-2 xl:grid-cols-3";
 
 /** Card skeleton: keeps the grid shape while the list is on its way. */
 function CampaignCardSkeleton({ index }: { index: number }) {
@@ -68,7 +68,7 @@ function CampaignCard({ campaign, busy, onDelete }: CampaignCardProps) {
             <CampaignStatusBadge status={campaign.status} testId={`campaign-item-status-${campaign.id}`} />
           </div>
 
-          <ul className="flex flex-wrap items-center gap-1.5" data-testid={`campaign-item-channels-${campaign.id}`}>
+          <ul className="list-none m-0 flex flex-wrap items-center gap-1.5 p-0" data-testid={`campaign-item-channels-${campaign.id}`}>
             {channels.length ? (
               channels.map((channel) => (
                 <li
