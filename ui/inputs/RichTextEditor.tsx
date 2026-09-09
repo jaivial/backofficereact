@@ -29,6 +29,21 @@ export type RichTextEditorProps = {
 
 type EnrichedComponent = React.ComponentType<EnrichedTextInputProps>;
 
+/** Inner padding of the editing surface, shared with the loading fallback so the swap is seamless. */
+const SURFACE_PADDING = 12;
+
+/**
+ * Auto-grow contract of the editor surface: every layer is `height: auto`, so the
+ * content decides the height and `minHeight` is only a floor. Nothing scrolls
+ * internally, the page scrolls instead. `border-box` keeps the floor comparable
+ * between the rich editor and its fallback, whatever the padding is.
+ */
+type AutoGrowStyle = { height: "auto"; minHeight: number; boxSizing: "border-box" };
+
+function autoGrowStyle(minHeight: number): AutoGrowStyle {
+  return { height: "auto", minHeight, boxSizing: "border-box" };
+}
+
 /** Natural size of an uploaded image, capped to the email content width. */
 async function measureImage(url: string, maxWidth: number): Promise<{ width: number; height: number }> {
   return new Promise((resolve) => {
@@ -49,6 +64,7 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
   const [error, setError] = useState("");
   const editorRef = useRef<EnrichedTextInputInstance | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const fallbackRef = useRef<HTMLTextAreaElement | null>(null);
   // Markdown this editor itself emitted. Comparing against it tells an external
   // change (a loaded campaign) from the user's own typing, so the caret is
   // never reset while writing.
@@ -69,6 +85,20 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
   // the library finishes loading, and updated afterwards through `setValue`.
   const initialMarkdownRef = useRef(value);
   initialMarkdownRef.current = seededRef.current ? initialMarkdownRef.current : value;
+
+  // The fallback textarea grows exactly like the rich surface, so the box does
+  // not jump when the library finishes loading and TipTap takes over.
+  // Measured after mount only: nothing here runs during server render.
+  const growFallback = useCallback(() => {
+    const node = fallbackRef.current;
+    if (!node) return;
+    node.style.height = "auto";
+    node.style.height = `${Math.max(minHeight, node.scrollHeight)}px`;
+  }, [minHeight]);
+
+  useEffect(() => {
+    growFallback();
+  }, [growFallback, value]);
 
   // Pushes external values in (edit mode hydration, programmatic resets).
   useEffect(() => {
@@ -159,7 +189,7 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
   }, [onChange]);
 
   return (
-    <div className="grid gap-2" data-testid={testId} data-coord-id={coordId} data-observe="rich-text-editor">
+    <div className="grid gap-2" style={{ height: "auto" }} data-testid={testId} data-coord-id={coordId} data-observe="rich-text-editor">
       <div className="flex flex-wrap items-center gap-1" data-testid={`${testId}-toolbar`}>
         {tools.map((tool) => (
           <Button
@@ -201,25 +231,33 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
       </div>
       {error ? <InlineAlert kind="error" title="Imagen" message={error} className="text-sm" testId={`${testId}-image-error`} /> : null}
       {Enriched ? (
-        <div className="bo-input overflow-auto p-0" style={{ minHeight }} data-testid={`${testId}-surface`}>
+        <div
+          className="bo-input p-0"
+          style={autoGrowStyle(minHeight)}
+          data-testid={`${testId}-surface`}
+          data-observe="rich-text-editor-surface"
+          data-coord-id={coordId ? `${coordId}-surface` : undefined}
+        >
           <Enriched
             ref={editorRef}
             defaultValue={markdownToHtml(initialMarkdownRef.current)}
             placeholder={placeholder}
             scrollEnabled={false}
-            style={{ minHeight, padding: 12 }}
+            style={{ ...autoGrowStyle(minHeight), padding: SURFACE_PADDING }}
             onChangeHtml={(event) => handleHtml(event.nativeEvent.value)}
           />
         </div>
       ) : (
         <textarea
+          ref={fallbackRef}
           className="bo-input w-full font-mono text-sm"
-          style={{ minHeight }}
+          style={{ ...autoGrowStyle(minHeight), padding: SURFACE_PADDING, overflow: "hidden" }}
           value={value}
           placeholder={placeholder}
           onChange={(event) => {
             emittedRef.current = event.currentTarget.value;
             onChange(event.currentTarget.value);
+            growFallback();
           }}
           data-testid={`${testId}-fallback-textarea`}
         />
