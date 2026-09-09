@@ -2131,6 +2131,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async listCampaigns(): Promise<APISuccess<{ campaigns: import("./types").Campaign[] }> | APIError> {
         return json("/api/admin/campanas", { method: "GET" });
       },
+      async listCampaignUnsubscribed(page = 1): Promise<APISuccess<{ items: import("./types").CampaignUnsubscribed[]; page: number; page_size: number; total: number; total_pages: number }> | APIError> {
+        return json(`/api/admin/campanas/unsubscribed?page=${page}`, { method: "GET" });
+      },
       async getCampaign(id: number): Promise<APISuccess<{ campaign: import("./types").Campaign }> | APIError> {
         return json(`/api/admin/campanas/${id}`, { method: "GET" });
       },

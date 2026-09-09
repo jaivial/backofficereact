@@ -20,13 +20,15 @@ type CampaignPreviewProps = {
   logoUrl?: string;
   /** Public website of the restaurant; empty means no website button at all. */
   websiteUrl?: string;
+  /** Opt-out link rendered as the second interactive button; empty hides it. */
+  unsubscribeUrl?: string;
   /** Coordination id shared with the backend for cross-boundary tracing. */
   coordId?: string;
 };
 
 const MIN_PREVIEW_HEIGHT = 240;
 
-export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, device, brandName = "", logoUrl = "", websiteUrl = "", coordId }: CampaignPreviewProps) {
+export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, device, brandName = "", logoUrl = "", websiteUrl = "", unsubscribeUrl = "", coordId }: CampaignPreviewProps) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const [height, setHeight] = useState(MIN_PREVIEW_HEIGHT);
 
@@ -91,6 +93,7 @@ export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, devic
             brandName={brandName}
             logoUrl={logoUrl}
             websiteUrl={websiteUrl}
+            unsubscribeUrl={unsubscribeUrl}
             accent={theme.accent}
             time={IPHONE_DEFAULT_TIME}
             coordId={coordId}

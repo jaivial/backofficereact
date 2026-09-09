@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { navigate } from "vike/client/router";
-import { Mail, MessageCircle, Megaphone, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Mail, MessageCircle, Megaphone, Pencil, Plus, Trash2, UserX, Users } from "lucide-react";
 import type { Campaign } from "../../../../api/types";
 import { Button } from "../../../../ui/actions/Button";
 import { EmptyState } from "../../../../ui/feedback/EmptyState";
@@ -59,7 +59,7 @@ function CampaignCard({ campaign, busy, onDelete }: CampaignCardProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="grid min-w-0 gap-1">
               <h3 className="truncate text-base font-semibold leading-tight" title={campaign.name} data-testid={`campaign-item-name-${campaign.id}`}>
-                {campaign.name || "Campana sin nombre"}
+                {campaign.name || "Campaña sin nombre"}
               </h3>
               <p className="line-clamp-2 text-xs text-bo-muted" title={campaign.subject} data-testid={`campaign-item-subject-${campaign.id}`}>
                 {campaign.subject || "Sin asunto"}
@@ -107,8 +107,8 @@ function CampaignCard({ campaign, busy, onDelete }: CampaignCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label={`Eliminar ${campaign.name || "la campana"}`}
-                title="Eliminar campana"
+                aria-label={`Eliminar ${campaign.name || "la campaña"}`}
+                title="Eliminar campaña"
                 disabled={busy}
                 className="opacity-60 transition hover:text-[var(--bo-on-surface-danger)] hover:opacity-100 focus-visible:opacity-100"
                 onClick={() => onDelete(campaign)}
@@ -159,7 +159,7 @@ export function CampaignsList() {
   }, [api, load]);
 
   return (
-    <section className="grid gap-4" aria-label="Campanas" data-testid="campaigns-list-page">
+    <section className="grid gap-4" aria-label="Campañas" data-testid="campaigns-list-page">
       <div className="grid content-start gap-3" data-testid="campaigns-list-panel">
         <PageToolbar
           className="mb-0 items-end"
@@ -169,7 +169,7 @@ export function CampaignsList() {
                 <span className="grid size-8 place-items-center rounded-bo-sm border border-bo-border-2 bg-bo-surface-2 text-bo-accent" aria-hidden="true">
                   <Megaphone size={16} />
                 </span>
-                Campanas
+                Campañas
                 <span className="rounded-bo-full border border-bo-border-2 bg-bo-surface-2 px-2 py-0.5 text-[11px] font-semibold text-bo-muted" data-testid="campaigns-list-count">
                   {loading ? "\u2026" : campaigns.length}
                 </span>
@@ -178,16 +178,21 @@ export function CampaignsList() {
             </div>
           }
           right={
-            <Button variant="primary" onClick={() => void navigate("/app/campanas/nueva")} data-testid="campaign-create-btn">
-              <Plus size={16} aria-hidden="true" /> Nueva campana
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="ghost" onClick={() => void navigate("/app/campanas/unsubscribed")} data-testid="campaign-unsubscribed-nav-btn">
+                <UserX size={16} aria-hidden="true" /> Bajas
+              </Button>
+              <Button variant="primary" onClick={() => void navigate("/app/campanas/nueva")} data-testid="campaign-create-btn">
+                <Plus size={16} aria-hidden="true" /> Nueva campaña
+              </Button>
+            </div>
           }
           data-testid="campaigns-list-toolbar"
         />
 
         {loading ? (
           <div className="grid content-start gap-3" data-testid="campaigns-list-loading">
-            <LoadingSpinner size="sm" label="Cargando campanas" centered />
+            <LoadingSpinner size="sm" label="Cargando campañas" centered />
             <ul className={CAMPAIGNS_GRID_CLASS} data-observe="campaigns-list-skeletons">
               {[0, 1, 2].map((index) => <CampaignCardSkeleton key={index} index={index} />)}
             </ul>
@@ -196,12 +201,12 @@ export function CampaignsList() {
           <EmptyState
             variant="tailwind"
             className="p-10"
-            title="Todavia no hay campanas"
-            description="Crea la primera campana para anunciar novedades a tus clientes por email y WhatsApp."
+            title="Todavia no hay campañas"
+            description="Crea la primera campaña para anunciar novedades a tus clientes por email y WhatsApp."
             data-testid="campaigns-list-empty"
           >
             <Button variant="primary" className="mt-1" onClick={() => void navigate("/app/campanas/nueva")} data-testid="campaigns-empty-create-btn">
-              <Plus size={16} aria-hidden="true" /> Crear campana
+              <Plus size={16} aria-hidden="true" /> Crear campaña
             </Button>
           </EmptyState>
         ) : (
