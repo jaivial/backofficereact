@@ -1,8 +1,15 @@
 import React from "react";
-import { ArrowLeft, Check, MoreVertical, Phone, Plus, Search, Send, Smile, Video } from "lucide-react";
+import { ArrowLeft, Check, Link2, MoreVertical, Phone, Plus, Search, Send, Smile, Video } from "lucide-react";
 import { cn } from "../../../../ui/shadcn/utils";
 import { CAMPAIGN_WEBSITE_COORD_ID } from "./campaignEmailChrome";
-import { CAMPAIGN_WHATSAPP_MEDIA_COORD_ID, toWhatsAppText, whatsappLeadImage } from "./campaignsApi";
+import {
+  CAMPAIGN_WHATSAPP_MEDIA_COORD_ID,
+  CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID,
+  CAMPAIGN_WHATSAPP_WEBSITE_COPY,
+  toWhatsAppText,
+  whatsappLeadImage,
+  whatsappWebsiteHref,
+} from "./campaignsApi";
 import { IPHONE_DEFAULT_TIME, IPHONE_STATUSBAR_HEIGHT } from "./IPhoneFrame";
 
 /*
@@ -10,8 +17,9 @@ import { IPHONE_DEFAULT_TIME, IPHONE_STATUSBAR_HEIGHT } from "./IPhoneFrame";
  * markdown becomes a media bubble and the remaining markdown, composed with
  * `toWhatsAppText` (the same string the sender delivers), is its caption: the
  * same split the backend does, so the operator proof-reads the real message
- * instead of a raw block. Pure markup: no state, no browser APIs, deterministic
- * output.
+ * instead of a raw block. The website is not part of that text: like the sender,
+ * it is a native URL button drawn below the bubble. Pure markup: no state, no
+ * browser APIs, deterministic output.
  */
 
 // WhatsApp palette, light theme, kept in one place so the whole chat matches.
@@ -28,7 +36,7 @@ type WhatsAppPreviewProps = {
   brandName?: string;
   /** Restaurant logo; the avatar falls back to the brand initial without it. */
   logoUrl?: string;
-  /** Website advertised in the message, linked with the backend coordination id. */
+  /** Website of the call-to-action button below the bubble; empty hides it. */
   websiteUrl?: string;
   /** Accent used for links; defaults to the WhatsApp blue. */
   accent?: string;
@@ -59,10 +67,6 @@ function tokenPattern(websiteUrl: string): RegExp {
   const host = websiteHost(websiteUrl);
   if (host) parts.splice(2, 0, escapeRegExp(host));
   return new RegExp(`(${parts.join("|")})`, "g");
-}
-
-function linkHref(raw: string): string {
-  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 }
 
 /**
@@ -101,7 +105,7 @@ function renderBubbleText(text: string, websiteUrl: string, accent: string): Rea
       nodes.push(
         <a
           key={key}
-          href={linkHref(raw)}
+          href={whatsappWebsiteHref(raw)}
           target="_blank"
           rel="noreferrer noopener"
           className="no-underline hover:underline"
@@ -118,6 +122,32 @@ function renderBubbleText(text: string, websiteUrl: string, accent: string): Rea
   }
   if (cursor < text.length) nodes.push(text.slice(cursor));
   return nodes;
+}
+
+/**
+ * WhatsApp call-to-action URL button, the way the app draws one: light surface
+ * over the chat, centred label, a hairline on top and the chain icon on its
+ * left. Rendered below the bubble, never inside the text. Null without a
+ * website, the same contract `toWhatsAppText` used to have with its URL line.
+ */
+function WebsiteButton({ websiteUrl, accent }: { websiteUrl: string; accent: string }) {
+  const href = whatsappWebsiteHref(websiteUrl);
+  if (!href) return null;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+      className="flex w-full max-w-[88%] items-center justify-center gap-1.5 self-start rounded-lg px-3 py-2 text-[13px] font-medium no-underline"
+      style={{ backgroundColor: WHATSAPP_BUBBLE_BG, borderTop: "1px solid rgba(0,0,0,0.08)", color: accent }}
+      data-testid="campaign-preview-whatsapp-website-btn"
+      data-coord-id={CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID}
+      data-observe="campaign-preview-whatsapp-website-btn"
+    >
+      <Link2 size={14} aria-hidden="true" data-testid="campaign-preview-whatsapp-website-btn-icon" data-observe="campaign-preview-whatsapp-website-btn-icon" />
+      {CAMPAIGN_WHATSAPP_WEBSITE_COPY}
+    </a>
+  );
 }
 
 /** Restaurant avatar: the logo when there is one, the initial otherwise. */
@@ -219,6 +249,7 @@ export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websit
             {renderBubbleText(text, websiteUrl, accent)}
           </span>
         </div>
+        <WebsiteButton websiteUrl={websiteUrl} accent={accent} />
       </div>
 
       <div

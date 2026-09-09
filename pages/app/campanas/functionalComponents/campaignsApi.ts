@@ -1,4 +1,5 @@
 import { createClient } from "../../../../api/client";
+import { CAMPAIGN_WEBSITE_COPY } from "./campaignEmailChrome";
 import { markdownImages } from "../../../../lib/richText/markdownHtml";
 import type { APISuccess, APIError, Campaign, CampaignChannel, CampaignInput, CampaignTheme } from "../../../../api/types";
 
@@ -104,6 +105,23 @@ export const DEFAULT_CAMPAIGN_THEME: CampaignTheme = {
 /** Coordination id of the WhatsApp lead media, shared with the sender. */
 export const CAMPAIGN_WHATSAPP_MEDIA_COORD_ID = "camp-wa-media";
 
+/** Coordination id of the WhatsApp website button, shared with the sender. */
+export const CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID = "camp-wa-website";
+
+/** Copy of the WhatsApp call to action, the same wording the email uses. */
+export const CAMPAIGN_WHATSAPP_WEBSITE_COPY = CAMPAIGN_WEBSITE_COPY;
+
+/**
+ * Absolute `https://` target for a website the sender accepts bare
+ * (`villacarmen.com`), the same normalisation a bubble applies to a link.
+ * Empty when there is no website, so callers just skip the button.
+ */
+export function whatsappWebsiteHref(websiteUrl: string): string {
+  const url = websiteUrl.trim();
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 // One markdown image token, the exact shape `markdownImages` parses
 // (`![alt](URL =W)`); it only locates the token so it can be dropped.
 const MARKDOWN_IMAGE_TOKEN_RE = /!\[[^\]]*\]\([^)\s]+(?:\s+[^\s)]+)?\)/g;
@@ -129,9 +147,11 @@ export function whatsappLeadImage(markdown: string): { src: string; alt: string;
 
 /**
  * Client-side twin of the backend WhatsApp renderer, used for live preview.
- * `brandName` becomes the bold first line the email shows in its accent band and
- * `websiteUrl` the "Visita nuestra web" line placed after the body, right where
- * the sender appends the opt-out link; anything missing is simply omitted.
+ * `brandName` becomes the bold first line the email shows in its accent band,
+ * exactly what the sender delivers: brand header + body (+ opt-out link). The
+ * website is NOT part of the text any more, the backend ships it as a native
+ * WhatsApp URL button, so `websiteUrl` is kept only for call compatibility and
+ * ignored here; anything missing is simply omitted.
  */
 export function toWhatsAppText(markdown: string, brandName = "", websiteUrl = ""): string {
   const body = markdown
@@ -153,10 +173,8 @@ export function toWhatsAppText(markdown: string, brandName = "", websiteUrl = ""
     .replace(/\n{3,}/g, "\n\n")
     .trim();
   const brand = brandName.trim();
-  const website = websiteUrl.trim();
   const header = brand ? `*${brand}*\n\n` : "";
-  const websiteLine = website ? `${body ? "\n\n" : ""}Visita nuestra web: ${website}` : "";
-  return `${header}${body}${websiteLine}`;
+  return `${header}${body}`;
 }
 
 export const CAMPAIGN_CHANNELS: { key: CampaignChannel; label: string }[] = [
