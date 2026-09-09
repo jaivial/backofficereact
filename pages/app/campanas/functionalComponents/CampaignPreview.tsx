@@ -17,21 +17,23 @@ type CampaignPreviewProps = {
   device: "mobile" | "desktop";
   brandName?: string;
   logoUrl?: string;
+  /** Public website of the restaurant; empty means no website button at all. */
+  websiteUrl?: string;
   /** Coordination id shared with the backend for cross-boundary tracing. */
   coordId?: string;
 };
 
 const MIN_PREVIEW_HEIGHT = 240;
 
-export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, device, brandName = "", logoUrl = "", coordId }: CampaignPreviewProps) {
+export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, device, brandName = "", logoUrl = "", websiteUrl = "", coordId }: CampaignPreviewProps) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const [height, setHeight] = useState(MIN_PREVIEW_HEIGHT);
 
   const html = useMemo(() => {
     if (!shell || !bodyPlaceholder) return "";
-    const withChrome = ensureCampaignEmailChrome(shell, brandName, logoUrl, theme.accent);
+    const withChrome = ensureCampaignEmailChrome(shell, brandName, logoUrl, theme.accent, websiteUrl);
     return withChrome.replace(bodyPlaceholder, renderCampaignEmailBody(markdown, theme));
-  }, [shell, bodyPlaceholder, markdown, theme, brandName, logoUrl]);
+  }, [shell, bodyPlaceholder, markdown, theme, brandName, logoUrl, websiteUrl]);
 
   // The iframe has no intrinsic height, so the email is measured inside it and
   // the element grows to fit: no fixed height, no inner scrollbar.
@@ -81,7 +83,7 @@ export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, devic
           WhatsApp
         </figcaption>
         <pre className="whitespace-pre-wrap rounded-xl border p-3 text-sm" data-testid="campaign-preview-whatsapp">
-          {toWhatsAppText(markdown)}
+          {toWhatsAppText(markdown, brandName, websiteUrl)}
         </pre>
       </figure>
     </div>
