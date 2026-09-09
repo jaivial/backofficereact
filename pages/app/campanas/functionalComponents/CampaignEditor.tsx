@@ -46,11 +46,12 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const { pushToast } = useToasts();
   const [form, setForm] = useState<CampaignInput>(initialCampaign ? campaignToInput(initialCampaign) : emptyCampaignInput());
   const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign);
-  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string; brandName: string; logoUrl: string }>({
+  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string; brandName: string; logoUrl: string; website: string }>({
     shell: "",
     bodyPlaceholder: "",
     brandName: "",
     logoUrl: "",
+    website: "",
   });
   const themeApplied = useRef(false);
   const navigated = useRef(false);
@@ -88,6 +89,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         bodyPlaceholder: result.body_placeholder ?? "",
         brandName: result.brand_name ?? "",
         logoUrl: result.logo_url ?? "",
+        website: result.website ?? "",
       });
       if (mode === "create" && !themeApplied.current && result.theme) {
         themeApplied.current = true;
@@ -328,6 +330,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               device={device}
               brandName={template.brandName}
               logoUrl={template.logoUrl}
+              websiteUrl={template.website}
               coordId={coordId}
             />
           </Panel>
