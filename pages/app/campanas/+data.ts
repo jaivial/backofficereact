@@ -4,6 +4,6 @@ export type Data = Awaited<ReturnType<typeof data>>;
 
 export async function data() {
   const config = useConfig();
-  config({ title: "Campanas" });
+  config({ title: "Campañas" });
   return {};
 }

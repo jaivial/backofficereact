@@ -3,6 +3,8 @@ import { ArrowLeft, Check, Link2, MoreVertical, Phone, Plus, Search, Send, Smile
 import { cn } from "../../../../ui/shadcn/utils";
 import { CAMPAIGN_WEBSITE_COORD_ID } from "./campaignEmailChrome";
 import {
+  CAMPAIGN_UNSUBSCRIBE_COORD_ID,
+  CAMPAIGN_UNSUBSCRIBE_COPY,
   CAMPAIGN_WHATSAPP_MEDIA_COORD_ID,
   CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID,
   CAMPAIGN_WHATSAPP_WEBSITE_COPY,
@@ -38,6 +40,8 @@ type WhatsAppPreviewProps = {
   logoUrl?: string;
   /** Website of the call-to-action button below the bubble; empty hides it. */
   websiteUrl?: string;
+  /** Opt-out link rendered as the second interactive button; empty hides it. */
+  unsubscribeUrl?: string;
   /** Accent used for links; defaults to the WhatsApp blue. */
   accent?: string;
   /** Clock of the message bubble (same deterministic value as the frame). */
@@ -132,8 +136,16 @@ function renderBubbleText(text: string, websiteUrl: string, accent: string): Rea
  * inherits the bubble. Null without a website, the same contract
  * `toWhatsAppText` used to have with its URL line.
  */
-function WebsiteButton({ websiteUrl }: { websiteUrl: string }) {
-  const href = whatsappWebsiteHref(websiteUrl);
+type CampaignButtonProps = {
+  url: string;
+  label: string;
+  coordId: string;
+  testId: string;
+};
+
+/** Interactive button of a campaign bubble: full-bleed bottom strip of the bubble. */
+function CampaignButton({ url, label, coordId, testId }: CampaignButtonProps) {
+  const href = whatsappWebsiteHref(url);
   if (!href) return null;
   return (
     <a
@@ -142,12 +154,12 @@ function WebsiteButton({ websiteUrl }: { websiteUrl: string }) {
       rel="noreferrer noopener"
       className="clear-both -mx-2.5 -mb-1.5 mt-1.5 flex items-center justify-center gap-1.5 rounded-b-lg py-2 text-[13px] font-medium no-underline"
       style={{ borderTop: "1px solid rgba(0,0,0,0.08)", color: WHATSAPP_LINK_COLOR }}
-      data-testid="campaign-preview-whatsapp-website-btn"
-      data-coord-id={CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID}
-      data-observe="campaign-preview-whatsapp-website-btn"
+      data-testid={testId}
+      data-coord-id={coordId}
+      data-observe={testId}
     >
-      <Link2 size={14} aria-hidden="true" data-testid="campaign-preview-whatsapp-website-btn-icon" data-observe="campaign-preview-whatsapp-website-btn-icon" />
-      {CAMPAIGN_WHATSAPP_WEBSITE_COPY}
+      <Link2 size={14} aria-hidden="true" data-testid={`${testId}-icon`} data-observe={`${testId}-icon`} />
+      {label}
     </a>
   );
 }
@@ -166,7 +178,7 @@ function Avatar({ brandName, logoUrl }: { brandName: string; logoUrl: string }) 
   );
 }
 
-export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websiteUrl = "", accent = WHATSAPP_LINK_COLOR, time = IPHONE_DEFAULT_TIME, className, testId = "campaign-preview-whatsapp-screen", coordId }: WhatsAppPreviewProps) {
+export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websiteUrl = "", unsubscribeUrl = "", accent = WHATSAPP_LINK_COLOR, time = IPHONE_DEFAULT_TIME, className, testId = "campaign-preview-whatsapp-screen", coordId }: WhatsAppPreviewProps) {
   const brand = brandName.trim() || "Restaurante";
   // The backend sends the first `https://` image as media and the rest as the
   // caption, so the bubble shows exactly what the customer will receive.
@@ -250,7 +262,8 @@ export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websit
           <span className="whitespace-pre-wrap" data-testid="campaign-preview-whatsapp">
             {renderBubbleText(text, websiteUrl, accent)}
           </span>
-          <WebsiteButton websiteUrl={websiteUrl} />
+          <CampaignButton url={websiteUrl} label={CAMPAIGN_WHATSAPP_WEBSITE_COPY} coordId={CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID} testId="campaign-preview-whatsapp-website-btn" />
+          <CampaignButton url={unsubscribeUrl} label={CAMPAIGN_UNSUBSCRIBE_COPY} coordId={CAMPAIGN_UNSUBSCRIBE_COORD_ID} testId="campaign-preview-whatsapp-unsub-btn" />
         </div>
       </div>
 

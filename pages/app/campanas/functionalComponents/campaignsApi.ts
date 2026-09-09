@@ -13,6 +13,8 @@ export type CampaignTemplatePayload = {
   logo_url: string;
   /** Public website of the restaurant; empty when it has none (button omitted). */
   website: string;
+  /** Opt-out link shown as the second interactive button; empty hides it. */
+  unsubscribe_url: string;
   shell: string;
   body_placeholder: string;
 };
@@ -30,6 +32,7 @@ export function createCampaignsAPI() {
     // before api/client.ts learns about the backend key.
     template: (theme?: Partial<CampaignTheme>): Promise<APISuccess<CampaignTemplatePayload> | APIError> =>
       config.campaignTemplate(theme) as Promise<APISuccess<CampaignTemplatePayload> | APIError>,
+    unsubscribed: config.listCampaignUnsubscribed.bind(config),
     uploadImage: config.uploadCampaignImage.bind(config),
     audience: config.campaignAudience.bind(config),
     test: config.testCampaign.bind(config),
@@ -107,6 +110,8 @@ export const CAMPAIGN_WHATSAPP_MEDIA_COORD_ID = "camp-wa-media";
 
 /** Coordination id of the WhatsApp website button, shared with the sender. */
 export const CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID = "camp-wa-website";
+export const CAMPAIGN_UNSUBSCRIBE_COORD_ID = "camp-wa-unsub";
+export const CAMPAIGN_UNSUBSCRIBE_COPY = "No deseo recibir más campañas";
 
 /** Copy of the WhatsApp call to action, the same wording the email uses. */
 export const CAMPAIGN_WHATSAPP_WEBSITE_COPY = CAMPAIGN_WEBSITE_COPY;
