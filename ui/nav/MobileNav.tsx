@@ -48,7 +48,7 @@ const MOBILE_NAV_ITEMS: NavItem[] = [
   { key: "stock", label: "Stock", href: "/app/stock", icon: Boxes },
   { key: "pos", label: "TPV", href: "/app/pos", icon: MonitorSmartphone },
   { key: "estadisticas", label: "Estadisticas", href: "/app/estadisticas", icon: BarChart3 },
-  { key: "campanas", label: "Campanas", href: "/app/campanas", icon: Megaphone },
+  { key: "campanas", label: "Campañas", href: "/app/campanas", icon: Megaphone },
 ];
 
 function isActive(pathname: string, href: string): boolean {
