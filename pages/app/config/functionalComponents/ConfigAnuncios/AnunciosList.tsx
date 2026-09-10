@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { navigate } from "vike/client/router";
 import { Megaphone, Plus, Sparkles } from "lucide-react";
-import type { RestaurantAd } from "../../../../../api/types";
+import type { RestaurantAd, RestaurantAdInput } from "../../../../../api/types";
 import { FloatingActionButton } from "../../../../../ui/actions/FloatingActionButton";
 import { FoodDishCard } from "../../../../../ui/widgets/food/FoodDishCard";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
+import { Switch } from "../../../../../ui/shadcn/Switch";
 import { apiMessage, type AdsAPI, type Notify } from "./AnuncioEditor";
 
 const NOOP_NOTIFY: Notify = () => undefined;
@@ -42,6 +43,34 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
   }, [api, notify]);
 
   useEffect(() => { void load(); }, [load]);
+
+  // Per-ad activate/deactivate. Optimistic: the card flips immediately and is
+  // rolled back if the API rejects the update.
+  const toggleActive = useCallback(async (ad: RestaurantAd, next: boolean) => {
+    const previous = ad.active;
+    setAds((prev) => prev.map((item) => (item.id === ad.id ? { ...item, active: next } : item)));
+    const payload: RestaurantAdInput = {
+      name: ad.name,
+      active: next,
+      content: ad.content,
+      ctas: ad.ctas,
+      starts_at: ad.starts_at ?? null,
+      ends_at: ad.ends_at ?? null,
+    };
+    try {
+      const result = await api.updateAd(ad.id, payload);
+      if (!result.success) {
+        notify("error", "Anuncios", apiMessage(result, "No se pudo actualizar el anuncio"));
+        setAds((prev) => prev.map((item) => (item.id === ad.id ? { ...item, active: previous } : item)));
+        return;
+      }
+      const updated = result.ad;
+      if (updated) setAds((prev) => prev.map((item) => (item.id === ad.id ? updated : item)));
+    } catch (error) {
+      notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo actualizar el anuncio");
+      setAds((prev) => prev.map((item) => (item.id === ad.id ? { ...item, active: previous } : item)));
+    }
+  }, [api, notify]);
 
   const sorted = useMemo(
     () => [...ads].sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name, "es")),
@@ -103,6 +132,24 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
             onOpen={() => { void navigate(`/app/anuncios/${ad.id}`); }}
             openAriaLabel={`Abrir detalle de ${ad.name}`}
             testId={`ad-card-${ad.id}`}
+            footerActions={
+              <span
+                className="bo-anunciosCardToggle"
+                data-slot={`ad-toggle-${ad.id}`}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Switch
+                  checked={ad.active}
+                  onCheckedChange={(next) => { void toggleActive(ad, next); }}
+                  aria-label={ad.active ? `Desactivar ${ad.name}` : `Activar ${ad.name}`}
+                  data-testid={`ad-active-switch-${ad.id}`}
+                  data-slot={`ad-active-switch-${ad.id}`}
+                />
+                <span className="bo-anunciosCardToggleLabel" data-slot={`ad-toggle-label-${ad.id}`}>
+                  {ad.active ? "Activo" : "Inactivo"}
+                </span>
+              </span>
+            }
           />
         ))}
       </div>
