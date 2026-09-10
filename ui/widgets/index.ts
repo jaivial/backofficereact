@@ -20,6 +20,22 @@ export { FoodDishCard } from "./food/FoodDishCard";
 export { MenuDishPreviewCard } from "./menus/MenuDishPreviewCard";
 export { MenuSummaryCard } from "./menus/MenuSummaryCard";
 export { MenuTypeChangeModal } from "./menus/MenuTypeChangeModal";
+// Coordination id: menu_section_kind_presets_v1 + dessert_section_source_v1
+export { AddSectionModal } from "./menus/AddSectionModal";
+export type { AddSectionSelection } from "./menus/AddSectionModal";
+export {
+  SECTION_KIND_PRESETS,
+  SECTION_KIND_PRESET_OPTIONS,
+  sectionKindPreset,
+  sectionKindSeedTitle,
+  DESSERT_SOURCE_OPTIONS,
+  DESSERT_SOURCE_GENERAL,
+  DESSERT_SOURCE_CUSTOM,
+  normalizeDessertSource,
+  isGeneralDessertSection,
+  dessertSourceLabel,
+} from "./menus/sectionPresentation";
+export type { SectionKindPresetDef, DessertSource, DessertSourceOptionDef } from "./menus/sectionPresentation";
 export { MenuTypePanelGrid } from "./menus/MenuTypePanelGrid";
 export type { MenuTypePanelDef } from "./menus/menuPresentation";
 export { MENU_TYPE_PANELS, MENU_TYPE_ORDER } from "./menus/menuPresentation";
