@@ -1,16 +1,16 @@
 import React, { useCallback } from "react";
 import { navigate } from "vike/client/router";
 import { ArrowLeft } from "lucide-react";
-import { AnuncioEditor } from "../../functionalComponents/ConfigAnuncios/AnuncioEditor";
-import { useAdsController } from "../../functionalComponents/ConfigAnuncios/hooks/useAdsController";
+import { AnuncioEditor } from "../../config/functionalComponents/ConfigAnuncios/AnuncioEditor";
+import { useAdsController } from "../../config/functionalComponents/ConfigAnuncios/hooks/useAdsController";
 
-const LIST_HREF = "/app/config?content=anuncios";
+const LIST_HREF = "/app/anuncios";
 
 export default function AnuncioNewPage() {
   const { api, website, notify, wsFailureAtRef, wsStatusRef, sendAdSave, sendAdScheduleCheck, subscribeAdEvents } = useAdsController();
 
   const onSaved = useCallback((ad: { id: number }) => {
-    if (ad.id > 0) void navigate(`/app/config/anuncios/${ad.id}`);
+    if (ad.id > 0) void navigate(`/app/anuncios/${ad.id}`);
   }, []);
 
   return (

@@ -1,7 +1,7 @@
 import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
-import { createClient } from "../../../../../api/client";
-import type { RestaurantAd } from "../../../../../api/types";
+import { createClient } from "../../../../api/client";
+import type { RestaurantAd } from "../../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 

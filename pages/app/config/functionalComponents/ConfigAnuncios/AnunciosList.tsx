@@ -18,7 +18,7 @@ function firstImage(ad: RestaurantAd): string {
   return ad.content.find((entry) => entry.type === "image")?.value ?? "";
 }
 
-const NEW_HREF = "/app/config/anuncios/nuevo";
+const NEW_HREF = "/app/anuncios/nuevo";
 
 export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
   const [ads, setAds] = useState<RestaurantAd[]>([]);
@@ -100,7 +100,7 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
             title={ad.name}
             imageUrl={firstImage(ad) || null}
             inactive={!ad.active}
-            onOpen={() => { void navigate(`/app/config/anuncios/${ad.id}`); }}
+            onOpen={() => { void navigate(`/app/anuncios/${ad.id}`); }}
             openAriaLabel={`Abrir detalle de ${ad.name}`}
             testId={`ad-card-${ad.id}`}
           />
