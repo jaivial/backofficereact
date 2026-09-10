@@ -23,6 +23,7 @@ import type {
   RestaurantAdTextAlign,
 } from "../../../../../api/types";
 import { Select } from "../../../../../ui/inputs/Select";
+import { Switch } from "../../../../../ui/shadcn/Switch";
 import { Modal } from "../../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
 import { Popover } from "../../../../../ui/overlays/Popover";
@@ -414,7 +415,16 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
       <div className="bo-anunciosEditorBar" data-slot="ads-editor-bar">
         <div className="bo-anunciosEditorBar-left" data-slot="ads-editor-bar-left">
-          <span className="bo-anunciosEditorStatus" data-slot="ads-editor-status">{ad.active ? "Activo" : "Inactivo"}</span>
+          <span className="bo-anunciosActiveToggle" data-slot="ads-active-toggle">
+            <Switch
+              checked={ad.active}
+              onCheckedChange={(next) => setAd((current) => (current ? { ...current, active: next } : current))}
+              aria-label={ad.active ? "Desactivar anuncio" : "Activar anuncio"}
+              data-testid="ad-active-switch"
+              data-slot="ad-active-switch"
+            />
+            <span className="bo-anunciosEditorStatus" data-slot="ads-editor-status">{ad.active ? "Activo" : "Inactivo"}</span>
+          </span>
         </div>
         <div className="bo-anunciosEditorBar-right" data-slot="ads-editor-bar-right">
           <div
