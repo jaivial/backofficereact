@@ -61,7 +61,7 @@ export function MemberVersionControl({ boUserId, initialVersion, memberName, can
       onChange={(value) => void onChange(value)}
       options={APP_VERSIONS.map((version) => ({
         value: version,
-        label: `v${version}${version === "0.2" ? " (completa)" : " (basica)"}`,
+        label: `v${version}${version === "0.2" ? " (completa)" : version === "0.4" ? " (solo módulos)" : " (básica)"}`,
       }))}
       ariaLabel="Seleccionar version de app"
       disabled={busy}
