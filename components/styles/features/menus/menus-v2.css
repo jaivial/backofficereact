@@ -389,3 +389,40 @@
 .bo-menuFab:active {
   transform: translateY(0);
 }
+
+/* Add-section modal: dessert source cards.
+   Coordination id: dessert_section_source_v1 */
+.bo-addSectionDessertGrid {
+  grid-template-columns: 1fr;
+  margin-top: 10px;
+}
+
+@media (min-width: 620px) {
+  .bo-addSectionDessertGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.bo-addSectionDessertGrid .bo-menuTypePanel {
+  min-height: 168px;
+  text-align: center;
+}
+
+/* Read-only dessert mirror: the dish list is owned by the general carta. */
+.bo-sectionDishesReadOnly {
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.bo-sectionReadOnlyNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bo-accent) 8%, transparent);
+  font-size: 13px;
+  line-height: 1.45;
+}
