@@ -545,6 +545,7 @@ export function buildBasicsPayload(draft: BasicsDraft): BasicsPayload {
       supplement_price: draft.beverageType === "ilimitada" && draft.beverageHasSupplement ? toNumOrNull(draft.beverageSupplementPrice) : null,
     },
     comments: draft.comments.map((s) => s.trim()).filter(Boolean),
+    important_info: draft.importantInfo.map((s) => s.trim()).filter(Boolean),
     min_party_size: Math.max(1, Number(draft.minPartySize) || 1),
     main_dishes_limit: draft.mainLimit,
     main_dishes_limit_number: Math.max(1, Number(draft.mainLimitNum) || 1),
@@ -835,6 +836,7 @@ export function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []
       supplement_price: number | null;
     };
     comments: string[];
+    important_info: string[];
     min_party_size: number;
     main_dishes_limit: boolean;
     main_dishes_limit_number: number;
@@ -880,6 +882,7 @@ export function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []
         supplement_price: menu.settings?.beverage?.supplement_price ?? null,
       },
       comments: menu.settings?.comments || [],
+      important_info: menu.settings?.important_info || [],
       min_party_size: menu.settings?.min_party_size || 8,
       main_dishes_limit: !!menu.settings?.main_dishes_limit,
       main_dishes_limit_number: menu.settings?.main_dishes_limit_number || 1,
