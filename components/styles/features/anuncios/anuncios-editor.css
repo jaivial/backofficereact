@@ -82,18 +82,29 @@
 /* ── Content / CTA rows: drag handle is a dark square button in dark theme ── */
 .bo-anunciosRowCard {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 2px;
+  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-areas:
+    "grip field"
+    "grip band";
+  align-items: start;
+  gap: 2px 8px;
   padding: 8px;
   min-width: 0; /* prevent children from stretching the column out of the grid */
 }
+
+/* Every drag handle sits to the LEFT of the row label, spanning both the
+   field and the band so it reads as the row anchor. */
+.bo-anunciosRowCard > .bo-anunciosDragHandle { grid-area: grip; align-self: start; }
+.bo-anunciosRowCard > .bo-anunciosRowField { grid-area: field; }
+.bo-anunciosRowCard > .bo-anunciosRowBand,
+.bo-anunciosRowCard > .bo-anunciosRowAction { grid-area: band; }
 
 /* Footer band under each content row: drag handle, the alignment switch and
    the trash button share one horizontal level, with the grip and trash pinned
    to the edges and the tabs (or spacer) filling the middle. */
 .bo-anunciosRowBand {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   min-width: 0;
@@ -463,7 +474,11 @@
   background: var(--bo-border);
 }
 
-/* ── Live ad preview: reusable legacy ad_modal presentation ───── */
+/* ── Live ad preview: ONE mobile template at every viewport width ───────────
+   Mirrors the public site ad card (publicAdModal): single column, image on
+   top, text under it and CTAs stacked full width. The desktop split and the
+   mobile/desktop device switcher are gone so the editor preview always shows
+   exactly what the public site renders. */
 .bo-adModalPreview,
 .bo-adModalPreview * {
   box-sizing: border-box;
@@ -471,8 +486,10 @@
 
 .bo-adModalPreview {
   width: 100%;
-  max-width: 800px;
+  max-width: 560px;
   margin-inline: auto;
+  height: 80dvh;
+  height: 80vh;
   overflow: hidden;
   background: #ffffff;
   color: #333333;
@@ -484,66 +501,60 @@
 
 .bo-adModalBody {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   width: 100%;
-  min-height: 400px;
+  height: 100%;
+  min-height: 0;
   min-width: 0;
   max-width: 100%;
+  overflow-y: auto;
+  padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
 .bo-adModalImageCol {
-  width: 45%;
-  overflow: hidden;
-  flex-shrink: 0;
+  margin-inline: auto;
+  margin-block: 1rem;
+  width: 95%;
+  max-width: none;
+  flex: 0 0 auto;
   min-width: 0;
+  overflow: hidden;
+  border-radius: 1rem;
 }
 
 .bo-adModalImage {
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: 46vh;
   object-fit: cover;
   display: block;
-}
-
-.bo-adModalTextCol {
-  width: 55%;
-  padding: 48px 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-}
-
-.bo-adModalPreview:not(:has(.bo-adModalImageCol)) .bo-adModalTextCol {
-  width: 100%;
+  border-radius: 1rem;
 }
 
 .bo-adModalSupertitle {
-  font-size: 13px;
+  font-size: 12px;
   color: color-mix(in srgb, var(--ad-primary, #436754) 68%, #333333 32%);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 8px;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
   font-weight: 500;
 }
 
 .bo-adModalTitle {
-  font-size: 36px;
+  font-size: 26px;
   font-weight: 300;
   color: var(--ad-primary, #436754);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   letter-spacing: 1px;
   font-family: 'Georgia', serif;
   line-height: 1.2;
 }
 
 .bo-adModalDesc {
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 15px;
+  line-height: 1.55;
   color: #333333;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
   font-weight: 300;
   opacity: 0.85;
   white-space: pre-wrap;
@@ -553,12 +564,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .bo-adModalCta {
-  display: inline-block;
-  padding: 16px 40px;
+  display: block;
+  width: 100%;
+  align-self: stretch;
+  padding: 16px 24px;
   background: linear-gradient(
     135deg,
     var(--ad-primary, #436754),
@@ -567,14 +580,13 @@
   color: #fff;
   border: none;
   border-radius: 50px;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   text-decoration: none;
   text-align: center;
   letter-spacing: 0.5px;
-  align-self: flex-start;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
@@ -583,71 +595,16 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
-/* Legacy ad modal breakpoints preserved in the live preview. */
-@media (max-width: 768px) {
-  .bo-adModalBody { min-height: 360px; }
-  .bo-adModalTextCol { padding: 36px 32px; }
-  .bo-adModalTitle { font-size: 30px; }
-}
-
-@media (max-width: 640px) {
-  .bo-adModalBody {
-    flex-direction: column;
-    height: auto;
-    min-height: 0;
-  }
-
-  .bo-adModalImageCol {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 3;
-    max-height: 42dvh;
-    max-height: 42vh;
-  }
-
-  .bo-adModalTextCol {
-    width: 100%;
-    padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .bo-adModalSupertitle {
-    font-size: 12px;
-    letter-spacing: 1.5px;
-    margin-bottom: 6px;
-  }
-
-  .bo-adModalTitle {
-    font-size: 26px;
-    margin-bottom: 12px;
-  }
-
-  .bo-adModalDesc {
-    font-size: 15px;
-    line-height: 1.55;
-    margin-bottom: 22px;
-  }
-
-  .bo-adModalCta {
-    width: 100%;
-    align-self: stretch;
-    padding: 16px 24px;
-    font-size: 16px;
-  }
-}
-
 @media (max-width: 360px) {
-  .bo-adModalImageCol { max-height: 34dvh; max-height: 34vh; }
-  .bo-adModalTextCol { padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); }
-  .bo-adModalTitle { font-size: 23px; }
-  .bo-adModalDesc { font-size: 14px; margin-bottom: 18px; }
-  .bo-adModalCta { padding: 14px 20px; }
+  .bo-adModalImage { max-height: 34vh; }
+  .bo-adModalBody { padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); }
 }
 
 .bo-anunciosContentControl { display: grid; gap: 6px; width: 100%; }
 .bo-anunciosAlignmentTabs { display: inline-flex; width: fit-content; border: 1px solid var(--bo-border); border-radius: 999px; padding: 2px; gap: 2px; }
 .bo-anunciosAlignmentTabs button { border: 0; background: transparent; color: var(--bo-muted); border-radius: 999px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
 .bo-anunciosAlignmentTabs button.is-active { background: var(--bo-surface-2); color: var(--bo-text); }
-.bo-anunciosDurationSection { display: grid; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--bo-border); }
+.bo-anunciosDurationSection { display: grid; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--bo-border); justify-items: center; text-align: center; }
 .bo-inlineDateRange { display: grid; gap: 10px; width: min(100%, 420px); }
 .bo-inlineDateRangeSummary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; color: var(--bo-muted); font-size: 12px; }
 .bo-inlineDateRangeSummary strong { color: var(--bo-text); font-size: 13px; }
@@ -690,150 +647,6 @@
   .bo-anunciosPreviewCol {
     position: static;
     top: auto;
-  }
-}
-
-/* Force the ad's mobile (<=640px) layout on wide viewports so the editor can
-   preview how the ad folds on small screens. Rules mirror the max-width:640px
-   block; scoped behind data-preview-device="mobile" and min-width 641px so
-   natural mobile rendering is untouched. */
-@media (min-width: 641px) {
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalBody {
-    flex-direction: column;
-    height: auto;
-    min-height: 0;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImageCol {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 3;
-    max-height: 42dvh;
-    max-height: 42vh;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalTextCol {
-    width: 100%;
-    padding: 24px 22px;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalSupertitle {
-    font-size: 12px;
-    letter-spacing: 1.5px;
-    margin-bottom: 6px;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalTitle {
-    font-size: 26px;
-    margin-bottom: 12px;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalDesc {
-    font-size: 15px;
-    line-height: 1.55;
-    margin-bottom: 22px;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalCta {
-    width: 100%;
-    align-self: stretch;
-    padding: 16px 24px;
-    font-size: 16px;
-  }
-}
-
-/* Forced mobile preview: body children are flat (content-order), so give the
-   body the text column's padding and apply the requested image treatment:
-   centred, rounded, breathing room, shrink-to-content width and fill
-   available height. Overrides the 100%/aspect-ratio col rules above. */
-@media (min-width: 641px) {
-  /* Mobile preview on desktop: same 80vh cap as real phones. The body is a
-     full-height flex column so the image can take a percentage share of the
-     available space alongside the text/CTA elements. */
-  .bo-adModalPreview[data-preview-device="mobile"] {
-    height: 80dvh;
-    height: 80vh;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalBody {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImageCol {
-    margin-inline: auto;
-    border-radius: 1rem;
-    margin-block: 1rem;
-    width: 95%;
-    max-width: none;
-    flex: 0 1 55%;
-    min-height: 0;
-    height: auto;
-    max-height: none;
-    aspect-ratio: auto;
-    overflow: hidden;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalImage {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 1rem;
-  }
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalSupertitle,
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalTitle,
-  .bo-adModalPreview[data-preview-device="mobile"] .bo-adModalDesc {
-    flex-shrink: 1;
-    min-height: 0;
-  }
-}
-
-/* Natural mobile (<=640px — no device switcher rendered here): the preview
-   uses the MOBILE DOM (flat, editor content order — image interleaved), so
-   the body carries the text padding and the image gets the requested
-   treatment at width 95%. Higher specificity than the generic 640px block
-   above so it always wins. */
-@media (max-width: 640px) {
-  /* Preview must never exceed 80% of the viewport height on phones. Cap the
-     container (device switcher is hidden here, so it wraps just the card).
-     The body is a full-height flex column so the image takes a percentage
-     share of the available space alongside the text/CTA elements. */
-  .bo-anunciosPreviewCol {
-    height: 80dvh;
-    height: 80vh;
-  }
-  .bo-adModalPreview {
-    height: 80dvh;
-    height: 80vh;
-  }
-  .bo-adModalPreview .bo-adModalBody {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
-  }
-  .bo-adModalPreview .bo-adModalImageCol {
-    margin-inline: auto;
-    border-radius: 1rem;
-    margin-block: 1rem;
-    width: 95%;
-    flex: 0 1 55%;
-    min-height: 0;
-    height: auto;
-    max-height: none;
-    aspect-ratio: auto;
-    overflow: hidden;
-  }
-  .bo-adModalPreview .bo-adModalImage {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 1rem;
-  }
-  .bo-adModalPreview .bo-adModalSupertitle,
-  .bo-adModalPreview .bo-adModalTitle,
-  .bo-adModalPreview .bo-adModalDesc {
-    flex-shrink: 1;
-    min-height: 0;
   }
 }
 
@@ -963,6 +776,7 @@ button.bg-bo-accent { color: var(--bo-bg); }
 
 .bo-anunciosBackLink {
   display: inline-flex;
+  width: fit-content;
   align-items: center;
   gap: 6px;
   color: var(--bo-muted);
