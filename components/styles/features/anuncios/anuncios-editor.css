@@ -810,3 +810,25 @@ button.bg-bo-accent { color: var(--bo-bg); }
   background: var(--bo-surface-2);
   color: var(--bo-muted);
 }
+
+/* ── Per-ad activate/deactivate toggle ─────────────────────────────────────
+   Used by the anuncios list footer and the editor bar; the switch itself is
+   the shared .bo-sc-switch control. */
+.bo-anunciosCardToggle,
+.bo-anunciosActiveToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-anunciosCardToggleLabel,
+.bo-anunciosActiveToggle .bo-anunciosEditorStatus {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-muted);
+}
+
+.bo-anunciosCardToggle .bo-sc-switch,
+.bo-anunciosActiveToggle .bo-sc-switch {
+  flex: 0 0 auto;
+}
