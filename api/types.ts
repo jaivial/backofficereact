@@ -478,6 +478,7 @@ export type GroupMenuV2Settings = {
     supplement_price?: number | null;
   };
   comments: string[];
+  important_info: string[];
   min_party_size: number;
   main_dishes_limit: boolean;
   main_dishes_limit_number: number;
