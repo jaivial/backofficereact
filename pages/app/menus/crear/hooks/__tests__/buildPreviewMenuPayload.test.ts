@@ -36,6 +36,7 @@ const baseInput = (overrides: Partial<BuildPreviewMenuPayloadInput> = {}): Build
   mainLimit: false,
   mainLimitNum: '1',
   comments: [''],
+  importantInfo: ['Consumo minimo informado'],
   specialMenuImage: null,
   menuAITracker: {},
   sections: [],

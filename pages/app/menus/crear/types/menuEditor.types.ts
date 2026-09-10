@@ -86,6 +86,7 @@ export type BasicsDraft = {
   beverageHasSupplement: boolean;
   beverageSupplementPrice: string;
   comments: string[];
+  importantInfo: string[];
   minPartySize: string;
   mainLimit: boolean;
   mainLimitNum: string;
@@ -109,6 +110,7 @@ export type BasicsPayload = {
     supplement_price: number | null;
   };
   comments: string[];
+  important_info: string[];
   min_party_size: number;
   main_dishes_limit: boolean;
   main_dishes_limit_number: number;
