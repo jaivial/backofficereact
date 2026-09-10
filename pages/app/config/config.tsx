@@ -2,12 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud, Megaphone } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
 import { sessionAtom } from "../../../state/atoms";
-import { hasAppCapability } from "../../../lib/app-version";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -24,7 +23,6 @@ import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImag
 import { ConfigMiniMax } from "./functionalComponents/ConfigMiniMax/ConfigMiniMax";
 import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
-import { ConfigAnuncios } from "./functionalComponents/ConfigAnuncios/ConfigAnuncios";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -34,11 +32,10 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "anuncios" | "ia" | "cdn";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "cdn";
 
-function resolveContentTab(raw: unknown, canAnuncios: boolean, isRoot: boolean): ContentTab {
+function resolveContentTab(raw: unknown, isRoot: boolean): ContentTab {
   const value = String(raw ?? "").trim() as ContentTab;
-  if (value === "anuncios") return canAnuncios ? value : "restaurante";
   if (value === "ia" || value === "cdn") return isRoot ? value : "restaurante";
   if (value === "contacto" || value === "booking" || value === "legal-pages" || value === "restaurante") return value;
   return "restaurante";
@@ -171,21 +168,19 @@ export default function Page() {
   );
 
   const isRoot = (pageContext.bo?.session?.user?.role ?? "") === "root";
-  const appVersion = session?.user?.appVersion;
-  const canAnuncios = hasAppCapability(appVersion, "ads");
 
   const contentTabFromQuery = pageContext.urlParsed.search.content;
-  const [contentTab, setContentTab] = useState<ContentTab>(() => resolveContentTab(contentTabFromQuery, canAnuncios, isRoot));
+  const [contentTab, setContentTab] = useState<ContentTab>(() => resolveContentTab(contentTabFromQuery, isRoot));
 
   useEffect(() => {
-    const allowedTab = resolveContentTab(contentTab, canAnuncios, isRoot);
+    const allowedTab = resolveContentTab(contentTab, isRoot);
     if (allowedTab !== contentTab) {
       setContentTab(allowedTab);
       if (typeof window !== "undefined") {
         window.history.replaceState(null, "", `${window.location.pathname}?content=${allowedTab}`);
       }
     }
-  }, [canAnuncios, contentTab, isRoot]);
+  }, [contentTab, isRoot]);
 
   const contentTabs = useMemo<TabItem[]>(
     () => [
@@ -213,14 +208,6 @@ export default function Page() {
         href: "#legal-pages",
         icon: <Scale className="bo-ico" />,
       },
-      ...(canAnuncios
-        ? [{
-            id: "anuncios",
-            label: "Anuncios",
-            href: "#anuncios",
-            icon: <Megaphone className="bo-ico" />,
-          } as TabItem]
-        : []),
       ...(isRoot
         ? [{
             id: "ia",
@@ -236,7 +223,7 @@ export default function Page() {
           } as TabItem]
         : []),
     ],
-    [isRoot, canAnuncios],
+    [isRoot],
   );
 
   useErrorToast(error);
@@ -297,7 +284,7 @@ export default function Page() {
   // unreachable Recargar button.
   if (!defaults) {
     return (
-      <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 ${contentTab === "anuncios" ? "max-w-7xl" : "max-w-3xl"}`} data-testid="config-section">
+      <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 max-w-3xl`} data-testid="config-section">
         {error ? (
           <>
             <InlineAlert kind="error" title="No se pudo cargar la configuración" message={error} />
@@ -317,7 +304,7 @@ export default function Page() {
   return (
     <>
       <style>{`@media (max-width: 640px) { .bo-main:has([data-testid="config-section"]) { padding: 0 1rem 2rem !important } .bo-install-code, .bo-install-code code { white-space: pre-wrap !important; word-break: break-all !important; overflow-x: auto !important; max-width: 100% !important } }`}</style>
-    <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 ${contentTab === "anuncios" ? "max-w-7xl" : "max-w-3xl"}`} data-testid="config-section">
+    <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 max-w-3xl`} data-testid="config-section">
       <Tabs
         tabs={contentTabs}
         activeId={contentTab}
@@ -385,8 +372,6 @@ export default function Page() {
             />
           ) : contentTab === "legal-pages" ? (
             <ConfigLegalPages />
-          ) : contentTab === "anuncios" ? (
-            canAnuncios ? <ConfigAnuncios website={restaurantInfo?.website ?? ""} /> : null
           ) : (
             <BookingManager />
           )}
