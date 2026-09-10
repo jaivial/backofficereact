@@ -1,5 +1,4 @@
 import { canAccessComida, hasSectionAccess } from "./access-policy";
-import { hasAppCapability } from "./app-version";
 import { normalizeRole, normalizeSectionAccess, ROLE_SECTION_ACCESS, type BOSection } from "./rbac";
 
 export type SidebarItemKey = BOSection;
@@ -20,12 +19,14 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "fichaje", href: "/app/fichaje", label: "Fichaje" },
   { key: "facturas", href: "/app/facturas", label: "Facturas" },
   { key: "campanas", href: "/app/campanas", label: "Campañas" },
+  { key: "anuncios", href: "/app/anuncios", label: "Anuncios" },
   { key: "estadisticas", href: "/app/estadisticas", label: "Estadisticas" },
   { key: "plataforma", href: "/app/plataforma", label: "Plataforma" },
 ];
 
 const SECTION_HOME: Record<BOSection, string> = {
   campanas: "/app/campanas",
+  anuncios: "/app/anuncios",
   reservas: "/app/reservas",
   menus: "/app/comida/menus",
   comida: "/app/comida",
@@ -44,7 +45,7 @@ const SECTION_HOME: Record<BOSection, string> = {
   plataforma: "/app/plataforma",
 };
 
-const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "pos", "stock", "miembros", "horarios", "fichaje", "facturas", "estadisticas"];
+const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "pos", "stock", "miembros", "horarios", "fichaje", "facturas", "campanas", "anuncios", "estadisticas"];
 
 export function sectionForPath(pathname: string): BOSection | null {
   if (!pathname.startsWith("/app")) return null;
@@ -66,6 +67,7 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (pathname.startsWith("/app/estado-cuenta")) return "estado_cuenta";
   if (pathname.startsWith("/app/plataforma")) return "plataforma";
   if (pathname.startsWith("/app/campanas")) return "campanas";
+  if (pathname.startsWith("/app/anuncios")) return "anuncios";
   return null;
 }
 
@@ -84,10 +86,6 @@ export function firstAllowedPath(roleRaw: string | null | undefined, sectionAcce
 export function isPathAllowed(pathname: string, roleRaw: string | null | undefined, sectionAccessRaw?: string[] | null, roleImportanceRaw?: number | null, appVersionRaw?: unknown): boolean {
   if (pathname === "/app" || pathname === "/app/") return true;
   if (pathname === "/app/backoffice" || pathname.startsWith("/app/backoffice/")) return true;
-  if (pathname.startsWith("/app/config/anuncios")) {
-    return hasAppCapability(appVersionRaw, "ads")
-      && hasSectionAccess(roleRaw, "reservas", sectionAccessRaw, roleImportanceRaw, appVersionRaw);
-  }
   const section = sectionForPath(pathname);
   if (!section) return false;
   return section === "comida"

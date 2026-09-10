@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Megaphone, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot, Boxes, MonitorSmartphone, Server } from "lucide-react";
+import { CalendarClock, CalendarDays, ClipboardCheck, Ellipsis, FileText, Home, Link, Megaphone, Newspaper, Settings, ShieldUser, UtensilsCrossed, BarChart3, Receipt, Globe, CookingPot, Boxes, MonitorSmartphone, Server } from "lucide-react";
 import { navigate } from "vike/client/router";
 
 import { sidebarItemsForRole, type SidebarItemKey } from "../../lib/navigation";
@@ -42,6 +42,8 @@ function iconForItem(key: SidebarItemKey, size = 18, strokeWidth = 1.8) {
       return <Server size={size} strokeWidth={strokeWidth} data-ui="sidebar-plataforma-icon" />;
     case "campanas":
       return <Megaphone size={size} strokeWidth={strokeWidth} data-ui="sidebar-campanas-icon" />;
+    case "anuncios":
+      return <Newspaper size={size} strokeWidth={strokeWidth} data-ui="sidebar-anuncios-icon" />;
     default:
       return <Settings size={size} strokeWidth={strokeWidth} />;
   }
