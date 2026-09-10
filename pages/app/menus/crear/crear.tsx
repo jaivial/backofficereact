@@ -33,6 +33,9 @@ import { PlusMinusCounter } from "../../../../ui/widgets/PlusMinusCounter";
 import { Tabs } from "../../../../ui/nav/Tabs";
 import { Breadcrumbs } from "../../../../ui/nav/Breadcrumbs";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
+// Coordination id: menu_section_kind_presets_v1 + dessert_section_source_v1
+import { AddSectionModal } from "../../../../ui/widgets/menus/AddSectionModal";
+import type { AddSectionSelection } from "../../../../ui/widgets/menus/AddSectionModal";
 
 import { useMenuEditor } from "./hooks/useMenuEditor";
 import { MenuPreview } from "./functionalComponents/MenuPreview/MenuPreview";
@@ -235,7 +238,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     setMenuPreviewImageAdvisorDraft, setMenuPreviewImageAdvisorBusy,
     setMenuPreviewImageCropDraft, setMenuPreviewImageCropBusy, setSearchTerms, setSearchResults,
     setSectionLoadingState, setMenuPreviewImageBusy, setSpecialMenuImageBusy,
-    patchBasics, syncSectionsAndDishes, createDraftAndContinue, addSection, removeSection,
+    patchBasics, syncSectionsAndDishes, createDraftAndContinue, addSection, setSectionDessertSource, removeSection,
     updateSection, handleSectionToggle, updateSectionAnnotation, addSectionAnnotation,
     removeSectionAnnotation, setSectionDescriptionsEnabled, moveSection, reorderSections, addDish, updateDish, removeDish,
     reorderDishes, handleSearch, pickDishImage, onDishImageFileSelected, onDishImageAdvisorImprove,
@@ -273,6 +276,23 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
 
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const [pendingSectionDelete, setPendingSectionDelete] = useState<{ sectionClientId: string; sectionLabel: string } | null>(null);
+
+  // Coordination id: menu_section_kind_presets_v1 - "Anadir seccion" always asks
+  // the section type first on conventional closed menus and conventional a la
+  // carte menus; special menus keep the old one-click behaviour.
+  const [addSectionModalOpen, setAddSectionModalOpen] = useState(false);
+  const usesAddSectionModal = !isSpecial;
+
+  const requestAddSection = useCallback(() => {
+    if (!usesAddSectionModal) { addSection(); return; }
+    console.log("[checkpoint] add_section_modal_opened", `menu_type=${menuType}`);
+    setAddSectionModalOpen(true);
+  }, [addSection, menuType, usesAddSectionModal]);
+
+  const confirmAddSection = useCallback((selection: AddSectionSelection) => {
+    setAddSectionModalOpen(false);
+    addSection(selection);
+  }, [addSection]);
 
   // Coordination id: menu_section_delete_v1 (backoffice modal -> DELETE -> DB -> public snapshot)
   const requestSectionDelete = useCallback((sectionClientId: string, sectionLabel: string) => {
@@ -520,7 +540,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
           </Reorder.Group>
 
           <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
-            <button className="bo-btn bo-btn--ghost" type="button" onClick={addSection} data-testid="menu-crear-add-section">
+            <button className="bo-btn bo-btn--ghost" type="button" onClick={requestAddSection} data-testid="menu-crear-add-section">
               <Plus size={14} /> Añadir seccion
             </button>
             <div className="bo-menuWizardActionsRight" data-slot="crear-menuWizardActionsRight">
@@ -609,6 +629,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     setAllergenModal={setAllergenModal}
                     requestDishDelete={requestDishDelete}
                     requestSectionDelete={requestSectionDelete}
+                    setSectionDessertSource={setSectionDessertSource}
                     updateDish={updateDish}
                     updateSectionAnnotation={updateSectionAnnotation}
                     addSectionAnnotation={addSectionAnnotation}
@@ -625,7 +646,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                   />
                 ))}                </Reorder.Group>
                 <div className="bo-menuWizardActions bo-menuWizardActions--platosAddSection" data-testid="menu-crear-platos-add-section-row">
-                  <button className="bo-btn bo-btn--ghost" type="button" onClick={addSection} data-testid="menu-crear-platos-add-section">
+                  <button className="bo-btn bo-btn--ghost" type="button" onClick={requestAddSection} data-testid="menu-crear-platos-add-section">
                     <Plus size={14} /> Añadir seccion
                   </button>
                 </div>
@@ -1008,6 +1029,14 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
           </div>
         </div>
       </Modal>
+
+      {/* Add-section type modal (step 1: kind, step 2: dessert carta source).
+          Coordination id: menu_section_kind_presets_v1 + dessert_section_source_v1 */}
+      <AddSectionModal
+        open={addSectionModalOpen}
+        onClose={() => setAddSectionModalOpen(false)}
+        onConfirm={confirmAddSection}
+      />
 
       {/* Section delete confirmation modal */}
       <ConfirmDialog
