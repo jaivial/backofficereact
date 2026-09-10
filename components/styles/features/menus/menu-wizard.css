@@ -1968,9 +1968,13 @@
     align-self: start;
   }
 
+  /* Centring the column made the "Suplemento" row (which loses its price input
+     when the toggle is off) shrink to the switch width and sit inset from the
+     card gutter, leaving dead space on the left. Aligning to the start keeps
+     every inline control flush with the column edge whatever its width. */
   .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-dishFields > .bo-dishFieldsSide .bo-dishRowInlineControls {
     flex-wrap: nowrap;
-    align-items: center;
+    align-items: start;
   }
 
   .bo-menuWizardFinal.is-previewHidden .bo-memberCard.bo-dishCard--horizontal .bo-foodMemberFooter {
