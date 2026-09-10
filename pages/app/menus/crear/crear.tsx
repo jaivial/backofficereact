@@ -215,7 +215,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages, showSectionTabs,
     showMenuPreviewImage, sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement,
     beverageOptions, beverageModalOpen, beverageDeleteTarget,
-    beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, specialMenuImage,
+    beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, importantInfo, specialMenuImage,
     menuPreviewImageBusy, specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen,
     desktopPreviewDocked, previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
     sectionLoadingState, menuAITracker, dishImageTarget, dishImageAdvisorDraft, dishImageAdvisorBusy,
@@ -231,7 +231,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     refreshBeverageOptions, setBeverageOptionSelected, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeveragePrice, setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize,
-    setMainLimit, setMainLimitNum, setComments, setSpecialMenuImage, setSaveState, setBusy,
+    setMainLimit, setMainLimitNum, setComments, setImportantInfo, setSpecialMenuImage, setSaveState, setBusy,
     setHydrated, setMobileTab, setDesktopPreviewOpen,
     setAllergenModal, setMenuAITracker, setDishImageTarget, setDishImageAdvisorDraft,
     setDishImageAdvisorBusy, setDishImageCropDraft, setDishImageBusy,
@@ -261,6 +261,18 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   const requestDishDelete = useCallback((sectionClientId: string, dishClientId: string, dishLabel: string) => {
     setPendingDishDelete({ sectionClientId, dishClientId, dishLabel });
   }, []);
+
+  // Informacion importante: dynamic per-menu lines edited from the Configuracion
+  // tab and rendered by the public templates. Coordination id: menu_important_info_v1
+  const addImportantInfoLine = useCallback(() => {
+    setImportantInfo((prev) => [...prev, ""]);
+  }, [setImportantInfo]);
+  const updateImportantInfoLine = useCallback((idx: number, value: string) => {
+    setImportantInfo((prev) => prev.map((line, i) => (i === idx ? value : line)));
+  }, [setImportantInfo]);
+  const removeImportantInfoLine = useCallback((idx: number) => {
+    setImportantInfo((prev) => prev.filter((_, i) => i !== idx));
+  }, [setImportantInfo]);
 
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const [pendingSectionDelete, setPendingSectionDelete] = useState<{ sectionClientId: string; sectionLabel: string } | null>(null);
@@ -812,6 +824,42 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     <div className="bo-field bo-field--full" data-slot="crear-field--full">
                       <div className="bo-label" data-slot="crear-label">Comentarios</div>
                       <textarea className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n").filter((line) => line.trim() !== ""))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
+                    </div>
+                    <div className="bo-field bo-field--full" data-slot="crear-importantInfoField" data-coordination-id="menu_important_info_v1">
+                      <div className="bo-label" data-slot="crear-importantInfoLabel">Informacion importante</div>
+                      <div className="bo-stackFields" data-slot="crear-importantInfoStackFields">
+                        {importantInfo.map((line, idx) => (
+                          <div key={`important-info-${idx}`} className="bo-inlineField" data-slot="crear-importantInfoInlineField">
+                            <textarea
+                              className="bo-input bo-textarea"
+                              value={line}
+                              onChange={(e) => updateImportantInfoLine(idx, e.target.value)}
+                              placeholder="Informacion importante"
+                              rows={2}
+                              style={{ minHeight: "2.8em", fontSize: "16px", resize: "vertical" }}
+                              data-testid={`menu-crear-important-info-textarea-${idx}`}
+                            />
+                            <button
+                              className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn"
+                              type="button"
+                              aria-label={`Eliminar informacion importante ${idx + 1}`}
+                              disabled={importantInfo.length <= 1}
+                              onClick={() => removeImportantInfoLine(idx)}
+                              data-testid={`menu-crear-important-info-delete-${idx}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          className="bo-btn bo-btn--ghost bo-btn--sm bo-commentAddBtn"
+                          type="button"
+                          onClick={addImportantInfoLine}
+                          data-testid="menu-crear-important-info-add"
+                        >
+                          <Plus size={14} /> Añadir informacion importante
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
