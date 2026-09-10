@@ -446,6 +446,9 @@ export type GroupMenuV2Dish = {
   ai_requested_img?: boolean;
   ai_generating_img?: boolean;
   ai_generated_img?: string | null;
+  // Coordination id: dessert_section_source_v1 - dish owned by the general
+  // desserts carta, so the editor renders it read-only.
+  read_only?: boolean;
 };
 
 export type GroupMenuV2Section = {
@@ -455,6 +458,9 @@ export type GroupMenuV2Section = {
   subtitle?: string;
   tab_label?: string;
   kind: string;
+  // Coordination id: dessert_section_source_v1 ("general" mirrors the general
+  // desserts carta and is read-only; "custom" owns its own dish list).
+  dessert_source?: string;
   position: number;
   // Coordination id: menu_section_public_placement_v1 (DB -> BO -> public nav)
   public_page_active?: boolean;
