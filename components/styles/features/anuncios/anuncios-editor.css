@@ -776,6 +776,7 @@ button.bg-bo-accent { color: var(--bo-bg); }
 
 .bo-anunciosBackLink {
   display: inline-flex;
+  width: fit-content;
   align-items: center;
   gap: 6px;
   color: var(--bo-muted);
