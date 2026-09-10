@@ -2,13 +2,13 @@ import React, { useCallback } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { navigate } from "vike/client/router";
 import { ArrowLeft } from "lucide-react";
-import { AnuncioEditor } from "../../functionalComponents/ConfigAnuncios/AnuncioEditor";
-import { useAdsController } from "../../functionalComponents/ConfigAnuncios/hooks/useAdsController";
-import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
-import type { RestaurantAd } from "../../../../../api/types";
+import { AnuncioEditor } from "../../config/functionalComponents/ConfigAnuncios/AnuncioEditor";
+import { useAdsController } from "../../config/functionalComponents/ConfigAnuncios/hooks/useAdsController";
+import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
+import type { RestaurantAd } from "../../../../api/types";
 import type { Data } from "./+data";
 
-const LIST_HREF = "/app/config?content=anuncios";
+const LIST_HREF = "/app/anuncios";
 
 export default function AnuncioEditPage() {
   const pageContext = usePageContext();
