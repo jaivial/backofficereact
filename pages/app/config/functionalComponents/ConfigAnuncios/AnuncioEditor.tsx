@@ -845,7 +845,7 @@ function CTARowCard({
         </label>
         <label data-slot="anuncioEditor-text-bo-muted" className="grid gap-1 text-xs text-bo-muted">
           <span data-slot="anuncioEditor-span">Color</span>
-          <input type="color" value={cta.color || "#436754"} onChange={(event) => onChange({ color: event.target.value })} className="h-10 w-full rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-slot={`ad-cta-${cta.id}-color`} />
+          <input type="color" value={cta.color || "#436754"} onChange={(event) => onChange({ color: event.target.value })} className="h-10 w-full max-w-[75px] rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-slot={`ad-cta-${cta.id}-color`} />
         </label>
         <label data-slot="anuncioEditor-text-bo-muted" className="grid gap-1 text-xs text-bo-muted">
           <span data-slot="anuncioEditor-span">Navegación</span>
