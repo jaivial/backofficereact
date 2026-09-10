@@ -149,18 +149,29 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
   useEffect(() => () => { if (imagePreviewURL) URL.revokeObjectURL(imagePreviewURL); }, [imagePreviewURL]);
 
+  // Single place that owns the save badge: it flips to "saving" and always
+  // settles on "saved"/"error", whether the write went over the WebSocket or
+  // fell back to REST. The WS subscription only needs to resolve the pending
+  // promise; the badge is handled here so no path can leave it stuck.
   const persistAd = useCallback(async (source: RestaurantAd): Promise<RestaurantAd | null> => {
+    setSaveState("saving");
     try {
       const payload: RestaurantAdInput = { name: source.name, active: source.active, content: source.content, ctas: source.ctas, starts_at: source.starts_at ?? null, ends_at: source.ends_at ?? null };
       const result = source.id > 0
         ? await api.updateAd(source.id, payload)
         : await api.createAd(payload);
-      if (!result.success) { notify("error", "Anuncios", apiMessage(result, "No se pudo guardar el anuncio")); return null; }
+      if (!result.success) {
+        notify("error", "Anuncios", apiMessage(result, "No se pudo guardar el anuncio"));
+        setSaveState("error");
+        return null;
+      }
       if (result.ad) setAd(result.ad);
       if (result.ad && onSaved) onSaved(result.ad);
+      setSaveState("saved");
       return result.ad ?? null;
     } catch (error) {
       notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio");
+      setSaveState("error");
       return null;
     }
   }, [api, notify, onSaved]);
@@ -540,7 +551,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
           <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
             <div data-slot="anuncioEditor-anunciosCtasTitle" className="bo-anunciosCtasTitle">Duración</div>
-            <div data-slot="anuncioEditor-anunciosCtasHint" className="bo-anunciosCtasHint">El anuncio se mostrará durante este periodo. Déjalo vacío para mostrarlo siempre.</div>
+            <div data-slot="anuncioEditor-anunciosCtasHint" className="bo-anunciosCtasHint">El anuncio solo se muestra dentro de este periodo. Si borras las fechas, no se mostrará aunque esté activo.</div>
             <InlineDateRangeCalendar from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
               if (range.from && range.to && sendAdScheduleCheck) {
                 const reqId = `ad-schedule-${Date.now()}-${++reqCounter.current}`;
