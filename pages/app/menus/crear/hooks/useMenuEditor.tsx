@@ -99,6 +99,7 @@ export type UseMenuEditorReturn = {
   mainLimit: boolean;
   mainLimitNum: string;
   comments: string[];
+  importantInfo: string[];
   specialMenuImage: string | null;
   menuPreviewImageBusy: boolean;
   specialMenuImageBusy: boolean;
@@ -183,6 +184,7 @@ export type UseMenuEditorReturn = {
   setMainLimit: (v: boolean) => void;
   setMainLimitNum: (num: string) => void;
   setComments: (comments: string[]) => void;
+  setImportantInfo: React.Dispatch<React.SetStateAction<string[]>>;
   setSpecialMenuImage: (img: string | null) => void;
   setSaveState: React.Dispatch<React.SetStateAction<SaveState>>;
   setBusy: (v: boolean) => void;
@@ -291,6 +293,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [mainLimit, setMainLimit] = useState<boolean>(false);
   const [mainLimitNum, setMainLimitNum] = useState<string>("1");
   const [comments, setComments] = useState<string[]>([""]);
+  const [importantInfo, setImportantInfo] = useState<string[]>([""]);
   const [specialMenuImage, setSpecialMenuImage] = useState<string | null>(data.menu?.special_menu_image_url || null);
   const [menuPreviewImageUrl, setMenuPreviewImageUrl] = useState<string>(initialMenuPreviewState.menuPreviewImageUrl);
   const [menuPreviewAIRequested, setMenuPreviewAIRequested] = useState<boolean>(initialMenuPreviewState.menuPreviewAIRequested);
@@ -375,11 +378,12 @@ export function useMenuEditor(): UseMenuEditorReturn {
       beverageHasSupplement,
       beverageSupplementPrice,
       comments,
+      importantInfo,
       minPartySize,
       mainLimit,
       mainLimitNum,
     }),
-    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, desktopPreviewOpen, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showSectionTabs, showMenuPreviewImage, subtitles, title],
+    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, importantInfo, desktopPreviewOpen, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showSectionTabs, showMenuPreviewImage, subtitles, title],
   );
   const basicsPayload = useMemo(() => buildBasicsPayload(basicsDraft), [basicsDraft]);
   const basicsFingerprint = useMemo(() => JSON.stringify(basicsPayload), [basicsPayload]);
@@ -949,6 +953,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         mainLimit,
         mainLimitNum,
         comments,
+        importantInfo,
         specialMenuImage,
         menuAITracker,
         sections,
@@ -964,6 +969,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       beverageSupplementPrice,
       beverageType,
       comments,
+      importantInfo,
       includedCoffee,
       mainLimit,
       mainLimitNum,
@@ -1049,6 +1055,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       setMainLimit(mapped.settings.main_dishes_limit);
       setMainLimitNum(String(mapped.settings.main_dishes_limit_number));
       setComments(mapped.settings.comments.length ? mapped.settings.comments : [""]);
+      setImportantInfo(mapped.settings.important_info.length ? mapped.settings.important_info : [""]);
       const mappedBasicsPayload = buildBasicsPayload({
         title: mapped.title, price: mapped.price || "0", active: mapped.active, menuType: mapped.menuType,
         subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages, showSectionTabs: mapped.showSectionTabs,
@@ -1059,6 +1066,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         beverageHasSupplement: mapped.settings.beverage.has_supplement,
         beverageSupplementPrice: mapped.settings.beverage.supplement_price == null ? "" : String(mapped.settings.beverage.supplement_price),
         comments: mapped.settings.comments.length ? mapped.settings.comments : [""],
+        importantInfo: mapped.settings.important_info.length ? mapped.settings.important_info : [""],
         minPartySize: String(mapped.settings.min_party_size),
         mainLimit: mapped.settings.main_dishes_limit,
         mainLimitNum: String(mapped.settings.main_dishes_limit_number),
@@ -1818,6 +1826,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setMainLimit(mapped.settings.main_dishes_limit);
     setMainLimitNum(String(mapped.settings.main_dishes_limit_number));
     setComments(mapped.settings.comments.length ? mapped.settings.comments : [""]);
+    setImportantInfo(mapped.settings.important_info.length ? mapped.settings.important_info : [""]);
     const mappedBasicsPayload = buildBasicsPayload({
       title: mapped.title, price: mapped.price, active: mapped.active, menuType: mapped.menuType,
       subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages, showSectionTabs: mapped.showSectionTabs,
@@ -1828,6 +1837,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       beverageHasSupplement: mapped.settings.beverage.has_supplement,
       beverageSupplementPrice: mapped.settings.beverage.supplement_price == null ? "" : String(mapped.settings.beverage.supplement_price),
       comments: mapped.settings.comments.length ? mapped.settings.comments : [""],
+      importantInfo: mapped.settings.important_info.length ? mapped.settings.important_info : [""],
       minPartySize: String(mapped.settings.min_party_size),
       mainLimit: mapped.settings.main_dishes_limit,
       mainLimitNum: String(mapped.settings.main_dishes_limit_number),
@@ -1967,7 +1977,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     showMenuPreviewImage, menuPreviewImageUrl, menuPreviewAIRequested, menuPreviewAIGenerating,
     sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement, beverageSupplementPrice,
     beverageOptions, beverageModalOpen, beverageDeleteTarget,
-    minPartySize, mainLimit, mainLimitNum, comments, specialMenuImage, menuPreviewImageBusy,
+    minPartySize, mainLimit, mainLimitNum, comments, importantInfo, specialMenuImage, menuPreviewImageBusy,
     specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen, desktopPreviewDocked,
     previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
     sectionLoadingState, menuAITracker, dishImageTarget, dishImageAdvisorDraft, dishImageAdvisorBusy,
@@ -1987,7 +1997,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     refreshBeverageOptions, setBeverageOptionSelected, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize, setMainLimit, setMainLimitNum,
-    setComments, setSpecialMenuImage, setSaveState, setBusy, setHydrated, setMobileTab,
+    setComments, setImportantInfo, setSpecialMenuImage, setSaveState, setBusy, setHydrated, setMobileTab,
     setDesktopPreviewOpen, setDesktopPreviewDocked, setAllergenModal, setMenuAITracker,
     setDishImageTarget, setDishImageAdvisorDraft, setDishImageAdvisorBusy, setDishImageCropDraft,
     setDishImageBusy, setMenuPreviewImageAdvisorDraft, setMenuPreviewImageAdvisorBusy,

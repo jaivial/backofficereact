@@ -36,6 +36,7 @@ export type BuildPreviewMenuPayloadInput = {
   mainLimit: boolean
   mainLimitNum: string
   comments: string[]
+  importantInfo: string[]
   specialMenuImage: string | null
   menuAITracker: unknown
   sections: Array<{
@@ -94,6 +95,7 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
     mainLimit,
     mainLimitNum,
     comments,
+    importantInfo,
     specialMenuImage,
     menuAITracker,
     sections,
@@ -133,6 +135,7 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
       // (otherwise `selectedBeverageNames` in the iframe gets `undefined`).
       beverage_options: beverageOptions ?? [],
       comments,
+      important_info: importantInfo,
       min_party_size: Number.parseInt(minPartySize || '0', 10) || 0,
       main_dishes_limit: mainLimit,
       main_dishes_limit_number: Number.parseInt(mainLimitNum || '0', 10) || 0,

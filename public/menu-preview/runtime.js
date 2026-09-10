@@ -342,6 +342,7 @@
       show_section_tabs: false,
       settings: {
         comments: [],
+        important_info: [],
         beverage: { type: "no_incluida", price_per_person: null, has_supplement: false, supplement_price: null },
         included_coffee: false,
         min_party_size: 8,
@@ -722,7 +723,16 @@
     return '<section class="menuSection"><h2 class="menuSectionHeading">' + escapeHtml(title) + "</h2>" + renderDishGrid(dishes, options) + notesHtml + annotationsHtml + "</section>";
   }
 
-  function renderMenuPriceCardVC(priceLabel) {
+  function renderMenuPriceCardVC(priceLabel, importantInfo) {
+    const importantLines = Array.isArray(importantInfo)
+      ? importantInfo.map(function (line) { return String(line == null ? "" : line); }).filter(function (line) { return line.trim() !== ""; })
+      : [];
+    const importantBox = importantLines.length
+      ? '<div class="menuImportantBox">' +
+        '<h3 class="menuImportantTitle">Informaci&oacute;n importante</h3>' +
+        importantLines.map(function (line) { return '<p class="menuImportantText">' + escapeHtml(line) + '</p>'; }).join("") +
+        '</div>'
+      : "";
     return (
       '<section class="menuAsideCard">' +
       '<h2 class="menuAsideTitle">Precio</h2>' +
@@ -731,12 +741,7 @@
       '<div class="menuPriceNote">(Bebida no incluida)</div>' +
       '</div>' +
       '<div class="menuPriceValue">' + (priceLabel ? escapeHtml(priceLabel) + " &euro;" : "-") + '</div>' +
-      '<div class="menuImportantBox">' +
-      '<h3 class="menuImportantTitle">Informaci&oacute;n importante</h3>' +
-      '<p class="menuImportantText">Consumo m&iacute;nimo: 1 men&uacute; por plaza reservada en la mesa, independientemente de la edad de los comensales.</p>' +
-      '<p class="menuImportantText">No hay men&uacute; infantil.</p>' +
-      '<p class="menuImportantText menuImportantText--takeaway">Envases para llevar: 1&euro; (Cobro obligatorio por Ley de Residuos 7/2020).</p>' +
-      '</div>' +
+      importantBox +
       '</section>'
     );
   }
@@ -918,7 +923,7 @@
         return Array.isArray(section.dishes) && section.dishes.length > 0;
       });
       const emptyState = hasContent ? "" : '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay contenido disponible.</p></div>';
-      const priceCard = renderMenuPriceCardVC(formatMenuPrice(menu.price));
+      const priceCard = renderMenuPriceCardVC(formatMenuPrice(menu.price), menu.settings && menu.settings.important_info);
       const heroPaths = heroSliderPaths(menu);
       const initialHeroSrc = heroPaths[0] || HERO_DEFAULT_IMAGE;
       const initialHeroClass = prefersReducedMotion() ? "menuHeroShot is-active is-reduced" : "menuHeroShot is-active";
@@ -973,7 +978,11 @@
           ? '<article class="menuSectionCard"><h2 class="menuSectionTitle">Condiciones</h2>' + notesLines.join("") + "</article>"
           : "";
 
-        body = '<div class="menuGrid">' + cards + notesCard + "</div>";
+        const importantInfoLines = Array.isArray(menu.settings.important_info) ? menu.settings.important_info.filter(Boolean) : [];
+        const importantCard = importantInfoLines.length
+          ? '<article class="menuSectionCard"><h2 class="menuSectionTitle">Informaci\u00f3n importante</h2>' + importantInfoLines.map(function (line) { return '<p class="menuDishText menuMuted">' + escapeHtml(line) + '</p>'; }).join("") + '</article>'
+          : "";
+        body = '<div class="menuGrid">' + cards + notesCard + importantCard + "</div>";
       }
 
       return mountVillaTemplate({
