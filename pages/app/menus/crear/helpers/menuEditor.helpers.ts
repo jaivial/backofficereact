@@ -10,6 +10,8 @@ import type {
 } from "../types/menuEditor.types";
 import type { GroupMenuV2, GroupMenuV2AIDish, GroupMenuV2AIImages, GroupMenuV2Dish, GroupMenuV2Section } from "../../../../../api/types";
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB, MENU_AI_TRACE_PREFIX } from "../constants/menuEditor.constants";
+// Coordination id: dessert_section_source_v1
+import { normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
 
 // =============================================================================
 // Debug / Logging
@@ -622,6 +624,9 @@ export function getSectionsStructureFingerprint(sections: EditorSection[]): stri
       subtitle: sec.subtitle,
       tabLabel: sec.tabLabel,
       kind: sec.kind,
+      // Coordination id: dessert_section_source_v1 - flipping the dessert source
+      // must dirty the structure so the next save persists it.
+      dessertSource: sec.dessertSource,
       position: idx,
     })),
   );
@@ -782,6 +787,8 @@ export function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
     ai_requested: !!aiRequested,
     ai_generating: !!aiGenerating,
     ai_generated_img: aiGeneratedImg,
+    // Coordination id: dessert_section_source_v1
+    read_only: d.read_only === true,
   };
 }
 
@@ -810,6 +817,9 @@ export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): Edit
     subtitle: apiSubtitle,
     tabLabel: apiTabLabel,
     kind: s.kind,
+    // Coordination id: dessert_section_source_v1 - keep the previous value when
+    // the API omits the field so an older payload never silently unlinks a mirror.
+    dessertSource: normalizeDessertSource(s.kind, s.dessert_source ?? prev?.dessertSource),
     position: s.position || 0,
     annotations: toEditorSectionAnnotations(s.annotations, prev?.annotations),
     // Coordination id: menu_section_public_placement_v1
