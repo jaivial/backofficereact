@@ -1702,7 +1702,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         },
         async putSections(
           id: number,
-          sections: Array<{ id?: number; title: string; display_title: string; subtitle: string; tab_label: string; kind: string; position?: number; annotations?: string[] }>,
+          // Coordination id: dessert_section_source_v1 - dessert_source travels with
+          // the section so a "general" mirror survives every editor save.
+          sections: Array<{ id?: number; title: string; display_title: string; subtitle: string; tab_label: string; kind: string; dessert_source?: string; position?: number; annotations?: string[] }>,
         ): Promise<APISuccess<{ sections: GroupMenuV2Section[] }> | APIError> {
           return json(`/api/admin/group-menus-v2/${id}/sections`, {
             method: "PUT",
@@ -1714,6 +1716,20 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         // Resolves (creating when missing) the Postres carrier menu for the active restaurant.
         async resolvePostres(): Promise<APISuccess<{ menu_id: number }> | APIError> {
           return json(`/api/admin/group-menus-v2/postres/resolve`, { method: "POST" });
+        },
+        // Coordination id: dessert_section_source_v1
+        // Flips a dessert section between the general carta ("general", read-only
+        // mirror) and its own editable list ("custom", seeded from the carta).
+        async patchSectionDessertSource(
+          id: number,
+          sectionId: number,
+          dessertSource: "general" | "custom",
+        ): Promise<APISuccess<{ section_id: number; dessert_source: string; sections?: GroupMenuV2Section[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/dessert-source`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ dessert_source: dessertSource }),
+          });
         },
         // Coordination id: menu_section_delete_v1 (modal -> DELETE -> DB -> public snapshot)
         async deleteSection(id: number, sectionId: number): Promise<APISuccess<{ section_id: number }> | APIError> {

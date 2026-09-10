@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Eye, EyeOff, GripVertical, MessageSquareText, Plus, Search, Settings2, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Eye, EyeOff, GripVertical, IceCreamCone, MessageSquareText, Plus, Search, Settings2, Trash2 } from "lucide-react";
 import { AnimatePresence, motion, Reorder } from "motion/react";
 import type { EditorSection } from "../../types/menuEditor.types";
 import type { DishCatalogItem } from "../../../../../../api/types";
@@ -8,6 +8,16 @@ import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import { Switch } from "../../../../../../ui/shadcn/Switch";
 import { MenuItemEditor } from "../MenuItemEditor/MenuItemEditor";
 import { ALLERGENS } from "../../constants/menuEditor.constants";
+// Coordination id: dessert_section_source_v1
+import { Select } from "../../../../../../ui/inputs/Select";
+import {
+  DESSERT_SOURCE_CUSTOM,
+  DESSERT_SOURCE_GENERAL,
+  DESSERT_SOURCE_OPTIONS,
+  isGeneralDessertSection,
+  normalizeDessertSource,
+  type DessertSource,
+} from "../../../../../../ui/widgets/menus/sectionPresentation";
 import { useDragControls } from "motion/react";
 
 export type SectionDishTab = "active" | "inactive" | "annotations" | "settings";
@@ -49,6 +59,9 @@ export type MenuSectionEditorProps = {
   onReorderSectionStartDrag: (sectionClientId: string, event: React.PointerEvent<Element>) => void;
   toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => void;
   requestSectionDelete: (sectionClientId: string, sectionLabel: string) => void;
+  // Coordination id: dessert_section_source_v1 - flips a postres section between
+  // the general desserts carta (read only) and its own editable list.
+  setSectionDessertSource: (sectionClientId: string, source: DessertSource) => void | Promise<void>;
 };
 
 function ReorderSectionContainer({ value, className, transition, whileDrag, children }: {
@@ -91,9 +104,16 @@ export function MenuSectionEditor({
   setSectionDescriptionsEnabled,
   pickDishImage, addDish, handleSearch, searchTerm, searchItems,
   sectionLoadingState, onReorderSectionStartDrag, toggleSameDayBooking, requestSectionDelete,
+  setSectionDessertSource,
 }: MenuSectionEditorProps) {
   const [dishTab, setDishTab] = useState<SectionDishTab>("active");
   const sectionLabel = sec.title.trim() || `seccion ${secIdx + 1}`;
+  // Coordination id: dessert_section_source_v1 - a dessert section that reads
+  // from the general carta shows the carta's dishes and blocks every edit; the
+  // only way to change them is /app/comida/postres.
+  const isDessertSection = String(sec.kind || "").toLowerCase().trim() === "postres";
+  const dessertSource = normalizeDessertSource(sec.kind, sec.dessertSource);
+  const readOnlyDishes = isGeneralDessertSection(sec.kind, sec.dessertSource);
   const activeDishCount = useMemo(() => sec.dishes.reduce((total, dish) => total + (dish.active ? 1 : 0), 0), [sec.dishes]);
   const inactiveDishCount = sec.dishes.length - activeDishCount;
   const annotationCount = useMemo(() => {
@@ -137,8 +157,11 @@ export function MenuSectionEditor({
   const handleAddDish = useCallback(() => { setDishTab("active"); addDish(sec.clientId); }, [addDish, sec.clientId]);
   const handleAddDishFromCatalog = useCallback((item: DishCatalogItem) => { setDishTab("active"); addDish(sec.clientId, item); }, [addDish, sec.clientId]);
 
+  // Coordination id: dessert_section_source_v1 - reordering a general-carta
+  // mirror would write rows the carta owns, so the drag result is dropped.
   const handleReorderVisibleDishes = useCallback(
     (orderedVisibleClientIds: string[]) => {
+      if (readOnlyDishes) return;
       if (orderedVisibleClientIds.length !== visibleDishes.length) return;
       let visibleCursor = 0;
       const nextOrder = sec.dishes.map((dish) => {
@@ -150,7 +173,7 @@ export function MenuSectionEditor({
       });
       reorderDishes(sec.clientId, nextOrder);
     },
-    [dishTab, reorderDishes, sec.clientId, sec.dishes, visibleDishes.length],
+    [dishTab, readOnlyDishes, reorderDishes, sec.clientId, sec.dishes, visibleDishes.length],
   );
 
   return (
@@ -452,6 +475,34 @@ export function MenuSectionEditor({
                   />
                 </div>
 
+                {isDessertSection ? (
+                  <div className="bo-field bo-field--full" data-slot="menuSectionEditor-settings-dessertSourceField">
+                    <label
+                      className="bo-label"
+                      htmlFor={`menu-section-editor-settings-dessert-source-${sec.clientId}`}
+                      data-slot="menuSectionEditor-settings-dessertSourceLabel"
+                    >
+                      Carta de postres
+                    </label>
+                    <Select
+                      value={dessertSource}
+                      onChange={(next) => { void setSectionDessertSource(sec.clientId, next as DessertSource); }}
+                      options={DESSERT_SOURCE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                      ariaLabel="Origen de la carta de postres"
+                      data-testid={`menu-section-editor-settings-dessert-source-${sec.clientId}`}
+                    />
+                    <div
+                      className="bo-mutedText"
+                      data-testid={`menu-section-editor-settings-dessert-source-hint-${sec.clientId}`}
+                      data-coordination-id="dessert_section_source_v1"
+                    >
+                      {dessertSource === DESSERT_SOURCE_GENERAL
+                        ? "Sincronizada con la carta general de postres: los platos son de solo lectura y se editan en /app/comida/postres."
+                        : "Personalizada: esta seccion tiene su propia lista de postres, totalmente editable aqui."}
+                    </div>
+                  </div>
+                ) : null}
+
                 <button
                   type="button"
                   className="bo-btn bo-btn--danger bo-btn--block"
@@ -486,6 +537,7 @@ export function MenuSectionEditor({
                     toggleSameDayBooking={toggleSameDayBooking}
                     reorderTransition={reorderTransition}
                     reorderWhileDrag={reorderWhileDrag}
+                    readOnly={readOnlyDishes || dish.read_only === true}
                   />
                 ))}
               </Reorder.Group>
@@ -500,7 +552,23 @@ export function MenuSectionEditor({
             )}
           </div>
 
-          {dishTab === "active" || dishTab === "inactive" ? (
+          {(dishTab === "active" || dishTab === "inactive") && readOnlyDishes ? (
+            <div
+              className="bo-sectionReadOnlyNotice"
+              role="status"
+              data-testid={`menu-section-editor-dessert-readonly-${sec.clientId}`}
+              data-coordination-id="dessert_section_source_v1"
+            >
+              <IceCreamCone size={16} aria-hidden="true" />
+              <span data-slot="menuSectionEditor-dessertReadOnlyText">
+                Estos postres estan sincronizados con la carta general de postres y son de solo lectura.
+                Cambialos en <a className="bo-link" href="/app/comida/postres" data-testid={`menu-section-editor-dessert-readonly-link-${sec.clientId}`}>/app/comida/postres</a>,
+                o pasa la seccion a personalizada en la pestana Ajustes.
+              </span>
+            </div>
+          ) : null}
+
+          {(dishTab === "active" || dishTab === "inactive") && !readOnlyDishes ? (
             <>
               <div className="bo-dishAddRow" data-slot="menuSectionEditor-dishAddRow">
                 <div className="bo-dishSearchWrap" data-slot="menuSectionEditor-dishSearchWrap">

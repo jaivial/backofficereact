@@ -46,6 +46,10 @@ import {
   buildGroupMenuAIWSURL,
 } from "../helpers/menuEditor.helpers";
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB } from "../constants/menuEditor.constants";
+// Coordination id: menu_section_kind_presets_v1 + dessert_section_source_v1
+import { normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
+import type { DessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
+import type { AddSectionSelection } from "../../../../../ui/widgets/menus/AddSectionModal";
 import type { BeverageOption, BeverageDeleteTarget } from "../types/menuEditor.types";
 import { extractBeverageOptionsFromPayload } from "./extractBeverageOptionsFromPayload";
 import { buildPreviewMenuPayload } from "./buildPreviewMenuPayload";
@@ -215,7 +219,11 @@ export type UseMenuEditorReturn = {
   applyMenuPreviewAIState: (patch: MenuPreviewTrackerPatch) => void;
   applyAITrackerSnapshot: (rows: MenuAIDishTracker[]) => void;
   createDraftAndContinue: () => Promise<void>;
-  addSection: () => void;
+  // Coordination id: menu_section_kind_presets_v1 - the add-section modal hands in
+  // the chosen kind/title (and dessert source for postres); no args = blank section.
+  addSection: (selection?: AddSectionSelection) => void;
+  // Coordination id: dessert_section_source_v1
+  setSectionDessertSource: (sectionClientId: string, source: DessertSource) => Promise<void>;
   removeSection: (clientId: string) => void;
   updateSection: (clientId: string, patch: Partial<EditorSection>) => void;
   fetchSectionDishes: (clientId: string) => Promise<void>;
@@ -486,6 +494,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
             subtitle: sec.subtitle.trim(),
             tab_label: sec.tabLabel.trim(),
             kind: sec.kind,
+            // Coordination id: dessert_section_source_v1
+            dessert_source: sec.dessertSource,
             position: idx,
             annotations: normalizeSectionAnnotations(sec.annotations),
           }));
@@ -1084,15 +1094,82 @@ export function useMenuEditor(): UseMenuEditorReturn {
   }, [api, menuType]);
 
   // --- addSection ---
-  const addSection = useCallback(() => {
+  // Coordination id: menu_section_kind_presets_v1 - the "Anadir seccion" modal
+  // passes the chosen preset, so Entrantes/Principal/Arroz/Postres land with
+  // their title already filled and "Personalizada" lands blank.
+  const addSection = useCallback((selection?: AddSectionSelection) => {
+    const kind = selection?.kind || "custom";
+    const seededTitle = (selection?.title ?? "").trim();
     // New sections start with display_title seeded from the backoffice title so
     // the public heading is never blank. subtitle and tab_label stay empty
     // until the operator fills them in the settings tab.
+    const title = seededTitle || "Nueva seccion";
+    const dessertSource = normalizeDessertSource(kind, selection?.dessertSource);
+    console.log("[checkpoint] menu_section_added", `kind=${kind}`, `dessert_source=${dessertSource}`);
     setSections((prev) => [
       ...prev,
-      { clientId: uid("section"), title: "Nueva seccion", displayTitle: "Nueva seccion", subtitle: "", tabLabel: "", kind: "custom", position: prev.length, annotations: [""], dishes: [], expanded: true } as EditorSection,
+      {
+        clientId: uid("section"),
+        title,
+        displayTitle: title,
+        subtitle: "",
+        tabLabel: "",
+        kind,
+        dessertSource,
+        position: prev.length,
+        annotations: [""],
+        dishes: [],
+        expanded: true,
+      } as EditorSection,
     ]);
   }, []);
+
+  // --- setSectionDessertSource ---
+  // Coordination id: dessert_section_source_v1 - flips a saved dessert section
+  // between the general carta mirror (read only) and its own editable list.
+  // Unsaved sections only need the local flag; the next save persists it.
+  const setSectionDessertSource = useCallback(async (sectionClientId: string, source: DessertSource) => {
+    const target = sectionsRef.current.find((sec) => sec.clientId === sectionClientId);
+    if (!target) return;
+    const next = normalizeDessertSource(target.kind, source);
+    if (next === target.dessertSource) return;
+
+    if (!menuId || !target.id) {
+      setSections((prev) => prev.map((sec) => (sec.clientId === sectionClientId ? { ...sec, dessertSource: next } : sec)));
+      return;
+    }
+
+    console.log("[checkpoint] dessert_section_source_request_sent", `section=${target.id}`, `to=${next}`);
+    try {
+      const res = await api.menus.gruposV2.patchSectionDessertSource(menuId, target.id, next);
+      if (!res.success) {
+        pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo cambiar la carta de postres" });
+        return;
+      }
+      const returned = (res as { sections?: GroupMenuV2Section[] }).sections;
+      if (returned && returned.length > 0) {
+        // The endpoint returns the reloaded sections, so the read-only mirror (or
+        // the freshly seeded custom copy) shows up without a second round trip.
+        setSections((prev) => {
+          const prevByID = new Map(prev.filter((sec) => sec.id).map((sec) => [sec.id as number, sec]));
+          return returned.map((sec) => {
+            const mapped = mapApiSection(sec, sec.id ? prevByID.get(sec.id) : undefined);
+            return { ...mapped, dishesLoaded: true, expanded: mapped.clientId === sectionClientId ? true : mapped.expanded };
+          });
+        });
+      } else {
+        setSections((prev) => prev.map((sec) => (sec.clientId === sectionClientId ? { ...sec, dessertSource: next } : sec)));
+      }
+      console.log("[checkpoint] dessert_section_source_applied", `section=${target.id}`, `to=${next}`);
+      pushToast({
+        kind: "success",
+        title: "Carta de postres actualizada",
+        message: next === "general" ? "Sincronizada con la carta general de postres" : "Ahora es personalizable",
+      });
+    } catch (err) {
+      pushToast({ kind: "error", title: "Error", message: err instanceof Error ? err.message : "No se pudo cambiar la carta de postres" });
+    }
+  }, [api, menuId, pushToast]);
 
   // --- removeSection ---
   const removeSection = useCallback((clientId: string) => {
@@ -1995,7 +2072,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setSectionLoadingState, setSectionLoadedDishes, setMenuPreviewImageBusy, setSpecialMenuImageBusy,
     // Actions
     patchBasics, syncSectionsAndDishes, applyDishAIState, applyMenuPreviewAIState,
-    applyAITrackerSnapshot, createDraftAndContinue, addSection, removeSection, updateSection,
+    applyAITrackerSnapshot, createDraftAndContinue, addSection, setSectionDessertSource, removeSection, updateSection,
     fetchSectionDishes, handleSectionToggle, updateSectionAnnotation, addSectionAnnotation,
     removeSectionAnnotation, setSectionDescriptionsEnabled, moveSection, reorderSections, addDish, updateDish, removeDish,
     reorderDishes, handleSearch, pickDishImage, onDishImageFileSelected, onDishImageAdvisorImprove,
