@@ -23,6 +23,9 @@ export type MenuItemEditorProps = {
   toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => void;
   reorderTransition?: any;
   reorderWhileDrag?: any;
+  /** Coordination id: dessert_section_source_v1 - the dish belongs to the general
+   *  desserts carta, so every control is inert and edits are blocked. */
+  readOnly?: boolean;
 };
 
 function ReorderItemContainer({ as = "div", value, className, transition, whileDrag, children }: {
@@ -59,7 +62,7 @@ function ReorderItemContainer({ as = "div", value, className, transition, whileD
 export function MenuItemEditor({
   sectionClientId, dish, dishIdx, isALaCarte, showDishImages, mediaLoading,
   startDishDrag, pickDishImage, setAllergenModal, requestDishDelete, updateDish, toggleSameDayBooking,
-  reorderTransition, reorderWhileDrag,
+  reorderTransition, reorderWhileDrag, readOnly = false,
 }: MenuItemEditorProps) {
   const dishLabel = dish.title || `Plato ${dishIdx + 1}`;
   const titleTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -86,7 +89,7 @@ export function MenuItemEditor({
     >
       {(startDishDragLocal) => (
         <FoodDishCard
-          className="bo-dishCard bo-dishCard--horizontal"
+          className={`bo-dishCard bo-dishCard--horizontal${readOnly ? " bo-sectionDishesReadOnly" : ""}`}
           bodyClassName="bo-dishCardBody"
           debugId={`section:${sectionClientId}:dish:${dish.clientId}`}
           title={dishLabel}
