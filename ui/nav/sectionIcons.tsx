@@ -9,6 +9,8 @@ import {
   FileText,
   Globe,
   Link,
+  Mails,
+  Megaphone,
   MonitorSmartphone,
   Boxes,
   Receipt,
@@ -62,6 +64,10 @@ export function iconForSidebarItemKey(key: SidebarItemKey, options: BOIconOption
       return <Receipt size={size} strokeWidth={strokeWidth} />;
     case "plataforma":
       return <Server size={size} strokeWidth={strokeWidth} data-ui="section-plataforma-icon" />;
+    case "campanas":
+      return <Mails size={size} strokeWidth={strokeWidth} data-ui="section-campanas-icon" />;
+    case "anuncios":
+      return <Megaphone size={size} strokeWidth={strokeWidth} data-ui="section-anuncios-icon" />;
     default:
       return <Settings size={size} strokeWidth={strokeWidth} />;
   }
