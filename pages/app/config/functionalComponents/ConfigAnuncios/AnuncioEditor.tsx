@@ -7,11 +7,9 @@ import {
   GripVertical,
   ImagePlus,
   Megaphone,
-  Monitor,
   Plus,
   Settings2,
   Sparkles,
-  Smartphone,
   Trash2,
   Type,
   Upload,
@@ -104,7 +102,6 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("desktop");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [scheduleError, setScheduleError] = useState("");
   const scheduleCheckReqRef = useRef<string | null>(null);
@@ -508,7 +505,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
                     onClick={() => { setImageOpen(true); setImageStep("choose"); }}
                     disabled={imageEnhancing}
                     aria-busy={imageEnhancing}
-                    className="flex w-full items-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-left text-sm text-bo-muted disabled:cursor-not-allowed disabled:opacity-70"
+                    className="mx-auto flex w-full max-w-[640px] items-center justify-center gap-3 rounded-bo-sm border border-dashed border-bo-border bg-bo-surface p-3 text-center text-sm text-bo-muted disabled:cursor-not-allowed disabled:opacity-70"
                     data-slot={`ad-content-${item.id}-change`}
                   >
                     {imageEnhancing ? (
@@ -576,13 +573,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
 
         {previewOpen ? (
           <div className="bo-anunciosPreviewCol" data-slot="ads-preview-column">
-            <div className="bo-anunciosDeviceSwitch" role="group" aria-label="Vista del dispositivo" data-slot="ad-preview-device-switch">
-              <div data-slot="anuncioEditor-anunciosPreviewSwitch" className="bo-anunciosPreviewSwitch">
-                <button type="button" className={`bo-anunciosPreviewSwitchBtn ${previewDevice === "mobile" ? "is-active" : ""}`} onClick={() => setPreviewDevice("mobile")} aria-pressed={previewDevice === "mobile"} aria-label="Ver versión móvil" data-testid="ad-preview-device-mobile"><Smartphone size={14} aria-hidden="true" /><span className="bo-anunciosPreviewSwitchLabel">Móvil</span></button>
-                <button type="button" className={`bo-anunciosPreviewSwitchBtn ${previewDevice === "desktop" ? "is-active" : ""}`} onClick={() => setPreviewDevice("desktop")} aria-pressed={previewDevice === "desktop"} aria-label="Ver versión ordenador" data-testid="ad-preview-device-desktop"><Monitor size={14} aria-hidden="true" /><span className="bo-anunciosPreviewSwitchLabel">Ordenador</span></button>
-              </div>
-            </div>
-            <Preview ad={ad} website={website} device={previewDevice} />
+            <Preview ad={ad} website={website} />
           </div>
         ) : null}
       </div>
@@ -633,7 +624,9 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
   );
 }
 
-function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; device: "mobile" | "desktop" }) {
+function Preview({ ad, website }: { ad: RestaurantAd; website: string }) {
+  // Same mobile template at every viewport width, matching the public site
+  // (PublicAdPopover): one column, image on top, full-width CTAs.
   const visibleContent = ad.content.filter((item) => item.type === "image" ? Boolean(item.value) : Boolean(item.value.trim()));
   const primaryColor = ad.ctas.find((cta) => cta.color)?.color?.trim() || "#436754";
 
@@ -642,61 +635,35 @@ function Preview({ ad, website, device }: { ad: RestaurantAd; website: string; d
       className="bo-anunciosPreview bo-adModalPreview"
       data-testid="ad-preview"
       data-slot="ad-preview"
-      data-preview-device={device}
-      style={{ "--ad-primary": primaryColor } as React.CSSProperties}    >
+      style={{ "--ad-primary": primaryColor } as React.CSSProperties}
+    >
       <div className="bo-adModalBody" data-slot="ad-preview-body">
-        {device === "mobile" ? (
-          <>
-            {visibleContent.map((item) => item.type === "image" ? (
-              <div className="bo-adModalImageCol" key={item.id} data-slot="ad-preview-image-col">
-                <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
-              </div>
-            ) : item.type === "subtitle" ? (
-              <p key={item.id} className="bo-adModalSupertitle" data-slot={`ad-preview-${item.id}`}>{item.value}</p>
-            ) : item.type === "title" ? (
-              <h2 key={item.id} className="bo-adModalTitle" data-slot={`ad-preview-${item.id}`}>{item.value}</h2>
-            ) : (
-              <p key={item.id} className="bo-adModalDesc" data-slot={`ad-preview-${item.id}`}>{item.value}</p>
-            ))}
-            {!visibleContent.length ? <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p> : null}
-            <div className="bo-adModalActions" data-slot="ad-preview-ctas">
-              {ad.ctas.map((cta) => <a key={cta.id} href={buildCTAURL(website, cta)} className="bo-adModalCta" style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties} rel="noopener noreferrer" data-slot={`ad-preview-cta-${cta.id}`}>{cta.text || "Más información"}</a>)}
-            </div>
-          </>
+        {visibleContent.map((item) => item.type === "image" ? (
+          <div className="bo-adModalImageCol" key={item.id} data-slot="ad-preview-image-col">
+            <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
+          </div>
+        ) : item.type === "subtitle" ? (
+          <p key={item.id} className="bo-adModalSupertitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>
+        ) : item.type === "title" ? (
+          <h2 key={item.id} className="bo-adModalTitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</h2>
         ) : (
-          <>
-            {visibleContent.map((item) => item.type === "image" ? (
-              <div className="bo-adModalImageCol" key={item.id} data-slot="ad-preview-image-col">
-                <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
-              </div>
-            ) : item.type === "subtitle" ? (
-              <p key={item.id} className="bo-adModalSupertitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>
-            ) : item.type === "title" ? (
-              <h2 key={item.id} className="bo-adModalTitle" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</h2>
-            ) : (
-              <p key={item.id} className="bo-adModalDesc" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>
-            ))}
-
-            {!visibleContent.length ? (
-              <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p>
-            ) : null}
-
-            <div className="bo-adModalActions" data-slot="ad-preview-ctas">
-              {ad.ctas.map((cta) => (
-                <a
-                  key={cta.id}
-                  href={buildCTAURL(website, cta)}
-                  className="bo-adModalCta"
-                  style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
-                  rel="noopener noreferrer"
-                  data-slot={`ad-preview-cta-${cta.id}`}
-                >
-                  {cta.text || "Más información"}
-                </a>
-              ))}
-            </div>
-          </>
-        )}
+          <p key={item.id} className="bo-adModalDesc" style={{ textAlign: item.align || "left" }} data-slot={`ad-preview-${item.id}`}>{item.value}</p>
+        ))}
+        {!visibleContent.length ? <p className="bo-adModalDesc" data-slot="ad-preview-empty">Añade contenido para ver el anuncio en tiempo real.</p> : null}
+        <div className="bo-adModalActions" data-slot="ad-preview-ctas">
+          {ad.ctas.map((cta) => (
+            <a
+              key={cta.id}
+              href={buildCTAURL(website, cta)}
+              className="bo-adModalCta"
+              style={{ "--ad-primary": cta.color || "#436754" } as React.CSSProperties}
+              rel="noopener noreferrer"
+              data-slot={`ad-preview-cta-${cta.id}`}
+            >
+              {cta.text || "Más información"}
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -794,20 +761,20 @@ function DraggableCardRow({
       whileDrag={{ zIndex: 2 }}
       className="bo-anunciosRowCard"
     >
+      <button
+        type="button"
+        className="bo-anunciosDragHandle"
+        aria-label={`Mover ${label}`}
+        data-slot={`${dataSlot}-grip`}
+        onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
+      >
+        <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
+      </button>
       <div className="bo-anunciosRowField" data-slot={`${dataSlot}-field`}>
         <span className="bo-anunciosRowTypeLabel" data-slot={`${dataSlot}-type-label`}>{TYPE_LABEL[item.type]}</span>
         {children}
       </div>
       <div className="bo-anunciosRowBand" data-slot={`${dataSlot}-band`}>
-        <button
-          type="button"
-          className="bo-anunciosDragHandle"
-          aria-label={`Mover ${label}`}
-          data-slot={`${dataSlot}-grip`}
-          onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
-        >
-          <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
-        </button>
         {showAlign ? (
           <AlignmentTabs value={item.align || "left"} onChange={onAlignChange} />
         ) : (
