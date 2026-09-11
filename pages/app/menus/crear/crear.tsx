@@ -249,6 +249,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper, renderMenuPreviewUploadArea,
     renderSpecialMenuImageUploadArea, basicsFingerprint, basicsPayload, sectionsFingerprint,
     menuAIDishesById, loadingSectionTitles, toggleSameDayBooking,
+    dessertSyncConfirm, confirmDessertSync, cancelDessertSync,
   } = H;
 
   const { pushToast } = useToasts();
@@ -1051,6 +1052,20 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
         onCancel={() => setPendingSectionDelete(null)}
         onClose={() => setPendingSectionDelete(null)}
         onConfirm={() => { void confirmSectionDelete(); }}
+      />
+
+      {/* General desserts carta sync confirmation (coordination id: dessert_section_source_v1) */}
+      <ConfirmDialog
+        title="Actualizar carta general de postres"
+        message={dessertSyncConfirm
+          ? `Estos postres estan sincronizados con la carta general de postres. Los cambios de la seccion "${dessertSyncConfirm.sectionLabel}" se aplicaran tambien a la carta general y afectaran a todas las cartas que la usen. ¿Quieres continuar?`
+          : ""}
+        confirmText="Aplicar cambios"
+        cancelText="Cancelar"
+        open={!!dessertSyncConfirm}
+        onCancel={cancelDessertSync}
+        onClose={cancelDessertSync}
+        onConfirm={confirmDessertSync}
       />
 
       {/* Dish delete confirmation modal */}
