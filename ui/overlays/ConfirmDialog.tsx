@@ -22,7 +22,7 @@ export function ConfirmDialog({
   open?: boolean;
   isOpen?: boolean;
   title: string;
-  message: string;
+  message: React.ReactNode;
   confirmText?: string;
   confirmLabel?: string;
   cancelText?: string;

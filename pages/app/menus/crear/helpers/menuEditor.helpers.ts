@@ -11,7 +11,7 @@ import type {
 import type { GroupMenuV2, GroupMenuV2AIDish, GroupMenuV2AIImages, GroupMenuV2Dish, GroupMenuV2Section } from "../../../../../api/types";
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB, MENU_AI_TRACE_PREFIX } from "../constants/menuEditor.constants";
 // Coordination id: dessert_section_source_v1
-import { normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
+import { isGeneralDessertSection, normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
 
 // =============================================================================
 // Debug / Logging
@@ -790,6 +790,19 @@ export function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
     // Coordination id: dessert_section_source_v1
     read_only: d.read_only === true,
   };
+}
+
+// Coordination id: dessert_section_source_v1
+// A general-carta mirror owns no dish rows of its own, so a structure reconcile
+// must adopt the server dish list instead of the (possibly empty) local copy.
+// Any local rows are either the server-loaded carta or unconfirmed edits and are
+// preserved; only an empty local list means we must take the server list.
+export function mirrorShouldAdoptServerDishes(
+  mapped: Pick<EditorSection, "kind" | "dessertSource" | "dishes">,
+  local: Pick<EditorSection, "dishes"> | undefined,
+): boolean {
+  if (!isGeneralDessertSection(mapped.kind, mapped.dessertSource)) return false;
+  return !local || local.dishes.length === 0;
 }
 
 export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): EditorSection {

@@ -249,6 +249,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper, renderMenuPreviewUploadArea,
     renderSpecialMenuImageUploadArea, basicsFingerprint, basicsPayload, sectionsFingerprint,
     menuAIDishesById, loadingSectionTitles, toggleSameDayBooking,
+    dessertSyncConfirm, confirmDessertSync, cancelDessertSync,
   } = H;
 
   const { pushToast } = useToasts();
@@ -1051,6 +1052,36 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
         onCancel={() => setPendingSectionDelete(null)}
         onClose={() => setPendingSectionDelete(null)}
         onConfirm={() => { void confirmSectionDelete(); }}
+      />
+
+      {/* General desserts carta sync confirmation (coordination id: dessert_section_source_v1) */}
+      <ConfirmDialog
+        title="Actualizar carta general de postres"
+        className="bo-modal--dessertConfirm"
+        message={dessertSyncConfirm ? (
+          <div className="bo-dessertConfirmBody" data-slot="dessert-confirm-body" data-coordination-id="dessert_section_source_v1">
+            <p className="bo-dessertConfirmLead">
+              Vas a actualizar la carta general de postres.
+            </p>
+            <p>
+              Los cambios que has hecho en la seccion «{dessertSyncConfirm.sectionLabel}» se aplicaran a la carta
+              general y afectaran a todas las cartas y paginas web que la usan.
+            </p>
+            <p>
+              Hasta que pulses «Aplicar cambios», los cambios solo estan en este editor y no se han guardado en la
+              carta general.
+            </p>
+            <p className="bo-dessertConfirmQuestion">
+              ¿Quieres aplicar los cambios ahora?
+            </p>
+          </div>
+        ) : null}
+        confirmText="Aplicar cambios"
+        cancelText="Cancelar"
+        open={!!dessertSyncConfirm}
+        onCancel={cancelDessertSync}
+        onClose={cancelDessertSync}
+        onConfirm={confirmDessertSync}
       />
 
       {/* Dish delete confirmation modal */}

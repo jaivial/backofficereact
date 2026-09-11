@@ -64,13 +64,13 @@ export const DESSERT_SOURCE_OPTIONS: readonly DessertSourceOptionDef[] = [
     value: DESSERT_SOURCE_GENERAL,
     label: "Usar la carta general de postres",
     description:
-      "Los postres estaran sincronizados con la carta general de postres y seran read only. La unica forma de cambiarlos es en /app/comida/postres.",
+      "Los postres estaran sincronizados con la carta general de postres. Podras editarlos aqui, pero cada cambio pedira confirmacion y se aplicara tambien a la carta general.",
     icon: IceCreamCone,
   },
   {
     value: DESSERT_SOURCE_CUSTOM,
     label: "Carta de postres personalizada",
-    description: "Anade la seccion de postres con los platos de la carta de postres completamente customizable.",
+    description: "Anade una seccion de postres independiente: se rellena una vez con los platos de la carta general y luego es totalmente editable.",
     icon: Sparkles,
   },
 ];
