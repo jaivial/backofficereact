@@ -236,6 +236,27 @@
   max-width: min(520px, calc(100vw - 36px));
 }
 
+/* Coordination id: dessert_section_source_v1 - the general-carta confirmation
+   uses a roomier layout and larger, multi-paragraph copy. */
+.bo-modal--dessertConfirm {
+  max-width: min(620px, calc(100vw - 36px));
+}
+
+.bo-modal--dessertConfirm .bo-modalBody {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--bo-text);
+}
+
+.bo-dessertConfirmBody p + p {
+  margin-top: 10px;
+}
+
+.bo-dessertConfirmLead,
+.bo-dessertConfirmQuestion {
+  font-weight: 600;
+}
+
 :root[data-theme="light"] .bo-alert--glass .bo-alertMsg,
 :root[data-theme="light"] .bo-toast--glass .bo-toastMsg,
 :root[data-theme="light"] .bo-memberPickerMeta,

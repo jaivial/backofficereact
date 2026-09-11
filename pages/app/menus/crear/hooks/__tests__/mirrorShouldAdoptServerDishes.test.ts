@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  getSectionDishesFingerprint,
-  mirrorShouldAdoptServerDishes,
-} from "../../helpers/menuEditor.helpers";
+import { mirrorShouldAdoptServerDishes } from "../../helpers/menuEditor.helpers";
 import type { EditorDish, EditorSection } from "../../types/menuEditor.types";
 
 function dish(overrides: Partial<EditorDish> = {}): EditorDish {
@@ -45,12 +42,12 @@ function section(overrides: Partial<EditorSection> = {}): EditorSection {
 describe("mirrorShouldAdoptServerDishes", () => {
   it("returns false for a non-mirror section", () => {
     const mapped = section({ kind: "entrantes", dessertSource: "custom" });
-    expect(mirrorShouldAdoptServerDishes(mapped, undefined, undefined)).toBe(false);
+    expect(mirrorShouldAdoptServerDishes(mapped, undefined)).toBe(false);
   });
 
   it("adopts the server dishes for a mirror with no local copy", () => {
     const mapped = section({ dishes: [dish()] });
-    expect(mirrorShouldAdoptServerDishes(mapped, undefined, undefined)).toBe(true);
+    expect(mirrorShouldAdoptServerDishes(mapped, undefined)).toBe(true);
   });
 
   it("adopts the server dishes for a freshly added mirror whose local list is still empty", () => {
@@ -58,26 +55,18 @@ describe("mirrorShouldAdoptServerDishes", () => {
     // (empty) list, hiding every general dessert and then failing on save.
     const mapped = section({ dishes: [dish()] });
     const local = section({ dishes: [] });
-    expect(mirrorShouldAdoptServerDishes(mapped, local, undefined)).toBe(true);
+    expect(mirrorShouldAdoptServerDishes(mapped, local)).toBe(true);
   });
 
-  it("keeps unsaved local edits on a mirror", () => {
+  it("keeps local rows on a mirror (unconfirmed edits survive the structure save)", () => {
     const mapped = section({ dishes: [dish()] });
     const local = section({ dishes: [dish({ title: "Editado" })] });
-    expect(mirrorShouldAdoptServerDishes(mapped, local, undefined)).toBe(false);
+    expect(mirrorShouldAdoptServerDishes(mapped, local)).toBe(false);
   });
 
-  it("adopts the server list once the local edits are the saved ones", () => {
+  it("keeps the server-loaded local rows on a mirror", () => {
+    const mapped = section({ dishes: [dish()] });
     const local = section({ dishes: [dish()] });
-    const mapped = section({ dishes: [dish()] });
-    const saved = getSectionDishesFingerprint(local);
-    expect(mirrorShouldAdoptServerDishes(mapped, local, saved)).toBe(true);
-  });
-
-  it("keeps local edits that differ from the saved fingerprint", () => {
-    const local = section({ dishes: [dish({ title: "Editado" })] });
-    const mapped = section({ dishes: [dish()] });
-    const saved = getSectionDishesFingerprint(section({ dishes: [dish()] }));
-    expect(mirrorShouldAdoptServerDishes(mapped, local, saved)).toBe(false);
+    expect(mirrorShouldAdoptServerDishes(mapped, local)).toBe(false);
   });
 });
