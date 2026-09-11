@@ -1,4 +1,5 @@
 import autoTable from "jspdf-autotable";
+import { money } from "./money";
 
 export type CashClosureSummary = {
   shiftId: number;
@@ -34,7 +35,6 @@ export type CashClosureSummary = {
   openTicketCount: number;
 };
 
-const money = (cents: number | null | undefined) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format((cents || 0) / 100);
 const date = (value?: string | null) => value ? new Date(value).toLocaleString("es-ES") : "-";
 
 export async function downloadCashClosurePdf(input: { closureType: "X" | "Y" | "Z"; summary: CashClosureSummary; generatedAt?: Date }): Promise<void> {
