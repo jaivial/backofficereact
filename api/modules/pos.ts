@@ -9,7 +9,7 @@ import type { JsonRequestFn } from "../utils/request";
 export type POSModule = {
   cashDays: {
     current(params?: { date?: string }): Promise<APISuccess<POSCashDayCurrent> | APIError>;
-    list(params: { from: string; to: string }): Promise<APISuccess<{ items: POSCashDay[] }> | APIError>;
+    list(params: { from: string; to: string }): Promise<APISuccess<{ data: POSCashDay[] }> | APIError>;
     tables(params: { date: string }): Promise<APISuccess<POSCashDayTables> | APIError>;
     open(params: { date?: string; openingCashCents?: number; force?: boolean; notes?: string }): Promise<APISuccess<{ cashDay: POSCashDay }> | APIError>;
     close(params: { id: number; countedCashCents: number; notes?: string; discrepancyReason?: string }): Promise<APISuccess<{ cashDay: POSCashDay }> | APIError>;
@@ -28,7 +28,7 @@ export function createPOSModule(json: JsonRequestFn): POSModule {
         const query = q.toString();
         return json(`/api/admin/pos/cash-days/current${query ? `?${query}` : ""}`, { method: "GET" });
       },
-      async list(params: { from: string; to: string }): Promise<APISuccess<{ items: POSCashDay[] }> | APIError> {
+      async list(params: { from: string; to: string }): Promise<APISuccess<{ data: POSCashDay[] }> | APIError> {
         const q = new URLSearchParams({ from: params.from, to: params.to });
         return json(`/api/admin/pos/cash-days?${q.toString()}`, { method: "GET" });
       },

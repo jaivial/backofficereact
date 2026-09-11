@@ -66,7 +66,7 @@ export function vatBreakdown(lines: TicketLine[], totalGrossCents: number): Arra
   const grossByRate = new Map<number, number>();
   let linesGross = 0;
   for (const line of lines) {
-    if (!line.vatRate) continue;
+    if (line.vatRate === undefined || line.vatRate === null) continue;
     grossByRate.set(line.vatRate, (grossByRate.get(line.vatRate) || 0) + line.lineTotalGrossCents);
     linesGross += line.lineTotalGrossCents;
   }

@@ -852,6 +852,12 @@
     width: 196px;
   }
 
+  /* The enlarged 44px controls can exceed the narrow ticket panel; wrapping
+     keeps move/void reachable instead of clipped by the panel's overflow. */
+  .pos-line {
+    flex-wrap: wrap;
+  }
+
   .pos-products {
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   }

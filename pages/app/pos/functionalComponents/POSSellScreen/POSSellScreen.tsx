@@ -301,7 +301,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       return reasons;
     }
     if (!register.hasPendingKitchenLines) reasons.cocina = "No hay líneas pendientes de enviar a cocina.";
-    if (!register.activeTicketLines.length || comandaBusy) reasons.comanda = "No hay líneas en la cuenta.";
+    if (!register.activeTicketLines.length) reasons.comanda = "No hay líneas en la cuenta.";
+    else if (comandaBusy) reasons.comanda = "Generando comanda…";
     if (!register.ticket) {
       const ticketKeys: RailFeatureKey[] = ["total", "borrar-comanda", "descuento", "separar-comanda", "dividir-comanda", "recargo", "invita", "comentario", "aparcar", "juntar-mesas", "cliente", "empleado", "tags", "propina"];
       for (const key of ticketKeys) reasons[key] = "Abre una cuenta para usar esta acción.";
@@ -315,6 +316,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       reasons.barra = "Ya hay una cuenta abierta.";
       reasons.llevar = "Ya hay una cuenta abierta.";
     }
+    if (!openVisitCount) reasons["cerrar-mesas"] = "No hay mesas abiertas para cerrar.";
     // Cierre X/Y and the bulk sweep all attribute to the open shift, so they
     // share the cajón gate.
     if (register.settings.requireOpenShift && register.currentShift?.status !== "OPEN") {
@@ -454,7 +456,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               busy={register.busy}
               readOnly={readOnly}
             />
-            <POSKeypad value={keypadValue} onChange={setKeypadValue} contextLabel={contextLabel} onConfirm={confirmKeypad} confirmLabel="OK" onMultiplier={handleKeypadMultiplier} multiplierQty={keypadMultiplierQty} onClearMultiplier={clearKeypadMultiplier} readOnly={readOnly} />
+            <POSKeypad value={keypadValue} onChange={setKeypadValue} contextLabel={contextLabel} onConfirm={confirmKeypad} confirmLabel="OK" onMultiplier={handleKeypadMultiplier} multiplierQty={keypadMultiplierQty} onClearMultiplier={clearKeypadMultiplier} readOnly={readOnly} resetKey={`${keypadContext.kind}:${selectedLineId}`} />
           </div>
           <div className="pos-sell__row pos-sell__row--catalog" data-testid="pos-sell-row-catalog" hidden={ticketExpanded}>
             <POSCategoryPanel categories={categories} active={category} onSelect={setCategory} />
@@ -609,8 +611,9 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       {prompt === "cerrar-mesas" ? (
         <POSPromptModal testId="pos-bulk-close" title="Cerrar todas las mesas abiertas" confirmLabel="Cerrar mesas" busy={register.busy || comandaBusy} error={register.error}
           options={[{ value: "CASH", label: "Efectivo" }, { value: "CARD", label: "Tarjeta" }]} optionsLabel="Método de cobro" initialOption="CASH"
+          validate={() => openVisitCount === 0 ? "No hay mesas abiertas para cerrar." : null}
           summary={() => openVisitCount > 0 ? (
-            <span data-testid="pos-bulk-close-summary">
+            <span data-testid="pos-bulk-close-summary-detail">
               {openVisitCount} mesa(s) · {money(openVisitTotalCents)} · {openVisits.map((entry) => entry.tableName || entry.channel || `Visita ${entry.id}`).join(", ")}. Se cerrarán.
             </span>
           ) : "No hay mesas abiertas para cerrar."}
@@ -694,6 +697,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       <POSMoveLineDialog
         line={lineToMove}
         targets={register.otherOpenSplitTickets}
+        allTickets={register.openSplitTickets}
         tableName={register.visit?.tableName}
         busy={register.busy}
         error={register.error}

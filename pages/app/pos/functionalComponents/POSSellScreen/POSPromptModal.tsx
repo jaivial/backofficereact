@@ -50,12 +50,15 @@ export function POSPromptModal({
   validate?: (values: Record<string, string>, option: string) => string | null;
 }) {
   const resolvedFields = useMemo(() => fields ?? [], [fields]);
+  // Seed once per dialog/field identity: `fields` is a fresh array on every
+  // parent render, so keying the reset on array identity wiped typed input.
+  const seedKey = useMemo(() => `${testId}:${resolvedFields.map((field) => `${field.name}=${field.initialValue ?? ""}`).join("|")}`, [resolvedFields, testId]);
   const [values, setValues] = useState<Record<string, string>>({});
   const [option, setOption] = useState(initialOption ?? options?.[0]?.value ?? "");
 
   useEffect(() => {
     setValues(Object.fromEntries(resolvedFields.map((field) => [field.name, field.initialValue ?? ""])));
-  }, [resolvedFields]);
+  }, [seedKey]);
 
   const validationMessage = validate?.(values, option) ?? null;
   const canConfirm = resolvedFields.every((field) => !field.required || (values[field.name] || "").trim()) && !validationMessage;
