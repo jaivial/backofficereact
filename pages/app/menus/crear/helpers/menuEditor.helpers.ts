@@ -795,17 +795,14 @@ export function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
 // Coordination id: dessert_section_source_v1
 // A general-carta mirror owns no dish rows of its own, so a structure reconcile
 // must adopt the server dish list instead of the (possibly empty) local copy.
-// Local edits that have not been confirmed yet are preserved.
+// Any local rows are either the server-loaded carta or unconfirmed edits and are
+// preserved; only an empty local list means we must take the server list.
 export function mirrorShouldAdoptServerDishes(
   mapped: Pick<EditorSection, "kind" | "dessertSource" | "dishes">,
   local: Pick<EditorSection, "dishes"> | undefined,
-  savedFingerprint: string | undefined,
 ): boolean {
   if (!isGeneralDessertSection(mapped.kind, mapped.dessertSource)) return false;
-  const localHasEdits = !!local
-    && local.dishes.length > 0
-    && getSectionDishesFingerprint(local as EditorSection) !== (savedFingerprint ?? "");
-  return !localHasEdits;
+  return !local || local.dishes.length === 0;
 }
 
 export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): EditorSection {
