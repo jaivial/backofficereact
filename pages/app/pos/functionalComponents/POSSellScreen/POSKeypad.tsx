@@ -57,7 +57,7 @@ export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLab
       onChange(value.slice(0, -1));
       return;
     }
-    if (key === ",") { if (!value.includes(",")) onChange(value ? `${value},` : "0,"); return; }
+    if (key === ",") { if (!/[.,]/.test(value)) onChange(value ? `${value},` : "0,"); return; }
     onChange(value === "0" ? key : value + key);
   };
 

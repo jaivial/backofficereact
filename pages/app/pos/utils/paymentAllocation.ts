@@ -13,10 +13,18 @@ export function allocatePayments(input: { saleTotalCents: number; tipCents: numb
   if (cashTenderedCents + cardTenderedCents < saleTotalCents + tipCents) throw new Error("El pago no cubre el total.");
 
   const cashCollected = Math.min(cashTenderedCents, saleTotalCents + tipCents);
-  const cashSale = Math.min(cashCollected, saleTotalCents);
-  const cardSale = saleTotalCents - cashSale;
-  const cashTip = Math.min(cashCollected - cashSale, tipCents);
-  const cardTip = tipCents - cashTip;
+  let cashSale = Math.min(cashCollected, saleTotalCents);
+  let cardSale = saleTotalCents - cashSale;
+  let cashTip = Math.min(cashCollected - cashSale, tipCents);
+  let cardTip = tipCents - cashTip;
+  // The backend rejects 0-cent payments, so a card-paid tip must ride on at
+  // least one cent of sale: shift it from cash while keeping the total exact.
+  if (cardSale === 0 && cardTip > 0 && cashSale > 0) {
+    cardSale = 1;
+    cashSale -= 1;
+    cashTip = Math.min(cashCollected - cashSale, tipCents);
+    cardTip = tipCents - cashTip;
+  }
   const payments: PaymentAllocation[] = [];
   if (cashSale + cashTip > 0) payments.push({ method: "CASH", amountCents: cashSale, tipCents: cashTip });
   if (cardSale + cardTip > 0) payments.push({ method: "CARD", amountCents: cardSale, tipCents: cardTip });

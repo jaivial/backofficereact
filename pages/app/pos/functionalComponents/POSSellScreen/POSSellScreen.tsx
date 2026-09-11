@@ -55,8 +55,10 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [multiSelectIds, setMultiSelectIds] = useState<number[]>([]);
   const [comandaBusy, setComandaBusy] = useState(false);
   const comandaInFlight = useRef(false);
+  const closeDayInFlight = useRef(false);
   const [keypadMultiplierQty, setKeypadMultiplierQty] = useState<number | null>(null);
   const [closeDayError, setCloseDayError] = useState("");
+  const [closeDayBusy, setCloseDayBusy] = useState(false);
 
   const categories = useMemo(() => {
     const names = new Set<string>();
@@ -266,16 +268,23 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   }, [date, register]);
 
   const runCloseDay = useCallback(async (values: Record<string, string>) => {
-    if (!onCloseDay) return false;
-    const countedCashCents = Math.round((Number((values.countedCash || "").replace(",", ".")) || 0) * 100);
-    setCloseDayError("");
-    const ok = await onCloseDay({ countedCashCents, discrepancyReason: values.discrepancyReason || "" });
-    if (ok) { register.setMessage("Día cerrado."); return true; }
-    // ponytail: cash-day hook returns only a boolean; surface a generic cause.
-    // The rail guard already blocks the common OPEN_POS_ITEMS case, so this path
-    // is mainly counted-cash discrepancies, which the operator retries inline.
-    setCloseDayError(cashDayError || "No se pudo cerrar el día. Revisa el efectivo contado.");
-    return false;
+    if (!onCloseDay || closeDayInFlight.current) return false;
+    closeDayInFlight.current = true;
+    setCloseDayBusy(true);
+    try {
+      const countedCashCents = Math.round((Number((values.countedCash || "").replace(",", ".")) || 0) * 100);
+      setCloseDayError("");
+      const ok = await onCloseDay({ countedCashCents, discrepancyReason: values.discrepancyReason || "" });
+      if (ok) { register.setMessage("Día cerrado."); return true; }
+      // ponytail: cash-day hook returns only a boolean; surface a generic cause.
+      // The rail guard already blocks the common OPEN_POS_ITEMS case, so this path
+      // is mainly counted-cash discrepancies, which the operator retries inline.
+      setCloseDayError(cashDayError || "No se pudo cerrar el día. Revisa el efectivo contado.");
+      return false;
+    } finally {
+      closeDayInFlight.current = false;
+      setCloseDayBusy(false);
+    }
   }, [cashDayError, onCloseDay, register]);
 
   const quickCashOptions = useMemo(() => {
@@ -454,7 +463,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                 <input type="search" value={register.query} onChange={(event) => register.setQuery(event.target.value)} placeholder="Buscar producto…" aria-label="Buscar producto" data-pos-command="search-products" data-testid="pos-product-search" />
                 {register.query ? <button className="pos-modal__secondary pos-search__clear" type="button" onClick={() => register.setQuery("")} aria-label="Limpiar búsqueda" data-testid="pos-product-search-clear">×</button> : null}
               </div>
-              <POSProductGrid products={visibleProducts} disabled={!register.ticket} readOnly={readOnly} pendingProductId={register.pendingProductId} onAdd={handleAddProduct} stockStatus={register.settings.stockMode === "OFF" ? undefined : register.productStock} />
+              <POSProductGrid products={visibleProducts} disabled={!register.ticket || register.busy} readOnly={readOnly} pendingProductId={register.pendingProductId} onAdd={handleAddProduct} stockStatus={register.settings.stockMode === "OFF" ? undefined : register.productStock} />
             </div>
           </div>
         </div>
@@ -522,7 +531,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               <label className="pos-modal__covers" data-testid="pos-covers-field">Comensales
                 <input inputMode="numeric" value={register.covers} onChange={(event) => register.setCovers(event.target.value)} aria-label="Comensales" data-testid="pos-covers-input" />
               </label>
-              <button className="pos-modal__primary" type="button" disabled={register.busy} onClick={() => { void register.openVisit().then(() => setShowTables(false)); }} data-testid="pos-open-visit">
+              <button className="pos-modal__primary" type="button" disabled={register.busy} onClick={() => { void register.openVisit().then((opened) => { if (opened) setShowTables(false); }); }} data-testid="pos-open-visit">
                 Abrir {register.selectedTable.name}
               </button>
             </div>
@@ -556,7 +565,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       ) : null}
 
       {prompt === "comentario" ? (
-        <POSPromptModal testId="pos-note" title="Comentario" confirmLabel="Guardar comentario" busy={register.busy} error={register.error}
+        <POSPromptModal testId="pos-note" title="Comentario" confirmLabel="Guardar comentario" busy={register.busy || register.commandBusy} error={register.error}
           fields={[{ name: "note", label: "Comentario", kind: "textarea", placeholder: "Sin cebolla, poco hecho...", initialValue: selectedLine?.notes ?? "" }]}
           summary={() => selectedLine ? `Se añadirá a ${selectedLine.productName}` : "Selecciona una línea de la cuenta."}
           onClose={closePrompt} onConfirm={(values, option) => void runPrompt("comentario", values, option)} />
@@ -571,7 +580,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       ) : null}
 
       {prompt === "cliente" ? (
-        <POSPromptModal testId="pos-customer" title="Cliente" confirmLabel="Guardar cliente" busy={register.busy} error={register.error}
+        <POSPromptModal testId="pos-customer" title="Cliente" confirmLabel="Guardar cliente" busy={register.busy || register.commandBusy} error={register.error}
           fields={[
             { name: "customerName", label: "Nombre", initialValue: register.visit?.customerName ?? "", required: true },
             { name: "customerTaxId", label: "NIF/CIF", initialValue: register.visit?.customerTaxId ?? "" },
@@ -580,7 +589,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       ) : null}
 
       {prompt === "empleado" ? (
-        <POSPromptModal testId="pos-operator" title="Empleado" confirmLabel="Asignar empleado" busy={register.busy} error={register.error}
+        <POSPromptModal testId="pos-operator" title="Empleado" confirmLabel="Asignar empleado" busy={register.busy || register.commandBusy} error={register.error}
           fields={[{ name: "operatorMemberId", label: "Empleado", kind: "select", initialValue: String(register.ticket?.operatorMemberId || ""), options: [{ value: "", label: "Sin asignar" }, ...register.operators.map((entry) => ({ value: String(entry.id), label: entry.displayName }))] }]}
           onClose={closePrompt} onConfirm={(values, option) => void runPrompt("empleado", values, option)} />
       ) : null}
@@ -595,7 +604,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
       {prompt === "juntar-mesas" ? <POSMultiSelectDialog testId="pos-merge" title="Juntar mesas" confirmLabel="Juntar en esta cuenta" busy={register.busy} error={register.error} emptyLabel="No hay otras mesas abiertas." selectedIds={multiSelectIds} onChange={setMultiSelectIds} onClose={closePrompt} onConfirm={() => { void register.mergeVisits(multiSelectIds).then((merged) => { if (merged) closePrompt(); }); }} entries={mergeableVisits.map((entry) => ({ id: entry.id, label: entry.tableName || `Visita ${entry.id}`, detail: `${entry.covers} comensales · ${entry.ticket?.lines.length || 0} líneas · ${money(entry.totalGrossCents || entry.ticket?.totalGrossCents || 0)}`, covers: entry.covers, amountCents: entry.totalGrossCents }))} /> : null}
 
-      {prompt === "tags" ? <POSMultiSelectDialog testId="pos-tags" title="Etiquetas" confirmLabel="Guardar etiquetas" allowEmptySelection busy={register.busy} error={register.error} emptyLabel="No hay etiquetas disponibles." selectedIds={multiSelectIds} onChange={setMultiSelectIds} onClose={closePrompt} onConfirm={() => void saveTags()} entries={register.tags.filter((tag) => tag.isActive !== false || selectedLine?.tagIds?.includes(tag.id)).map((tag) => ({ id: tag.id, label: tag.name }))} /> : null}
+      {prompt === "tags" ? <POSMultiSelectDialog testId="pos-tags" title="Etiquetas" confirmLabel="Guardar etiquetas" allowEmptySelection busy={register.busy || register.commandBusy} error={register.error} emptyLabel="No hay etiquetas disponibles." selectedIds={multiSelectIds} onChange={setMultiSelectIds} onClose={closePrompt} onConfirm={() => void saveTags()} entries={register.tags.filter((tag) => tag.isActive !== false || selectedLine?.tagIds?.includes(tag.id)).map((tag) => ({ id: tag.id, label: tag.name }))} /> : null}
 
       {prompt === "cerrar-mesas" ? (
         <POSPromptModal testId="pos-bulk-close" title="Cerrar todas las mesas abiertas" confirmLabel="Cerrar mesas" busy={register.busy || comandaBusy} error={register.error}
@@ -609,7 +618,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       ) : null}
 
       {prompt === "cerrar-dia" ? (
-        <POSPromptModal testId="pos-close-day" title="Cerrar día de caja" confirmLabel="Cerrar día" busy={register.busy} error={closeDayError || register.error}
+        <POSPromptModal testId="pos-close-day" title="Cerrar día de caja" confirmLabel="Cerrar día" busy={register.busy || closeDayBusy} error={closeDayError || register.error}
           fields={[
             { name: "countedCash", label: "Efectivo contado €", inputMode: "decimal", required: true },
             { name: "discrepancyReason", label: "Motivo descuadre (si lo hay)" },
@@ -634,7 +643,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       ) : null}
 
       {discountOpen && register.ticket ? (
-        <POSDialog testId="pos-discount" title="Descuento" busy={register.busy} error={register.error} onClose={closeDiscount}>
+        <POSDialog testId="pos-discount" title="Descuento" busy={register.busy || register.commandBusy} error={register.error} onClose={closeDiscount}>
           <div className="pos-modal__confirm" data-testid="pos-discount-body">
             <div className="pos-modal__modes" role="group" aria-label="Tipo de descuento" data-testid="pos-discount-modes">
               <button className="pos-modal__secondary" type="button" aria-pressed={discountMode === "amount"} onClick={() => setDiscountMode("amount")} data-testid="pos-discount-mode-amount">€</button>
@@ -647,7 +656,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               <input id="pos-discount-reason" value={discountReason} onChange={(event) => setDiscountReason(event.target.value)} placeholder="Fidelidad, incidencia..." data-ui="pos-discount-reason" data-testid="pos-discount-reason" />
             </label>
             <p className="pos-modal__pending" data-testid="pos-discount-preview">Descuento {money(discountCents)} · Total {money(Math.max(register.ticketTotal - discountCents, 0))}</p>
-            <button className="pos-modal__primary" type="button" disabled={register.busy || discountCents <= 0 || !discountReason.trim()} onClick={() => void confirmDiscount()} data-pos-command="discount" data-testid="pos-discount-confirm">Aplicar descuento</button>
+            <button className="pos-modal__primary" type="button" disabled={register.busy || register.commandBusy || discountCents <= 0 || !discountReason.trim()} onClick={() => void confirmDiscount()} data-pos-command="discount" data-testid="pos-discount-confirm">Aplicar descuento</button>
           </div>
         </POSDialog>
       ) : null}
@@ -693,7 +702,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       />
 
       {showCheckout && register.ticket ? (
-        <POSDialog testId="pos-checkout" title={`Cobrar · ${money(register.amountDueCents)}`} busy={register.busy} error={register.error} onClose={() => { setShowCheckout(false); setCheckoutKeypad(false); }}>
+        <POSDialog testId="pos-checkout" title={`Cobrar · ${money(register.amountDueCents)}`} ariaLabel="Cobro" busy={register.busy} error={register.error} onClose={() => { setShowCheckout(false); setCheckoutKeypad(false); }}>
           <div className="pos-modal__payments" data-testid="pos-checkout-payments">
             <label data-testid="pos-cash-field">Efectivo<input inputMode="decimal" value={register.cash} onChange={(event) => register.setCash(event.target.value)} data-ui="pos-cash" data-testid="pos-cash" /></label>
             <label data-testid="pos-card-field">Tarjeta<input inputMode="decimal" value={register.card} onChange={(event) => register.setCard(event.target.value)} data-ui="pos-card" data-testid="pos-card" /></label>
@@ -704,7 +713,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               ))}
             </div>
             <button className="pos-modal__secondary" type="button" aria-pressed={checkoutKeypad} onClick={() => setCheckoutKeypad((current) => !current)} data-testid="pos-checkout-keypad-toggle">{checkoutKeypad ? "Ocultar teclado" : "Usar teclado"}</button>
-            {checkoutKeypad ? <POSKeypad value={register.cash} onChange={register.setCash} contextLabel="Efectivo" onConfirm={() => setCheckoutKeypad(false)} confirmLabel="Listo" readOnly={readOnly} testIdPrefix="pos-checkout-" /> : null}
+            {checkoutKeypad ? <POSKeypad value={register.cash} onChange={(next) => register.setCash(next.replace(",", "."))} contextLabel="Efectivo" onConfirm={() => setCheckoutKeypad(false)} confirmLabel="Listo" readOnly={readOnly} testIdPrefix="pos-checkout-" /> : null}
             <p className="pos-modal__pending" data-testid="pos-checkout-sale">Venta {money(register.ticketTotal)}</p>
             {register.tipCents > 0 ? <p className="pos-modal__pending" data-testid="pos-checkout-tip">Propina {money(register.tipCents)}</p> : null}
             <p className="pos-modal__pending" data-testid="pos-checkout-due">Total a cobrar {money(register.amountDueCents)}</p>
