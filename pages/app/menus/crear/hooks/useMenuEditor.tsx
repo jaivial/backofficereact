@@ -74,6 +74,11 @@ import {
   SectionDishSyncState,
 } from "../types/menuEditor.types";
 
+// Coordination id: dessert_section_source_v1 - patches produced by the image
+// pipeline already hit the owning section directly; they must not open the
+// general-carta confirmation on their own.
+const IMAGE_ONLY_DISH_PATCH_KEYS = new Set(["foto_url", "ai_requested", "ai_generating", "ai_generated_img"]);
+
 export type UseMenuEditorReturn = {
   // State
   error: string | null;
@@ -263,10 +268,11 @@ export type UseMenuEditorReturn = {
   closeMenuPreviewImageAdvisor: () => void;
   closeMenuPreviewImageCropper: () => void;
   toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => Promise<void>;
-  // Coordination id: dessert_section_source_v1 - confirmation raised before a
-  // general-carta mirror writes back to the shared desserts list.
-  dessertSyncConfirm: { sectionLabel: string; count: number } | null;
-  confirmDessertSync: () => void;
+  // Coordination id: dessert_section_source_v1 - the confirmation raised on the
+  // first edit of a general-carta mirror. Nothing is persisted to the carta until
+  // the operator confirms.
+  dessertSyncConfirm: { sectionLabel: string } | null;
+  confirmDessertSync: () => Promise<void>;
   cancelDessertSync: () => void;
 
   // Render helpers (defined inside the hook for access to state)
@@ -327,10 +333,11 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [searchResults, setSearchResults] = useState<Record<string, DishCatalogItem[]>>({});
   const [sectionLoadingState, setSectionLoadingState] = useState<Record<string, "loading" | "error" | null>>({});
-  // Coordination id: dessert_section_source_v1 - one confirmation gate shared by
-  // every general-carta mirror edit, plus a cached handle on the carta itself.
-  const [dessertSyncConfirm, setDessertSyncConfirm] = useState<{ sectionLabel: string; count: number } | null>(null);
-  const dessertSyncConfirmResolverRef = useRef<((ok: boolean) => void) | null>(null);
+  // Coordination id: dessert_section_source_v1 - mirrors keep their edits local
+  // until confirmed; the modal opens on the first edit, and the general carta
+  // endpoint only runs on "Aplicar cambios".
+  const [dessertSyncConfirm, setDessertSyncConfirm] = useState<{ sectionLabel: string } | null>(null);
+  const pendingDessertSectionsRef = useRef<Set<string>>(new Set());
   const generalDessertTargetRef = useRef<{ menuId: number; sectionId: number } | null>(null);
   const [menuAITracker, setMenuAITracker] = useState<MenuAITrackerState>(() => buildMenuAITracker(data.menu));
   const [dishImageTarget, setDishImageTarget] = useState<{ sectionClientId: string; dishClientId: string } | null>(null);
@@ -458,22 +465,16 @@ export function useMenuEditor(): UseMenuEditorReturn {
   // dishes live in the carta's own section, so every write is routed there after
   // an explicit confirmation; a custom postres section instead owns an
   // independent copy seeded once from the carta.
-  const requestDessertSyncConfirm = useCallback((payload: { sectionLabel: string; count: number }) => {
-    return new Promise<boolean>((resolve) => {
-      dessertSyncConfirmResolverRef.current = resolve;
-      setDessertSyncConfirm(payload);
-    });
+  // Opens (or keeps open) the confirmation modal as soon as a mirror dish changes,
+  // without hitting any endpoint. Returns true when the section is a mirror.
+  const noteDessertChange = useCallback((sectionClientId: string): boolean => {
+    const section = sectionsRef.current.find((row) => row.clientId === sectionClientId);
+    if (!section || !isGeneralDessertSection(section.kind, section.dessertSource)) return false;
+    pendingDessertSectionsRef.current.add(sectionClientId);
+    setDessertSyncConfirm((prev) => prev ?? { sectionLabel: section.title.trim() || "Postres" });
+    console.log("[checkpoint] dessert_general_section_change_pending", `section=${sectionClientId}`);
+    return true;
   }, []);
-
-  const resolveDessertSyncConfirm = useCallback((ok: boolean) => {
-    const resolve = dessertSyncConfirmResolverRef.current;
-    dessertSyncConfirmResolverRef.current = null;
-    setDessertSyncConfirm(null);
-    resolve?.(ok);
-  }, []);
-
-  const confirmDessertSync = useCallback(() => resolveDessertSyncConfirm(true), [resolveDessertSyncConfirm]);
-  const cancelDessertSync = useCallback(() => resolveDessertSyncConfirm(false), [resolveDessertSyncConfirm]);
 
   const resolveGeneralDessertTarget = useCallback(async (): Promise<{ menuId: number; sectionId: number } | null> => {
     if (generalDessertTargetRef.current) return generalDessertTargetRef.current;
@@ -560,6 +561,51 @@ export function useMenuEditor(): UseMenuEditorReturn {
     [menuId, resolveGeneralDessertTarget],
   );
 
+  // Reloads the given mirror sections from the general carta and re-baselines their
+  // dish fingerprints, so the editor shows exactly what the carta holds.
+  const reloadMirrorSections = useCallback(async (clientIds: string[]) => {
+    for (const clientId of clientIds) {
+      const section = sectionsRef.current.find((row) => row.clientId === clientId);
+      if (!section?.id) continue;
+      const fresh = await fetchSectionDishesRaw(section.id);
+      const dishes = withDishPositions(fresh);
+      setSections((prev) => prev.map((row) => (row.clientId === clientId ? { ...row, dishes } : row)));
+      lastSavedSectionDishesRef.current[clientId] = getSectionDishesFingerprint({ ...section, dishes });
+    }
+  }, [fetchSectionDishesRaw]);
+
+  // "Aplicar cambios": this is the only place that writes a mirror to the general
+  // desserts carta. Until here, every edit stayed local.
+  const confirmDessertSync = useCallback(async () => {
+    const clientIds = Array.from(pendingDessertSectionsRef.current);
+    setDessertSyncConfirm(null);
+    if (clientIds.length === 0) return;
+    let failed = false;
+    for (const clientId of clientIds) {
+      const section = sectionsRef.current.find((row) => row.clientId === clientId);
+      if (!section) continue;
+      try {
+        await pushGeneralDessertDishes(section.dishes);
+      } catch (err) {
+        failed = true;
+        pushToastRef.current({ kind: "error", title: "Error", message: err instanceof Error ? err.message : "No se pudo actualizar la carta general de postres" });
+      }
+    }
+    pendingDessertSectionsRef.current = new Set();
+    await reloadMirrorSections(clientIds);
+    if (!failed) {
+      pushToastRef.current({ kind: "success", title: "Carta general actualizada", message: "Los cambios se han aplicado a la carta general de postres." });
+    }
+  }, [pushGeneralDessertDishes, reloadMirrorSections]);
+
+  // "Cancelar": drop the pending edits and show the carta again.
+  const cancelDessertSync = useCallback(() => {
+    const clientIds = Array.from(pendingDessertSectionsRef.current);
+    setDessertSyncConfirm(null);
+    pendingDessertSectionsRef.current = new Set();
+    void reloadMirrorSections(clientIds);
+  }, [reloadMirrorSections]);
+
   // --- patchBasics ---
   const patchBasics = useCallback(
     async ({ payload, fingerprint, force = false }: { payload: BasicsPayload; fingerprint: string; force?: boolean }) => {
@@ -629,11 +675,10 @@ export function useMenuEditor(): UseMenuEditorReturn {
             const local = rebuilt[idx];
             const mapped = mapApiSection(sec, local);
             // A mirror owns no rows of its own: adopt the carta the server returned
-            // unless the operator already has unsaved local edits.
-            const savedFingerprint = lastSavedSectionDishesRef.current[local?.clientId ?? mapped.clientId];
-            if (mirrorShouldAdoptServerDishes(mapped, local, savedFingerprint)) {
+            // when the local copy is empty (e.g. a freshly added section); otherwise
+            // keep the local list so unconfirmed edits survive the structure save.
+            if (mirrorShouldAdoptServerDishes(mapped, local)) {
               mapped.dishes = withDishPositions(mapped.dishes);
-              lastSavedSectionDishesRef.current[mapped.clientId] = getSectionDishesFingerprint(mapped);
             } else {
               mapped.dishes = withDishPositions(local?.dishes || mapped.dishes);
             }
@@ -644,12 +689,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
         const changedSectionClientIds = force
           ? new Set(rebuilt.map((section) => section.clientId))
           : new Set(rebuilt.filter((section) => getSectionsDishFingerprintMap([section])[section.clientId] !== lastSavedSectionDishesRef.current[section.clientId]).map((section) => section.clientId));
-
-        const dirtyMirrorSections = rebuilt.filter((section) => {
-          if (!section.id || !isGeneralDessertSection(section.kind, section.dessertSource)) return false;
-          const savedFingerprint = lastSavedSectionDishesRef.current[section.clientId] ?? "";
-          return getSectionDishesFingerprint(section) !== savedFingerprint;
-        });
 
         for (const section of rebuilt) {
           if (!section.id || !changedSectionClientIds.has(section.clientId)) continue;
@@ -755,28 +794,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
           }
         }
 
-        if (dirtyMirrorSections.length > 0) {
-          const label = dirtyMirrorSections[0].title.trim() || "Postres";
-          const confirmed = await requestDessertSyncConfirm({ sectionLabel: label, count: dirtyMirrorSections.length });
-          if (confirmed) {
-            for (const section of dirtyMirrorSections) {
-              try {
-                await pushGeneralDessertDishes(section.dishes);
-              } catch (err) {
-                pushToastRef.current({ kind: "error", title: "Error", message: err instanceof Error ? err.message : "No se pudo actualizar la carta general de postres" });
-              }
-            }
-          }
-          // Re-read the carta (after a write) or drop the rejected edit (after a
-          // cancel) so the mirror always shows exactly what the carta holds.
-          for (const section of dirtyMirrorSections) {
-            if (!section.id) continue;
-            const fresh = await fetchSectionDishesRaw(section.id);
-            section.dishes = withDishPositions(fresh);
-          }
-          needsStateReconcile = true;
-        }
-
         if (syncRequestSeqRef.current !== requestSeq) return sectionsSnapshot;
         if (needsStateReconcile) setSections(rebuilt);
         const savedSource = needsStateReconcile ? rebuilt : sectionsSnapshot;
@@ -791,7 +808,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         if (inFlightSectionsRef.current === fingerprint) inFlightSectionsRef.current = null;
       }
     },
-    [api, isALaCarte, menuId, requestDessertSyncConfirm, pushGeneralDessertDishes, fetchSectionDishesRaw],
+    [api, isALaCarte, menuId],
   );
 
   // --- useEffect: auto-save basics ---
@@ -1482,6 +1499,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
   // one dish flips it back with no extra state to keep in sync.
   const setSectionDescriptionsEnabled = useCallback((sectionClientId: string, enabled: boolean) => {
     if (enabled) return;
+    noteDessertChange(sectionClientId);
     setSections((prev) => {
       let changed = false;
       const next = prev.map((sec) => {
@@ -1498,7 +1516,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       });
       return changed ? next : prev;
     });
-  }, []);
+  }, [noteDessertChange]);
 
   // --- moveSection ---
   const moveSection = useCallback((from: number, to: number) => {
@@ -1522,6 +1540,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
 
   // --- addDish ---
   const addDish = useCallback((sectionClientId: string, fromCatalog?: DishCatalogItem) => {
+    noteDessertChange(sectionClientId);
     setSections((prev) => prev.map((sec) => {
       if (sec.clientId !== sectionClientId) return sec;
       const dish: EditorDish = {
@@ -1545,10 +1564,15 @@ export function useMenuEditor(): UseMenuEditorReturn {
       };
       return { ...sec, dishes: [...sec.dishes, dish] };
     }));
-  }, [isALaCarte]);
+  }, [isALaCarte, noteDessertChange]);
 
   // --- updateDish ---
   const updateDish = useCallback((sectionClientId: string, dishClientId: string, patch: Partial<EditorDish>) => {
+    // Image/ai-only patches already reached the owning section; they must not open
+    // the general-carta confirmation.
+    const patchKeys = Object.keys(patch);
+    const imageOnly = patchKeys.length > 0 && patchKeys.every((key) => IMAGE_ONLY_DISH_PATCH_KEYS.has(key));
+    if (!imageOnly) noteDessertChange(sectionClientId);
     setSections((prev) => {
       let changed = false;
       const next = prev.map((sec) => {
@@ -1567,24 +1591,26 @@ export function useMenuEditor(): UseMenuEditorReturn {
       });
       return changed ? next : prev;
     });
-  }, []);
+  }, [noteDessertChange]);
 
   // --- removeDish ---
   const removeDish = useCallback((sectionClientId: string, dishClientId: string) => {
+    noteDessertChange(sectionClientId);
     setSections((prev) => prev.map((sec) => {
       if (sec.clientId !== sectionClientId) return sec;
       return { ...sec, dishes: sec.dishes.filter((dish) => dish.clientId !== dishClientId).map((dish, idx) => ({ ...dish, position: idx })) };
     }));
-  }, []);
+  }, [noteDessertChange]);
 
   // --- reorderDishes ---
   const reorderDishes = useCallback((sectionClientId: string, orderedClientIds: string[]) => {
+    noteDessertChange(sectionClientId);
     setSections((prev) => prev.map((sec) => {
       if (sec.clientId !== sectionClientId) return sec;
       if (orderedClientIds.length === sec.dishes.length && sec.dishes.every((dish, idx) => dish.clientId === orderedClientIds[idx])) return sec;
       return { ...sec, dishes: withDishPositions(orderByClientId(sec.dishes, orderedClientIds)) };
     }));
-  }, []);
+  }, [noteDessertChange]);
 
   // --- handleSearch ---
   const handleSearch = useCallback(

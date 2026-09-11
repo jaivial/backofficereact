@@ -92,7 +92,7 @@ export const AddSectionModal = React.memo(function AddSectionModal({
           <div className="bo-modalBody" data-slot="add-section-modal-body" data-testid="add-section-modal-step-kind">
             <label className="bo-field bo-field--full" data-slot="add-section-modal-kind-field">
               <span className="bo-label" data-slot="add-section-modal-kind-label">
-                ?Que tipo de seccion quieres anadir?
+                ¿Qué tipo de sección quieres añadir?
               </span>
               <Select
                 value={kind}
@@ -132,7 +132,7 @@ export const AddSectionModal = React.memo(function AddSectionModal({
         <>
           <div className="bo-modalBody" data-slot="add-section-modal-dessert-body" data-testid="add-section-modal-step-dessert">
             <div className="bo-label" data-testid="add-section-modal-dessert-question">
-              ?Como quieres gestionar los postres de esta seccion?
+              ¿Cómo quieres gestionar los postres de esta sección?
             </div>
             <div
               className="bo-menuTypePanelsGrid bo-addSectionDessertGrid"
