@@ -22,7 +22,7 @@ function calcEval(expr: string): string {
 }
 
 /** Contextual numeric keypad with calculator operators column. OK doubles as equals. */
-export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLabel, onMultiplier, multiplierQty, onClearMultiplier, readOnly = false }: {
+export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLabel, onMultiplier, multiplierQty, onClearMultiplier, readOnly = false, testIdPrefix = "" }: {
   value: string;
   onChange: (next: string) => void;
   contextLabel: string;
@@ -36,8 +36,11 @@ export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLab
   onClearMultiplier?: () => void;
   /** Sealed day: disable every key so no value can be entered. */
   readOnly?: boolean;
+  /** Keeps the embedded keypad's test ids unique when reused inside a modal. */
+  testIdPrefix?: string;
 }) {
   const [calcExpr, setCalcExpr] = React.useState("");
+  const tid = (id: string) => `${testIdPrefix}${id}`;
 
   const press = (key: string) => {
     if (key === "⌫") {
@@ -85,28 +88,28 @@ export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLab
   };
 
   return (
-    <section className="pos-keypad" aria-label="Teclado numérico" data-testid="pos-keypad">
-      <div className="pos-keypad__display" data-testid="pos-keypad-display">
+    <section className="pos-keypad" aria-label="Teclado numérico" data-testid={tid("pos-keypad")}>
+      <div className="pos-keypad__display" data-testid={tid("pos-keypad-display")}>
         <span className="pos-keypad__context" data-ui="pos-keypad-context">{contextLabel}</span>
-        {multiplierQty != null ? <span className="pos-keypad__multiplier" data-testid="pos-keypad-multiplier">{multiplierQty} ×</span> : null}
-        {calcExpr ? <span className="pos-keypad__expr" data-testid="pos-keypad-expr">{calcExpr.trimEnd()}</span> : null}
-        <strong className="pos-keypad__value" data-testid="pos-keypad-value">{value || "0"}</strong>
+        {multiplierQty != null ? <span className="pos-keypad__multiplier" data-testid={tid("pos-keypad-multiplier")}>{multiplierQty} ×</span> : null}
+        {calcExpr ? <span className="pos-keypad__expr" data-testid={tid("pos-keypad-expr")}>{calcExpr.trimEnd()}</span> : null}
+        <strong className="pos-keypad__value" data-testid={tid("pos-keypad-value")}>{value || "0"}</strong>
       </div>
       <div data-slot="pOSKeypad-pos-keypad-body" className="pos-keypad__body">
         <div data-slot="pOSKeypad-pos-keypad-grid" className="pos-keypad__grid">
           {KEYS.map((key) => (
-            <button className="pos-keypad__key" type="button" key={key} disabled={readOnly} onClick={() => press(key)} data-testid={`pos-key-${key === "⌫" ? "back" : key === "," ? "comma" : key}`} aria-label={key === "⌫" ? "Borrar" : key}>
+            <button className="pos-keypad__key" type="button" key={key} disabled={readOnly} onClick={() => press(key)} data-testid={tid(`pos-key-${key === "⌫" ? "back" : key === "," ? "comma" : key}`)} aria-label={key === "⌫" ? "Borrar" : key}>
               {key === "⌫" ? <Delete className="h-5 w-5" aria-hidden="true" /> : key}
             </button>
           ))}
         </div>
         <div data-slot="pOSKeypad-pos-keypad-calcCol" className="pos-keypad__calcCol">
           {OPS.map((op) => (
-            <button className="pos-keypad__calcOp" type="button" key={op.testId} disabled={readOnly} onClick={() => calcOp(op.symbol)} data-testid={`pos-key-op-${op.testId}`} aria-label={`Operador ${op.symbol}`}>{op.symbol}</button>
+            <button className="pos-keypad__calcOp" type="button" key={op.testId} disabled={readOnly} onClick={() => calcOp(op.symbol)} data-testid={tid(`pos-key-op-${op.testId}`)} aria-label={`Operador ${op.symbol}`}>{op.symbol}</button>
           ))}
         </div>
       </div>
-      <button className="pos-keypad__confirm" type="button" disabled={readOnly} onClick={handleConfirm} data-testid="pos-keypad-confirm">{confirmLabel}</button>
+      <button className="pos-keypad__confirm" type="button" disabled={readOnly} onClick={handleConfirm} data-testid={tid("pos-keypad-confirm")}>{confirmLabel}</button>
     </section>
   );
 }

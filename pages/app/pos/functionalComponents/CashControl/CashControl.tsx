@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { downloadCashClosurePdf, type CashClosureSummary } from "../../utils/cashClosurePdf";
+import { money } from "../../utils/money";
 
 type Movement = { id: number; type: "IN" | "OUT"; amountCents: number; reason: string; createdAt: string };
 type Closure = { id: number; shiftId: number; closureType: "X" | "Y" | "Z"; generatedAt: string; expectedCashCents: number; countedCashCents?: number | null; differenceCents?: number | null; summary?: CashClosureSummary };
@@ -9,7 +10,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api/admin/pos${path}`, { ...init, credentials: "include", headers });
   const body = await response.json(); if (!response.ok || !body.success) throw new Error(body.message || "Error de caja"); return body as T;
 }
-const money = (cents: number | null | undefined) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format((cents || 0) / 100);
 const key = (prefix: string) => `${prefix}:${crypto.randomUUID()}`;
 
 export function CashControl({ onChanged }: { onChanged?: () => void | Promise<void> }) {

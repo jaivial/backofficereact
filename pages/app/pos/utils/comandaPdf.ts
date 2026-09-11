@@ -1,4 +1,5 @@
 import type { RestaurantProfile, Ticket, TicketLine, Visit } from "../types/register";
+import { money } from "./money";
 
 export type ComandaPdfInput = {
   generatedAt: Date;
@@ -29,10 +30,6 @@ const GRAY_RULE = "#cccccc";
 
 const CHANNEL_LABELS: Record<string, string> = { BAR: "Barra", TAKEAWAY: "Para llevar", DELIVERY: "A domicilio", DINE_IN: "Sala" };
 const GREETING = "Gracias por su visita. ¡Hasta pronto!";
-
-function money(cents: number): string {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format((cents || 0) / 100);
-}
 
 function quantity(value: number): string {
   return new Intl.NumberFormat("es-ES", { maximumFractionDigits: 3 }).format(value);

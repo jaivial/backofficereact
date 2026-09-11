@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { allocatePayments } from "../utils/paymentAllocation";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
+import { usePOSCommand } from "./usePOSCommand";
 import type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
 export type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+export { money } from "../utils/money";
 
 export const DEFAULT_SETTINGS: Settings = { isEnabled: false, stockMode: "OFF", coversMode: "MANUAL", timezone: "Europe/Madrid", businessDayCutoff: "05:00", autoCloseVisit: true, receiptPrefix: "TPV" };
 
@@ -14,10 +16,6 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const body = await response.json();
   if (!response.ok || !body.success) throw new Error(body.message || "Error de TPV");
   return body as T;
-}
-
-export function money(cents: number): string {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format((cents || 0) / 100);
 }
 
 /**
@@ -57,9 +55,8 @@ export function usePOSRegister(date?: string | null) {
   const [tags, setTags] = useState<Tag[]>([]);
   const [lineTags, setLineTags] = useState<Record<number, number[]>>({});
   const [tipCents, setTipCents] = useState(0);
-  const checkoutInFlight = useRef(false);
-  const commandInFlight = useRef(new Set<string>());
-  const commandKeys = useRef(new Map<string, string>());
+  const [pendingProductId, setPendingProductId] = useState<number | null>(null);
+  const { isInFlight, keyFor, clear, run } = usePOSCommand();
 
   const load = useCallback(async () => {
     setError("");
@@ -127,46 +124,48 @@ export function usePOSRegister(date?: string | null) {
   }, []);
 
   const restoreParkedVisit = useCallback(async (visitId: number) => {
-    if (commandInFlight.current.has("restore")) return false;
-    commandInFlight.current.add("restore"); setError("");
+    if (isInFlight("restore")) return false;
+    setError("");
     try {
-      await request(`/visits/${visitId}/park`, { method: "POST", body: JSON.stringify({ parked: false, note: "" }) });
-      const data = await request<{ visit: Visit & { tickets: Ticket[] } }>(`/visits/${visitId}`);
-      const openTicket = data.visit.tickets?.find((entry) => entry.status === "OPEN") || data.visit.tickets?.[0];
-      setVisit(data.visit); setSplitTickets(data.visit.tickets || []); setTicket(openTicket || null); setSentKitchenQuantities({}); setTipCents(0); setMessage("Comanda recuperada."); await load(); return true;
+      return (await run("restore", async () => {
+        await request(`/visits/${visitId}/park`, { method: "POST", body: JSON.stringify({ parked: false, note: "" }) });
+        const data = await request<{ visit: Visit & { tickets: Ticket[] } }>(`/visits/${visitId}`);
+        const openTicket = data.visit.tickets?.find((entry) => entry.status === "OPEN") || data.visit.tickets?.[0];
+        setVisit(data.visit); setSplitTickets(data.visit.tickets || []); setTicket(openTicket || null); setSentKitchenQuantities({}); setTipCents(0); setMessage("Comanda recuperada."); await load(); return true;
+      })) ?? false;
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo recuperar la cuenta"); return false; }
-    finally { commandInFlight.current.delete("restore"); }
-  }, [load]);
+  }, [isInFlight, load, run]);
 
   const switchTicket = useCallback((next: Ticket) => { setTicket(next); setSplitTargetId(0); setCash(""); setCard(""); setCardReference(""); setTipCents(0); }, []);
   const voidEmptyTicket = useCallback(async (next: Ticket) => { if (next.lines.filter((line) => line.status !== "VOIDED").length) return; try { await request(`/tickets/${next.id}/void`, { method: "POST", body: JSON.stringify({ reason: "Cuenta separada vacía" }) }); setSplitTickets((current) => current.filter((entry) => entry.id !== next.id)); if (ticket?.id === next.id) { const fallback = splitTickets.find((entry) => entry.id !== next.id && entry.status === "OPEN"); setTicket(fallback || null); } } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo anular cuenta"); } }, [splitTickets, ticket]);
   const createSplitTicket = useCallback(async () => { if (!visit) return; try { const data = await request<{ ticket: Ticket }>(`/visits/${visit.id}/tickets`, { method: "POST", body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) }); setSplitTickets((current) => [...current, data.ticket]); setSplitTargetId(data.ticket.id); setMessage("Cuenta separada creada."); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo separar cuenta"); } }, [visit]);
-  const moveLine = useCallback(async (line: TicketLine, quantity = line.quantity) => { if (!ticket || !splitTargetId) return; const moved = Math.min(Math.round(quantity), line.quantity); if (moved <= 0) return; try { const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: splitTargetId, quantity: moved, idempotencyKey: crypto.randomUUID() }) }); setTicket(data.sourceTicket); setSplitTickets((current) => current.map((entry) => entry.id === data.sourceTicket.id ? data.sourceTicket : entry.id === data.targetTicket.id ? data.targetTicket : entry)); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo mover línea"); } }, [splitTargetId, ticket]);
+  const moveLine = useCallback(async (line: TicketLine, quantity = line.quantity, targetId = splitTargetId) => { if (!ticket || !targetId) return; const moved = Math.min(Math.round(quantity), line.quantity); if (moved <= 0) return; try { const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: targetId, quantity: moved, idempotencyKey: crypto.randomUUID() }) }); setTicket(data.sourceTicket); setSplitTickets((current) => current.map((entry) => entry.id === data.sourceTicket.id ? data.sourceTicket : entry.id === data.targetTicket.id ? data.targetTicket : entry)); return true; } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo mover línea"); return false; } }, [splitTargetId, ticket]);
 
   const mergeSplitTickets = useCallback(async () => {
-    if (!ticket || openSplitTickets.length <= 1) return false;
-    if (commandInFlight.current.has("merge-splits")) return false;
-    commandInFlight.current.add("merge-splits");
-    setBusy(true); setError("");
+    if (!ticket || openSplitTickets.length <= 1 || isInFlight("merge-splits")) return false;
+    setBusy(true); setError(""); setMessage("");
     try {
-      const sourceTickets = openSplitTickets.filter((t) => t.id !== ticket.id);
-      let currentTicket = ticket;
-      for (const sourceTicket of sourceTickets) {
-        const activeLines = sourceTicket.lines.filter((line) => line.status !== "VOIDED");
-        for (const line of activeLines) {
-          const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket }>(`/tickets/${sourceTicket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: ticket.id, quantity: line.quantity, idempotencyKey: crypto.randomUUID() }) });
-          currentTicket = data.targetTicket;
+      const result = await run("merge-splits", async () => {
+        const sourceTickets = openSplitTickets.filter((t) => t.id !== ticket.id);
+        let currentTicket = ticket;
+        for (const sourceTicket of sourceTickets) {
+          const activeLines = sourceTicket.lines.filter((line) => line.status !== "VOIDED");
+          for (const line of activeLines) {
+            const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket }>(`/tickets/${sourceTicket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: ticket.id, quantity: line.quantity, idempotencyKey: crypto.randomUUID() }) });
+            currentTicket = data.targetTicket;
+          }
+          await request(`/tickets/${sourceTicket.id}/void`, { method: "POST", body: JSON.stringify({ reason: "Cuentas reagrupadas" }) });
         }
-        await request(`/tickets/${sourceTicket.id}/void`, { method: "POST", body: JSON.stringify({ reason: "Cuentas reagrupadas" }) });
-      }
-      setTicket(currentTicket);
-      setSplitTickets([currentTicket]);
-      setSplitTargetId(0);
-      setMessage("Cuentas reagrupadas.");
-      return true;
+        setTicket(currentTicket);
+        setSplitTickets([currentTicket]);
+        setSplitTargetId(0);
+        setMessage("Cuentas reagrupadas.");
+        return true;
+      });
+      return result ?? false;
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron reagrupar las cuentas"); return false; }
-    finally { commandInFlight.current.delete("merge-splits"); setBusy(false); }
-  }, [openSplitTickets, ticket]);
+    finally { setBusy(false); }
+  }, [isInFlight, openSplitTickets, run, ticket]);
 
   const clearRegister = useCallback(() => {
     setTicket(null); setVisit(null); setSplitTickets([]); setSplitTargetId(0);
@@ -175,7 +174,7 @@ export function usePOSRegister(date?: string | null) {
 
   const parkVisit = useCallback(async (parked: boolean, note = "") => {
     if (!visit) return false;
-    setBusy(true); setError("");
+    setBusy(true); setError(""); setMessage("");
     try {
       await request(`/visits/${visit.id}/park`, { method: "POST", body: JSON.stringify({ parked, note: note.trim() }) });
       if (parked) { clearRegister(); setMessage("Comanda aparcada."); } else setMessage("Comanda recuperada.");
@@ -185,33 +184,35 @@ export function usePOSRegister(date?: string | null) {
   }, [clearRegister, load, visit]);
 
   const openBar = useCallback(async () => {
-    if (visit || commandInFlight.current.has("bar")) return false;
-    commandInFlight.current.add("bar");
-    setBusy(true); setError("");
+    if (visit || isInFlight("bar")) return false;
+    setBusy(true); setError(""); setMessage("");
     try {
-      const key = commandKeys.current.get("bar") || crypto.randomUUID(); commandKeys.current.set("bar", key);
-      const data = await request<{ visit: Visit; ticket: Ticket }>("/visits", { method: "POST", body: JSON.stringify({ channel: "BAR", covers: 0, idempotencyKey: key }) });
-      setVisit(data.visit); setTicket(data.ticket); setSplitTickets([data.ticket]); setSentKitchenQuantities({});
-      setMessage("Venta de barra abierta."); commandKeys.current.delete("bar"); await load(); return true;
+      const result = await run("bar", async (key) => {
+        const data = await request<{ visit: Visit; ticket: Ticket }>("/visits", { method: "POST", body: JSON.stringify({ channel: "BAR", covers: 0, idempotencyKey: key }) });
+        setVisit(data.visit); setTicket(data.ticket); setSplitTickets([data.ticket]); setSentKitchenQuantities({});
+        setMessage("Venta de barra abierta."); await load(); return true;
+      });
+      return result ?? false;
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo abrir la barra"); return false; }
-    finally { commandInFlight.current.delete("bar"); setBusy(false); }
-  }, [load, visit]);
+    finally { setBusy(false); }
+  }, [isInFlight, load, run, visit]);
 
   const mergeVisits = useCallback(async (sourceVisitIds: number[]) => {
     const uniqueSourceIds = [...new Set(sourceVisitIds)].filter((id) => id !== visit?.id);
-    if (!visit || !uniqueSourceIds.length || commandInFlight.current.has("merge")) return false;
-    commandInFlight.current.add("merge");
-    setBusy(true); setError("");
+    if (!visit || !uniqueSourceIds.length || isInFlight("merge")) return false;
+    setBusy(true); setError(""); setMessage("");
     try {
-      const key = commandKeys.current.get("merge") || crypto.randomUUID(); commandKeys.current.set("merge", key);
-      const data = await request<{ ticket?: Ticket; tickets?: Ticket[]; visit?: Visit; covers?: number }>(`/visits/${visit.id}/merge`, { method: "POST", body: JSON.stringify({ sourceVisitIds: uniqueSourceIds, expectedVersion: ticket?.version, idempotencyKey: key }) });
-      const authoritativeTickets = data.tickets || (data.ticket ? [data.ticket] : undefined);
-      if (authoritativeTickets) { setSplitTickets(authoritativeTickets); setTicket(authoritativeTickets.find((entry) => entry.status === "OPEN") || authoritativeTickets[0] || null); }
-      setVisit((current) => data.visit || (current && data.covers != null ? { ...current, covers: data.covers } : current));
-      commandKeys.current.delete("merge"); setMessage("Mesas juntadas."); await load(); return true;
+      const result = await run("merge", async (key) => {
+        const data = await request<{ ticket?: Ticket; tickets?: Ticket[]; visit?: Visit; covers?: number }>(`/visits/${visit.id}/merge`, { method: "POST", body: JSON.stringify({ sourceVisitIds: uniqueSourceIds, expectedVersion: ticket?.version, idempotencyKey: key }) });
+        const authoritativeTickets = data.tickets || (data.ticket ? [data.ticket] : undefined);
+        if (authoritativeTickets) { setSplitTickets(authoritativeTickets); setTicket(authoritativeTickets.find((entry) => entry.status === "OPEN") || authoritativeTickets[0] || null); }
+        setVisit((current) => data.visit || (current && data.covers != null ? { ...current, covers: data.covers } : current));
+        setMessage("Mesas juntadas."); await load(); return true;
+      });
+      return result ?? false;
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron juntar las mesas"); return false; }
-    finally { commandInFlight.current.delete("merge"); setBusy(false); }
-  }, [load, ticket?.version, visit]);
+    finally { setBusy(false); }
+  }, [isInFlight, load, run, ticket?.version, visit]);
 
   const applyAdjustment = useCallback(async (type: "DISCOUNT" | "SURCHARGE", mode: "AMOUNT" | "PERCENT", value: number, reason: string) => {
     if (!ticket) return false;
@@ -219,18 +220,18 @@ export function usePOSRegister(date?: string | null) {
     if (!trimmed) { setError("Indica el motivo."); return false; }
     if (value <= 0) { setError("Introduce un importe válido."); return false; }
     const command = `adjustment-${type}`;
-    if (commandInFlight.current.has(command)) return false;
-    commandInFlight.current.add(command);
-    setError("");
+    if (isInFlight(command)) return false;
+    setError(""); setMessage("");
     try {
-      const key = commandKeys.current.get(command) || crypto.randomUUID(); commandKeys.current.set(command, key);
-      const common = { type, mode, reason: trimmed, expectedVersion: ticket.version, idempotencyKey: key };
-      const body = mode === "PERCENT" ? { ...common, percent: value } : { ...common, amountCents: Math.round(value) };
-      const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/adjustments`, { method: "POST", body: JSON.stringify(body) });
-      setTicket(data.ticket); commandKeys.current.delete(command); return true;
+      const result = await run(command, async (key) => {
+        const common = { type, mode, reason: trimmed, expectedVersion: ticket.version, idempotencyKey: key };
+        const body = mode === "PERCENT" ? { ...common, percent: value } : { ...common, amountCents: Math.round(value) };
+        const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/adjustments`, { method: "POST", body: JSON.stringify(body) });
+        setTicket(data.ticket); return true;
+      });
+      return result ?? false;
     } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo aplicar el ajuste"); return false; }
-    finally { commandInFlight.current.delete(command); }
-  }, [ticket]);
+  }, [isInFlight, run, ticket]);
 
   const compLine = useCallback(async (line: TicketLine, comped: boolean, reason = "") => {
     if (!ticket) return false;
@@ -254,16 +255,16 @@ export function usePOSRegister(date?: string | null) {
 
   const openDrawer = useCallback(async (reason = "NO_SALE", note = "") => {
     if (settings.requireOpenShift && currentShift?.status !== "OPEN") { setError("Abre un turno antes de usar el cajón."); return false; }
-    if (commandInFlight.current.has("drawer")) return false;
-    commandInFlight.current.add("drawer");
-    setError("");
+    if (isInFlight("drawer")) return false;
+    setError(""); setMessage("");
     try {
-      const key = commandKeys.current.get("drawer") || crypto.randomUUID(); commandKeys.current.set("drawer", key);
-      await request("/drawer/open", { method: "POST", body: JSON.stringify({ reason, note: note.trim(), idempotencyKey: key }) });
-      commandKeys.current.delete("drawer"); setMessage("Cajón abierto."); return true;
+      const result = await run("drawer", async (key) => {
+        await request("/drawer/open", { method: "POST", body: JSON.stringify({ reason, note: note.trim(), idempotencyKey: key }) });
+        setMessage("Cajón abierto."); return true;
+      });
+      return result ?? false;
     } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo abrir el cajón"); return false; }
-    finally { commandInFlight.current.delete("drawer"); }
-  }, [currentShift?.status, settings.requireOpenShift]);
+  }, [currentShift?.status, isInFlight, run, settings.requireOpenShift]);
 
   const setVisitCustomer = useCallback(async (customerName: string, customerTaxId: string) => {
     if (!visit) return false;
@@ -309,7 +310,7 @@ export function usePOSRegister(date?: string | null) {
 
   const addProduct = useCallback(async (product: Product, options?: { quantity?: number; unitPriceOverrideCents?: number }) => {
     if (!ticket) return;
-    setBusy(true);
+    setBusy(true); setMessage(""); setPendingProductId(product.id);
     const qty = options?.quantity ?? 1;
     const priceOverride = options?.unitPriceOverrideCents;
     // Merge into existing line only if the unit price matches:
@@ -323,7 +324,7 @@ export function usePOSRegister(date?: string | null) {
         : await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), idempotencyKey: crypto.randomUUID() }) });
       setTicket(data.ticket);
     }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo añadir producto"); } finally { setBusy(false); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo añadir producto"); } finally { setBusy(false); setPendingProductId(null); }
   }, [ticket]);
 
   const setLineQuantity = useCallback(async (line: TicketLine, quantity: number) => {
@@ -342,7 +343,7 @@ export function usePOSRegister(date?: string | null) {
     if (!ticket || !visit) return;
     const trimmed = reason.trim();
     if (!trimmed) return;
-    setBusy(true); setError("");
+    setBusy(true); setError(""); setMessage("");
     try {
       for (const line of ticket.lines.filter((entry) => entry.status !== "VOIDED")) {
         await request(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed }) });
@@ -370,6 +371,7 @@ export function usePOSRegister(date?: string | null) {
   const sendKitchen = useCallback(async () => {
     if (!ticket || !pendingKitchenLines.length) return;
     const dispatched = pendingKitchenLines.map((line) => [line.id, line.quantity] as const);
+    setMessage("");
     try {
       await request(`/tickets/${ticket.id}/kitchen-dispatches`, { method: "POST", body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) });
       setSentKitchenQuantities((current) => ({ ...current, ...Object.fromEntries(dispatched) }));
@@ -380,28 +382,31 @@ export function usePOSRegister(date?: string | null) {
   const checkout = useCallback(async (requestedTipCents = tipCents) => {
     const checkoutDue = ticketTotal + requestedTipCents;
     if (!ticket || ticketTotal < 0 || paymentTotal < checkoutDue) { setError("El pago no cubre el total."); return false; }
-    if (checkoutInFlight.current) return false;
+    if (isInFlight("checkout")) return false;
     let allocations;
     try { allocations = allocatePayments({ saleTotalCents: ticketTotal, tipCents: requestedTipCents, cashTenderedCents: Math.round(Number(cash || 0) * 100), cardTenderedCents: Math.round(Number(card || 0) * 100) }); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Importe no válido."); return false; }
     if (allocations.some((payment) => payment.method === "CARD") && !cardReference.trim()) { setError("Introduce referencia del terminal de tarjeta."); return false; }
-    const checkoutKey = commandKeys.current.get("checkout") || crypto.randomUUID(); commandKeys.current.set("checkout", checkoutKey);
     const payments = allocations.map((payment) => {
-      const keyName = `checkout-${payment.method}`;
-      const idempotencyKey = commandKeys.current.get(keyName) || crypto.randomUUID(); commandKeys.current.set(keyName, idempotencyKey);
+      const idempotencyKey = keyFor(`checkout-${payment.method}`);
       return payment.method === "CARD" ? { ...payment, provider: "STANDALONE", providerReference: cardReference.trim(), idempotencyKey } : { ...payment, idempotencyKey };
     });
-    checkoutInFlight.current = true;
-    setBusy(true);
-    try { const data = await request<{ ticket: Ticket; stockStatus: string; visitClosed: boolean }>(`/tickets/${ticket.id}/checkout`, { method: "POST", body: JSON.stringify({ idempotencyKey: checkoutKey, expectedVersion: ticket.version, payments, closeVisit: true }) }); setMessage(`Venta completada · stock ${data.stockStatus.toLowerCase()}.`); setLastPaidTicket(data.ticket); const nextOpen = splitTickets.find((entry) => entry.id !== ticket.id && entry.status === "OPEN") || null; if (data.visitClosed) { setTicket(null); setVisit(null); setSplitTickets([]); setSentKitchenQuantities({}); } else { setTicket(nextOpen); setSplitTickets((current) => current.map((entry) => entry.id === data.ticket.id ? data.ticket : entry)); } setCash(""); setCard(""); setCardReference(""); setTipCents(0); commandKeys.current.delete("checkout"); commandKeys.current.delete("checkout-CASH"); commandKeys.current.delete("checkout-CARD"); await load(); return true; }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cobrar"); return false; } finally { checkoutInFlight.current = false; setBusy(false); }
-  }, [card, cardReference, cash, load, paymentTotal, splitTickets, ticket, ticketTotal, tipCents]);
+    setBusy(true); setMessage("");
+    try {
+      const result = await run("checkout", async (checkoutKey) => {
+        const data = await request<{ ticket: Ticket; stockStatus: string; visitClosed: boolean }>(`/tickets/${ticket.id}/checkout`, { method: "POST", body: JSON.stringify({ idempotencyKey: checkoutKey, expectedVersion: ticket.version, payments, closeVisit: true }) });
+        setMessage(`Venta completada · stock ${data.stockStatus.toLowerCase()}.`); setLastPaidTicket(data.ticket); const nextOpen = splitTickets.find((entry) => entry.id !== ticket.id && entry.status === "OPEN") || null; if (data.visitClosed) { setTicket(null); setVisit(null); setSplitTickets([]); setSentKitchenQuantities({}); } else { setTicket(nextOpen); setSplitTickets((current) => current.map((entry) => entry.id === data.ticket.id ? data.ticket : entry)); } setCash(""); setCard(""); setCardReference(""); setTipCents(0); clear("checkout-CASH"); clear("checkout-CARD"); await load(); return true;
+      });
+      return result ?? false;
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cobrar"); return false; }
+    finally { setBusy(false); }
+  }, [card, cardReference, cash, clear, isInFlight, keyFor, load, paymentTotal, run, splitTickets, ticket, ticketTotal, tipCents]);
 
   return {
     settings, setSettings, products, tables, visits, ticket, visit, lastPaidTicket, productStock,
     splitTickets, splitTargetId, setSplitTargetId, selectedTable, setSelectedTable,
     covers, setCovers, reservations, reservationsLoading, reservationsLoaded, bookingId, query, setQuery,
-    message, setMessage, error, setError, busy,
+    message, setMessage, error, setError, busy, pendingProductId,
     cash, setCash, card, setCard, cardReference, setCardReference, discount, setDiscount,
     filteredProducts, ticketTotal, activeTicketLines, openSplitTickets, otherOpenSplitTickets, paymentTotal,
     pendingKitchenLines, hasPendingKitchenLines, sentKitchenQuantities,
