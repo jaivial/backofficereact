@@ -20,6 +20,7 @@ import {
   clampDishCropValue,
   getDishPatchFingerprint,
   getSectionsDishFingerprintMap,
+  getSectionDishesFingerprint,
   getSectionsDishSyncStateMap,
   getSectionsFingerprint,
   getSectionsStructureFingerprint,
@@ -27,6 +28,7 @@ import {
   mapApiDish,
   mapApiMenu,
   mapApiSection,
+  mirrorShouldAdoptServerDishes,
   mergeDishFromServer,
   mergeMenuAIDishes,
   normalizeMenuPreviewPatch,
@@ -47,7 +49,7 @@ import {
 } from "../helpers/menuEditor.helpers";
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB } from "../constants/menuEditor.constants";
 // Coordination id: menu_section_kind_presets_v1 + dessert_section_source_v1
-import { normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
+import { DESSERT_SOURCE_CUSTOM, isGeneralDessertSection, normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
 import type { DessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
 import type { AddSectionSelection } from "../../../../../ui/widgets/menus/AddSectionModal";
 import type { BeverageOption, BeverageDeleteTarget } from "../types/menuEditor.types";
@@ -261,6 +263,11 @@ export type UseMenuEditorReturn = {
   closeMenuPreviewImageAdvisor: () => void;
   closeMenuPreviewImageCropper: () => void;
   toggleSameDayBooking: (sectionClientId: string, dishClientId: string, blocked: boolean) => Promise<void>;
+  // Coordination id: dessert_section_source_v1 - confirmation raised before a
+  // general-carta mirror writes back to the shared desserts list.
+  dessertSyncConfirm: { sectionLabel: string; count: number } | null;
+  confirmDessertSync: () => void;
+  cancelDessertSync: () => void;
 
   // Render helpers (defined inside the hook for access to state)
   renderMenuPreviewUploadArea: () => React.ReactNode;
@@ -320,6 +327,11 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [searchResults, setSearchResults] = useState<Record<string, DishCatalogItem[]>>({});
   const [sectionLoadingState, setSectionLoadingState] = useState<Record<string, "loading" | "error" | null>>({});
+  // Coordination id: dessert_section_source_v1 - one confirmation gate shared by
+  // every general-carta mirror edit, plus a cached handle on the carta itself.
+  const [dessertSyncConfirm, setDessertSyncConfirm] = useState<{ sectionLabel: string; count: number } | null>(null);
+  const dessertSyncConfirmResolverRef = useRef<((ok: boolean) => void) | null>(null);
+  const generalDessertTargetRef = useRef<{ menuId: number; sectionId: number } | null>(null);
   const [menuAITracker, setMenuAITracker] = useState<MenuAITrackerState>(() => buildMenuAITracker(data.menu));
   const [dishImageTarget, setDishImageTarget] = useState<{ sectionClientId: string; dishClientId: string } | null>(null);
   const [dishImageAdvisorDraft, setDishImageAdvisorDraft] = useState<DishImageCropDraft | null>(null);
@@ -441,6 +453,113 @@ export function useMenuEditor(): UseMenuEditorReturn {
     return persisted;
   });
 
+  // --- dessert general-carta helpers (coordination id: dessert_section_source_v1) ---
+  // A "postres" section can mirror the restaurant's general desserts carta. Its
+  // dishes live in the carta's own section, so every write is routed there after
+  // an explicit confirmation; a custom postres section instead owns an
+  // independent copy seeded once from the carta.
+  const requestDessertSyncConfirm = useCallback((payload: { sectionLabel: string; count: number }) => {
+    return new Promise<boolean>((resolve) => {
+      dessertSyncConfirmResolverRef.current = resolve;
+      setDessertSyncConfirm(payload);
+    });
+  }, []);
+
+  const resolveDessertSyncConfirm = useCallback((ok: boolean) => {
+    const resolve = dessertSyncConfirmResolverRef.current;
+    dessertSyncConfirmResolverRef.current = null;
+    setDessertSyncConfirm(null);
+    resolve?.(ok);
+  }, []);
+
+  const confirmDessertSync = useCallback(() => resolveDessertSyncConfirm(true), [resolveDessertSyncConfirm]);
+  const cancelDessertSync = useCallback(() => resolveDessertSyncConfirm(false), [resolveDessertSyncConfirm]);
+
+  const resolveGeneralDessertTarget = useCallback(async (): Promise<{ menuId: number; sectionId: number } | null> => {
+    if (generalDessertTargetRef.current) return generalDessertTargetRef.current;
+    try {
+      const resolved = await api.menus.gruposV2.resolvePostres();
+      if (!resolved.success || !resolved.menu_id) return null;
+      const menuRes = await api.menus.gruposV2.get(resolved.menu_id);
+      if (!menuRes.success || !menuRes.menu) return null;
+      const section = (menuRes.menu.sections || []).find(
+        (row) => String(row.kind || "").toLowerCase().trim() === "postres",
+      );
+      if (!section) return null;
+      const target = { menuId: resolved.menu_id, sectionId: section.id };
+      generalDessertTargetRef.current = target;
+      return target;
+    } catch {
+      return null;
+    }
+  }, [api]);
+
+  const fetchSectionDishesRaw = useCallback(async (sectionId: number): Promise<EditorDish[]> => {
+    if (!menuId) return [];
+    const res = await api.menus.gruposV2.getSectionDishes(menuId, sectionId);
+    if (!res.success || !res.dishes) return [];
+    return res.dishes.map((dish) => mapApiDish(dish));
+  }, [api, menuId]);
+
+  const pushGeneralDessertDishes = useCallback(async (dishes: EditorDish[]) => {
+    const target = await resolveGeneralDessertTarget();
+    if (!target) throw new Error("No se pudo resolver la carta general de postres");
+    const payload = dishes
+      .filter((dish) => dish.title.trim().length > 0)
+      .map((dish) => ({
+        id: dish.id,
+        catalog_dish_id: dish.catalog_dish_id ?? null,
+        title: dish.title.trim(),
+        description: dish.description,
+        description_enabled: dish.description_enabled,
+        allergens: dish.allergens,
+        supplement_enabled: dish.supplement_enabled,
+        supplement_price: dish.supplement_price,
+        price: dish.price,
+        active: dish.active,
+      }));
+    const res = await api.menus.gruposV2.putSectionDishes(target.menuId, target.sectionId, payload);
+    if (!res.success) throw new Error(res.message || "No se pudo actualizar la carta general de postres");
+    console.log("[checkpoint] dessert_general_section_pushed", `section=${target.sectionId}`, `dishes=${payload.length}`);
+    return { target, res };
+  }, [api, resolveGeneralDessertTarget]);
+
+  // A custom postres section starts as an independent copy of the general carta:
+  // the rows are re-keyed so they are inserted into (and only owned by) this menu.
+  const seedCustomDessertSection = useCallback(async (sectionClientId: string) => {
+    const target = await resolveGeneralDessertTarget();
+    if (!target) return;
+    const res = await api.menus.gruposV2.getSectionDishes(target.menuId, target.sectionId);
+    if (!res.success || !res.dishes || res.dishes.length === 0) return;
+    const seeded = res.dishes.map((dish) => ({
+      ...mapApiDish(dish),
+      id: undefined,
+      catalog_dish_id: dish.catalog_dish_id ?? null,
+      read_only: false,
+      clientId: uid("dish"),
+    })) as EditorDish[];
+    setSections((prev) => prev.map((section) => (
+      section.clientId === sectionClientId && section.dishes.length === 0
+        ? { ...section, dishes: withDishPositions(seeded) }
+        : section
+    )));
+    console.log("[checkpoint] dessert_custom_section_seeded", `section=${sectionClientId}`, `dishes=${seeded.length}`);
+  }, [api, resolveGeneralDessertTarget]);
+
+  // Every dish mutation (edit, image, same-day booking) must target the section
+  // that owns the rows: the general carta for a mirror, the section itself otherwise.
+  const resolveDishWriteTarget = useCallback(
+    async (section: EditorSection): Promise<{ menuId: number; sectionId: number }> => {
+      if (isGeneralDessertSection(section.kind, section.dessertSource)) {
+        const target = await resolveGeneralDessertTarget();
+        if (target) return target;
+      }
+      if (!menuId || !section.id) throw new Error("Seccion sin guardar");
+      return { menuId, sectionId: section.id };
+    },
+    [menuId, resolveGeneralDessertTarget],
+  );
+
   // --- patchBasics ---
   const patchBasics = useCallback(
     async ({ payload, fingerprint, force = false }: { payload: BasicsPayload; fingerprint: string; force?: boolean }) => {
@@ -509,7 +628,15 @@ export function useMenuEditor(): UseMenuEditorReturn {
           rebuilt = (resSections.sections || []).map((sec, idx) => {
             const local = rebuilt[idx];
             const mapped = mapApiSection(sec, local);
-            mapped.dishes = withDishPositions(local?.dishes || []);
+            // A mirror owns no rows of its own: adopt the carta the server returned
+            // unless the operator already has unsaved local edits.
+            const savedFingerprint = lastSavedSectionDishesRef.current[local?.clientId ?? mapped.clientId];
+            if (mirrorShouldAdoptServerDishes(mapped, local, savedFingerprint)) {
+              mapped.dishes = withDishPositions(mapped.dishes);
+              lastSavedSectionDishesRef.current[mapped.clientId] = getSectionDishesFingerprint(mapped);
+            } else {
+              mapped.dishes = withDishPositions(local?.dishes || mapped.dishes);
+            }
             return mapped;
           });
         }
@@ -518,8 +645,17 @@ export function useMenuEditor(): UseMenuEditorReturn {
           ? new Set(rebuilt.map((section) => section.clientId))
           : new Set(rebuilt.filter((section) => getSectionsDishFingerprintMap([section])[section.clientId] !== lastSavedSectionDishesRef.current[section.clientId]).map((section) => section.clientId));
 
+        const dirtyMirrorSections = rebuilt.filter((section) => {
+          if (!section.id || !isGeneralDessertSection(section.kind, section.dessertSource)) return false;
+          const savedFingerprint = lastSavedSectionDishesRef.current[section.clientId] ?? "";
+          return getSectionDishesFingerprint(section) !== savedFingerprint;
+        });
+
         for (const section of rebuilt) {
           if (!section.id || !changedSectionClientIds.has(section.clientId)) continue;
+          // General-carta mirrors write to the shared carta, handled below, never to
+          // their own (empty) section rows.
+          if (isGeneralDessertSection(section.kind, section.dessertSource)) continue;
 
           const previousSectionSyncState = lastSavedSectionDishSyncRef.current[section.clientId];
           const nextSectionSyncState = { order: "", byId: {} }; // placeholder
@@ -619,6 +755,28 @@ export function useMenuEditor(): UseMenuEditorReturn {
           }
         }
 
+        if (dirtyMirrorSections.length > 0) {
+          const label = dirtyMirrorSections[0].title.trim() || "Postres";
+          const confirmed = await requestDessertSyncConfirm({ sectionLabel: label, count: dirtyMirrorSections.length });
+          if (confirmed) {
+            for (const section of dirtyMirrorSections) {
+              try {
+                await pushGeneralDessertDishes(section.dishes);
+              } catch (err) {
+                pushToastRef.current({ kind: "error", title: "Error", message: err instanceof Error ? err.message : "No se pudo actualizar la carta general de postres" });
+              }
+            }
+          }
+          // Re-read the carta (after a write) or drop the rejected edit (after a
+          // cancel) so the mirror always shows exactly what the carta holds.
+          for (const section of dirtyMirrorSections) {
+            if (!section.id) continue;
+            const fresh = await fetchSectionDishesRaw(section.id);
+            section.dishes = withDishPositions(fresh);
+          }
+          needsStateReconcile = true;
+        }
+
         if (syncRequestSeqRef.current !== requestSeq) return sectionsSnapshot;
         if (needsStateReconcile) setSections(rebuilt);
         const savedSource = needsStateReconcile ? rebuilt : sectionsSnapshot;
@@ -633,7 +791,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         if (inFlightSectionsRef.current === fingerprint) inFlightSectionsRef.current = null;
       }
     },
-    [api, isALaCarte, menuId],
+    [api, isALaCarte, menuId, requestDessertSyncConfirm, pushGeneralDessertDishes, fetchSectionDishesRaw],
   );
 
   // --- useEffect: auto-save basics ---
@@ -1113,11 +1271,12 @@ export function useMenuEditor(): UseMenuEditorReturn {
     // until the operator fills them in the settings tab.
     const title = seededTitle || "Nueva seccion";
     const dessertSource = normalizeDessertSource(kind, selection?.dessertSource);
+    const clientId = uid("section");
     console.log("[checkpoint] menu_section_added", `kind=${kind}`, `dessert_source=${dessertSource}`);
     setSections((prev) => [
       ...prev,
       {
-        clientId: uid("section"),
+        clientId,
         title,
         displayTitle: title,
         subtitle: "",
@@ -1130,7 +1289,13 @@ export function useMenuEditor(): UseMenuEditorReturn {
         expanded: true,
       } as EditorSection,
     ]);
-  }, []);
+    // A custom postres section is seeded once from the general carta, then stays
+    // independent: no confirmation, no shared rows. A general mirror instead waits
+    // for the server dish list, handled by syncSectionsAndDishes.
+    if (kind === "postres" && dessertSource === DESSERT_SOURCE_CUSTOM) {
+      void seedCustomDessertSection(clientId);
+    }
+  }, [seedCustomDessertSection]);
 
   // --- setSectionDessertSource ---
   // Coordination id: dessert_section_source_v1 - flips a saved dessert section
@@ -1508,7 +1673,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
       const { section, dish } = await resolvePersistedDishTarget({ sectionClientId: draft.sectionClientId, dishClientId: draft.dishClientId });
       targetDishId = dish.id;
       applyDishAIState(dish.id, { ai_requested: true, ai_generating: true });
-      const res = await api.menus.gruposV2.uploadSectionDishImageAI(menuId, section.id, dish.id, draft.file);
+      const writeTarget = await resolveDishWriteTarget(section);
+      const res = await api.menus.gruposV2.uploadSectionDishImageAI(writeTarget.menuId, writeTarget.sectionId, dish.id, draft.file);
       if (!res.success) throw new Error(res.message || "No se pudo iniciar la mejora con IA");
       closeDishImageAdvisor();
       requestMenuAITrackerSync();
@@ -1519,7 +1685,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     } finally {
       setDishImageAdvisorBusy(false);
     }
-  }, [api, applyDishAIState, dishImageAdvisorDraft, menuId, pushToast, resolvePersistedDishTarget]);
+  }, [api, applyDishAIState, dishImageAdvisorDraft, menuId, pushToast, resolveDishWriteTarget, resolvePersistedDishTarget]);
 
   // --- onDishImageCropConfirm ---
   const onDishImageCropConfirm = useCallback(
@@ -1529,7 +1695,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
       try {
         const webpFile = await cropSquareImageToWebp(dishImageCropDraft.file, { ...crop, outputSizePx: 1024, maxSizeKB: 150 });
         const { section, dish } = await resolvePersistedDishTarget({ sectionClientId: dishImageCropDraft.sectionClientId, dishClientId: dishImageCropDraft.dishClientId });
-        const res = await api.menus.gruposV2.uploadSectionDishImage(menuId, section.id, dish.id, webpFile);
+        const writeTarget = await resolveDishWriteTarget(section);
+        const res = await api.menus.gruposV2.uploadSectionDishImage(writeTarget.menuId, writeTarget.sectionId, dish.id, webpFile);
         if (!res.success) throw new Error(res.message || "No se pudo subir la imagen");
         updateDish(dishImageCropDraft.sectionClientId, dishImageCropDraft.dishClientId, { foto_url: res.dish?.foto_url || res.dish?.image_url || undefined });
         closeDishImageCropper();
@@ -1540,7 +1707,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         setDishImageBusy(false);
       }
     },
-    [api, dishImageCropDraft, menuId, pushToast, resolvePersistedDishTarget, updateDish],
+    [api, dishImageCropDraft, menuId, pushToast, resolveDishWriteTarget, resolvePersistedDishTarget, updateDish],
   );
 
   // --- onPublish ---
@@ -1804,13 +1971,16 @@ export function useMenuEditor(): UseMenuEditorReturn {
     async (sectionClientId: string, dishClientId: string, blocked: boolean) => {
       const snapshot = sectionsRef.current;
       let targetDishId: number | undefined;
+      let targetSection: EditorSection | undefined;
       for (const sec of snapshot) {
         for (const d of sec.dishes) {
-          if (d.clientId === dishClientId) { targetDishId = d.id; break; }
+          if (d.clientId === dishClientId) { targetDishId = d.id; targetSection = sec; break; }
         }
         if (targetDishId) break;
       }
-      if (!menuId || !targetDishId) return;
+      if (!menuId || !targetDishId || !targetSection) return;
+      const writeTarget = await resolveDishWriteTarget(targetSection).catch(() => null);
+      if (!writeTarget) return;
 
       setSections((prev) => {
         let changed = false;
@@ -1828,11 +1998,11 @@ export function useMenuEditor(): UseMenuEditorReturn {
 
       try {
         if (blocked) {
-          const res = await api.menus.gruposV2.setSameDayBookingBlocked(menuId, targetDishId);
+          const res = await api.menus.gruposV2.setSameDayBookingBlocked(writeTarget.menuId, targetDishId);
           if (!res.success) throw new Error(res.message || "No se pudo bloquear la reserva mismo dia");
           sameDayBookingBlockedRef.current = new Set(sameDayBookingBlockedRef.current).add(targetDishId);
         } else {
-          const res = await api.menus.gruposV2.setSameDayBookingAllowed(menuId, targetDishId);
+          const res = await api.menus.gruposV2.setSameDayBookingAllowed(writeTarget.menuId, targetDishId);
           if (!res.success) throw new Error(res.message || "No se pudo desbloquear la reserva mismo dia");
           const next = new Set(sameDayBookingBlockedRef.current);
           next.delete(targetDishId);
@@ -1853,7 +2023,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo actualizar la reserva mismo dia" });
       }
     },
-    [api, menuId, pushToast],
+    [api, menuId, pushToast, resolveDishWriteTarget],
   );
 
   // --- Hydration effect ---
@@ -2092,6 +2262,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     moveMenuPreviewImageAdvisorToCrop, requestMenuAITrackerSync, closeDishImageAdvisor,
     closeDishImageCropper, closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper,
     toggleSameDayBooking,
+    dessertSyncConfirm, confirmDessertSync, cancelDessertSync,
     // Render helpers
     renderMenuPreviewUploadArea,
     renderSpecialMenuImageUploadArea,

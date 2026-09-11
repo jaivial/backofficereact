@@ -109,11 +109,11 @@ export function MenuSectionEditor({
   const [dishTab, setDishTab] = useState<SectionDishTab>("active");
   const sectionLabel = sec.title.trim() || `seccion ${secIdx + 1}`;
   // Coordination id: dessert_section_source_v1 - a dessert section that reads
-  // from the general carta shows the carta's dishes and blocks every edit; the
-  // only way to change them is /app/comida/postres.
+  // from the general carta shows the carta's dishes. Editing is allowed, but every
+  // write is confirmed and applied to the shared general postres carta.
   const isDessertSection = String(sec.kind || "").toLowerCase().trim() === "postres";
   const dessertSource = normalizeDessertSource(sec.kind, sec.dessertSource);
-  const readOnlyDishes = isGeneralDessertSection(sec.kind, sec.dessertSource);
+  const isGeneralDessert = isGeneralDessertSection(sec.kind, sec.dessertSource);
   const activeDishCount = useMemo(() => sec.dishes.reduce((total, dish) => total + (dish.active ? 1 : 0), 0), [sec.dishes]);
   const inactiveDishCount = sec.dishes.length - activeDishCount;
   const annotationCount = useMemo(() => {
@@ -158,10 +158,9 @@ export function MenuSectionEditor({
   const handleAddDishFromCatalog = useCallback((item: DishCatalogItem) => { setDishTab("active"); addDish(sec.clientId, item); }, [addDish, sec.clientId]);
 
   // Coordination id: dessert_section_source_v1 - reordering a general-carta
-  // mirror would write rows the carta owns, so the drag result is dropped.
+  // mirror is confirmed and applied to the shared carta like any other edit.
   const handleReorderVisibleDishes = useCallback(
     (orderedVisibleClientIds: string[]) => {
-      if (readOnlyDishes) return;
       if (orderedVisibleClientIds.length !== visibleDishes.length) return;
       let visibleCursor = 0;
       const nextOrder = sec.dishes.map((dish) => {
@@ -173,7 +172,7 @@ export function MenuSectionEditor({
       });
       reorderDishes(sec.clientId, nextOrder);
     },
-    [dishTab, readOnlyDishes, reorderDishes, sec.clientId, sec.dishes, visibleDishes.length],
+    [dishTab, reorderDishes, sec.clientId, sec.dishes, visibleDishes.length],
   );
 
   return (
@@ -497,7 +496,7 @@ export function MenuSectionEditor({
                       data-coordination-id="dessert_section_source_v1"
                     >
                       {dessertSource === DESSERT_SOURCE_GENERAL
-                        ? "Sincronizada con la carta general de postres: los platos son de solo lectura y se editan en /app/comida/postres."
+                        ? "Sincronizada con la carta general de postres: al editar aqui se pedira confirmacion y los cambios se aplicaran tambien a la carta general."
                         : "Personalizada: esta seccion tiene su propia lista de postres, totalmente editable aqui."}
                     </div>
                   </div>
@@ -537,7 +536,6 @@ export function MenuSectionEditor({
                     toggleSameDayBooking={toggleSameDayBooking}
                     reorderTransition={reorderTransition}
                     reorderWhileDrag={reorderWhileDrag}
-                    readOnly={readOnlyDishes || dish.read_only === true}
                   />
                 ))}
               </Reorder.Group>
@@ -552,7 +550,7 @@ export function MenuSectionEditor({
             )}
           </div>
 
-          {(dishTab === "active" || dishTab === "inactive") && readOnlyDishes ? (
+          {(dishTab === "active" || dishTab === "inactive") && isGeneralDessert ? (
             <div
               className="bo-sectionReadOnlyNotice"
               role="status"
@@ -561,14 +559,14 @@ export function MenuSectionEditor({
             >
               <IceCreamCone size={16} aria-hidden="true" />
               <span data-slot="menuSectionEditor-dessertReadOnlyText">
-                Estos postres estan sincronizados con la carta general de postres y son de solo lectura.
-                Cambialos en <a className="bo-link" href="/app/comida/postres" data-testid={`menu-section-editor-dessert-readonly-link-${sec.clientId}`}>/app/comida/postres</a>,
-                o pasa la seccion a personalizada en la pestana Ajustes.
+                Estos postres estan sincronizados con la carta general de postres: cualquier cambio que hagas aqui se aplicara tambien a la carta general y pedira confirmacion.
+                Tambien puedes gestionarlos en <a className="bo-link" href="/app/comida/postres" data-testid={`menu-section-editor-dessert-readonly-link-${sec.clientId}`}>/app/comida/postres</a>,
+                o pasar la seccion a personalizada en la pestana Ajustes.
               </span>
             </div>
           ) : null}
 
-          {(dishTab === "active" || dishTab === "inactive") && !readOnlyDishes ? (
+          {dishTab === "active" || dishTab === "inactive" ? (
             <>
               <div className="bo-dishAddRow" data-slot="menuSectionEditor-dishAddRow">
                 <div className="bo-dishSearchWrap" data-slot="menuSectionEditor-dishSearchWrap">
