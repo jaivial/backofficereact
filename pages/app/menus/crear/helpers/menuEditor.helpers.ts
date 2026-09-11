@@ -11,7 +11,7 @@ import type {
 import type { GroupMenuV2, GroupMenuV2AIDish, GroupMenuV2AIImages, GroupMenuV2Dish, GroupMenuV2Section } from "../../../../../api/types";
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB, MENU_AI_TRACE_PREFIX } from "../constants/menuEditor.constants";
 // Coordination id: dessert_section_source_v1
-import { normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
+import { isGeneralDessertSection, normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
 
 // =============================================================================
 // Debug / Logging
@@ -790,6 +790,22 @@ export function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {
     // Coordination id: dessert_section_source_v1
     read_only: d.read_only === true,
   };
+}
+
+// Coordination id: dessert_section_source_v1
+// A general-carta mirror owns no dish rows of its own, so a structure reconcile
+// must adopt the server dish list instead of the (possibly empty) local copy.
+// Local edits that have not been confirmed yet are preserved.
+export function mirrorShouldAdoptServerDishes(
+  mapped: Pick<EditorSection, "kind" | "dessertSource" | "dishes">,
+  local: Pick<EditorSection, "dishes"> | undefined,
+  savedFingerprint: string | undefined,
+): boolean {
+  if (!isGeneralDessertSection(mapped.kind, mapped.dessertSource)) return false;
+  const localHasEdits = !!local
+    && local.dishes.length > 0
+    && getSectionDishesFingerprint(local as EditorSection) !== (savedFingerprint ?? "");
+  return !localHasEdits;
 }
 
 export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): EditorSection {
