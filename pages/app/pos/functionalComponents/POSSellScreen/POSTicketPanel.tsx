@@ -119,7 +119,7 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
                 data-testid={`pos-line-${line.id}`}
               >
                 <div className="pos-line__actions" data-testid={`pos-line-actions-${line.id}`}>
-                  <button className="pos-line__qtyBtn" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); onLineQuantity(line, line.quantity - 1); }} aria-label={`Restar ${line.productName}`} data-testid={`pos-line-minus-${line.id}`}><Minus className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-minus-icon-${line.id}`} /></button>
+                  <button className="pos-line__qtyBtn" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); if (line.quantity <= 1) { onVoidLine(line); return; } onLineQuantity(line, line.quantity - 1); }} aria-label={line.quantity <= 1 ? `Anular ${line.productName}` : `Restar ${line.productName}`} title={line.quantity <= 1 ? "Anular línea" : undefined} data-testid={`pos-line-minus-${line.id}`}><Minus className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-minus-icon-${line.id}`} /></button>
                   <span className="pos-line__qty" data-testid={`pos-line-qty-${line.id}`}>{line.quantity}</span>
                   <button className="pos-line__qtyBtn" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); onLineQuantity(line, line.quantity + 1); }} aria-label={`Sumar ${line.productName}`} data-testid={`pos-line-plus-${line.id}`}><Plus className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-plus-icon-${line.id}`} /></button>
                 </div>

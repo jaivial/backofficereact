@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 /**
  * Reusable command guard for POS mutations: one idempotency key per user
@@ -9,6 +9,7 @@ import { useCallback, useRef } from "react";
 export function usePOSCommand() {
   const inFlight = useRef(new Set<string>());
   const keys = useRef(new Map<string, string>());
+  const [busy, setBusy] = useState(false);
 
   const isInFlight = useCallback((command: string) => inFlight.current.has(command), []);
 
@@ -25,14 +26,16 @@ export function usePOSCommand() {
   const run = useCallback(async <T,>(command: string, fn: (key: string) => Promise<T>): Promise<T | undefined> => {
     if (inFlight.current.has(command)) return undefined;
     inFlight.current.add(command);
+    setBusy(true);
     try {
       const result = await fn(keyFor(command));
       keys.current.delete(command);
       return result;
     } finally {
       inFlight.current.delete(command);
+      setBusy(inFlight.current.size > 0);
     }
   }, [keyFor]);
 
-  return { isInFlight, keyFor, clear, run };
+  return { isInFlight, keyFor, clear, run, busy };
 }
