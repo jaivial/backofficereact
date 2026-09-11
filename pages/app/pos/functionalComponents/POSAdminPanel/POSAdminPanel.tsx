@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, RefreshCw } from "lucide-react";
+import { money } from "../../utils/money";
 
 type Mode = "catalog" | "stock" | "reports" | "settings";
 type Exception = { id: number; ticketId: number; productName: string; code: string; message: string; status: string };
@@ -16,7 +17,7 @@ type PosHealth = { openVisits: number; oldOpenVisits: number; openStockException
 type Anomaly = { id: number; ticketId: number; ticketNumber: string; stockItemId: number; itemName: string; warehouseId: number; warehouseName: string; quantityAfter: number; status: string; createdAt: string };
 
 async function posRequest<T>(path: string, init?: RequestInit): Promise<T> { const headers=new Headers(init?.headers);headers.set("Content-Type","application/json");const response=await fetch(`/api/admin/pos${path}`,{...init,credentials:"include",headers});const body=await response.json();if(!response.ok||!body.success)throw new Error(body.message||"Error TPV");return body as T; }
-function money(cents:number){return new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format((cents||0)/100)}
+
 
 export function POSAdminPanel({mode,onChanged}:{mode:Mode;onChanged:()=>void|Promise<void>}){
  const [name,setName]=useState("");const [price,setPrice]=useState("");const [message,setMessage]=useState("");const [error,setError]=useState("");

@@ -9,6 +9,7 @@ import { KitchenSettings } from "./functionalComponents/KitchenSettings/KitchenS
 import { CardReconciliation } from "./functionalComponents/CardReconciliation/CardReconciliation";
 import { CashControl } from "./functionalComponents/CashControl/CashControl";
 import { usePOSCashDay, isValidPOSDate } from "./hooks/usePOSCashDay";
+import { money } from "./utils/money";
 import { POSNoCashDayModal } from "./functionalComponents/CashDay/POSNoCashDayModal";
 import { POSUnclosedDaysModal } from "./functionalComponents/CashDay/POSUnclosedDaysModal";
 import { POSCalendarModal } from "./functionalComponents/CashDay/POSCalendarModal";
@@ -44,8 +45,6 @@ async function stockRequest<T>(path: string): Promise<T> {
   if (!response.ok || !body.success) throw new Error(body.message || "Error de stock");
   return body as T;
 }
-function money(cents: number): string { return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format((cents || 0) / 100); }
-
 function dateFromLocation(): string | null {
   if (typeof window === "undefined") return null;
   const value = new URLSearchParams(window.location.search).get("date");
