@@ -64,14 +64,19 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
   // arrives, not the one captured when the socket was opened.
   const dateRef = useRef<string | null>(date);
   dateRef.current = date;
+  // Latest-wins guard: a slow `/cash-days/current` for a previously picked day
+  // must never overwrite the day the operator has since selected.
+  const refreshSeqRef = useRef(0);
 
   const refresh = useCallback(async () => {
+    const seq = ++refreshSeqRef.current;
     setLoading(true);
     try {
       // Once the backend has resolved the business date, stay on it: a refresh
       // must not silently jump to another day because the URL carried none.
       const scope = isValidPOSDate(requestedDate) ? requestedDate : dateRef.current;
       const response = await api.pos.cashDays.current(scope ? { date: scope } : undefined);
+      if (seq !== refreshSeqRef.current) return;
       if (!response.success) {
         setError(response.message || "No se pudo cargar el día de caja");
         return;
@@ -82,9 +87,10 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
       setTotals((current) => totalsOf(response.cashDay, current));
       setUnclosedPrevious(response.unclosedPrevious || []);
     } catch (reason) {
+      if (seq !== refreshSeqRef.current) return;
       setError(reason instanceof Error ? reason.message : "No se pudo cargar el día de caja");
     } finally {
-      setLoading(false);
+      if (seq === refreshSeqRef.current) setLoading(false);
     }
   }, [api, requestedDate]);
 
@@ -164,9 +170,13 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
       return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No se pudo abrir la caja");
+      // A 409 UNCLOSED_PREVIOUS_DAYS carries the pending days, but the request
+      // helper discards the body; re-reading `/current` populates the list so
+      // the gate can offer the force-open path instead of stranding the user.
+      await refresh();
       return false;
     }
-  }, [api, date]);
+  }, [api, date, refresh]);
 
   const closeDay = useCallback(async (params: { countedCashCents: number; notes?: string; discrepancyReason?: string }) => {
     if (!cashDay) {

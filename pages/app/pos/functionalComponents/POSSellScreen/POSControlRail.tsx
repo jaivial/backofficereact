@@ -58,20 +58,21 @@ export function POSControlRail({ onAction, disabledReasons = {}, readOnly = fals
           {RAIL_FEATURES.filter((feature) => feature.group === group).map((feature) => {
             const reason = readOnly ? "Día cerrado: solo consulta." : disabledReasons[feature.key];
             return (
-              <button
-                className={feature.accent ? "pos-rail__btn pos-rail__btn--accent" : "pos-rail__btn"}
-                type="button"
-                key={feature.key}
-                disabled={Boolean(reason)}
-                title={reason}
-                aria-describedby={reason ? `pos-rail-reason-${feature.key}` : undefined}
-                onClick={() => onAction(feature.key)}
-                data-pos-command={feature.key}
-                data-testid={`pos-rail-${feature.key}`}
-              >
-                {feature.label}
+              <React.Fragment key={feature.key}>
+                <button
+                  className={feature.accent ? "pos-rail__btn pos-rail__btn--accent" : "pos-rail__btn"}
+                  type="button"
+                  disabled={Boolean(reason)}
+                  title={reason}
+                  aria-describedby={reason ? `pos-rail-reason-${feature.key}` : undefined}
+                  onClick={() => onAction(feature.key)}
+                  data-pos-command={feature.key}
+                  data-testid={`pos-rail-${feature.key}`}
+                >
+                  {feature.label}
+                </button>
                 {reason ? <span id={`pos-rail-reason-${feature.key}`} className="pos-rail__reason" data-testid={`pos-rail-reason-${feature.key}`}>{reason}</span> : null}
-              </button>
+              </React.Fragment>
             );
           })}
         </div>

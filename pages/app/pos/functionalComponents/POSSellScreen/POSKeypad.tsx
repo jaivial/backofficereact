@@ -22,7 +22,7 @@ function calcEval(expr: string): string {
 }
 
 /** Contextual numeric keypad with calculator operators column. OK doubles as equals. */
-export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLabel, onMultiplier, multiplierQty, onClearMultiplier, readOnly = false, testIdPrefix = "" }: {
+export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLabel, onMultiplier, multiplierQty, onClearMultiplier, readOnly = false, testIdPrefix = "", resetKey }: {
   value: string;
   onChange: (next: string) => void;
   contextLabel: string;
@@ -38,8 +38,11 @@ export function POSKeypad({ value, onChange, contextLabel, onConfirm, confirmLab
   readOnly?: boolean;
   /** Keeps the embedded keypad's test ids unique when reused inside a modal. */
   testIdPrefix?: string;
+  /** Line/context identity: changing it clears the pending calculator expression. */
+  resetKey?: string | number;
 }) {
   const [calcExpr, setCalcExpr] = React.useState("");
+  React.useEffect(() => { setCalcExpr(""); }, [resetKey]);
   const tid = (id: string) => `${testIdPrefix}${id}`;
 
   const press = (key: string) => {

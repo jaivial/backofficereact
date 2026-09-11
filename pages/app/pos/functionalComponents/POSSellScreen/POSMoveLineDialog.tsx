@@ -7,9 +7,11 @@ import { money, type Ticket, type TicketLine } from "../../hooks/usePOSRegister"
  * Chooses the destination split ticket and the quantity for a line move.
  * Replaces the old always-first-target, always-full-quantity shortcut.
  */
-export function POSMoveLineDialog({ line, targets, tableName, busy = false, error, onClose, onConfirm }: {
+export function POSMoveLineDialog({ line, targets, allTickets, tableName, busy = false, error, onClose, onConfirm }: {
   line: TicketLine | null;
   targets: Ticket[];
+  /** Full split list, so the label matches the tab numbering (which counts the current ticket too). */
+  allTickets?: Ticket[];
   tableName?: string;
   busy?: boolean;
   error?: string;
@@ -19,6 +21,11 @@ export function POSMoveLineDialog({ line, targets, tableName, busy = false, erro
   const [targetId, setTargetId] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const maxQuantity = line?.quantity ?? 1;
+  const numberById = useMemo(() => {
+    const map = new Map<number, number>();
+    (allTickets ?? targets).forEach((entry, index) => map.set(entry.id, index + 1));
+    return map;
+  }, [allTickets, targets]);
 
   useEffect(() => {
     if (!line) return;
@@ -38,7 +45,7 @@ export function POSMoveLineDialog({ line, targets, tableName, busy = false, erro
             <label className="pos-modal__choice" key={target.id} data-testid={`pos-move-target-${target.id}`}>
               <input type="radio" name="pos-move-target" checked={targetId === target.id} onChange={() => setTargetId(target.id)} data-testid={`pos-move-target-radio-${target.id}`} />
               <span>
-                <strong data-testid={`pos-move-target-name-${target.id}`}>Cuenta {index + 1}{tableName ? ` · ${tableName}` : ""}</strong>
+                <strong data-testid={`pos-move-target-name-${target.id}`}>Cuenta {numberById.get(target.id) ?? index + 1}{tableName ? ` · ${tableName}` : ""}</strong>
                 <small data-testid={`pos-move-target-total-${target.id}`}>{money(target.totalGrossCents)}</small>
               </span>
             </label>
