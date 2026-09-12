@@ -15,6 +15,8 @@ type EmailProviderConfigInnerProps = {
     gmailAppPassword: string;
     gmailFromEmail: string;
     isActive: boolean;
+    hasSmtpPassword?: boolean;
+    hasGmailAppPassword?: boolean;
   };
   setField: (key: string, value: unknown) => void;
   save: () => Promise<boolean>;
@@ -49,11 +51,14 @@ function EmailProviderConfigInner({ config, setField, save, load, saving, pushTo
         config.smtpHost.trim() !== "" &&
         config.smtpPort > 0 &&
         config.smtpUsername.trim() !== "" &&
-        config.smtpPassword.trim() !== "" &&
+        (config.hasSmtpPassword === true || config.smtpPassword.trim() !== "") &&
         config.smtpFromEmail.trim() !== ""
       );
     }
-    return config.gmailFromEmail.trim() !== "" && config.gmailAppPassword.trim() !== "";
+    return (
+      config.gmailFromEmail.trim() !== "" &&
+      (config.hasGmailAppPassword === true || config.gmailAppPassword.trim() !== "")
+    );
   }, [isSmtp, config]);
 
   const handleField = useCallback(
@@ -151,7 +156,7 @@ function EmailProviderConfigInner({ config, setField, save, load, saving, pushTo
                 className="bo-input"
                 value={config.smtpPassword}
                 onChange={(e) => handleField("smtpPassword", e.target.value)}
-                placeholder="••••••••"
+                placeholder={config.hasSmtpPassword ? "•••••••• (dejar en blanco para no cambiar)" : "••••••••"}
                 disabled={saving}
                 data-testid="email-smtp-password"
               />
@@ -215,7 +220,7 @@ function EmailProviderConfigInner({ config, setField, save, load, saving, pushTo
                 className="bo-input"
                 value={config.gmailAppPassword}
                 onChange={(e) => handleField("gmailAppPassword", e.target.value)}
-                placeholder="••••••••••••"
+                placeholder={config.hasGmailAppPassword ? "•••••••••••• (dejar en blanco para no cambiar)" : "••••••••••••"}
                 disabled={saving}
                 data-testid="email-gmail-app-password"
               />
