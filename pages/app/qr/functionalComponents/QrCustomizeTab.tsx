@@ -9,6 +9,7 @@ import { Button } from "../../../../ui/actions/Button";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { Select } from "../../../../ui/inputs/Select";
+import { QrEmptyState } from "../../../../ui/qr/QrEmptyState";
 import { QrTemplateFrame } from "../../../../ui/qr/QrTemplateFrame";
 
 export type QrCustomizeTabProps = {
@@ -33,6 +34,9 @@ type CustomizeAction = "png" | "jpeg" | "pdf" | "svg" | "print";
  * Minimal layout: preview + three buttons; template picker and the remaining
  * options stay collapsed until requested.
  *
+ * The QR bitmap is cached separately from the composed SVG so editing the
+ * caption/brand only re-renders the frame, never the QR itself.
+ *
  * Observational points:
  *  - `qr-page:website-fetch` → default link (from Admin config).
  *  - `qr-page:generate`      → preview container.
@@ -45,11 +49,13 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
   const [category, setCategory] = useState<QrTemplateCategory>(QR_TEMPLATES[0].category);
   const [caption, setCaption] = useState("");
   const [brand, setBrand] = useState("");
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [svg, setSvg] = useState<string | null>(null);
   const [templatesOpen, setTemplatesOpen] = useState(false);
-  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(!website);
   const [busy, setBusy] = useState<CustomizeAction | null>(null);
   const { pushToast } = useToasts();
+  const hasUrl = url.trim().length > 0;
 
   const activeTemplate = useMemo(
     () => QR_TEMPLATES.find((template) => template.id === templateId) ?? QR_TEMPLATES[0],
@@ -64,21 +70,33 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
     [],
   );
 
+  // QR bitmap: only depends on the link.
   useEffect(() => {
+    if (!hasUrl) {
+      setQrDataUrl(null);
+      return;
+    }
     let active = true;
-    setSvg(null);
     toDataUrl(url, { size: 1024 })
-      .then((qrDataUrl) => {
-        if (!active) return;
-        setSvg(buildTemplateSvg({ templateId, ratioId, qrDataUrl, caption, brand }));
+      .then((dataUrl) => {
+        if (active) setQrDataUrl(dataUrl);
       })
       .catch(() => {
-        if (active) setSvg(null);
+        if (active) setQrDataUrl(null);
       });
     return () => {
       active = false;
     };
-  }, [url, templateId, ratioId, caption, brand]);
+  }, [url, hasUrl]);
+
+  // Composed frame: depends on the QR bitmap plus the template/caption inputs.
+  useEffect(() => {
+    if (!qrDataUrl) {
+      setSvg(null);
+      return;
+    }
+    setSvg(buildTemplateSvg({ templateId, ratioId, qrDataUrl, caption, brand }));
+  }, [qrDataUrl, templateId, ratioId, caption, brand]);
 
   const filename = `qr-${templateId}-${ratioId}`;
 
@@ -100,7 +118,13 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
   return (
     <div className="qr-screen" data-testid="qr-customize-tab" data-ui="qr-customize-tab">
       <div className="qr-previewCard" data-testid="qr-customize-preview-card" data-slot="qr-customize-preview-card" data-coord-id="qr-page:generate">
-        {svg ? (
+        {!hasUrl ? (
+          <QrEmptyState
+            message="Sin enlace para generar el QR"
+            hint="Configura la web del restaurante en Ajustes o edítala en Opciones."
+            data-testid="qr-customize-empty"
+          />
+        ) : svg ? (
           <QrTemplateFrame svg={svg} className="qr-frame" data-testid="qr-customize-preview" />
         ) : (
           <div className="qr-frame qr-frame--empty" data-testid="qr-customize-preview-placeholder" data-slot="qr-customize-preview-placeholder">
@@ -109,11 +133,13 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
         )}
       </div>
 
-      <p className="qr-caption" data-testid="qr-customize-active-template" data-slot="qr-customize-active-template">
-        {activeTemplate.name}
-      </p>
+      {hasUrl ? (
+        <p className="qr-caption" data-testid="qr-customize-active-template" data-slot="qr-customize-active-template">
+          {activeTemplate.name}
+        </p>
+      ) : null}
 
-      <div className="qr-toolbar" data-testid="qr-customize-actions" data-slot="qr-customize-actions" data-coord-id="qr-page:export">
+      <div className="qr-toolbar" data-testid="qr-customize-actions" data-slot="qr-customize-actions" data-coord-id="qr-page:export" aria-busy={busy !== null}>
         <Button
           variant={templatesOpen ? "primary" : "secondary"}
           size="sm"
@@ -138,6 +164,7 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
           label="Descargar"
           triggerClassName="bo-btn bo-btn--primary bo-btn--sm"
           triggerDataSlot="qr-customize-download"
+          triggerDataTestId="qr-customize-download"
           triggerContent={
             <>
               <Download size={16} strokeWidth={1.8} data-testid="qr-customize-download-icon" />
@@ -145,17 +172,17 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
             </>
           }
           items={[
-            { id: "png", label: "PNG", icon: <FileImage size={16} strokeWidth={1.8} />, onSelect: () => void run("png") },
-            { id: "jpeg", label: "JPEG", icon: <FileImage size={16} strokeWidth={1.8} />, onSelect: () => void run("jpeg") },
-            { id: "pdf", label: "PDF", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => void run("pdf") },
-            { id: "svg", label: "SVG", icon: <FileCode size={16} strokeWidth={1.8} />, onSelect: () => void run("svg") },
-            { id: "print", label: "Imprimir", icon: <Printer size={16} strokeWidth={1.8} />, onSelect: () => void run("print") },
+            { id: "png", label: "PNG", testId: "qr-customize-download-png", icon: <FileImage size={16} strokeWidth={1.8} />, onSelect: () => void run("png") },
+            { id: "jpeg", label: "JPEG", testId: "qr-customize-download-jpeg", icon: <FileImage size={16} strokeWidth={1.8} />, onSelect: () => void run("jpeg") },
+            { id: "pdf", label: "PDF", testId: "qr-customize-download-pdf", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => void run("pdf") },
+            { id: "svg", label: "SVG", testId: "qr-customize-download-svg", icon: <FileCode size={16} strokeWidth={1.8} />, onSelect: () => void run("svg") },
+            { id: "print", label: "Imprimir", testId: "qr-customize-print", icon: <Printer size={16} strokeWidth={1.8} />, onSelect: () => void run("print") },
           ]}
         />
       </div>
 
       {templatesOpen ? (
-        <div className="qr-options" data-testid="qr-customize-templates" data-slot="qr-customize-templates">
+        <div className="qr-options" data-testid="qr-customize-templates" data-slot="qr-customize-templates" role="group" aria-label="Plantillas del QR">
           <div className="qr-field" data-testid="qr-customize-categories" data-slot="qr-customize-categories">
             <span data-testid="qr-customize-categories-caption" data-slot="qr-customize-categories-caption">Categorias</span>
             <div className="qr-chips" data-testid="qr-customize-category-list" data-slot="qr-customize-category-list">
@@ -194,7 +221,7 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
       ) : null}
 
       {optionsOpen ? (
-        <div className="qr-options" data-testid="qr-customize-options" data-slot="qr-customize-options">
+        <div className="qr-options" data-testid="qr-customize-options" data-slot="qr-customize-options" role="group" aria-label="Opciones del QR">
           <label className="qr-field" data-testid="qr-customize-url-label" data-slot="qr-customize-url-label">
             <span data-slot="qr-customize-url-caption">Enlace del QR</span>
             <input
