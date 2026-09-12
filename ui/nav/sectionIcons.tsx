@@ -13,6 +13,7 @@ import {
   Megaphone,
   MonitorSmartphone,
   Boxes,
+  QrCode,
   Receipt,
   Server,
   Settings,
@@ -68,6 +69,8 @@ export function iconForSidebarItemKey(key: SidebarItemKey, options: BOIconOption
       return <Mails size={size} strokeWidth={strokeWidth} data-ui="section-campanas-icon" />;
     case "anuncios":
       return <Megaphone size={size} strokeWidth={strokeWidth} data-ui="section-anuncios-icon" />;
+    case "qr":
+      return <QrCode size={size} strokeWidth={strokeWidth} data-ui="section-qr-icon" />;
     default:
       return <Settings size={size} strokeWidth={strokeWidth} />;
   }
