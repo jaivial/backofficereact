@@ -7,6 +7,7 @@ import { Button } from "../../../../ui/actions/Button";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { QrCode } from "../../../../ui/qr/QrCode";
+import { QrEmptyState } from "../../../../ui/qr/QrEmptyState";
 
 export type QrGeneralTabProps = {
   website: string;
@@ -26,12 +27,13 @@ type GeneralAction = "png" | "pdf" | "print";
  */
 export function QrGeneralTab({ website }: QrGeneralTabProps): React.ReactElement {
   const [url, setUrl] = useState(website);
-  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(!website);
   const [busy, setBusy] = useState<GeneralAction | null>(null);
   const { pushToast } = useToasts();
+  const hasUrl = url.trim().length > 0;
 
   async function run(action: GeneralAction) {
-    if (busy) return;
+    if (busy || !hasUrl) return;
     setBusy(action);
     try {
       const svg = await toSvgString(url, { size: 1024 });
@@ -48,14 +50,24 @@ export function QrGeneralTab({ website }: QrGeneralTabProps): React.ReactElement
   return (
     <div className="qr-screen" data-testid="qr-general-tab" data-ui="qr-general-tab">
       <div className="qr-previewCard" data-testid="qr-general-preview" data-slot="qr-general-preview" data-coord-id="qr-page:generate">
-        <QrCode value={url} size={300} alt="Codigo QR de la pagina web" data-testid="qr-general-code" />
+        {hasUrl ? (
+          <QrCode value={url} size={300} alt="Codigo QR de la pagina web" data-testid="qr-general-code" />
+        ) : (
+          <QrEmptyState
+            message="Sin enlace para generar el QR"
+            hint="Configura la web del restaurante en Ajustes o edítala en Opciones."
+            data-testid="qr-general-empty"
+          />
+        )}
       </div>
 
-      <p className="qr-caption" data-testid="qr-general-default-url" data-slot="qr-general-default-url">
-        {url || "Sin enlace configurado"}
-      </p>
+      {hasUrl ? (
+        <p className="qr-caption" data-testid="qr-general-default-url" data-slot="qr-general-default-url">
+          {url}
+        </p>
+      ) : null}
 
-      <div className="qr-toolbar" data-testid="qr-general-actions" data-slot="qr-general-actions" data-coord-id="qr-page:export">
+      <div className="qr-toolbar" data-testid="qr-general-actions" data-slot="qr-general-actions" data-coord-id="qr-page:export" aria-busy={busy !== null}>
         <Button
           variant={optionsOpen ? "primary" : "secondary"}
           size="sm"
@@ -70,6 +82,7 @@ export function QrGeneralTab({ website }: QrGeneralTabProps): React.ReactElement
           label="Descargar"
           triggerClassName="bo-btn bo-btn--primary bo-btn--sm"
           triggerDataSlot="qr-general-download"
+          triggerDataTestId="qr-general-download"
           triggerContent={
             <>
               <Download size={16} strokeWidth={1.8} data-testid="qr-general-download-icon" />
@@ -77,15 +90,15 @@ export function QrGeneralTab({ website }: QrGeneralTabProps): React.ReactElement
             </>
           }
           items={[
-            { id: "png", label: "PNG", icon: <FileImage size={16} strokeWidth={1.8} />, onSelect: () => void run("png") },
-            { id: "pdf", label: "PDF", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => void run("pdf") },
-            { id: "print", label: "Imprimir", icon: <Printer size={16} strokeWidth={1.8} />, onSelect: () => void run("print") },
+            { id: "png", label: "PNG", testId: "qr-general-download-png", icon: <FileImage size={16} strokeWidth={1.8} />, onSelect: () => void run("png") },
+            { id: "pdf", label: "PDF", testId: "qr-general-download-pdf", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => void run("pdf") },
+            { id: "print", label: "Imprimir", testId: "qr-general-print", icon: <Printer size={16} strokeWidth={1.8} />, onSelect: () => void run("print") },
           ]}
         />
       </div>
 
       {optionsOpen ? (
-        <div className="qr-options" data-testid="qr-general-options" data-slot="qr-general-options">
+        <div className="qr-options" data-testid="qr-general-options" data-slot="qr-general-options" role="group" aria-label="Opciones del QR">
           <label className="qr-field" data-testid="qr-general-url-label" data-slot="qr-general-url-label">
             <span data-slot="qr-general-url-caption">Enlace del QR</span>
             <input
