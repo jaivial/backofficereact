@@ -656,14 +656,55 @@
 .bo-reservasColumnsList {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 18px;
-  max-height: min(60vh, 460px);
+  gap: 8px 14px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  max-height: min(62vh, 480px);
   overflow-y: auto;
-  padding-right: 4px;
+  padding: 2px 4px;
 }
 
-@media (max-width: 520px) {
+/* Each option is a left-aligned row (label left, switch right) and the two
+   columns stay centered as a block inside the modal. */
+.bo-reservasColumnsItem {
+  padding: 9px 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  background: var(--bo-surface-2);
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.bo-reservasColumnsItem:hover {
+  border-color: var(--bo-border-2);
+  background: var(--bo-surface-3, var(--bo-surface-2));
+}
+
+.bo-reservasColumnsItem .bo-switchRow {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.bo-reservasColumnsItem .bo-switchRow .bo-label {
+  order: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-reservasColumnsItem .bo-switchRow .bo-sc-switch {
+  order: 2;
+}
+
+/* Keep two columns even on small screens (the block just gets narrower). */
+@media (max-width: 420px) {
   .bo-reservasColumnsList {
-    grid-template-columns: 1fr;
+    gap: 6px 8px;
+  }
+
+  .bo-reservasColumnsItem {
+    padding: 8px 8px;
   }
 }
