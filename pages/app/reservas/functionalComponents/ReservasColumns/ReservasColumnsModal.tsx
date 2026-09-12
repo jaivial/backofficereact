@@ -26,9 +26,9 @@ export function ReservasColumnsModal({
 }) {
   const selected = new Set(visible);
   return (
-    <Modal open={open} title="Columnas de la tabla" onClose={onClose} widthPx={440} className="bo-reservasColumnsModal" hideClose>
+    <Modal open={open} title="Columnas de la tabla" onClose={onClose} widthPx={640} className="bo-reservasColumnsModal" hideClose>
       <ModalHeader title="Columnas de la tabla" onClose={onClose} />
-      <p className="bo-muted" data-testid="reservas-columns-hint" style={{ margin: "4px 0 12px" }}>
+      <p className="bo-muted" data-testid="reservas-columns-hint" style={{ margin: "4px 0 14px", textAlign: "center" }}>
         Elige qué columnas quieres ver. Los cambios se aplican al instante en todas tus pestañas.
       </p>
       <div className="bo-reservasColumnsList" data-testid="reservas-columns-list">
