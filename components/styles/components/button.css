@@ -5,6 +5,21 @@
   transform: translateY(-1px);
 }
 
+/* Dropdown triggers styled as buttons size to their content instead of the
+   36px icon-only box of the default trigger. */
+.bo-btn.bo-actionBtn {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.bo-actionBtn.bo-btn--sm {
+  height: 32px;
+  padding: 0 12px;
+}
+
 .bo-btn--primary {
   border-color: rgba(185, 168, 255, 0.30);
   background: rgba(185, 168, 255, 0.16);

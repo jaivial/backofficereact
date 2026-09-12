@@ -255,10 +255,12 @@ function textNode(
   weight: number,
   family: string,
   maxWidth: number,
+  letterSpacing = 0,
 ): string {
   const estimate = content.length * size * (family === FAMILY_SERIF ? 0.5 : 0.56);
   const clamp = estimate > maxWidth ? ` textLength="${Math.round(maxWidth)}" lengthAdjust="spacingAndGlyphs"` : "";
-  return `<text x="${Math.round(x)}" y="${Math.round(y)}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="middle"${clamp} data-slot="qr-text">${esc(content)}</text>`;
+  const tracking = letterSpacing ? ` letter-spacing="${letterSpacing}"` : "";
+  return `<text x="${Math.round(x)}" y="${Math.round(y)}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="middle"${tracking}${clamp} data-slot="qr-text">${esc(content)}</text>`;
 }
 
 /** Readable ink for text sitting on an accent fill. */
@@ -288,7 +290,8 @@ function defsLayer(uid: string, accent: string, wash: Wash): string {
       ? 'x1="0" y1="0" x2="0" y2="1"'
       : 'x1="0" y1="0" x2="1" y2="1"';
   const tag = radial ? "radialGradient" : "linearGradient";
-  return `<defs data-slot="qr-defs"><${tag} id="${uid}-wash" ${geometry}>${stops}</${tag}></defs>`;
+  const shadow = `<filter id="${uid}-shadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.3" /></filter>`;
+  return `<defs data-slot="qr-defs"><${tag} id="${uid}-wash" ${geometry}>${stops}</${tag}>${shadow}</defs>`;
 }
 
 function borderLayer(width: number, height: number, short: number, accent: string, kind: BorderKind): string {
@@ -427,30 +430,32 @@ type BannerInput = {
 
 function bannerLayer(input: BannerInput): string {
   const { width, short, bandHeight, baseline, brand, accent, textColor, kind } = input;
-  if (kind === "none") {
-    return brand ? textNode(brand, width / 2, baseline, Math.round(short * 0.036), textColor, 700, FAMILY_SANS, width * 0.8) : "";
-  }
+  const label = brand?.trim() ? brand.trim().toUpperCase() : "";
+  const size = Math.round(short * 0.036);
+  const tracking = Math.max(1, Math.round(short * 0.0035));
+  if (!label) return "";
+  const text = (fill: string, y: number, maxWidth: number) => textNode(label, width / 2, y, size, fill, 700, FAMILY_SANS, maxWidth, tracking);
+
+  if (kind === "none") return text(textColor, baseline, width * 0.8);
+
   if (kind === "ribbon") {
     const notch = Math.round(bandHeight * 0.28);
     const half = Math.round(bandHeight * 0.55);
-    const text = brand ? textNode(brand, width / 2, baseline, Math.round(short * 0.036), onColor(accent), 700, FAMILY_SANS, width * 0.8) : "";
     return (
       node("rect", { x: 0, y: 0, width, height: bandHeight, fill: accent }, "qr-banner-ribbon") +
       node("path", { d: `M ${Math.round(width / 2 - half)} ${bandHeight} L ${Math.round(width / 2)} ${bandHeight + notch} L ${Math.round(width / 2 + half)} ${bandHeight} Z`, fill: accent }, "qr-banner-ribbon-notch") +
-      text
+      text(onColor(accent), baseline, width * 0.8)
     );
   }
   if (kind === "bar") {
     const bar = Math.max(6, Math.round(short * 0.018));
-    const text = brand ? textNode(brand, width / 2, baseline + bar, Math.round(short * 0.036), textColor, 700, FAMILY_SANS, width * 0.8) : "";
-    return node("rect", { x: 0, y: 0, width, height: bar, fill: accent }, "qr-banner-bar") + text;
+    return node("rect", { x: 0, y: 0, width, height: bar, fill: accent }, "qr-banner-bar") + text(textColor, baseline + bar, width * 0.8);
   }
-  const fontSize = Math.round(short * 0.036);
-  const plateW = Math.min(Math.round(width * 0.8), Math.round((brand ? brand.length * fontSize * 0.6 : width * 0.3) + fontSize * 1.8));
-  const text = brand ? textNode(brand, width / 2, baseline, fontSize, kind === "capsule" ? onColor(accent) : textColor, 700, FAMILY_SANS, plateW - fontSize) : "";
+  const plateW = Math.min(Math.round(width * 0.8), Math.round(label.length * size * 0.72 + size * 2.2));
   if (kind === "capsule") {
     return (
-      node("rect", { x: Math.round((width - plateW) / 2), y: Math.round(baseline - fontSize * 1.35), width: plateW, height: Math.round(fontSize * 1.95), rx: fontSize, fill: accent }, "qr-banner-capsule") + text
+      node("rect", { x: Math.round((width - plateW) / 2), y: Math.round(baseline - size * 1.35), width: plateW, height: Math.round(size * 1.95), rx: size, fill: accent }, "qr-banner-capsule") +
+      text(onColor(accent), baseline, plateW - size)
     );
   }
   return (
@@ -458,26 +463,142 @@ function bannerLayer(input: BannerInput): string {
       "rect",
       {
         x: Math.round((width - plateW) / 2),
-        y: Math.round(baseline - fontSize * 1.35),
+        y: Math.round(baseline - size * 1.35),
         width: plateW,
-        height: Math.round(fontSize * 1.95),
-        rx: Math.round(fontSize * 0.35),
+        height: Math.round(size * 1.95),
+        rx: Math.round(size * 0.35),
         fill: accent,
         "fill-opacity": 0.14,
         stroke: accent,
         "stroke-width": Math.max(2, Math.round(short * 0.003)),
       },
       "qr-banner-plate",
-    ) + text
+    ) + text(textColor, baseline, plateW - size)
   );
 }
 
-function qrLayer(size: number, pad: number, short: number, accent: string, qrDataUrl: string): string {
+// --- decorative layers (category signature, deterministic) ---------------------
+
+function matLayer(width: number, height: number, short: number, accent: string): string {
+  const m = Math.round(short * 0.1);
+  return node(
+    "rect",
+    {
+      x: m,
+      y: m,
+      width: width - m * 2,
+      height: height - m * 2,
+      rx: Math.round(short * 0.028),
+      fill: "#ffffff",
+      "fill-opacity": 0.05,
+      stroke: accent,
+      "stroke-opacity": 0.3,
+      "stroke-width": Math.max(2, Math.round(short * 0.002)),
+    },
+    "qr-decor-mat",
+  );
+}
+
+function bracketsLayer(width: number, height: number, short: number, accent: string): string {
+  const m = Math.round(short * 0.05);
+  const arm = Math.round(short * 0.085);
+  const w = Math.max(3, Math.round(short * 0.008));
+  const corners: Array<[number, number, number, number]> = [
+    [m, m, 1, 1],
+    [width - m, m, -1, 1],
+    [m, height - m, 1, -1],
+    [width - m, height - m, -1, -1],
+  ];
+  return corners
+    .map(([x, y, sx, sy]) =>
+      node(
+        "path",
+        { d: `M ${x} ${y + sy * arm} L ${x} ${y} L ${x + sx * arm} ${y}`, fill: "none", stroke: accent, "stroke-width": w, "stroke-linecap": "round", "stroke-linejoin": "round" },
+        "qr-decor-bracket",
+      ),
+    )
+    .join("");
+}
+
+const CONFETTI: Array<[number, number, number]> = [
+  [0.12, 0.17, 0.015],
+  [0.24, 0.11, 0.008],
+  [0.84, 0.15, 0.013],
+  [0.91, 0.25, 0.007],
+  [0.14, 0.83, 0.011],
+  [0.29, 0.89, 0.007],
+  [0.77, 0.86, 0.014],
+  [0.89, 0.77, 0.008],
+];
+
+function confettiLayer(width: number, height: number, short: number, accent: string): string {
+  return CONFETTI.map(([fx, fy, r], index) =>
+    node(
+      "circle",
+      { cx: Math.round(width * fx), cy: Math.round(height * fy), r: Math.max(4, Math.round(short * r)), fill: accent, "fill-opacity": index % 2 === 0 ? 0.85 : 0.45 },
+      "qr-decor-confetti",
+    ),
+  ).join("");
+}
+
+function progressLayer(width: number, height: number, short: number, accent: string): string {
+  const m = Math.round(width * 0.08);
+  const y = Math.round(height * 0.04);
+  const h = Math.max(6, Math.round(short * 0.012));
+  const track = width - m * 2;
+  return (
+    node("rect", { x: m, y, width: track, height: h, rx: h / 2, fill: accent, "fill-opacity": 0.22 }, "qr-decor-progress-track") +
+    node("rect", { x: m, y, width: Math.round(track * 0.34), height: h, rx: h / 2, fill: accent }, "qr-decor-progress-fill")
+  );
+}
+
+function rulesLayer(width: number, short: number, accent: string, y: number): string {
+  const w = Math.round(width * 0.2);
+  const h = Math.max(2, Math.round(short * 0.003));
+  return (
+    node("rect", { x: Math.round((width - w) / 2), y, width: w, height: h, rx: h, fill: accent }, "qr-decor-rule") +
+    node("rect", { x: Math.round((width - w * 0.7) / 2), y: y + h * 3, width: Math.round(w * 0.7), height: Math.max(1, h - 1), rx: 1, fill: accent, "fill-opacity": 0.55 }, "qr-decor-rule-thin")
+  );
+}
+
+function decorLayer(
+  category: QrTemplateCategory,
+  width: number,
+  height: number,
+  short: number,
+  accent: string,
+  baseline: number,
+  bandHeight: number,
+): string {
+  switch (category) {
+    case "photo-frame":
+      return bracketsLayer(width, height, short, accent);
+    case "instagram-post":
+      return confettiLayer(width, height, short, accent);
+    case "instagram-story":
+      return progressLayer(width, height, short, accent);
+    case "classic":
+      return rulesLayer(width, short, accent, Math.round(baseline + bandHeight * 0.55));
+    case "menu":
+      return rulesLayer(width, short, accent, Math.round(baseline + bandHeight * 0.35));
+    default:
+      return "";
+  }
+}
+
+function qrLayer(size: number, pad: number, short: number, accent: string, qrDataUrl: string, uid: string, radius: number): string {
   const x = -pad;
   const y = -pad;
   const plate = size + pad * 2;
+  const border = Math.max(2, Math.round(short * 0.0035));
+  const innerPad = border * 3;
   return (
-    node("rect", { x, y, width: plate, height: plate, rx: Math.round(short * 0.02), fill: "#ffffff", stroke: accent, "stroke-width": Math.max(2, Math.round(short * 0.003)) }, "qr-plate") +
+    node("rect", { x, y, width: plate, height: plate, rx: radius, fill: "#ffffff", stroke: accent, "stroke-width": border, filter: `url(#${uid}-shadow)` }, "qr-plate") +
+    node(
+      "rect",
+      { x: x + innerPad, y: y + innerPad, width: plate - innerPad * 2, height: plate - innerPad * 2, rx: Math.max(4, radius - innerPad), fill: "none", stroke: accent, "stroke-opacity": 0.32, "stroke-width": Math.max(1, Math.round(short * 0.0018)) },
+      "qr-plate-inner",
+    ) +
     node("image", { href: esc(qrDataUrl), x: 0, y: 0, width: size, height: size, preserveAspectRatio: "xMidYMid meet" }, "qr-image")
   );
 }
@@ -487,12 +608,22 @@ function captionLayer(width: number, height: number, short: number, bottom: numb
   const fontSize = Math.round(short * 0.04);
   const ruleWidth = Math.round(width * 0.14);
   const rule = node("rect", { x: (width - ruleWidth) / 2, y: Math.round(baseline - fontSize * 1.7), width: ruleWidth, height: Math.max(3, Math.round(short * 0.005)), rx: 3, fill: accent, "fill-opacity": 0.85 }, "qr-caption-rule");
-  return rule + textNode(caption, width / 2, baseline, fontSize, textColor, 400, FAMILY_SERIF, width * 0.82);
+  return rule + textNode(caption, width / 2, baseline, fontSize, textColor, 400, FAMILY_SERIF, width * 0.82, Math.round(short * 0.003));
 }
 
 // -------------------------------------------------------------- catalog export
 
 const RECIPES: Record<string, FrameRecipe> = {};
+
+/** Corner radius of the QR plate, as a fraction of the short side. */
+const PLATE_RADIUS: Record<QrTemplateCategory, number> = {
+  "photo-frame": 0.012,
+  "instagram-post": 0.045,
+  "instagram-story": 0.05,
+  minimal: 0.008,
+  classic: 0.012,
+  menu: 0.022,
+};
 
 function buildCatalog(): QrTemplate[] {
   const templates: QrTemplate[] = [];
@@ -545,14 +676,17 @@ export function buildTemplateSvg(options: BuildTemplateSvgOptions): string {
   const bandHeight = Math.min(Math.round(top * 0.62), Math.round(short * 0.09));
   const baseline = Math.round(top * 0.45);
   const uid = `${template.id}-${ratio.id.replace(/[^a-zA-Z0-9]+/g, "")}`;
+  const plateRadius = Math.round(short * PLATE_RADIUS[template.category]);
 
   const layers = [
     defsLayer(uid, template.accent, recipe.wash),
     node("rect", { x: 0, y: 0, width, height, fill: template.background }, "qr-background"),
     node("rect", { x: 0, y: 0, width, height, fill: `url(#${uid}-wash)` }, "qr-wash"),
+    template.category === "photo-frame" ? matLayer(width, height, short, template.accent) : "",
     borderLayer(width, height, short, template.accent, recipe.border),
     ornamentLayer(width, height, short, template.accent, recipe.ornament),
-    `<g transform="translate(${qrX} ${qrY})" data-slot="qr-qr-group">${qrLayer(size, pad, short, template.accent, options.qrDataUrl)}</g>`,
+    decorLayer(template.category, width, height, short, template.accent, baseline, bandHeight),
+    `<g transform="translate(${qrX} ${qrY})" data-slot="qr-qr-group">${qrLayer(size, pad, short, template.accent, options.qrDataUrl, uid, plateRadius)}</g>`,
     bannerLayer({ width, short, bandHeight, baseline, brand: options.brand, accent: template.accent, textColor: template.textColor, kind: recipe.banner }),
     options.caption ? captionLayer(width, height, short, bottom, options.caption, template.accent, template.textColor) : "",
   ];
