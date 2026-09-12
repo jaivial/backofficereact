@@ -1,4 +1,5 @@
 import type { RestaurantProfile, Ticket, TicketLine, Visit } from "../types/register";
+import { money } from "./money";
 
 export type ComandaPdfInput = {
   generatedAt: Date;
@@ -29,10 +30,6 @@ const GRAY_RULE = "#cccccc";
 
 const CHANNEL_LABELS: Record<string, string> = { BAR: "Barra", TAKEAWAY: "Para llevar", DELIVERY: "A domicilio", DINE_IN: "Sala" };
 const GREETING = "Gracias por su visita. ¡Hasta pronto!";
-
-function money(cents: number): string {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format((cents || 0) / 100);
-}
 
 function quantity(value: number): string {
   return new Intl.NumberFormat("es-ES", { maximumFractionDigits: 3 }).format(value);
@@ -69,7 +66,7 @@ export function vatBreakdown(lines: TicketLine[], totalGrossCents: number): Arra
   const grossByRate = new Map<number, number>();
   let linesGross = 0;
   for (const line of lines) {
-    if (!line.vatRate) continue;
+    if (line.vatRate === undefined || line.vatRate === null) continue;
     grossByRate.set(line.vatRate, (grossByRate.get(line.vatRate) || 0) + line.lineTotalGrossCents);
     linesGross += line.lineTotalGrossCents;
   }

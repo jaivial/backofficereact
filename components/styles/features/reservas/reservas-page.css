@@ -651,3 +651,19 @@
 }
 
 
+
+/* Column picker modal (reservas table). Coordination id: reservas_columns_realtime_v1 */
+.bo-reservasColumnsList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 18px;
+  max-height: min(60vh, 460px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+@media (max-width: 520px) {
+  .bo-reservasColumnsList {
+    grid-template-columns: 1fr;
+  }
+}

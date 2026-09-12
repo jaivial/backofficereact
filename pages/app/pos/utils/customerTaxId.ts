@@ -14,6 +14,11 @@ export function isValidCustomerTaxId(value: string): boolean {
   const digits = taxId.slice(1, 8).split("").map(Number);
   const sum = digits.reduce((total, digit, index) => total + (index % 2 === 0 ? Math.floor((digit * 2) / 10) + (digit * 2) % 10 : digit), 0);
   const control = (10 - (sum % 10)) % 10;
-  const expected = "JABCDEFGHI"[control];
-  return taxId[8] === String(control) || taxId[8] === expected;
+  const digitControl = String(control);
+  const letterControl = "JABCDEFGHI"[control];
+  // The issuer letter dictates the control type: A/B/E/H only accept a digit,
+  // K/P/Q/S/N/W only a letter, and the rest accept either.
+  if ("ABEH".includes(taxId[0])) return taxId[8] === digitControl;
+  if ("KPQSNW".includes(taxId[0])) return taxId[8] === letterControl;
+  return taxId[8] === digitControl || taxId[8] === letterControl;
 }

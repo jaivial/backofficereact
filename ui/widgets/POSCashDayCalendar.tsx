@@ -51,7 +51,7 @@ export function POSCashDayCalendar({ year, month, selectedDateISO, onSelectDate,
       try {
         const response = await api.pos.cashDays.list({ from, to });
         if (cancelled) return;
-        setDays(response.success ? response.items || [] : []);
+        setDays(response.success ? response.data || [] : []);
       } catch {
         // A month that fails to load reads as a month with no till activity,
         // which is also what an empty answer looks like. Blanking the picker
