@@ -6,16 +6,19 @@
 }
 
 /* Dropdown triggers styled as buttons size to their content instead of the
-   36px icon-only box of the default trigger. */
-.bo-btn.bo-actionBtn {
+   36/44px icon-only box of the default trigger. Prefixed with the app context
+   to outrank `:is(.bo-app,#bo-portal) .bo-actionBtn` regardless of order. */
+:is(.bo-app, #bo-portal) .bo-btn.bo-actionBtn {
   width: auto;
+  height: 40px;
+  padding: 0 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
 
-.bo-actionBtn.bo-btn--sm {
+:is(.bo-app, #bo-portal) .bo-actionBtn.bo-btn--sm {
   height: 32px;
   padding: 0 12px;
 }
