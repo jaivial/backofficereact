@@ -61,7 +61,7 @@ export function appVersionAtLeast(version: string, minimum: string): boolean {
  * reportes / estado_cuenta. Mirrors boAppVersion04Modules on the backend.
  */
 const VERSION_SECTION_ALLOWLIST: Partial<Record<AppVersion, BOSection[]>> = {
-  "0.4": ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas", "campanas", "anuncios"],
+  "0.4": ["reservas", "menus", "comida", "miembros", "horarios", "fichaje", "facturas", "campanas", "anuncios", "qr"],
 };
 
 const VERSION_CAPABILITY_ALLOWLIST: Partial<Record<AppVersion, AppCapability[]>> = {
