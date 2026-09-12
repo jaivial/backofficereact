@@ -3,9 +3,8 @@ import { Modal } from "../../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
 import { POSCashDayCalendar } from "../../../../../ui/widgets/POSCashDayCalendar";
 import { createClient } from "../../../../../api/client";
+import { money } from "../../utils/money";
 import type { POSCashDayTables } from "../../../../../api/types";
-
-const eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
 
 function monthOf(iso: string): { year: number; month: number } {
   const today = new Date();
@@ -89,14 +88,14 @@ export function POSCalendarModal({ open, onClose, activeDate, onChangeDate }: PO
                   <li className="pos-calendarModal__table" key={t.tableId ?? t.tableName} data-testid={`pos-calendar-table-${t.tableId ?? t.tableName}`}>
                     <div data-slot="pOSCalendarModal-pos-calendarModal-tableHead" className="pos-calendarModal__tableHead">
                       <strong data-testid={`pos-calendar-table-name-${t.tableId ?? t.tableName}`}>{t.tableName || "Sin mesa"}</strong>
-                      <span data-testid={`pos-calendar-table-total-${t.tableId ?? t.tableName}`}>{eur.format((t.totalGrossCents || 0) / 100)}</span>
+                      <span data-testid={`pos-calendar-table-total-${t.tableId ?? t.tableName}`}>{money(t.totalGrossCents || 0)}</span>
                     </div>
                     <span className="pos-calendarModal__covers" data-testid={`pos-calendar-table-covers-${t.tableId ?? t.tableName}`}>{t.covers} comensales · {t.visits.length} visita(s)</span>
                     <ul data-slot="pOSCalendarModal-pos-calendarModal-visits" className="pos-calendarModal__visits">
                       {t.visits.map((v) => (
                         <li key={v.visitId} data-testid={`pos-calendar-visit-${v.visitId}`}>
                           <span data-slot="pOSCalendarModal-span">{v.channel === "BAR" ? "Barra" : v.channel} · {v.status === "OPEN" ? "Abierta" : "Cerrada"} · {v.tickets.length} ticket(s)</span>
-                          <span data-testid={`pos-calendar-visit-total-${v.visitId}`}>{eur.format((v.totalGrossCents || 0) / 100)}</span>
+                          <span data-testid={`pos-calendar-visit-total-${v.visitId}`}>{money(v.totalGrossCents || 0)}</span>
                         </li>
                       ))}
                     </ul>

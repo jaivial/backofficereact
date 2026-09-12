@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid } from "lucide-react";
+import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical } from "lucide-react";
 import { createClient } from "../../../api/client";
 import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics } from "../../../api/types";
 import { sessionAtom } from "../../../state/atoms";
@@ -13,7 +13,7 @@ import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../ui/feedback/useToasts";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
-import { formatArrozShort, formatHHMM, formatPhone } from "../../../ui/lib/format";
+import { formatArrozShort, formatHHMM } from "../../../ui/lib/format";
 import { downloadReservationsPDF } from "../../../ui/lib/reservationsPdf";
 import logoUrl from "../../../ui/assets/logopdf.webp";
 import { MonthCalendar } from "../../../ui/widgets/MonthCalendar";
@@ -28,13 +28,24 @@ import { BookingDetailsPanel } from "./functionalComponents/BookingDetailsPanel"
 import { SearchResultsTable } from "./functionalComponents/SearchResultsTable";
 import { BookingsViewTabs, type ViewTabId } from "./functionalComponents/BookingsViewTabs/BookingsViewTabs";
 import { BookingCardGrid } from "./functionalComponents/BookingCardGrid/BookingCardGrid";
-import { bookingFloorDisplay, bookingSalonDisplay } from "./bookingLocation";
+import { ReservasColumnsModal } from "./functionalComponents/ReservasColumns/ReservasColumnsModal";
+import { useReservasColumnsRealtime } from "./functionalComponents/ReservasColumns/useReservasColumnsRealtime";
+import {
+  RESERVAS_COLUMNS,
+  RESERVAS_COLUMN_IDS,
+  normalizeVisibleColumns,
+  parseVisibleColumnsPreference,
+  type ReservasColumnCtx,
+  type ReservasColumnDef,
+  type ReservasColumnId,
+} from "./functionalComponents/ReservasColumns/columns";
 
 type DisplayMode = "tabla" | "grid";
 
 type PageData = {
   date: string;
   displayMode: DisplayMode;
+  visibleColumns: string;
   bookings: Booking[];
   floors: ConfigFloor[];
   total_count: number;
@@ -113,6 +124,7 @@ function normalizeBookings(v: unknown): Booking[] {
 
 const BookingRow = React.memo(function BookingRow({
   booking,
+  columns,
   onCancel,
   onEdit,
   onOpenDetails,
@@ -120,6 +132,7 @@ const BookingRow = React.memo(function BookingRow({
   busy,
 }: {
   booking: Booking;
+  columns: ReservasColumnDef[];
   onCancel: (b: Booking) => void;
   onEdit: (b: Booking) => void;
   onOpenDetails: (b: Booking) => void;
@@ -152,6 +165,15 @@ const BookingRow = React.memo(function BookingRow({
     }
   }, [booking, draftMesa, onSaveTable]);
 
+  const ctx: ReservasColumnCtx = {
+    added,
+    arroz,
+    draftMesa,
+    onDraftMesaChange: setDraftMesa,
+    onMesaBlur: () => void save(),
+    mesaDisabled: busy || saving,
+  };
+
   return (
     <tr
       data-slot="reservas-table-row"
@@ -161,30 +183,16 @@ const BookingRow = React.memo(function BookingRow({
         onOpenDetails(booking);
       }}
     >
-      <td className="col-added" data-slot="reservas-col-added">{added}</td>
-      <td className="col-mesa" onClick={(e) => e.stopPropagation()} data-slot="reservas-col-mesa">
-        <input
-          className="bo-input bo-input--xs bo-input--mesa"
-          value={draftMesa}
-          onChange={(e) => setDraftMesa(e.target.value)}
-          onBlur={() => void save()}
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-          disabled={busy || saving}
-          aria-label={`Mesa reserva #${booking.id}`}
-          data-testid={`reservas-page-mesa-${booking.id}`}
-        />
-      </td>
-      <td className="col-time" data-slot="reservas-col-time">{formatHHMM(booking.reservation_time)}</td>
-      <td className="col-client" data-slot="reservas-col-client">{booking.customer_name}</td>
-      <td className="col-status" data-slot="reservas-col-status">{booking.status === "confirmed" ? "Confirmada" : "Pendiente"}</td>
-      <td data-slot="reservas-col-floor">{bookingFloorDisplay(booking) || "—"}</td>
-      <td data-slot="reservas-col-salon">{bookingSalonDisplay(booking) || "—"}</td>
-      <td className="num" data-slot="reservas-num">{booking.party_size}</td>
-      <td className="col-children num" data-slot="reservas-num">{booking.children ?? 0}</td>
-      <td className="col-phone" data-slot="reservas-col-phone">{formatPhone(booking.contact_phone_country_code, booking.contact_phone)}</td>
-      <td className="col-rice" data-slot="reservas-col-rice">{arroz}</td>
-      <td className="col-comment" data-slot="reservas-col-comment">{booking.commentary || ""}</td>
+      {columns.map((col) => (
+        <td
+          key={col.id}
+          className={col.cellClass}
+          data-slot={`reservas-col-${col.id}`}
+          onClick={col.stopPropagation ? (e) => e.stopPropagation() : undefined}
+        >
+          {col.render(booking, ctx)}
+        </td>
+      ))}
       <td className="end" onClick={(e) => e.stopPropagation()} data-slot="reservas-end">
         <DropdownMenu
           label="Acciones"
@@ -206,6 +214,7 @@ export default function Page() {
   const data = (pageContext.data ?? {
     date: "",
     displayMode: "tabla" as DisplayMode,
+    visibleColumns: "",
     bookings: [],
     floors: [],
     total_count: 0,
@@ -258,6 +267,12 @@ export default function Page() {
   const [viewTab, setViewTab] = useState<ViewTabId>("activas");
   const [displayMode, setDisplayMode] = useState<DisplayMode>(data.displayMode === "grid" ? "grid" : "tabla");
 
+  // Visible table columns (tabla mode). Hydrated from the user's persisted
+  // preference and kept in sync in real time over the reservations WS.
+  // Coordination id: reservas_columns_realtime_v1
+  const [visibleColumns, setVisibleColumns] = useState<ReservasColumnId[]>(() => parseVisibleColumnsPreference(data.visibleColumns));
+  const [columnsModalOpen, setColumnsModalOpen] = useState(false);
+
   const [searchMode, setSearchMode] = useState(false);
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
   const [searchTotalCount, setSearchTotalCount] = useState(0);
@@ -271,6 +286,11 @@ export default function Page() {
   const dayVisibilityTransition = reduceMotion ? { duration: 0 } : { duration: 0.3, ease: "easeInOut" as const };
   const searchTotalPages = Math.max(1, Math.ceil(searchTotalCount / Math.max(1, searchCount)));
   const searchFadeTransition = reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" as const };
+
+  const tableColumns = useMemo(
+    () => RESERVAS_COLUMNS.filter((col) => visibleColumns.includes(col.id)),
+    [visibleColumns],
+  );
 
   const loadMonth = useCallback(async (year: number, month: number) => {
     if (!session) return;
@@ -422,6 +442,40 @@ export default function Page() {
       if (!res.success) pushToast({ kind: "error", title: "Preferencia", message: res.message || "No se pudo guardar" });
     });
   }, [api.auth, displayMode, session, setSession, pushToast]);
+
+  // Persists the visible columns for this user and broadcasts them so the
+  // user's other open tabs update without a reload.
+  // Coordination id: reservas_columns_realtime_v1
+  const persistColumns = useCallback((next: ReservasColumnId[]) => {
+    if (next.length === 0) return;
+    const value = next.join(",");
+    setVisibleColumns(next);
+    if (!session) return;
+    setSession((prev) => (prev ? { ...prev, preferences: { ...(prev.preferences ?? {}), reservasVisibleColumns: value } } : prev));
+    void api.auth.setPreference("reservasVisibleColumns", value).then((res) => {
+      if (!res.success) pushToast({ kind: "error", title: "Columnas", message: res.message || "No se pudo guardar" });
+    });
+  }, [api.auth, pushToast, session, setSession]);
+
+  const toggleColumn = useCallback((id: ReservasColumnId, next: boolean) => {
+    const selected = new Set(visibleColumns);
+    if (next) selected.add(id); else selected.delete(id);
+    const ordered = RESERVAS_COLUMN_IDS.filter((cid) => selected.has(cid));
+    // Never let the table end up with zero columns.
+    if (ordered.length === 0) return;
+    persistColumns(ordered);
+  }, [persistColumns, visibleColumns]);
+
+  const resetColumns = useCallback(() => persistColumns([...RESERVAS_COLUMN_IDS]), [persistColumns]);
+
+  useReservasColumnsRealtime({
+    userId: session?.user?.id ?? null,
+    onColumns: (columns) => {
+      const next = normalizeVisibleColumns(columns);
+      if (next.length > 0) setVisibleColumns(next);
+    },
+  });
+
   const onReactivate = useCallback(() => {
     void loadBookings({ date, status, q, sort, dir, page, count });
     void loadSummary(date);
@@ -665,13 +719,27 @@ export default function Page() {
                   />
                   {viewTab === "activas" ? (
                     <>
-                      <div className="bo-displayToggle" role="tablist" aria-label="Vista reservas" style={{ marginTop: 14 }} data-slot="reservas-display-toggle">
-                        <button type="button" role="tab" aria-selected={displayMode === "tabla"} className={`bo-displayToggleBtn${displayMode === "tabla" ? " is-active" : ""}`} onClick={() => changeDisplayMode("tabla")} data-testid="reservas-display-tabla">
-                          <TableIcon size={16} strokeWidth={1.8} /> <span>Tabla</span>
-                        </button>
-                        <button type="button" role="tab" aria-selected={displayMode === "grid"} className={`bo-displayToggleBtn${displayMode === "grid" ? " is-active" : ""}`} onClick={() => changeDisplayMode("grid")} data-testid="reservas-display-grid">
-                          <LayoutGrid size={16} strokeWidth={1.8} /> <span>Grid</span>
-                        </button>
+                      <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8 }} data-slot="reservas-display-row">
+                        <div className="bo-displayToggle" role="tablist" aria-label="Vista reservas" data-slot="reservas-display-toggle">
+                          <button type="button" role="tab" aria-selected={displayMode === "tabla"} className={`bo-displayToggleBtn${displayMode === "tabla" ? " is-active" : ""}`} onClick={() => changeDisplayMode("tabla")} data-testid="reservas-display-tabla">
+                            <TableIcon size={16} strokeWidth={1.8} /> <span>Tabla</span>
+                          </button>
+                          <button type="button" role="tab" aria-selected={displayMode === "grid"} className={`bo-displayToggleBtn${displayMode === "grid" ? " is-active" : ""}`} onClick={() => changeDisplayMode("grid")} data-testid="reservas-display-grid">
+                            <LayoutGrid size={16} strokeWidth={1.8} /> <span>Grid</span>
+                          </button>
+                        </div>
+                        {displayMode === "tabla" ? (
+                          <button
+                            type="button"
+                            className="bo-btn bo-btn--ghost"
+                            aria-label="Elegir columnas visibles"
+                            title="Columnas visibles"
+                            onClick={() => setColumnsModalOpen(true)}
+                            data-testid="reservas-columns-open"
+                          >
+                            <MoreVertical size={18} strokeWidth={1.8} />
+                          </button>
+                        ) : null}
                       </div>
                       {displayMode === "tabla" ? (
                         <div className="bo-tableWrap" style={{ marginTop: 10 }} data-slot="reservas-tableWrap">
@@ -679,27 +747,18 @@ export default function Page() {
                             <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas" data-slot="reservas-tabla-de-reservas">
                               <thead data-slot="reservas-thead">
                                 <tr data-slot="reservas-tr">
-                                  <th className="col-added" data-slot="reservas-col-added">Añadida</th>
-                                  <th className="col-mesa" data-slot="reservas-col-mesa">Mesa</th>
-                                  <th className="col-time" data-slot="reservas-col-time">Hora</th>
-                                  <th className="col-client" data-slot="reservas-col-client">Cliente</th>
-                                  <th className="col-status" data-slot="reservas-col-status">Estado</th>
-                                  <th data-slot="reservas-col-floor">Planta</th>
-                                  <th data-slot="reservas-col-salon">Salón</th>
-                                  <th className="num" data-slot="reservas-num">Pax</th>
-                                  <th className="col-children num" data-slot="reservas-num">Niños</th>
-                                  <th className="col-phone" data-slot="reservas-col-phone">Teléfono</th>
-                                  <th className="col-rice" data-slot="reservas-col-rice">Arroz</th>
-                                  <th className="col-comment" data-slot="reservas-col-comment">Comentario</th>
+                                  {tableColumns.map((col) => (
+                                    <th key={col.id} className={col.thClass} data-slot={`reservas-col-${col.id}`}>{col.label}</th>
+                                  ))}
                                   <th className="end" data-slot="reservas-end" />
                                 </tr>
                               </thead>
                               <tbody data-slot="reservas-tbody">
                                 {rows.map((b) => (
-                                  <BookingRow key={b.id} booking={b} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
+                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
                                 ))}
                                 {!rows.length ? (
-                                  <tr data-slot="reservas-tro"><td colSpan={13} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
+                                  <tr data-slot="reservas-tro"><td colSpan={tableColumns.length + 1} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
                                 ) : null}
                               </tbody>
                             </table>
@@ -750,6 +809,15 @@ export default function Page() {
       </AnimatePresence>
 
       <ConfirmDialog open={confirm.open} title="Cancelar reserva" message={confirm.booking ? `Cancelar la reserva #${confirm.booking.id} de ${confirm.booking.customer_name}?` : ""} confirmText="Cancelar" danger onClose={() => setConfirm({ open: false, booking: null })} onConfirm={doCancel} />
+
+      <ReservasColumnsModal
+        open={columnsModalOpen}
+        visible={visibleColumns}
+        busy={busy}
+        onToggle={toggleColumn}
+        onReset={resetColumns}
+        onClose={() => setColumnsModalOpen(false)}
+      />
 
       <Modal open={details.open} title="Reserva completa" onClose={closeDetails} widthPx={820} className="bo-reservasModal bo-reservasModal--details" hideClose>
         <ModalHeader title="Reserva completa" onClose={closeDetails} />
