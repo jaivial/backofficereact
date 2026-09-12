@@ -418,6 +418,16 @@
   width: 72px;
 }
 
+.bo-table--reservas th.col-highChairs,
+.bo-table--reservas td.col-highChairs {
+  width: 84px;
+}
+
+.bo-table--reservas th.col-strollers,
+.bo-table--reservas td.col-strollers {
+  width: 104px;
+}
+
 .bo-table--reservas th.col-phone,
 .bo-table--reservas td.col-phone {
   width: 130px;
