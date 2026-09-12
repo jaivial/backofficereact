@@ -18,7 +18,7 @@ const base = { year: 2026, month: 3, selectedDateISO: "2026-03-07", onSelectDate
 function mockList(items: unknown[]) {
   return vi.fn(async (input: RequestInfo | URL) => {
     void input;
-    return new Response(JSON.stringify({ success: true, items }));
+    return new Response(JSON.stringify({ success: true, data: items }));
   });
 }
 

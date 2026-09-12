@@ -5,16 +5,13 @@ import { AlertTriangle } from "lucide-react";
 import type { POSCashDay } from "../../../../../api/types";
 import { formatSpanishLongDate } from "./POSNoCashDayModal";
 import { POSForceOpenConfirmModal } from "./POSForceOpenConfirmModal";
+import { money } from "../../utils/money";
 
 /** RFC3339 openedAt → "08:30". Falls back to "—" so a missing time never reads as 00:00. */
 function formatTime(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-}
-
-function euros(cents: number | undefined): string {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format((cents ?? 0) / 100);
 }
 
 export type POSUnclosedDaysModalProps = {
@@ -77,7 +74,7 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
                   </div>
                   <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
                     <dt>Facturación</dt>
-                    <dd>{euros(day.totalGrossCents)}</dd>
+                    <dd>{money(day.totalGrossCents)}</dd>
                   </div>
                   <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
                     <dt>Afluencia</dt>
