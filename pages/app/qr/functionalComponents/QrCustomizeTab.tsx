@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Download, FileCode, FileImage, FileText, LayoutTemplate, Printer, Settings2 } from "lucide-react";
 
 import { toDataUrl } from "../../../../lib/qr/core";
 import { exportSvg, downloadSvg, printSvg } from "../../../../lib/qr/export";
@@ -6,6 +7,7 @@ import { QR_RATIOS } from "../../../../lib/qr/ratios";
 import { QR_TEMPLATES, buildTemplateSvg, type QrTemplateCategory } from "../../../../lib/qr/templates";
 import { Button } from "../../../../ui/actions/Button";
 import { useToasts } from "../../../../ui/feedback/useToasts";
+import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { Select } from "../../../../ui/inputs/Select";
 import { QrTemplateFrame } from "../../../../ui/qr/QrTemplateFrame";
 
@@ -14,9 +16,9 @@ export type QrCustomizeTabProps = {
 };
 
 const CATEGORY_LABELS: Record<QrTemplateCategory, string> = {
-  "photo-frame": "Marcos de foto",
-  "instagram-post": "Instagram post",
-  "instagram-story": "Instagram story",
+  "photo-frame": "Marcos",
+  "instagram-post": "Post",
+  "instagram-story": "Story",
   minimal: "Minimal",
   classic: "Clasico",
   menu: "Menu",
@@ -27,12 +29,14 @@ const CATEGORIES = Object.keys(CATEGORY_LABELS) as QrTemplateCategory[];
 type CustomizeAction = "png" | "jpeg" | "pdf" | "svg" | "print";
 
 /**
- * "Personalizar" tab — picks a base template + aspect ratio, adds an optional
- * caption/brand and exports the composed SVG as photo, PDF, SVG or print.
+ * "Personalizar" tab — pick a template + aspect ratio, then export.
+ * Minimal layout: preview + three buttons; template picker and the remaining
+ * options stay collapsed until requested.
  *
  * Observational points:
- *  - `qr-page:generate` → preview container (QR generation).
- *  - `qr-page:export`   → actions toolbar (exports emit `qr-export:*`).
+ *  - `qr-page:website-fetch` → default link (from Admin config).
+ *  - `qr-page:generate`      → preview container.
+ *  - `qr-page:export`        → download/print actions (emit `qr-export:*`).
  */
 export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactElement {
   const [url, setUrl] = useState(website);
@@ -42,9 +46,15 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
   const [caption, setCaption] = useState("");
   const [brand, setBrand] = useState("");
   const [svg, setSvg] = useState<string | null>(null);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [busy, setBusy] = useState<CustomizeAction | null>(null);
   const { pushToast } = useToasts();
 
+  const activeTemplate = useMemo(
+    () => QR_TEMPLATES.find((template) => template.id === templateId) ?? QR_TEMPLATES[0],
+    [templateId],
+  );
   const visibleTemplates = useMemo(
     () => QR_TEMPLATES.filter((template) => template.category === category),
     [category],
@@ -88,42 +98,82 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
   }
 
   return (
-    <div className="qr-customize" data-testid="qr-customize-tab" data-ui="qr-customize-tab">
-      <div className="qr-panel" data-testid="qr-customize-controls" data-slot="qr-customize-controls">
-        <label className="qr-field" data-testid="qr-customize-url-label" data-slot="qr-customize-url-label">
-          <span data-slot="qr-customize-url-caption">Enlace del QR</span>
-          <input
-            className="qr-input"
-            type="url"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            placeholder="https://tu-restaurante.com"
-            data-testid="qr-customize-url-input"
-            data-slot="qr-customize-url-input"
-            data-coord-id="qr-page:website-fetch"
-          />
-        </label>
-
-        <div className="qr-field" data-testid="qr-customize-categories" data-slot="qr-customize-categories">
-          <span data-testid="qr-customize-categories-caption" data-slot="qr-customize-categories-caption">Categorias</span>
-          <div className="qr-chips" data-testid="qr-customize-category-list" data-slot="qr-customize-category-list">
-            {CATEGORIES.map((id) => (
-              <Button
-                key={id}
-                variant={id === category ? "primary" : "secondary"}
-                size="sm"
-                onClick={() => setCategory(id)}
-                aria-pressed={id === category}
-                data-testid={`qr-customize-category-${id}`}
-              >
-                {CATEGORY_LABELS[id]}
-              </Button>
-            ))}
+    <div className="qr-screen" data-testid="qr-customize-tab" data-ui="qr-customize-tab">
+      <div className="qr-previewCard" data-testid="qr-customize-preview-card" data-slot="qr-customize-preview-card" data-coord-id="qr-page:generate">
+        {svg ? (
+          <QrTemplateFrame svg={svg} className="qr-frame" data-testid="qr-customize-preview" />
+        ) : (
+          <div className="qr-frame qr-frame--empty" data-testid="qr-customize-preview-placeholder" data-slot="qr-customize-preview-placeholder">
+            Generando vista previa…
           </div>
-        </div>
+        )}
+      </div>
 
-        <div className="qr-field" data-testid="qr-customize-templates" data-slot="qr-customize-templates">
-          <span data-testid="qr-customize-templates-caption" data-slot="qr-customize-templates-caption">Plantilla</span>
+      <p className="qr-caption" data-testid="qr-customize-active-template" data-slot="qr-customize-active-template">
+        {activeTemplate.name}
+      </p>
+
+      <div className="qr-toolbar" data-testid="qr-customize-actions" data-slot="qr-customize-actions" data-coord-id="qr-page:export">
+        <Button
+          variant={templatesOpen ? "primary" : "secondary"}
+          size="sm"
+          onClick={() => setTemplatesOpen((open) => !open)}
+          aria-expanded={templatesOpen}
+          data-testid="qr-customize-templates-toggle"
+        >
+          <LayoutTemplate size={16} strokeWidth={1.8} data-testid="qr-customize-templates-icon" />
+          Plantilla
+        </Button>
+        <Button
+          variant={optionsOpen ? "primary" : "secondary"}
+          size="sm"
+          onClick={() => setOptionsOpen((open) => !open)}
+          aria-expanded={optionsOpen}
+          data-testid="qr-customize-options-toggle"
+        >
+          <Settings2 size={16} strokeWidth={1.8} data-testid="qr-customize-options-icon" />
+          Opciones
+        </Button>
+        <DropdownMenu
+          label="Descargar"
+          triggerClassName="bo-btn bo-btn--primary bo-btn--sm"
+          triggerDataSlot="qr-customize-download"
+          triggerContent={
+            <>
+              <Download size={16} strokeWidth={1.8} data-testid="qr-customize-download-icon" />
+              Descargar
+            </>
+          }
+          items={[
+            { id: "png", label: "PNG", icon: <FileImage size={16} strokeWidth={1.8} />, onSelect: () => void run("png") },
+            { id: "jpeg", label: "JPEG", icon: <FileImage size={16} strokeWidth={1.8} />, onSelect: () => void run("jpeg") },
+            { id: "pdf", label: "PDF", icon: <FileText size={16} strokeWidth={1.8} />, onSelect: () => void run("pdf") },
+            { id: "svg", label: "SVG", icon: <FileCode size={16} strokeWidth={1.8} />, onSelect: () => void run("svg") },
+            { id: "print", label: "Imprimir", icon: <Printer size={16} strokeWidth={1.8} />, onSelect: () => void run("print") },
+          ]}
+        />
+      </div>
+
+      {templatesOpen ? (
+        <div className="qr-options" data-testid="qr-customize-templates" data-slot="qr-customize-templates">
+          <div className="qr-field" data-testid="qr-customize-categories" data-slot="qr-customize-categories">
+            <span data-testid="qr-customize-categories-caption" data-slot="qr-customize-categories-caption">Categorias</span>
+            <div className="qr-chips" data-testid="qr-customize-category-list" data-slot="qr-customize-category-list">
+              {CATEGORIES.map((id) => (
+                <Button
+                  key={id}
+                  variant={id === category ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => setCategory(id)}
+                  aria-pressed={id === category}
+                  data-testid={`qr-customize-category-${id}`}
+                >
+                  {CATEGORY_LABELS[id]}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           <div className="qr-templateGrid" data-testid="qr-customize-template-list" data-slot="qr-customize-template-list">
             {visibleTemplates.map((template) => (
               <button
@@ -141,72 +191,62 @@ export function QrCustomizeTab({ website }: QrCustomizeTabProps): React.ReactEle
             ))}
           </div>
         </div>
+      ) : null}
 
-        <div className="qr-field" data-testid="qr-customize-ratio" data-slot="qr-customize-ratio">
-          <span data-testid="qr-customize-ratio-caption" data-slot="qr-customize-ratio-caption">Formato</span>
-          <Select
-            value={ratioId}
-            onChange={setRatioId}
-            options={ratioOptions}
-            ariaLabel="Formato"
-            data-testid="qr-customize-ratio-select"
-          />
-        </div>
+      {optionsOpen ? (
+        <div className="qr-options" data-testid="qr-customize-options" data-slot="qr-customize-options">
+          <label className="qr-field" data-testid="qr-customize-url-label" data-slot="qr-customize-url-label">
+            <span data-slot="qr-customize-url-caption">Enlace del QR</span>
+            <input
+              className="qr-input"
+              type="url"
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              placeholder="https://tu-restaurante.com"
+              data-testid="qr-customize-url-input"
+              data-slot="qr-customize-url-input"
+              data-coord-id="qr-page:website-fetch"
+            />
+          </label>
 
-        <label className="qr-field" data-testid="qr-customize-caption-label" data-slot="qr-customize-caption-label">
-          <span data-slot="qr-customize-caption-caption">Texto (opcional)</span>
-          <input
-            className="qr-input"
-            type="text"
-            value={caption}
-            onChange={(event) => setCaption(event.target.value)}
-            placeholder="Escanéame"
-            data-testid="qr-customize-caption-input"
-            data-slot="qr-customize-caption-input"
-          />
-        </label>
-
-        <label className="qr-field" data-testid="qr-customize-brand-label" data-slot="qr-customize-brand-label">
-          <span data-slot="qr-customize-brand-caption">Marca (opcional)</span>
-          <input
-            className="qr-input"
-            type="text"
-            value={brand}
-            onChange={(event) => setBrand(event.target.value)}
-            placeholder="Villa Carmen"
-            data-testid="qr-customize-brand-input"
-            data-slot="qr-customize-brand-input"
-          />
-        </label>
-      </div>
-
-      <div className="qr-previewCard" data-testid="qr-customize-preview-card" data-slot="qr-customize-preview-card" data-coord-id="qr-page:generate">
-        {svg ? (
-          <QrTemplateFrame svg={svg} className="qr-frame" data-testid="qr-customize-preview" />
-        ) : (
-          <div className="qr-frame qr-frame--empty" data-testid="qr-customize-preview-placeholder" data-slot="qr-customize-preview-placeholder">
-            Generando vista previa…
+          <div className="qr-field" data-testid="qr-customize-ratio" data-slot="qr-customize-ratio">
+            <span data-testid="qr-customize-ratio-caption" data-slot="qr-customize-ratio-caption">Formato</span>
+            <Select
+              value={ratioId}
+              onChange={setRatioId}
+              options={ratioOptions}
+              ariaLabel="Formato"
+              data-testid="qr-customize-ratio-select"
+            />
           </div>
-        )}
-      </div>
 
-      <div className="qr-actions qr-actions--full" data-testid="qr-customize-actions" data-slot="qr-customize-actions" data-coord-id="qr-page:export">
-        <Button variant="primary" onClick={() => void run("png")} disabled={!svg || busy !== null} data-testid="qr-customize-download-png">
-          Descargar PNG
-        </Button>
-        <Button variant="primary" onClick={() => void run("jpeg")} disabled={!svg || busy !== null} data-testid="qr-customize-download-jpeg">
-          Descargar JPEG
-        </Button>
-        <Button variant="secondary" onClick={() => void run("pdf")} disabled={!svg || busy !== null} data-testid="qr-customize-download-pdf">
-          Descargar PDF
-        </Button>
-        <Button variant="secondary" onClick={() => void run("svg")} disabled={!svg || busy !== null} data-testid="qr-customize-download-svg">
-          Descargar SVG
-        </Button>
-        <Button variant="secondary" onClick={() => void run("print")} disabled={!svg || busy !== null} data-testid="qr-customize-print">
-          Imprimir
-        </Button>
-      </div>
+          <label className="qr-field" data-testid="qr-customize-caption-label" data-slot="qr-customize-caption-label">
+            <span data-slot="qr-customize-caption-caption">Texto (opcional)</span>
+            <input
+              className="qr-input"
+              type="text"
+              value={caption}
+              onChange={(event) => setCaption(event.target.value)}
+              placeholder="Escanéame"
+              data-testid="qr-customize-caption-input"
+              data-slot="qr-customize-caption-input"
+            />
+          </label>
+
+          <label className="qr-field" data-testid="qr-customize-brand-label" data-slot="qr-customize-brand-label">
+            <span data-slot="qr-customize-brand-caption">Marca (opcional)</span>
+            <input
+              className="qr-input"
+              type="text"
+              value={brand}
+              onChange={(event) => setBrand(event.target.value)}
+              placeholder="Villa Carmen"
+              data-testid="qr-customize-brand-input"
+              data-slot="qr-customize-brand-input"
+            />
+          </label>
+        </div>
+      ) : null}
     </div>
   );
 }
