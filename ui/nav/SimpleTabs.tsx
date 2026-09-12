@@ -6,6 +6,7 @@ export type SimpleTabItem = {
   id: string;
   label: string;
   title?: string;
+  icon?: React.ReactNode;
 };
 
 type LegacyTabsCtx = {
@@ -69,6 +70,7 @@ export function SimpleTabs({
           >
             <span data-slot="simpleTabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
             <span className="bo-tabInner" data-slot="simpleTabs-tabInner">
+              {item.icon ? <span className="bo-tabIcon" data-slot="simpleTabs-tabIcon" aria-hidden="true">{item.icon}</span> : null}
               <span className="bo-tabLabel" data-slot="simpleTabs-tabLabel">{item.label}</span>
             </span>
           </button>
