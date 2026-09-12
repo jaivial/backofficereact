@@ -502,6 +502,15 @@
   }
 }
 
+/* Explicit column selection from the reservations column picker wins over the
+   width defaults above: the table just grows and relies on the existing
+   horizontal scroll. Scoped to the active reservations table only, so the
+   other bo-table--reservas tables keep their responsive defaults. */
+.bo-table--reservas.bo-table--reservas--columns thead th,
+.bo-table--reservas.bo-table--reservas--columns tbody td {
+  display: table-cell;
+}
+
 .bo-bookingKey {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
