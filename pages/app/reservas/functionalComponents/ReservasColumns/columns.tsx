@@ -19,6 +19,8 @@ export type ReservasColumnId =
   | "salon"
   | "pax"
   | "children"
+  | "highChairs"
+  | "strollers"
   | "phone"
   | "rice"
   | "comment";
@@ -77,6 +79,8 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
   { id: "salon", label: "Salón", render: (b) => bookingSalonDisplay(b) || "—" },
   { id: "pax", label: "Pax", thClass: "num", cellClass: "num", render: (b) => b.party_size },
   { id: "children", label: "Niños", thClass: "col-children num", cellClass: "col-children num", hideBelowWidth: 1280, render: (b) => b.children ?? 0 },
+  { id: "highChairs", label: "Tronas", thClass: "col-highChairs num", cellClass: "col-highChairs num", hideBelowWidth: 1280, render: (b) => b.highChairs ?? 0 },
+  { id: "strollers", label: "Carros bebé", thClass: "col-strollers num", cellClass: "col-strollers num", hideBelowWidth: 1280, render: (b) => b.babyStrollers ?? 0 },
   { id: "phone", label: "Teléfono", thClass: "col-phone", cellClass: "col-phone", hideBelowWidth: 1480, render: (b) => formatPhone(b.contact_phone_country_code, b.contact_phone) },
   { id: "rice", label: "Arroz", thClass: "col-rice", cellClass: "col-rice", render: (_b, c) => c.arroz },
   { id: "comment", label: "Comentario", thClass: "col-comment", cellClass: "col-comment", hideBelowWidth: 1680, render: (b) => b.commentary || "" },
