@@ -85,7 +85,7 @@ test.describe.skip("Config - Email Provider Settings", () => {
         body: JSON.stringify({
           provider: "gmail",
           gmailFromEmail: "seeded@gmail.com",
-          gmailAppPassword: "abcd1234efgh5678",
+          gmailAppPassword: "placeholder-gmail-app-password",
           isActive: true,
         }),
       });
