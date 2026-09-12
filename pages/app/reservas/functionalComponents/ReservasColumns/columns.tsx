@@ -37,13 +37,19 @@ export type ReservasColumnDef = {
   label: string;
   thClass?: string;
   cellClass?: string;
+  /**
+   * Viewport width (px) at or below which this column is hidden by default.
+   * Single source of truth for the old CSS media breakpoints, so the picker's
+   * initial state and the table always agree.
+   */
+  hideBelowWidth?: number;
   /** Whether the cell stops row-click bubbling (interactive cells like Mesa). */
   stopPropagation?: boolean;
   render: (booking: Booking, ctx: ReservasColumnCtx) => React.ReactNode;
 };
 
 export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
-  { id: "added", label: "Añadida", thClass: "col-added", cellClass: "col-added", render: (_b, c) => c.added },
+  { id: "added", label: "Añadida", thClass: "col-added", cellClass: "col-added", hideBelowWidth: 1240, render: (_b, c) => c.added },
   {
     id: "mesa",
     label: "Mesa",
@@ -66,14 +72,14 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
   },
   { id: "time", label: "Hora", thClass: "col-time", cellClass: "col-time", render: (b) => formatHHMM(b.reservation_time) },
   { id: "client", label: "Cliente", thClass: "col-client", cellClass: "col-client", render: (b) => b.customer_name },
-  { id: "status", label: "Estado", thClass: "col-status", cellClass: "col-status", render: (b) => (b.status === "confirmed" ? "Confirmada" : "Pendiente") },
+  { id: "status", label: "Estado", thClass: "col-status", cellClass: "col-status", hideBelowWidth: 980, render: (b) => (b.status === "confirmed" ? "Confirmada" : "Pendiente") },
   { id: "floor", label: "Planta", render: (b) => bookingFloorDisplay(b) || "—" },
   { id: "salon", label: "Salón", render: (b) => bookingSalonDisplay(b) || "—" },
   { id: "pax", label: "Pax", thClass: "num", cellClass: "num", render: (b) => b.party_size },
-  { id: "children", label: "Niños", thClass: "col-children num", cellClass: "col-children num", render: (b) => b.children ?? 0 },
-  { id: "phone", label: "Teléfono", thClass: "col-phone", cellClass: "col-phone", render: (b) => formatPhone(b.contact_phone_country_code, b.contact_phone) },
+  { id: "children", label: "Niños", thClass: "col-children num", cellClass: "col-children num", hideBelowWidth: 1280, render: (b) => b.children ?? 0 },
+  { id: "phone", label: "Teléfono", thClass: "col-phone", cellClass: "col-phone", hideBelowWidth: 1480, render: (b) => formatPhone(b.contact_phone_country_code, b.contact_phone) },
   { id: "rice", label: "Arroz", thClass: "col-rice", cellClass: "col-rice", render: (_b, c) => c.arroz },
-  { id: "comment", label: "Comentario", thClass: "col-comment", cellClass: "col-comment", render: (b) => b.commentary || "" },
+  { id: "comment", label: "Comentario", thClass: "col-comment", cellClass: "col-comment", hideBelowWidth: 1680, render: (b) => b.commentary || "" },
 ];
 
 export const RESERVAS_COLUMN_IDS: ReservasColumnId[] = RESERVAS_COLUMNS.map((c) => c.id);
@@ -90,4 +96,18 @@ export function parseVisibleColumnsPreference(raw: string | null | undefined): R
   if (!value) return [...RESERVAS_COLUMN_IDS];
   const parsed = normalizeVisibleColumns(value.split(","));
   return parsed.length > 0 ? parsed : [...RESERVAS_COLUMN_IDS];
+}
+
+/** Whether a stored preference is an explicit user choice (vs the default). */
+export function hasVisibleColumnsPreference(raw: string | null | undefined): boolean {
+  return String(raw ?? "").trim() !== "";
+}
+
+/**
+ * Default visible columns for a viewport width, derived from the same
+ * `hideBelowWidth` metadata the picker uses. This mirrors the legacy CSS media
+ * breakpoints so the table looks identical before the user customizes it.
+ */
+export function defaultVisibleColumnsForWidth(width: number): ReservasColumnId[] {
+  return RESERVAS_COLUMNS.filter((col) => !col.hideBelowWidth || width > col.hideBelowWidth).map((col) => col.id);
 }

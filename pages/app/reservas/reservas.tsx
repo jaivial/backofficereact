@@ -33,6 +33,8 @@ import { useReservasColumnsRealtime } from "./functionalComponents/ReservasColum
 import {
   RESERVAS_COLUMNS,
   RESERVAS_COLUMN_IDS,
+  defaultVisibleColumnsForWidth,
+  hasVisibleColumnsPreference,
   normalizeVisibleColumns,
   parseVisibleColumnsPreference,
   type ReservasColumnCtx,
@@ -272,6 +274,11 @@ export default function Page() {
   // Coordination id: reservas_columns_realtime_v1
   const [visibleColumns, setVisibleColumns] = useState<ReservasColumnId[]>(() => parseVisibleColumnsPreference(data.visibleColumns));
   const [columnsModalOpen, setColumnsModalOpen] = useState(false);
+  // Whether the user made an explicit choice (overrides the width defaults).
+  const [columnsCustomized, setColumnsCustomized] = useState(() => hasVisibleColumnsPreference(data.visibleColumns));
+  // Flipped after mount so the first paint keeps the SSR/CSS width default and
+  // the explicit-selection override only kicks in once the client is live.
+  const [columnsReady, setColumnsReady] = useState(false);
 
   const [searchMode, setSearchMode] = useState(false);
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
@@ -291,6 +298,20 @@ export default function Page() {
     () => RESERVAS_COLUMNS.filter((col) => visibleColumns.includes(col.id)),
     [visibleColumns],
   );
+
+  // Default visibility follows the viewport width (legacy behaviour). As soon
+  // as the user picks columns, their explicit set wins at any width and the
+  // table simply relies on the existing horizontal scroll.
+  // Coordination id: reservas_columns_realtime_v1
+  useEffect(() => {
+    if (columnsCustomized) return;
+    const apply = () => setVisibleColumns(defaultVisibleColumnsForWidth(window.innerWidth));
+    apply();
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
+  }, [columnsCustomized]);
+
+  useEffect(() => { setColumnsReady(true); }, []);
 
   const loadMonth = useCallback(async (year: number, month: number) => {
     if (!session) return;
@@ -450,6 +471,7 @@ export default function Page() {
     if (next.length === 0) return;
     const value = next.join(",");
     setVisibleColumns(next);
+    setColumnsCustomized(true);
     if (!session) return;
     setSession((prev) => (prev ? { ...prev, preferences: { ...(prev.preferences ?? {}), reservasVisibleColumns: value } } : prev));
     void api.auth.setPreference("reservasVisibleColumns", value).then((res) => {
@@ -472,7 +494,10 @@ export default function Page() {
     userId: session?.user?.id ?? null,
     onColumns: (columns) => {
       const next = normalizeVisibleColumns(columns);
-      if (next.length > 0) setVisibleColumns(next);
+      if (next.length > 0) {
+        setVisibleColumns(next);
+        setColumnsCustomized(true);
+      }
     },
   });
 
@@ -744,7 +769,7 @@ export default function Page() {
                       {displayMode === "tabla" ? (
                         <div className="bo-tableWrap" style={{ marginTop: 10 }} data-slot="reservas-tableWrap">
                           <div className="bo-tableScroll" data-slot="reservas-tableScroll">
-                            <table className="bo-table bo-table--reservas" aria-label="Tabla de reservas" data-slot="reservas-tabla-de-reservas">
+                            <table className={`bo-table bo-table--reservas${columnsReady ? " bo-table--reservas--columns" : ""}`} aria-label="Tabla de reservas" data-slot="reservas-tabla-de-reservas">
                               <thead data-slot="reservas-thead">
                                 <tr data-slot="reservas-tr">
                                   {tableColumns.map((col) => (
