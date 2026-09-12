@@ -4,7 +4,7 @@ import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { cn } from "../../../../../ui/shadcn/utils";
 import { money, type Operator, type Tag, type Ticket, type TicketLine, type Visit } from "../../hooks/usePOSRegister";
 
-export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
+export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
   ticket: Ticket | null;
   visit: Visit | null;
   operators?: Operator[];
@@ -21,6 +21,8 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
   sentKitchenQuantities?: Record<number, number>;
   onSelectTicket?: (next: Ticket) => void;
   onMoveLine?: (line: TicketLine) => void;
+  /** Whether another open split ticket exists to move the line to. */
+  canMoveLine?: boolean;
   onMergeSplitTickets?: () => void;
   onDeleteEmptyTicket?: (ticket: Ticket) => void;
   busy?: boolean;
@@ -117,7 +119,7 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
                 data-testid={`pos-line-${line.id}`}
               >
                 <div className="pos-line__actions" data-testid={`pos-line-actions-${line.id}`}>
-                  <button className="pos-line__qtyBtn" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); onLineQuantity(line, line.quantity - 1); }} aria-label={`Restar ${line.productName}`} data-testid={`pos-line-minus-${line.id}`}><Minus className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-minus-icon-${line.id}`} /></button>
+                  <button className="pos-line__qtyBtn" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); if (line.quantity <= 1) { onVoidLine(line); return; } onLineQuantity(line, line.quantity - 1); }} aria-label={line.quantity <= 1 ? `Anular ${line.productName}` : `Restar ${line.productName}`} title={line.quantity <= 1 ? "Anular línea" : undefined} data-testid={`pos-line-minus-${line.id}`}><Minus className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-minus-icon-${line.id}`} /></button>
                   <span className="pos-line__qty" data-testid={`pos-line-qty-${line.id}`}>{line.quantity}</span>
                   <button className="pos-line__qtyBtn" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); onLineQuantity(line, line.quantity + 1); }} aria-label={`Sumar ${line.productName}`} data-testid={`pos-line-plus-${line.id}`}><Plus className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-plus-icon-${line.id}`} /></button>
                 </div>
@@ -132,7 +134,7 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
                 {(line.tagIds || []).length ? <div className="pos-line__tags" data-testid={`pos-line-tags-${line.id}`}>{line.tagIds?.map((tagId) => <span key={tagId} data-ui={`pos-line-tag-${line.id}-${tagId}`}>{tags.find((tag) => tag.id === tagId)?.name || `#${tagId}`}</span>)}</div> : null}
                 <span className="pos-line__total" data-testid={`pos-line-total-${line.id}`}>{money(line.lineTotalGrossCents)}</span>
                 {splitTickets.length > 1 && onMoveLine ? (
-                  <button className="pos-line__move" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); onMoveLine(line); }} aria-label={`Mover ${line.productName} a otra cuenta`} title="Mover a otra cuenta" data-testid={`pos-line-move-${line.id}`}><ArrowRightLeft className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-move-icon-${line.id}`} /></button>
+                  <button className="pos-line__move" type="button" disabled={readOnly || !canMoveLine} onClick={(event) => { event.stopPropagation(); onMoveLine(line); }} aria-label={`Mover ${line.productName} a otra cuenta`} title={canMoveLine ? "Mover a otra cuenta" : "No hay otra cuenta abierta"} data-pos-command="move-line" data-testid={`pos-line-move-${line.id}`}><ArrowRightLeft className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-move-icon-${line.id}`} /></button>
                 ) : null}
                 <button className="pos-line__void" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); onVoidLine(line); }} aria-label={`Anular ${line.productName}`} title="Anular" data-testid={`pos-line-void-${line.id}`}><Trash2 className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-void-icon-${line.id}`} /></button>
               </div>
