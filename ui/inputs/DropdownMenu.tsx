@@ -10,6 +10,7 @@ type MenuItem = {
   label: string;
   tone?: "default" | "danger";
   icon?: React.ReactNode;
+  testId?: string;
   onSelect: () => void;
 };
 
@@ -113,6 +114,7 @@ export function DropdownMenu({
   triggerContent,
   triggerClassName,
   triggerDataSlot,
+  triggerDataTestId,
   menuMinWidthPx,
   className,
   menuClassName,
@@ -125,6 +127,7 @@ export function DropdownMenu({
   triggerContent?: React.ReactNode;
   triggerClassName?: string;
   triggerDataSlot?: string;
+  triggerDataTestId?: string;
   menuMinWidthPx?: number;
   className?: string;
   menuClassName?: string;
@@ -227,6 +230,7 @@ export function DropdownMenu({
       }}
       data-ui="dropdown-trigger"
       data-slot={triggerDataSlot}
+      data-testid={triggerDataTestId}
     >
       {triggerContent || <MoreVertical size={18} strokeWidth={1.8} />}
     </button>
@@ -270,6 +274,7 @@ export function DropdownMenu({
                 }}
                 data-ui="dropdown-menu-item"
                 data-item-id={it.id}
+                data-testid={it.testId}
               >
                 {it.icon ? <span className="bo-menuIcon" aria-hidden="true">{it.icon}</span> : null}
                 <span className="bo-menuLabel" data-slot="dropdownMenu-menuLabel">{it.label}</span>
