@@ -15,7 +15,15 @@ function defaultConfig(): EmailProviderConfig {
     gmailAppPassword: "",
     gmailFromEmail: "",
     isActive: false,
+    hasSmtpPassword: false,
+    hasGmailAppPassword: false,
   };
+}
+
+// The server never returns stored secrets, so the password fields always start
+// empty; has* flags tell the UI that a secret exists.
+function mergeConfig(incoming: Partial<EmailProviderConfig>): EmailProviderConfig {
+  return { ...defaultConfig(), ...incoming, smtpPassword: "", gmailAppPassword: "" };
 }
 
 type UseEmailProviderConfigReturn = {
@@ -41,7 +49,7 @@ export function useEmailProviderConfig(): UseEmailProviderConfigReturn {
     try {
       const res = await api.config.getEmailProviderConfig();
       if (res.success) {
-        setConfig(res.config);
+        setConfig(mergeConfig(res.config));
       }
     } catch {
       // use defaults
@@ -54,7 +62,7 @@ export function useEmailProviderConfig(): UseEmailProviderConfigReturn {
     try {
       const res = await api.config.setEmailProviderConfig(config);
       if (!res.success) return false;
-      setConfig(res.config);
+      setConfig(mergeConfig(res.config));
       return true;
     } catch {
       return false;
