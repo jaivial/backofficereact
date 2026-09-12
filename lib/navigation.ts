@@ -20,6 +20,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "facturas", href: "/app/facturas", label: "Facturas" },
   { key: "campanas", href: "/app/campanas", label: "Campañas" },
   { key: "anuncios", href: "/app/anuncios", label: "Anuncios" },
+  { key: "qr", href: "/app/qr", label: "QR" },
   { key: "estadisticas", href: "/app/estadisticas", label: "Estadisticas" },
   { key: "plataforma", href: "/app/plataforma", label: "Plataforma" },
 ];
@@ -27,6 +28,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 const SECTION_HOME: Record<BOSection, string> = {
   campanas: "/app/campanas",
   anuncios: "/app/anuncios",
+  qr: "/app/qr",
   reservas: "/app/reservas",
   menus: "/app/comida/menus",
   comida: "/app/comida",
@@ -45,7 +47,7 @@ const SECTION_HOME: Record<BOSection, string> = {
   plataforma: "/app/plataforma",
 };
 
-const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "pos", "stock", "miembros", "horarios", "fichaje", "facturas", "campanas", "anuncios", "estadisticas"];
+const SECTION_PRIORITY: BOSection[] = ["reservas", "menus", "comida", "pos", "stock", "miembros", "horarios", "fichaje", "facturas", "campanas", "anuncios", "qr", "estadisticas"];
 
 export function sectionForPath(pathname: string): BOSection | null {
   if (!pathname.startsWith("/app")) return null;
@@ -68,6 +70,7 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (pathname.startsWith("/app/plataforma")) return "plataforma";
   if (pathname.startsWith("/app/campanas")) return "campanas";
   if (pathname.startsWith("/app/anuncios")) return "anuncios";
+  if (pathname.startsWith("/app/qr")) return "qr";
   return null;
 }
 
