@@ -29,3 +29,6 @@ node_modules
 
 # Committed-by-mistake TLS dev certs (never track private keys)
 certs/
+
+# Database dumps must never be committed (PII + password hashes).
+backup/
