@@ -2264,12 +2264,17 @@ export type EmailProviderConfig = {
   smtpHost: string;
   smtpPort: number;
   smtpUsername: string;
+  /** Write-only: empty on load. The server never returns the stored secret. */
   smtpPassword: string;
   smtpFromEmail: string;
   smtpEncryption: "none" | "tls" | "ssl";
+  /** Write-only: empty on load. The server never returns the stored secret. */
   gmailAppPassword: string;
   gmailFromEmail: string;
   isActive: boolean;
+  /** Whether a secret is already stored server-side (the value is never sent). */
+  hasSmtpPassword?: boolean;
+  hasGmailAppPassword?: boolean;
 };
 
 export type WidgetSettings = {

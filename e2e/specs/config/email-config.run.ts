@@ -9,15 +9,15 @@ import { chromium } from "playwright";
 
 const BASE_URL = "https://backoffice-dev.menustudioai.com";
 const EMAIL = process.env.E2E_ADMIN_EMAIL || "admin@villacarmen.com";
-const PASSWORD = process.env.E2E_ADMIN_PASSWORD || "admin123";
+const PASSWORD = process.env.E2E_ADMIN_PASSWORD || "";
 
-// From /var/www/alqueriavillacarmen/.env
+// SMTP credentials come from the environment; never commit real secrets here.
 const SMTP = {
-  host: "smtp.titan.email",
-  port: "587",
-  username: "reservas@alqueriavillacarmen.com",
-  password: "!aLQueria_5225@",
-  fromEmail: "reservas@alqueriavillacarmen.com",
+  host: process.env.SMTP_HOST || "smtp.titan.email",
+  port: process.env.SMTP_PORT || "587",
+  username: process.env.SMTP_USERNAME || "reservas@alqueriavillacarmen.com",
+  password: process.env.SMTP_PASSWORD || "",
+  fromEmail: process.env.SMTP_FROM_EMAIL || "reservas@alqueriavillacarmen.com",
   encryption: "tls", // tls | ssl | none
 };
 
@@ -93,7 +93,9 @@ async function main(): Promise<void> {
     await portInput.fill(SMTP.port);
 
     await page.getByRole("textbox", { name: /Usuario SMTP/i }).fill(SMTP.username);
-    await page.getByRole("textbox", { name: /Contraseña SMTP/i }).fill(SMTP.password);
+    if (SMTP.password) {
+      await page.getByRole("textbox", { name: /Contraseña SMTP/i }).fill(SMTP.password);
+    }
     await page.getByRole("textbox", { name: /Email remitente/i }).fill(SMTP.fromEmail);
 
     // Click Guardar
