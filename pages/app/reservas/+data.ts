@@ -27,10 +27,12 @@ export async function data(pageContext: PageContextServer) {
   const date = typeof pageContext.urlParsed?.search?.date === "string" ? pageContext.urlParsed.search.date : todayISO();
   const rawDisplayMode = pageContext.bo?.session?.preferences?.reservasDisplayMode;
   const displayMode: "tabla" | "grid" = rawDisplayMode === "grid" ? "grid" : "tabla";
+  const visibleColumns = pageContext.bo?.session?.preferences?.reservasVisibleColumns ?? "";
 
   return {
     date,
     displayMode,
+    visibleColumns,
     bookings: [],
     floors: [],
     total_count: 0,
