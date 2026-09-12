@@ -254,6 +254,14 @@ function sessionSecurityScope(pagePath: string | undefined): "high" | "normal" {
   return path.startsWith("/app/facturas") || path.startsWith("/app/estado-cuenta") ? "high" : "normal";
 }
 
+// Shared admin-API secret. The SSR proxy injects it on every backend call so it
+// stays server-side and never reaches the browser. Empty means the Go backend
+// has enforcement disabled.
+function vaultAuthHeader(): string | null {
+  const key = (process.env.VAULT_KEY ?? "").trim();
+  return key ? `Bearer ${key}` : null;
+}
+
 async function fetchSession(
   backendOrigin: string,
   cookieHeader: string | undefined,
@@ -290,6 +298,8 @@ async function fetchSession(
       cookie: `bo_session=${sessionToken}`,
       "x-forwarded-proto": publicScheme,
     };
+    const vaultAuth = vaultAuthHeader();
+    if (vaultAuth) headers.authorization = vaultAuth;
     if (typeof pagePath === "string" && pagePath.trim() !== "") {
       headers["x-bo-page-path"] = pagePath.trim();
     }
@@ -605,6 +615,9 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       const sessionCookie = filterBOSessionCookie(headers.cookie);
       if (sessionCookie) headers.cookie = sessionCookie;
       else delete headers.cookie;
+      const vaultAuth = vaultAuthHeader();
+      if (vaultAuth) headers.authorization = vaultAuth;
+      else delete headers.authorization;
       headers.host = new URL(backendOrigin).host;
       headers["x-forwarded-host"] = req.headers.host || "";
 
@@ -712,6 +725,11 @@ async function start() {
       const sessionCookie = filterBOSessionCookie(headers.get("cookie") ?? undefined);
       if (sessionCookie) headers.set("cookie", sessionCookie);
       else headers.delete("cookie");
+
+      // Trusted server-side identity for the Go admin API: the shared vault key.
+      const vaultAuth = vaultAuthHeader();
+      if (vaultAuth) headers.set("authorization", vaultAuth);
+      else headers.delete("authorization");
 
       // A preference write changes session.preferences, which the SSR session
       // cache would otherwise keep serving stale for up to SESSION_CACHE_TTL_MS.
