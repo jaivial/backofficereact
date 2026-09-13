@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef } from "react";
+import React, { useCallback } from "react";
 import { GripVertical, Trash2, Wheat } from "lucide-react";
 import { useDragControls } from "motion/react";
 import { Reorder } from "motion/react";
@@ -66,20 +66,6 @@ export function MenuItemEditor({
   reorderTransition, reorderWhileDrag, readOnly = false,
 }: MenuItemEditorProps) {
   const dishLabel = dish.title || `Plato ${dishIdx + 1}`;
-  const titleTextareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const syncTitleTextareaHeight = useCallback(() => {
-    const node = titleTextareaRef.current;
-    if (!node) return;
-    node.style.height = "auto";
-    node.style.height = `${node.scrollHeight}px`;
-  }, []);
-
-  useLayoutEffect(() => {
-    syncTitleTextareaHeight();
-    const rafId = window.requestAnimationFrame(syncTitleTextareaHeight);
-    return () => window.cancelAnimationFrame(rafId);
-  }, [dish.title, syncTitleTextareaHeight]);
 
   return (
     <ReorderItemContainer
@@ -90,9 +76,30 @@ export function MenuItemEditor({
     >
       {(startDishDragLocal) => (
         <Accordion
-          title={dishLabel}
+          variant="panel"
+          title={dish.title}
+          titleLabel="Titulo"
+          titleValue={dish.title}
+          onTitleChange={(value) => updateDish(sectionClientId, dish.clientId, { title: value })}
+          titlePlaceholder="Titulo plato"
+          titleAriaLabel={`Titulo del plato ${dishLabel}`}
+          titleInputTestId={`menu-item-editor-title-input-${dish.clientId}`}
           testId={`menu-dish-${sectionClientId}-${dish.clientId}`}
           defaultOpen={!dish.id}
+          headerLead={(
+            <button
+              className="bo-sectionDrag"
+              type="button"
+              aria-label={`Arrastrar plato ${dishLabel}`}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                startDishDragLocal(event);
+              }}
+              data-testid={`menu-item-editor-drag-${dish.clientId}`}
+            >
+              <GripVertical size={18} />
+            </button>
+          )}
           actions={(
             <Switch
               checked={dish.active}
@@ -141,38 +148,7 @@ export function MenuItemEditor({
           )}
         >
           <div className="bo-dishEditorContent" data-slot="menuItemEditor-dishEditorContent">
-            <div className="bo-dishCardHead" data-slot="menuItemEditor-dishCardHead">
-              <button
-                className="bo-dishDrag"
-                type="button"
-                aria-label={`Arrastrar plato ${dishLabel}`}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  startDishDragLocal(event);
-                }}
-                data-testid={`menu-item-editor-drag-${dish.clientId}`}
-              >
-                <GripVertical size={14} />
-              </button>
-            </div>
             <div className="bo-dishFields" data-slot="menuItemEditor-dishFields">
-              <textarea
-                className="bo-input bo-textarea bo-dishTitleTextarea"
-                rows={1}
-                value={dish.title}
-                ref={(node) => {
-                  titleTextareaRef.current = node;
-                  syncTitleTextareaHeight();
-                }}
-                onInput={(e) => {
-                  const node = e.currentTarget;
-                  node.style.height = "auto";
-                  node.style.height = `${node.scrollHeight}px`;
-                }}
-                onChange={(e) => updateDish(sectionClientId, dish.clientId, { title: e.target.value })}
-                placeholder="Titulo plato"
-                data-testid={`menu-item-editor-title-input-${dish.clientId}`}
-              />
               <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
                 <Switch
                   checked={dish.description_enabled}

@@ -786,6 +786,35 @@
   gap: var(--bo-space-2);
 }
 
+/* Panel accordion (dish row): head grows, the action controls stay pinned right. */
+.bo-accordionHeadRow .bo-accordionHead {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bo-accordionHeadTrail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bo-space-2);
+  flex: 0 0 auto;
+}
+
+.bo-accordionHeadTrail > span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bo-accordionChevronBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
 .bo-sectionDishTabs {
   display: flex;
   align-items: center;
