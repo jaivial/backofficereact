@@ -532,7 +532,7 @@ export function clampDishCropValue(value: number, min: number, max: number): num
 
 export function buildBasicsPayload(draft: BasicsDraft): BasicsPayload {
   return {
-    menu_title: draft.title.trim() || "Nuevo menu",
+    menu_title: draft.title.trim(),
     price: toNumOrNull(draft.price) ?? 0,
     active: draft.active,
     menu_type: draft.menuType,
@@ -906,22 +906,19 @@ export function mapApiSection(s: GroupMenuV2Section, prev?: EditorSection): Edit
     if (dish.id) prevDishByID.set(dish.id, dish);
   }
 
-  const apiDisplayTitle = String(s.display_title || "").trim();
+  // Coordination id: comida_autosave_v1 — only omitted fields may fall back.
+  const apiDisplayTitle = s.display_title === undefined ? prev?.displayTitle ?? s.title ?? "" : String(s.display_title);
   // Subtitle and tab_label fall back to prev only when the API omitted them
   // entirely (undefined). An empty string from the API is treated as an
   // intentional clear so server round-trips stay honest.
   const apiSubtitle = s.subtitle === undefined ? prev?.subtitle ?? "" : String(s.subtitle);
   const apiTabLabel = s.tab_label === undefined ? prev?.tabLabel ?? "" : String(s.tab_label);
-  // Backwards compatibility: sections that pre-date the display fields fall
-  // back to the existing `title` for both the backoffice title input and the
-  // new `display_title` field so nothing blanks out.
-  const fallbackDisplayTitle = apiDisplayTitle || s.title || prev?.displayTitle || "";
 
   return {
     clientId: prev?.clientId || uid("section"),
     id: s.id,
     title: s.title,
-    displayTitle: fallbackDisplayTitle,
+    displayTitle: apiDisplayTitle,
     subtitle: apiSubtitle,
     tabLabel: apiTabLabel,
     kind: s.kind,

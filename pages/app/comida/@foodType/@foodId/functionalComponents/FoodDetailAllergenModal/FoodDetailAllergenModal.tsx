@@ -43,11 +43,6 @@ export function FoodDetailAllergenModal({
         </div>
       </div>
       <div className="bo-modalActions" data-slot="food-detail-allergen-modal-actions">
-        {savingAllergens ? (
-          <span className="bo-panelMeta" data-role="food-detail-allergen-modal-saving">Guardando cambios...</span>
-        ) : (
-          <span className="bo-panelMeta" data-role="food-detail-allergen-modal-autosaved">Cambios guardados automaticamente.</span>
-        )}
         <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} disabled={savingAllergens} data-role="food-detail-allergen-modal-cancel">
           Cancelar
         </button>

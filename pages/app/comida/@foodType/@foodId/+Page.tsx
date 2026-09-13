@@ -13,6 +13,7 @@ import { useFoodDetailPage } from "./hooks/useFoodDetailPage";
 import { FoodDetailHero } from "./functionalComponents/FoodDetailHero";
 import { FoodDetailQuickEditor } from "./functionalComponents/FoodDetailQuickEditor";
 import { useBreadcrumbFadeout } from "../../_components/hooks/useBreadcrumbFadeout";
+import { AutosaveToast } from "../../../../../ui/feedback/AutosaveToast";
 import { FoodDetailAllergenModal } from "./functionalComponents/FoodDetailAllergenModal";
 import type { LucideIcon } from "lucide-react";
 import { FOOD_TYPE_ICONS } from "./constants";
@@ -38,6 +39,7 @@ function FoodDetailPage() {
     categoriesLoading,
     savingQuick,
     savingAllergens,
+    allergenSaveState,
     allergenModalOpen,
     setAllergenModalOpen,
     allergenDraft,
@@ -249,6 +251,7 @@ function FoodDetailPage() {
             />
           ) : null}
 
+          <AutosaveToast state={allergenSaveState} />
           {supportsQuickEditor ? (
             <FoodDetailAllergenModal
               open={allergenModalOpen}

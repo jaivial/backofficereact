@@ -507,7 +507,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
     const target = await resolveGeneralDessertTarget();
     if (!target) throw new Error("No se pudo resolver la carta general de postres");
     const payload = dishes
-      .filter((dish) => dish.title.trim().length > 0)
       .map((dish) => ({
         id: dish.id,
         catalog_dish_id: dish.catalog_dish_id ?? null,
@@ -659,7 +658,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         if (shouldSyncStructure) {
           const structure = rebuilt.map((sec, idx) => ({
             id: sec.id,
-            title: sec.title.trim() || "Seccion",
+            title: sec.title.trim(),
             display_title: sec.displayTitle.trim(),
             subtitle: sec.subtitle.trim(),
             tab_label: sec.tabLabel.trim(),
@@ -697,12 +696,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
           // their own (empty) section rows.
           if (isGeneralDessertSection(section.kind, section.dessertSource)) continue;
 
-          // Coordination id: autosave_blank_title_guard_v1
-          // The dishes endpoint drops rows with an empty title, so persisting while a
-          // title is blank would delete the dish and the reconcile would resurrect the
-          // old text. Pause this section until a title exists again: the operator can
-          // clear the field and retype from scratch without losing the row.
-          if (section.dishes.some((dish) => dish.title.trim().length === 0)) continue;
+          // Coordination id: comida_autosave_v1 — blank titles are persisted, never skipped.
 
           const previousSectionSyncState = lastSavedSectionDishSyncRef.current[section.clientId];
           const nextSectionSyncState = { order: "", byId: {} }; // placeholder
@@ -727,12 +721,10 @@ export function useMenuEditor(): UseMenuEditorReturn {
               const dishId = String(dish.id);
               return sectionSyncState.byId[dishId] !== (previousSectionSyncState?.byId[dishId] ?? "");
             });
-            const hasUnsupportedPatch = changedDishes.some((dish) => dish.title.trim().length === 0);
-            if (!hasUnsupportedPatch && changedDishes.length > 0) {
+            if (changedDishes.length > 0) {
               for (const dish of changedDishes) {
                 if (!dish.id) continue;
                 const trimmedTitle = dish.title.trim();
-                if (!trimmedTitle) continue;
                 const patched = await api.menus.gruposV2.patchSectionDish(menuId, section.id, dish.id, {
                   catalog_dish_id: dish.catalog_dish_id ?? null,
                   title: trimmedTitle,
@@ -758,9 +750,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
 
           for (const dish of section.dishes) {
             const trimmedTitle = dish.title.trim();
-            if (!trimmedTitle) continue;
             let catalogId = dish.catalog_dish_id ?? null;
-            if (!catalogId && !dish.id) {
+            if (!catalogId && !dish.id && trimmedTitle) {
               const upsert = await api.menus.dishesCatalog.upsert({
                 id: undefined, title: trimmedTitle, description: dish.description.trim(),
                 allergens: dish.allergens, default_supplement_enabled: dish.supplement_enabled,

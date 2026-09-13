@@ -402,15 +402,9 @@ export function MenuSectionEditor({
                     value={sec.displayTitle}
                     onChange={(e) => updateSection(sec.clientId, { displayTitle: e.target.value })}
                     placeholder="Titulo visible en la web"
-                    aria-required="true"
                     data-testid={`menu-section-editor-settings-display-title-${sec.clientId}`}
                     data-coordination-id="menu-section-display-title-v1"
                   />
-                  {sec.displayTitle.trim().length === 0 ? (
-                    <div className="bo-mutedText" data-testid={`menu-section-editor-settings-display-title-error-${sec.clientId}`}>
-                      El titulo a mostrar es obligatorio (el guardado lo rechaza).
-                    </div>
-                  ) : null}
                 </div>
 
                 <div className="bo-field bo-field--full" data-slot="menuSectionEditor-settings-subtitleField">
