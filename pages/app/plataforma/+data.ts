@@ -1,6 +1,8 @@
 import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
+import { adminApiAuthHeader } from "../../../api/adminApiAuth";
+
 export type PlataformaPageData = {
   dashboard: Awaited<ReturnType<typeof fetchDashboard>>;
   error: string | null;
@@ -10,8 +12,13 @@ export type Data = Awaited<ReturnType<typeof data>>;
 
 async function fetchDashboard(backendOrigin: string, cookieHeader: string) {
   try {
+    const adminAuth = adminApiAuthHeader();
     const res = await fetch(`${backendOrigin}/admin/platform/dashboard`, {
-      headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+      headers: {
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+        // Direct SSR call: the /api proxy cannot inject the shared secret here.
+        ...(adminAuth ? { authorization: adminAuth } : {}),
+      },
     });
     if (!res.ok) return null;
     return res.json();
