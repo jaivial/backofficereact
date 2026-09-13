@@ -1,4 +1,5 @@
 import { createPOSModule } from "./modules/pos";
+import { adminApiAuthHeader } from "./adminApiAuth";
 import type {
   APIError,
   APISuccess,
@@ -150,6 +151,10 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
 
     if (!isBrowser()) {
       if (normalizedOpts.cookieHeader) headers.set("cookie", normalizedOpts.cookieHeader);
+      // SSR data hooks reach the Go backend directly, so they must present the
+      // shared admin-API secret themselves (the /api proxy only covers browsers).
+      const adminAuth = adminApiAuthHeader();
+      if (adminAuth) headers.set("authorization", adminAuth);
     } else if (!headers.has("x-correlation-id")) {
       const cid = currentCorrelationId();
       if (cid) headers.set("x-correlation-id", cid);
