@@ -754,6 +754,13 @@
     var(--bo-surface);
 }
 
+/* Collapsed dish row: the title input grows so it lands right next to the
+   active switch instead of leaving a dead gap in the middle of the row. */
+.bo-panel.bo-accordionSection--dish .bo-accordionHeadLeft .bo-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .bo-accordionHeadRow {
   display: flex;
   align-items: center;
