@@ -22,6 +22,7 @@ import type {
   RestaurantAdInput,
   RestaurantAdTextAlign,
 } from "../../../../../api/types";
+import { mergeIdList, mergeEditedText } from "../../../../../lib/autosaveGuard";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { Modal } from "../../../../../ui/overlays/Modal";
@@ -98,6 +99,21 @@ type AnuncioEditorProps = {
   sendAdScheduleCheck?: (message: { type: "ad_schedule_check"; reqId: string; adId: number; payload: { starts_at: string; ends_at: string } }) => void;
 };
 
+// Coordination id: autosave_three_way_merge_v1 - keep operator edits made after
+// the snapshot; adopt the server value for everything untouched. Empty values are
+// valid edits and are never replaced by a stale server value.
+function mergeAdEcho(base: RestaurantAd, local: RestaurantAd, server: RestaurantAd): RestaurantAd {
+  return {
+    ...server,
+    name: mergeEditedText(base.name, local.name, server.name),
+    active: Object.is(base.active, local.active) ? server.active : local.active,
+    starts_at: Object.is(base.starts_at ?? null, local.starts_at ?? null) ? (server.starts_at ?? null) : (local.starts_at ?? null),
+    ends_at: Object.is(base.ends_at ?? null, local.ends_at ?? null) ? (server.ends_at ?? null) : (local.ends_at ?? null),
+    content: mergeIdList(base.content, local.content, server.content),
+    ctas: mergeIdList(base.ctas, local.ctas, server.ctas),
+  };
+}
+
 export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs, sendAdScheduleCheck }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
@@ -165,7 +181,7 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
         setSaveState("error");
         return null;
       }
-      if (result.ad) setAd(result.ad);
+      if (result.ad) setAd((current) => current ? mergeAdEcho(source, current, result.ad as RestaurantAd) : (result.ad as RestaurantAd));
       if (result.ad && onSaved) onSaved(result.ad);
       setSaveState("saved");
       return result.ad ?? null;
@@ -232,9 +248,12 @@ export function AnuncioEditor({ api, website, notify = NOOP_NOTIFY, mode, adId, 
     if (json === baselineRef.current) return;
     const timer = setTimeout(() => {
       setSaveState("saving");
-      void persistViaWS(ad).then((saved) => {
+      const snapshot = ad;
+      void persistViaWS(snapshot).then((saved) => {
         if (saved) {
-          setAd(saved);
+          // Merge every typable field against the snapshot so a keystroke made
+          // during the request survives the echo, and clearing a field sticks.
+          setAd((current) => current ? mergeAdEcho(snapshot, current, saved) : saved);
           baselineRef.current = JSON.stringify({ name: saved.name, active: saved.active, content: saved.content, ctas: saved.ctas, starts_at: saved.starts_at ?? null, ends_at: saved.ends_at ?? null });
         }
       }).catch((error) => notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio"));

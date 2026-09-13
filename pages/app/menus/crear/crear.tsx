@@ -824,7 +824,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     </div>
                     <div className="bo-field bo-field--full" data-slot="crear-field--full">
                       <div className="bo-label" data-slot="crear-label">Comentarios</div>
-                      <textarea className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n").filter((line) => line.trim() !== ""))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
+                      <textarea className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n"))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
                     </div>
                     <div className="bo-field bo-field--full" data-slot="crear-importantInfoField" data-coordination-id="menu_important_info_v1">
                       <div className="bo-label" data-slot="crear-importantInfoLabel">Informacion importante</div>
