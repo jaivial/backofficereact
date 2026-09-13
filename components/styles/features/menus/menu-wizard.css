@@ -743,6 +743,14 @@
   overflow: hidden;
 }
 
+/* Dish row panel: same surface + border colours as the dish info card it wraps. */
+.bo-panel.bo-accordionSection--dish {
+  border: 1px solid var(--bo-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.08)),
+    var(--bo-surface);
+}
+
 .bo-accordionHeadRow {
   display: flex;
   align-items: center;
