@@ -6,6 +6,7 @@ import type { EditorDish } from "../../types/menuEditor.types";
 import { formatEuro, toNumOrNull } from "../../helpers/menuEditor.helpers";
 import { FoodDishCard } from "../../../../../../ui/widgets/food/FoodDishCard";
 import { Switch } from "../../../../../../ui/shadcn/Switch";
+import { Accordion } from "../../../../../../ui/overlays/Accordion";
 import { ALLERGENS } from "../../constants/menuEditor.constants";
 
 export type MenuItemEditorProps = {
@@ -88,6 +89,20 @@ export function MenuItemEditor({
       whileDrag={reorderWhileDrag}
     >
       {(startDishDragLocal) => (
+        <Accordion
+          title={dishLabel}
+          testId={`menu-dish-${sectionClientId}-${dish.clientId}`}
+          defaultOpen={!dish.id}
+          actions={(
+            <Switch
+              checked={dish.active}
+              disabled={readOnly}
+              onCheckedChange={(active) => updateDish(sectionClientId, dish.clientId, { active })}
+              aria-label={`Activar ${dishLabel}`}
+              data-testid={`menu-item-editor-active-switch-${dish.clientId}`}
+            />
+          )}
+        >
         <FoodDishCard
           className={`bo-dishCard bo-dishCard--horizontal${readOnly ? " bo-sectionDishesReadOnly" : ""}`}
           bodyClassName="bo-dishCardBody"
@@ -139,23 +154,16 @@ export function MenuItemEditor({
               >
                 <GripVertical size={14} />
               </button>
-              <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
-                <Switch
-                  checked={dish.active}
-                  onCheckedChange={(checked) => {
-                    updateDish(sectionClientId, dish.clientId, { active: checked });
-                  }}
-                  data-testid={`menu-item-editor-active-switch-${dish.clientId}`}
-                />
-                <span data-slot="menuItemEditor-ivo">Activo</span>
-              </label>
             </div>
             <div className="bo-dishFields" data-slot="menuItemEditor-dishFields">
               <textarea
                 className="bo-input bo-textarea bo-dishTitleTextarea"
                 rows={1}
                 value={dish.title}
-                ref={titleTextareaRef}
+                ref={(node) => {
+                  titleTextareaRef.current = node;
+                  syncTitleTextareaHeight();
+                }}
                 onInput={(e) => {
                   const node = e.currentTarget;
                   node.style.height = "auto";
@@ -270,6 +278,7 @@ export function MenuItemEditor({
             </div>
           </div>
         </FoodDishCard>
+        </Accordion>
       )}
     </ReorderItemContainer>
   );

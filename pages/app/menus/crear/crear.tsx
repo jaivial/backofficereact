@@ -47,6 +47,7 @@ import { MenuSectionEditor } from "./functionalComponents/MenuSectionEditor/Menu
 import { DishImageAdvisorModalComponent } from "./functionalComponents/DishImageAdvisorModal/DishImageAdvisorModal";
 import { ALLERGENS, beverageTypeOptions, dishVisibilityOptions, menuPreviewVisibilityOptions, menuTypeOptions, MENU_TYPES } from "./constants/menuEditor.constants";
 import { menuTypeFullLabel, menuTypeQuerySlug } from "../../../../ui/widgets/menus/menuPresentation";
+import { AutosaveToast } from "../../../../ui/feedback/AutosaveToast";
 import type { DishImageCropConfirm } from "./types/menuEditor.types";
 
 function DishImageCropModalComponent({
@@ -375,9 +376,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
         ]}
         className="bo-menuWizardBreadcrumbs"
       />
-      <div className={`bo-saveTag is-${saveState}`} data-slot="crear-div">
-        {saveState === "saving" ? "Guardando..." : saveState === "saved" ? "Guardado" : saveState === "error" ? "Error guardando" : ""}
-      </div>
+      <AutosaveToast state={saveState} />
 
       {step !== 3 || isDraft ? (
         <div className="bo-stepBars" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step + 1} data-testid="menu-crear-step-progress">
