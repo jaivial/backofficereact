@@ -12,7 +12,6 @@ type AccordionProps = {
   /** "panel" reuses the menu-section container shell (head row + editable title). */
   variant?: "default" | "panel";
   headerLead?: React.ReactNode;
-  titleLabel?: string;
   titleValue?: string;
   onTitleChange?: (value: string) => void;
   titlePlaceholder?: string;
@@ -30,7 +29,6 @@ export function Accordion({
   testId,
   variant = "default",
   headerLead,
-  titleLabel,
   titleValue,
   onTitleChange,
   titlePlaceholder,
@@ -66,10 +64,9 @@ export function Accordion({
             data-testid={`${id}-trigger`}
           >
             <span className="bo-accordionHeadLeft" data-testid={`${id}-title-wrap`}>
-              {titleLabel ? (
-                <span className="bo-label" data-testid={`${id}-title-label`}>{titleLabel}</span>
-              ) : null}
-              {onTitleChange ? (
+              {/* Collapsed rows edit the title inline (single line); expanded rows
+                  keep the plain label and let the body hold the multiline textarea. */}
+              {onTitleChange && !open ? (
                 <input
                   className="bo-input"
                   value={titleValue ?? title}
