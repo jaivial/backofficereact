@@ -12,6 +12,8 @@ import type { GroupMenuV2, GroupMenuV2AIDish, GroupMenuV2AIImages, GroupMenuV2Di
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB, MENU_AI_TRACE_PREFIX } from "../constants/menuEditor.constants";
 // Coordination id: dessert_section_source_v1
 import { isGeneralDessertSection, normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
+// Coordination id: autosave_three_way_merge_v1 - shared echo-merge primitives.
+import { mergeEditedText } from "../../../../../lib/autosaveGuard";
 
 // =============================================================================
 // Debug / Logging
@@ -731,29 +733,122 @@ export function areEditorDishesEqual(prev: EditorDish, next: EditorDish): boolea
 // API Mapping
 // =============================================================================
 
-export function mergeDishFromServer(prev: EditorDish | undefined, server: GroupMenuV2Dish): EditorDish {
-  const next = mapApiDish(server, prev);
+export function mergeDishFromServer(prev: EditorDish | undefined, server: GroupMenuV2Dish, live?: EditorDish): EditorDish {
+  const current = live ?? prev;
+  const next = mapApiDish(server, current);
   if (!prev) return next;
-  if (
-    prev.id === next.id
-    && prev.catalog_dish_id === next.catalog_dish_id
-    && prev.title === next.title
-    && prev.description === next.description
-    && prev.description_enabled === next.description_enabled
-    && arraysEqual(prev.allergens, next.allergens)
-    && prev.supplement_enabled === next.supplement_enabled
-    && prev.supplement_price === next.supplement_price
-    && prev.price === next.price
-    && prev.active === next.active
-    && prev.position === next.position
-    && prev.foto_url === next.foto_url
-    && prev.ai_requested === next.ai_requested
-    && prev.ai_generating === next.ai_generating
-    && prev.ai_generated_img === next.ai_generated_img
-  ) {
-    return prev;
+  if (!live) {
+    if (
+      prev.id === next.id
+      && prev.catalog_dish_id === next.catalog_dish_id
+      && prev.title === next.title
+      && prev.description === next.description
+      && prev.description_enabled === next.description_enabled
+      && arraysEqual(prev.allergens, next.allergens)
+      && prev.supplement_enabled === next.supplement_enabled
+      && prev.supplement_price === next.supplement_price
+      && prev.price === next.price
+      && prev.active === next.active
+      && prev.position === next.position
+      && prev.foto_url === next.foto_url
+      && prev.ai_requested === next.ai_requested
+      && prev.ai_generating === next.ai_generating
+      && prev.ai_generated_img === next.ai_generated_img
+    ) {
+      return prev;
+    }
+    return next;
   }
-  return next;
+  // Preserve every typable field the operator touched after the snapshot. Image
+  // and ai fields still come from the server: they travel their own pipeline and
+  // are never typed into a text input.
+  return {
+    ...next,
+    clientId: live.clientId,
+    title: mergeEditedText(prev.title, live.title, next.title),
+    description: mergeEditedText(prev.description, live.description, next.description),
+    description_enabled: Object.is(prev.description_enabled, live.description_enabled) ? next.description_enabled : live.description_enabled,
+    allergens: arraysEqual(prev.allergens, live.allergens) ? next.allergens : live.allergens,
+    supplement_enabled: Object.is(prev.supplement_enabled, live.supplement_enabled) ? next.supplement_enabled : live.supplement_enabled,
+    supplement_price: Object.is(prev.supplement_price, live.supplement_price) ? next.supplement_price : live.supplement_price,
+    price: Object.is(prev.price, live.price) ? next.price : live.price,
+    active: Object.is(prev.active, live.active) ? next.active : live.active,
+    // Not part of the dish payload/echo: keep the flag that the dedicated
+    // same-day-booking fetch owns so a reconcile never clears it.
+    same_day_booking_blocked: live.same_day_booking_blocked,
+  };
+}
+
+// Field-level three-way merge for a dish already in editor shape. Shared by the
+// section reconcile so a typed dish keeps its text while the server keeps every
+// structural field (id, catalog id, image pipeline).
+function mergeEditorDishFromServer(base: EditorDish, server: EditorDish, live: EditorDish): EditorDish {
+  return {
+    ...server,
+    clientId: live.clientId,
+    title: mergeEditedText(base.title, live.title, server.title),
+    description: mergeEditedText(base.description, live.description, server.description),
+    description_enabled: Object.is(base.description_enabled, live.description_enabled) ? server.description_enabled : live.description_enabled,
+    allergens: arraysEqual(base.allergens, live.allergens) ? server.allergens : live.allergens,
+    supplement_enabled: Object.is(base.supplement_enabled, live.supplement_enabled) ? server.supplement_enabled : live.supplement_enabled,
+    supplement_price: Object.is(base.supplement_price, live.supplement_price) ? server.supplement_price : live.supplement_price,
+    price: Object.is(base.price, live.price) ? server.price : live.price,
+    active: Object.is(base.active, live.active) ? server.active : live.active,
+    same_day_booking_blocked: live.same_day_booking_blocked,
+  };
+}
+
+export function reconcileServerDishes(base: EditorDish[], server: EditorDish[], live: EditorDish[]): EditorDish[] {
+  const baseByClient = new Map(base.map((dish) => [dish.clientId, dish]));
+  const liveByClient = new Map(live.map((dish) => [dish.clientId, dish]));
+  const serverClients = new Set(server.map((dish) => dish.clientId));
+  const merged = server.map((serverDish) => {
+    const liveDish = liveByClient.get(serverDish.clientId);
+    if (!liveDish) return serverDish;
+    return mergeEditorDishFromServer(baseByClient.get(serverDish.clientId) ?? liveDish, serverDish, liveDish);
+  });
+  for (const liveDish of live) {
+    if (!serverClients.has(liveDish.clientId) && !baseByClient.has(liveDish.clientId)) merged.push(liveDish);
+  }
+  return merged;
+}
+
+// Coordination id: autosave_three_way_merge_v1
+// Section-level counterpart of mergeDishFromServer. It applies a full server
+// snapshot without rolling back the text the operator typed while the save was
+// in flight, and keeps sections created after the snapshot was taken.
+export function reconcileServerSections(
+  snapshot: EditorSection[],
+  server: EditorSection[],
+  current: EditorSection[],
+): EditorSection[] {
+  const snapshotById = new Map(snapshot.map((section) => [section.clientId, section]));
+  const currentById = new Map(current.map((section) => [section.clientId, section]));
+  const serverIds = new Set(server.map((section) => section.clientId));
+  const merged = server.map((serverSection) => {
+    const live = currentById.get(serverSection.clientId);
+    if (!live) return serverSection;
+    const base = snapshotById.get(serverSection.clientId) ?? live;
+    return {
+      ...serverSection,
+      title: mergeEditedText(base.title, live.title, serverSection.title),
+      displayTitle: mergeEditedText(base.displayTitle, live.displayTitle, serverSection.displayTitle),
+      subtitle: mergeEditedText(base.subtitle, live.subtitle, serverSection.subtitle),
+      tabLabel: mergeEditedText(base.tabLabel, live.tabLabel, serverSection.tabLabel),
+      annotations: JSON.stringify(base.annotations) === JSON.stringify(live.annotations)
+        ? serverSection.annotations
+        : live.annotations,
+      // Merge dish-by-dish: the server keeps the structural fields it owns
+      // (id, catalog id, image) while the operator's in-flight text wins.
+      dishes: reconcileServerDishes(base.dishes, serverSection.dishes, live.dishes),
+      expanded: live.expanded ?? serverSection.expanded,
+    };
+  });
+  for (const live of current) {
+    if (serverIds.has(live.clientId) || snapshotById.has(live.clientId)) continue;
+    merged.push(live);
+  }
+  return merged;
 }
 
 export function mapApiDish(d: GroupMenuV2Dish, prev?: EditorDish): EditorDish {

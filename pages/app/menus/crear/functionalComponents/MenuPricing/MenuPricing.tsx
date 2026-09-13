@@ -160,7 +160,7 @@ export function MenuPricing({
           <textarea
             className="bo-input bo-textarea"
             value={comments.join("\n")}
-            onChange={(e) => onCommentsChange(e.target.value.split("\n").filter((line) => line.trim() !== ""))}
+            onChange={(e) => onCommentsChange(e.target.value.split("\n"))}
             placeholder="Añade comentarios..."
             rows={2}
             onInput={(e) => {
