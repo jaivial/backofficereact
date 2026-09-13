@@ -1,7 +1,7 @@
 import { type ProductionType } from "../../../../_components/TechnicalSheet/ProductionTypeToggle";
 import { ProductionTypeSection } from "../../../../_components/TechnicalSheet/ProductionTypeSection";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Save, Upload, Wine } from "lucide-react";
+import { Save, Upload, Wine } from "lucide-react";
 
 import { Select } from "../../../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../../../ui/shadcn/Switch";
@@ -13,6 +13,7 @@ import { useBreadcrumbFadeout } from "../../../../_components/hooks/useBreadcrum
 import type { WineDetailEditorProps } from "./types";
 import { WINE_TIPO_OPTIONS } from "./constants";
 import { useWineForm } from "./hooks/useWineForm";
+import { AutosaveToast } from "../../../../../../../ui/feedback/AutosaveToast";
 import { useWineImage } from "./hooks/useWineImage";
 import { useWineAIWebSocket } from "./hooks/useWineAIWebSocket";
 import { WineImageAdvisor } from "./ui/WineImageAdvisor";
@@ -23,7 +24,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
 
   // Fade-out before breadcrumb navigation
   useBreadcrumbFadeout(sectionRef);
-  const { form, saving, canSave, createdId, setField, save } = useWineForm(vino, isNew);
+  const { form, saving, canSave, createdId, setField, save, saveState } = useWineForm(vino, isNew);
   const {
     uploading,
     generating,
@@ -403,26 +404,12 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
             title="Guardar vino"
             data-role="wine-detail-save-btn"
           >
-            {saving ? (
-              <>
-                <Loader2
-                  size={14}
-                  className="bo-foodDetailSpinIcon"
-                  data-role="wine-detail-save-spinner"
-                />
-                <span data-role="wine-detail-saving-text">Guardando...</span>
-              </>
-            ) : (
-              <>
-                <Save size={14} data-role="wine-detail-save-icon" />
-                <span data-role="wine-detail-save-text">Guardar</span>
-              </>
-            )}
+            <Save size={14} data-role="wine-detail-save-icon" />
+            <span data-role="wine-detail-save-text">Guardar</span>
           </button>
         </div>
       </Panel>
-
-
+      <AutosaveToast state={saveState} />
     </section>
   );
 }
