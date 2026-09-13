@@ -61,6 +61,7 @@ export function useFoodDetailPage() {
   const [savingQuick, setSavingQuick] = useState(false);
   const [savingAllergens, setSavingAllergens] = useState(false);
   const [allergenSaveState, setAllergenSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [quickSaveState, setQuickSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [allergenModalOpen, setAllergenModalOpen] = useState(false);
   const [allergenDraft, setAllergenDraft] = useState<string[]>([]);
   const [bebidaCatModalOpen, setBebidaCatModalOpen] = useState(false);
@@ -365,6 +366,7 @@ export function useFoodDetailPage() {
     }
 
     setSavingQuick(true);
+    setQuickSaveState("saving");
     try {
       // CREATE flow for new items
       if (data.isNew) {
@@ -436,6 +438,7 @@ export function useFoodDetailPage() {
       }
 
       if (!res.success) {
+        setQuickSaveState("error");
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudieron guardar los cambios" });
         return;
       }
@@ -458,9 +461,9 @@ export function useFoodDetailPage() {
         setItemState(fallbackItem);
         syncQuickFromItem(fallbackItem);
       }
-      const toastTitle = isPlate ? "Plato actualizado" : isCafe ? "Cafe actualizado" : "Bebida actualizada";
-      pushToast({ kind: "success", title: toastTitle });
+      setQuickSaveState("saved");
     } catch {
+      setQuickSaveState("error");
       pushToast({ kind: "error", title: "Error", message: "Error de conexion" });
     } finally {
       setSavingQuick(false);
@@ -723,6 +726,7 @@ export function useFoodDetailPage() {
     categoriesLoading,
     savingQuick,
     savingAllergens,
+    quickSaveState,
     allergenSaveState,
     allergenModalOpen,
     setAllergenModalOpen,

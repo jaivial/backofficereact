@@ -1,7 +1,7 @@
 import { type ProductionType } from "../../../../_components/TechnicalSheet/ProductionTypeToggle";
 import { ProductionTypeSection } from "../../../../_components/TechnicalSheet/ProductionTypeSection";
 import React, { useEffect, useState } from "react";
-import { Loader2, Plus, Save, X } from "lucide-react";
+import { Plus, Save, X } from "lucide-react";
 
 import { Select } from "../../../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../../../ui/shadcn/Switch";
@@ -306,7 +306,7 @@ export function FoodDetailQuickEditor({
           title="Guardar cambios"
           data-role="food-detail-quick-save-btn"
         >
-          {savingQuick ? <><Loader2 size={14} className="bo-foodDetailSpinIcon" /> Guardando</> : <><Save size={14} /> Guardar</>}
+          <Save size={14} /> Guardar
         </button>
       </div>
     </Panel>
