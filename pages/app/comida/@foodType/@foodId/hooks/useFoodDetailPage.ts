@@ -60,6 +60,7 @@ export function useFoodDetailPage() {
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [savingQuick, setSavingQuick] = useState(false);
   const [savingAllergens, setSavingAllergens] = useState(false);
+  const [allergenSaveState, setAllergenSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [allergenModalOpen, setAllergenModalOpen] = useState(false);
   const [allergenDraft, setAllergenDraft] = useState<string[]>([]);
   const [bebidaCatModalOpen, setBebidaCatModalOpen] = useState(false);
@@ -322,7 +323,6 @@ export function useFoodDetailPage() {
     }
     if (!currentFoodItem) return false;
     if (!quickDirty) return false;
-    if (quickName.trim().length === 0) return false;
     if (quickPriceNumber === null || quickPriceNumber < 0) return false;
     if (quickSuppEffectiveNumber === null || quickSuppEffectiveNumber < 0) return false;
     return true;
@@ -344,8 +344,8 @@ export function useFoodDetailPage() {
     }
 
     const basePayload: Record<string, unknown> = {
-      nombre: quickName.trim() || (isPlate ? "Nuevo plato" : isBebida ? "Nueva bebida" : "Nuevo cafe"),
-      tipo: isPlate ? (quickTipo.trim() || "PRINCIPAL") : (isCafe ? "CAFE" : isBebida ? "REFRESCO" : ""),
+      nombre: quickName.trim(),
+      tipo: isPlate ? quickTipo.trim() : (isCafe ? "CAFE" : isBebida ? "REFRESCO" : ""),
       precio: precioNumber,
       suplemento: suplementoNumber ?? 0,
       descripcion: quickDescripcion.trim(),
@@ -514,7 +514,7 @@ export function useFoodDetailPage() {
   ]);
 
   const onToggleAllergenAndPersist = useCallback(async (key: string) => {
-    if (!currentFoodItem || savingAllergens) return;
+    if (!currentFoodItem || savingAllergens || (!isPlate && !isCafe && !isBebida)) return;
     const prevDraft = normalizeToCardAllergens(allergenDraft);
     const prevAllergens = quickAllergens;
     const nextDraft = prevDraft.includes(key)
@@ -528,6 +528,7 @@ export function useFoodDetailPage() {
     setItemState((prev) => (prev ? { ...prev, alergenos: nextAllergens } as FoodItem : prev));
 
     setSavingAllergens(true);
+    setAllergenSaveState("saving");
     try {
       const itemNum = currentFoodItem.num;
       let res: { success: boolean; message?: string };
@@ -540,6 +541,7 @@ export function useFoodDetailPage() {
       } else {
         return;
       }
+      setAllergenSaveState(res.success ? "saved" : "error");
       if (!res.success) {
         setAllergenDraft(prevDraft);
         setQuickAllergens(prevAllergens);
@@ -547,6 +549,7 @@ export function useFoodDetailPage() {
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudieron guardar los alergenos" });
       }
     } catch {
+      setAllergenSaveState("error");
       setAllergenDraft(prevDraft);
       setQuickAllergens(prevAllergens);
       setItemState((prev) => (prev ? { ...prev, alergenos: prevAllergens } as FoodItem : prev));
@@ -720,6 +723,7 @@ export function useFoodDetailPage() {
     categoriesLoading,
     savingQuick,
     savingAllergens,
+    allergenSaveState,
     allergenModalOpen,
     setAllergenModalOpen,
     allergenDraft,
