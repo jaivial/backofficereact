@@ -60,7 +60,7 @@ export function useWineForm(vino: Vino | null, isNew: boolean) {
   const canSave = useMemo(() => {
     if (saving) return false;
     if (!dirty && !isNew) return false;
-    if (!form.nombre.trim()) return false;
+    if (isNew && !form.nombre.trim()) return false;
     const price = parseDecimal(form.precio);
     if (price === null || price < 0) return false;
     return true;
@@ -73,7 +73,7 @@ export function useWineForm(vino: Vino | null, isNew: boolean) {
   const save = useCallback(async (): Promise<Vino | null> => {
     if (!canSave) return null;
     const precioNumber = parseDecimal(form.precio);
-    const graduacionNumber = form.graduacion.trim() ? (parseDecimal(form.graduacion) ?? undefined) : undefined;
+    const graduacionNumber = form.graduacion.trim() ? (parseDecimal(form.graduacion) ?? undefined) : 0;
     if (precioNumber === null || precioNumber < 0) {
       pushToast({ kind: "error", title: "Error", message: "Precio invalido" });
       return null;
