@@ -4,7 +4,6 @@ import { AnimatePresence, motion, Reorder } from "motion/react";
 import type { EditorSection } from "../../types/menuEditor.types";
 import type { DishCatalogItem } from "../../../../../../api/types";
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
-import { ScrollArea } from "../../../../../../ui/layout/ScrollArea";
 import { Switch } from "../../../../../../ui/shadcn/Switch";
 import { MenuItemEditor } from "../MenuItemEditor/MenuItemEditor";
 import { ALLERGENS } from "../../constants/menuEditor.constants";
@@ -350,6 +349,64 @@ export function MenuSectionEditor({
                     : settingsTabId
             }
           >
+            {dishTab === "active" || dishTab === "inactive" ? (
+              <div className="bo-dishAddRow" data-slot="menuSectionEditor-dishAddRow">
+                <div className="bo-dishSearchWrap" data-slot="menuSectionEditor-dishSearchWrap">
+                  <Search size={14} aria-hidden="true" />
+                  <input
+                    className="bo-input bo-dishSearch"
+                    value={searchTerm}
+                    onChange={(e) => handleSearch(sec.clientId, e.target.value)}
+                    placeholder="Buscar en catalogo..."
+                    aria-label={`Buscar plato en catalogo para ${sectionLabel}`}
+                    data-testid={`menu-section-editor-dish-search-${sec.clientId}`}
+                  />
+                </div>
+                {searchTerm.trim().length >= 2 && searchItems.length > 0 ? (
+                  <div
+                    className="bo-dishSearchResults"
+                    role="listbox"
+                    aria-label="Resultados de busqueda"
+                    data-testid={`menu-section-editor-search-results-${sec.clientId}`}
+                  >
+                    {searchItems.map((item) => (
+                      <button
+                        key={item.id}
+                        className="bo-dishSearchResultItem"
+                        type="button"
+                        onClick={() => handleAddDishFromCatalog(item)}
+                        role="option"
+                        aria-selected={false}
+                        data-testid={`menu-section-editor-search-result-${item.id}`}
+                      >
+                        <span className="bo-dishSearchResultTitle" data-slot="menuSectionEditor-dishSearchResultTitle">{item.title}</span>
+                        {item.allergens && item.allergens.length > 0 ? (
+                          <span className="bo-dishSearchResultAllergens" aria-label="Alergenos" data-slot="menuSectionEditor-dishSearchResultAllergens">
+                            {item.allergens.map((allergen) => {
+                              const key = allergen.trim().toLowerCase();
+                              const entry = ALLERGENS.find((item) => item.key.toLowerCase() === (ALLERGEN_ALIASES[key] ?? key));
+                              if (!entry) return null;
+                              const Icon = entry.icon;
+                              return <span key={`${entry.key}-${allergen}`} className="bo-dishSearchResultAllergenIcon" title={entry.key}><Icon size={14} aria-hidden="true" /></span>;
+                            })}
+                          </span>
+                        ) : null}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                <button
+                  className="bo-btn bo-btn--ghost bo-btn--sm"
+                  type="button"
+                  onClick={handleAddDish}
+                  aria-label={`Añadir plato a ${sectionLabel}`}
+                  data-testid={`menu-section-editor-add-dish-${sec.clientId}`}
+                >
+                  <Plus size={14} /> Añadir plato
+                </button>
+              </div>
+            ) : null}
+
             {dishTab === "annotations" ? (
               <div className="bo-field bo-field--full" data-slot="menuSectionEditor-field--full">
                 <div className="bo-stackFields" data-slot="menuSectionEditor-stackFields">
@@ -560,61 +617,6 @@ export function MenuSectionEditor({
             </div>
           ) : null}
 
-          {dishTab === "active" || dishTab === "inactive" ? (
-            <>
-              <div className="bo-dishAddRow" data-slot="menuSectionEditor-dishAddRow">
-                <div className="bo-dishSearchWrap" data-slot="menuSectionEditor-dishSearchWrap">
-                  <Search size={14} aria-hidden="true" />
-                  <input
-                    className="bo-input bo-dishSearch"
-                    value={searchTerm}
-                    onChange={(e) => handleSearch(sec.clientId, e.target.value)}
-                    placeholder="Buscar en catalogo..."
-                    aria-label={`Buscar plato en catalogo para ${sectionLabel}`}
-                    data-testid={`menu-section-editor-dish-search-${sec.clientId}`}
-                  />
-                </div>
-                {searchTerm.trim().length >= 2 && searchItems.length > 0 ? (
-                  <ScrollArea dataSlot="menu-section-editor-search-results"><div className="bo-dishSearchResults" role="listbox" aria-label="Resultados de busqueda" data-testid={`menu-section-editor-search-results-${sec.clientId}`}>
-                    {searchItems.map((item) => (
-                      <button
-                        key={item.id}
-                        className="bo-dishSearchResultItem"
-                        type="button"
-                        onClick={() => handleAddDishFromCatalog(item)}
-                        role="option"
-                        aria-selected={false}
-                        data-testid={`menu-section-editor-search-result-${item.id}`}
-                      >
-                        <span className="bo-dishSearchResultTitle" data-slot="menuSectionEditor-dishSearchResultTitle">{item.title}</span>
-                        {item.allergens && item.allergens.length > 0 ? (
-                          <span className="bo-dishSearchResultAllergens" aria-label="Alergenos" data-slot="menuSectionEditor-dishSearchResultAllergens">
-                            {item.allergens.map((allergen) => {
-                              const key = allergen.trim().toLowerCase();
-                              const entry = ALLERGENS.find((item) => item.key.toLowerCase() === (ALLERGEN_ALIASES[key] ?? key));
-                              if (!entry) return null;
-                              const Icon = entry.icon;
-                              return <span key={`${entry.key}-${allergen}`} className="bo-dishSearchResultAllergenIcon" title={entry.key}><Icon size={14} aria-hidden="true" /></span>;
-                            })}
-                          </span>
-                        ) : null}
-                      </button>
-                    ))}
-                  </div>
-                </ScrollArea>
-                ) : null}
-                <button
-                  className="bo-btn bo-btn--ghost bo-btn--sm"
-                  type="button"
-                  onClick={handleAddDish}
-                  aria-label={`Añadir plato a ${sectionLabel}`}
-                  data-testid={`menu-section-editor-add-dish-${sec.clientId}`}
-                >
-                  <Plus size={14} /> Añadir plato
-                </button>
-              </div>
-            </>
-          ) : null}
         </motion.div>
       ) : null}
       </AnimatePresence>
