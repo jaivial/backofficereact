@@ -18,7 +18,7 @@ export function ToastStack({
 
   useEffect(() => {
     const now = Date.now();
-    const timers = toasts.map((t) => {
+    const timers = toasts.filter((t) => t.timeoutMs > 0).map((t) => {
       const elapsed = now - t.createdAt;
       const remaining = Math.max(0, t.timeoutMs - elapsed);
       return window.setTimeout(() => dismissToast(t.id), remaining);
@@ -29,7 +29,7 @@ export function ToastStack({
   }, [dismissToast, toasts]);
 
   return (
-    <div className={cn("bo-toastWrap", className)} aria-label="Notifications" aria-live="polite" data-ui="toast-stack">
+    <div className={cn("bo-toastWrap", className)} aria-label="Notifications" aria-live="polite" data-ui="toast-stack" data-testid="global-toast-stack">
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
           <motion.div
@@ -42,10 +42,11 @@ export function ToastStack({
             role="status"
             data-ui="toast"
             data-kind={t.kind}
+            data-testid={`toast-${t.id}`} data-observation="notification-state"
           >
-            <div className="bo-toastTitle" data-ui="toast-title">{t.title}</div>
-            {t.message ? <div className="bo-toastMsg" data-ui="toast-message">{t.message}</div> : null}
-            <button className="bo-toastX" type="button" onClick={() => dismissToast(t.id)} aria-label="Dismiss" data-ui="toast-dismiss-btn">
+            <div className="bo-toastTitle" data-ui="toast-title" data-testid={`toast-${t.id}-title`}>{t.title}</div>
+            {t.message ? <div className="bo-toastMsg" data-ui="toast-message" data-testid={`toast-${t.id}-message`}>{t.message}</div> : null}
+            <button className="bo-toastX" type="button" onClick={() => dismissToast(t.id)} aria-label="Dismiss" data-ui="toast-dismiss-btn" data-testid={`toast-${t.id}-dismiss`}>
               <X size={15} strokeWidth={1.9} aria-hidden="true" />
             </button>
           </motion.div>
