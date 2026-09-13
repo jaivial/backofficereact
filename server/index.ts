@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 // vike reads VIKE_CRAWL at config-resolution time, so set it before any
 // renderPage/dev-middleware runs. Only set when absent: an explicit VIKE_CRAWL
 // (docker-compose, CI) is respected as-is.
+import { registerAdminApiAuth } from "../api/adminApiAuth";
 import { defaultVikeCrawl } from "./vikeCrawl";
 
 if (!process.env.VIKE_CRAWL) {
@@ -683,6 +684,11 @@ async function start() {
     .split(",")
     .map((x) => x.trim())
     .filter(Boolean);
+
+  // SSR data hooks reach the Go backend directly (backendOrigin), so they need
+  // the shared admin-API secret as well. Register it once here: this entry is
+  // the only server-side owner of VAULT_KEY, and the value stays in memory.
+  registerAdminApiAuth(vaultAuthHeader());
 
   if (!isProd && !(await isBackendReachable(backendOrigin))) {
     logBackendUnavailable("startup", backendOrigin);
