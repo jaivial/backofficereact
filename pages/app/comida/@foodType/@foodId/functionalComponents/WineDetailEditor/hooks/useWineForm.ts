@@ -36,6 +36,7 @@ export function useWineForm(vino: Vino | null, isNew: boolean) {
   const { pushToast } = useToasts();
   const [form, setForm] = useState<WineFormData>(() => vinoToForm(vino));
   const [saving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [createdId, setCreatedId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export function useWineForm(vino: Vino | null, isNew: boolean) {
     }
 
     setSaving(true);
+    setSaveState("saving");
     try {
       if (isNew) {
         const res = await api.comida.vinos.create({
@@ -94,6 +96,7 @@ export function useWineForm(vino: Vino | null, isNew: boolean) {
           active: form.active,
         });
         if (!res.success) {
+          setSaveState("error");
           pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo crear el vino" });
           return null;
         }
@@ -101,7 +104,7 @@ export function useWineForm(vino: Vino | null, isNew: boolean) {
         if (newId) setCreatedId(newId);
         const freshRes = await api.comida.vinos.get(newId);
         const saved = freshRes.success ? (freshRes.vino as Vino) : null;
-        pushToast({ kind: "success", title: "Vino creado" });
+        setSaveState("saved");
         return saved;
       }
 
@@ -117,13 +120,15 @@ export function useWineForm(vino: Vino | null, isNew: boolean) {
         active: form.active,
       });
       if (!res.success) {
+        setSaveState("error");
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar el vino" });
         return null;
       }
-      pushToast({ kind: "success", title: "Vino actualizado" });
+      setSaveState("saved");
       const freshRes = await api.comida.vinos.get((vino as Vino).num);
       return freshRes.success ? (freshRes.vino as Vino) : null;
     } catch {
+      setSaveState("error");
       pushToast({ kind: "error", title: "Error", message: "Error de conexion" });
       return null;
     } finally {
@@ -131,5 +136,5 @@ export function useWineForm(vino: Vino | null, isNew: boolean) {
     }
   }, [api.comida.vinos, canSave, form, isNew, pushToast, vino]);
 
-  return { form, saving, dirty, canSave, createdId, setField, save };
+  return { form, saving, dirty, canSave, createdId, setField, save, saveState };
 }
