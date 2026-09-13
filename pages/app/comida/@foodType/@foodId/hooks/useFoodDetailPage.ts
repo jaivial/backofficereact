@@ -200,10 +200,14 @@ export function useFoodDetailPage() {
     setQuickAllergens(normalizeToCardAllergens(Array.isArray(nextItem.alergenos) ? nextItem.alergenos : []));
   }, []);
 
+  // Coordination id: autosave_local_edit_guard_v1
+  // Seed the quick form only when a DIFFERENT product is opened. Re-seeding on
+  // every item update (an AI image completing, a background resync) used to write
+  // the server value over whatever the operator was still typing.
   useEffect(() => {
     if (!supportsQuickEditor) return;
     syncQuickFromItem(item as FoodItem | null);
-  }, [supportsQuickEditor, item, syncQuickFromItem]);
+  }, [supportsQuickEditor, itemNum, syncQuickFromItem]);
 
   useEffect(() => {
     if (!isPlate && !isBebida) return;
