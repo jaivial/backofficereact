@@ -686,6 +686,8 @@ export type ConfigSalonInput = {
 export type RestaurantInfo = {
   direccion: string;
   telefono: string;
+  /** Number a human answers: the WhatsApp bot hands it over for same-day handoff. */
+  managementPhone: string;
   email: string;
   website: string;
   cif: string;
