@@ -743,8 +743,11 @@
   overflow: hidden;
 }
 
-/* Dish row panel: same surface + border colours as the dish info card it wraps. */
+/* Dish row panel: same surface + border colours as the dish info card it wraps.
+   Overflow stays visible so the panel never clips the header row, the switches,
+   or the card hover lift while the list scrolls under the pointer. */
 .bo-panel.bo-accordionSection--dish {
+  overflow: visible;
   border: 1px solid var(--bo-border);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.08)),
