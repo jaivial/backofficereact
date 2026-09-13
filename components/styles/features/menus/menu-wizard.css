@@ -761,6 +761,14 @@
   min-width: 0;
 }
 
+/* Expanded dish: the panel already carries the surface, so the info card inside
+   drops its own border/background instead of drawing a double container. */
+.bo-panel.bo-accordionSection--dish.is-active .bo-foodMemberCard {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .bo-accordionHeadRow {
   display: flex;
   align-items: center;
@@ -1326,17 +1334,20 @@
   padding: 0 8px;
 }
 
+/* Search + "Añadir plato" sit above the dish list (right under the tabs) and
+   wrap: search grows on desktop, everything stacks on narrow screens. */
 .bo-dishAddRow {
-  margin-top: 10px;
-  padding-bottom: 16px;
+  margin: 0 0 var(--bo-space-3);
+  padding-bottom: 0;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
 
 .bo-dishAddRow > .bo-btn {
-  align-self: center;
+  flex: 0 0 auto;
 }
 
 .bo-dishSearchWrap {
@@ -1344,20 +1355,27 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
-  max-width: 420px;
+  flex: 1 1 240px;
+  min-width: 0;
+  width: auto;
+  max-width: none;
 }
 
 .bo-dishSearchWrap .bo-dishSearch {
   width: 100%;
+  min-width: 0;
 }
 
 .bo-dishSearchResults {
-  width: 95%;
+  flex: 1 1 100%;
+  width: 100%;
   max-width: none;
-  align-self: center;
-  margin: 0 auto;
+  align-self: stretch;
+  margin: 0;
   max-height: min(280px, 42vh);
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   display: grid;
   gap: 4px;
   padding: 6px;
@@ -1367,6 +1385,22 @@
     linear-gradient(145deg, color-mix(in srgb, var(--bo-accent) 10%, transparent), transparent 52%),
     var(--bo-surface-2);
   box-shadow: var(--bo-shadow-soft);
+}
+
+@media (max-width: 640px) {
+  .bo-dishAddRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bo-dishSearchWrap {
+    flex: 0 0 auto;
+  }
+
+  .bo-dishAddRow > .bo-btn.bo-btn--ghost {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .bo-dishSearchResultItem {
