@@ -34,6 +34,7 @@ import {
   normalizeMenuPreviewPatch,
   normalizeSectionAnnotations,
   parseLooseBool,
+  reconcileServerSections,
   preprocessDishImageToWebp,
   resolveMenuPreviewState,
   toNumOrNull,
@@ -696,6 +697,13 @@ export function useMenuEditor(): UseMenuEditorReturn {
           // their own (empty) section rows.
           if (isGeneralDessertSection(section.kind, section.dessertSource)) continue;
 
+          // Coordination id: autosave_blank_title_guard_v1
+          // The dishes endpoint drops rows with an empty title, so persisting while a
+          // title is blank would delete the dish and the reconcile would resurrect the
+          // old text. Pause this section until a title exists again: the operator can
+          // clear the field and retype from scratch without losing the row.
+          if (section.dishes.some((dish) => dish.title.trim().length === 0)) continue;
+
           const previousSectionSyncState = lastSavedSectionDishSyncRef.current[section.clientId];
           const nextSectionSyncState = { order: "", byId: {} }; // placeholder
 
@@ -782,9 +790,21 @@ export function useMenuEditor(): UseMenuEditorReturn {
 
           const prevByID = new Map<number, EditorDish>();
           section.dishes.forEach((dish) => { if (dish.id) prevByID.set(dish.id, dish); });
+          // The snapshot in `section.dishes` is the value we SENT; the operator may
+          // have typed more while the request was in flight, so merge the echo
+          // against the live dish. Match by the stable clientId, which also covers a
+          // brand-new dish that only got its server id during this same save
+          // (coordination id: autosave_three_way_merge_v1).
+          const liveDishes = sectionsRef.current.find((row) => row.clientId === section.clientId)?.dishes;
+          const liveByClientId = new Map<string, EditorDish>();
+          (liveDishes || []).forEach((dish) => liveByClientId.set(dish.clientId, dish));
           const merged = (saved.dishes || []).map((dish, dishIdx) => {
-            const prev = (dish.id ? prevByID.get(dish.id) : undefined) || section.dishes[dishIdx];
-            return mergeDishFromServer(prev, dish);
+            const snapshotDish = section.dishes[dishIdx];
+            const prev = (dish.id ? prevByID.get(dish.id) : undefined) || snapshotDish;
+            const live = snapshotDish
+              ? liveByClientId.get(snapshotDish.clientId)
+              : (dish.id ? liveDishes?.find((row) => row.id === dish.id) : undefined);
+            return mergeDishFromServer(prev, dish, live);
           });
           if (merged.length === section.dishes.length && merged.every((dish, idx) => dish === section.dishes[idx])) {
             // no-op
@@ -795,7 +815,11 @@ export function useMenuEditor(): UseMenuEditorReturn {
         }
 
         if (syncRequestSeqRef.current !== requestSeq) return sectionsSnapshot;
-        if (needsStateReconcile) setSections(rebuilt);
+        if (needsStateReconcile) {
+          // Adopt the persisted rows but keep any text typed after the snapshot,
+          // so the debounced save never overwrites what is being written now.
+          setSections((liveSections) => reconcileServerSections(sectionsSnapshot, rebuilt, liveSections));
+        }
         const savedSource = needsStateReconcile ? rebuilt : sectionsSnapshot;
         lastSavedSectionsRef.current = needsStateReconcile ? getSectionsFingerprint(savedSource) : fingerprint;
         lastSavedSectionsStructureRef.current = getSectionsStructureFingerprint(savedSource);
