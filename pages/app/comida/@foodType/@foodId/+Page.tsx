@@ -39,6 +39,7 @@ function FoodDetailPage() {
     categoriesLoading,
     savingQuick,
     savingAllergens,
+    quickSaveState,
     allergenSaveState,
     allergenModalOpen,
     setAllergenModalOpen,
@@ -251,6 +252,7 @@ function FoodDetailPage() {
             />
           ) : null}
 
+          <AutosaveToast state={supportsQuickEditor ? quickSaveState : "idle"} />
           <AutosaveToast state={allergenSaveState} />
           {supportsQuickEditor ? (
             <FoodDetailAllergenModal
