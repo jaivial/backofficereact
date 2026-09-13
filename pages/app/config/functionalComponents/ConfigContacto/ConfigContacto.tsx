@@ -179,7 +179,13 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
     setInfo((prev) => ({ ...prev, clasificacion: value as "persona_fisica" | "sociedad" }));
   }, []);
 
-  const contactoFields: (keyof RestaurantInfo)[] = ["direccion", "telefono", "email", "website"];
+  const contactoFields: (keyof RestaurantInfo)[] = [
+    "direccion",
+    "telefono",
+    "managementPhone",
+    "email",
+    "website",
+  ];
   const fiscalFields: (keyof RestaurantInfo)[] = ["cif", "direccionFacturacion", "clasificacion"];
   const contactoDirty = contactoFields.some((f) => info[f] !== savedInfo[f]);
   const fiscalDirty = fiscalFields.some((f) => info[f] !== savedInfo[f]);
@@ -327,6 +333,35 @@ export function ConfigContactoContent({ initialInfo, busy, setBusy, setError, ap
               aria-label="Teléfono de contacto"
               data-testid="config-contacto-telefono-input"
             />
+          </div>
+
+          <div
+            className="bo-field"
+            data-ui="config-contacto-management-phone-field"
+            data-slot="config-contacto-management-phone-field"
+          >
+            <label
+              className="bo-label"
+              htmlFor="config-contacto-telefono-gestion"
+              data-slot="configContacto-label"
+            >
+              Tel&eacute;fono de gesti&oacute;n (WhatsApp)
+            </label>
+            <input
+              id="config-contacto-telefono-gestion"
+              type="tel"
+              className="bo-input"
+              value={info.managementPhone}
+              onChange={(e) => handleField("managementPhone", e.target.value)}
+              disabled={busy}
+              placeholder="+34 638 85 72 94"
+              aria-label="Tel&eacute;fono de gesti&oacute;n para el bot de WhatsApp"
+              data-testid="config-contacto-management-phone-input"
+            />
+            <p className="bo-help" data-testid="config-contacto-management-phone-hint">
+              N&uacute;mero que atiende una persona. Es el que el bot de WhatsApp da a los
+              clientes para gestiones del mismo d&iacute;a y cuando piden hablar con alguien.
+            </p>
           </div>
 
           <div className="bo-field" data-ui="config-contacto-email-field" data-slot="config-contacto-email-field">
