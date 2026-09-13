@@ -158,6 +158,7 @@ export default function Page() {
     data.restaurantInfo ?? {
       direccion: "",
       telefono: "",
+      managementPhone: "",
       email: "",
       website: "",
       cif: "",
@@ -356,6 +357,7 @@ export default function Page() {
                 restaurantInfo ?? {
                   direccion: "",
                   telefono: "",
+                  managementPhone: "",
                   email: "",
                   website: "",
                   cif: "",
