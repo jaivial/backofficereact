@@ -984,6 +984,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     );
   }, [errors, invoiceDate, amount, useLineItems, lineItems]);
 
+  // Shared IVA mode control, rendered just above the IVA inputs of the active mode.
+  const ivaModeToggle = (
+    <SwitchField
+      checked={ivaIncluded}
+      onChange={setIvaIncluded}
+      label={ivaIncluded ? "IVA incluido" : "IVA desglosado"}
+      data-testid="invoice-iva-mode-toggle"
+    />
+  );
+
   return (
     <div data-testid="invoiceForm-invoiceForm" className="bo-invoiceForm" style={{ position: "relative" }} data-slot="invoiceForm-invoiceForm">
       {/* Loading overlay for form submission */}
@@ -1294,6 +1304,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             {useLineItems ? (
               <div data-testid="invoiceForm-invoiceFormRow-lineItems" className="bo-invoiceFormRow bo-invoiceFormRow--lineItems" data-slot="invoiceForm-invoiceFormRow--lineItems">
+                {ivaModeToggle}
                 <LineItems
                   ref={lineItemsRef}
                   items={lineItems}
@@ -1345,22 +1356,25 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     />
                   </label>
 
-                  {!ivaIncluded && (
-                    <label data-testid="invoice-form-iva-rate-label" className="bo-field" data-slot="invoice-form-iva-rate-label">
-                      <span data-testid="invoiceForm-label-20" className="bo-label" data-slot="invoiceForm-label">IVA (%)</span>
-                      <input
-                        className="bo-input"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="100"
-                        value={ivaRate}
-                        onChange={(e) => setIvaRate(e.target.value)}
-                        aria-describedby="iva-help"
-                        data-testid="invoice-iva-rate-input"
-                      />
-                    </label>
-                  )}
+                  <div data-testid="invoice-form-iva-mode-field" className="bo-ivaModeField" data-slot="invoice-form-iva-mode-field">
+                    {ivaModeToggle}
+                    {!ivaIncluded && (
+                      <label data-testid="invoice-form-iva-rate-label" className="bo-field" data-slot="invoice-form-iva-rate-label">
+                        <span data-testid="invoiceForm-label-20" className="bo-label" data-slot="invoiceForm-label">IVA (%)</span>
+                        <input
+                          className="bo-input"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="100"
+                          value={ivaRate}
+                          onChange={(e) => setIvaRate(e.target.value)}
+                          aria-describedby="iva-help"
+                          data-testid="invoice-iva-rate-input"
+                        />
+                      </label>
+                    )}
+                  </div>
                 </div>
 
                 <div data-testid="invoiceForm-invoiceFormRow-5" className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
@@ -1424,13 +1438,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             )}
 
             {/* IVA Summary */}
-            <div data-testid="invoiceForm-invoiceFormRow-iva" className="bo-invoiceFormRow bo-invoiceFormRow--iva bo-ivaModeRow" id="iva-help" data-slot="invoiceForm-invoiceFormRow--iva">
-              <SwitchField
-                checked={ivaIncluded}
-                onChange={setIvaIncluded}
-                label={ivaIncluded ? "IVA incluido" : "IVA desglosado"}
-                data-testid="invoice-iva-mode-toggle"
-              />
+            <div data-testid="invoiceForm-invoiceFormRow-iva" className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="iva-help" data-slot="invoiceForm-invoiceFormRow--iva">
               <div data-testid="invoiceForm-ivaSummary" className="bo-ivaSummary" data-slot="invoiceForm-ivaSummary">
                 {discountAmount > 0 && (
                   <div data-testid="invoiceForm-ivaSummaryItem" className="bo-ivaSummaryItem" data-slot="invoiceForm-ivaSummaryItem">
