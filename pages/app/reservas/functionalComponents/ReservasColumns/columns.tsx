@@ -1,4 +1,5 @@
 import React from "react";
+import { Check, X } from "lucide-react";
 
 import type { Booking } from "../../../../../api/types";
 import { formatHHMM, formatPhone } from "../../../../../ui/lib/format";
@@ -74,7 +75,32 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
   },
   { id: "time", label: "Hora", thClass: "col-time", cellClass: "col-time", render: (b) => formatHHMM(b.reservation_time) },
   { id: "client", label: "Cliente", thClass: "col-client", cellClass: "col-client", render: (b) => b.customer_name },
-  { id: "status", label: "Estado", thClass: "col-status", cellClass: "col-status", hideBelowWidth: 980, render: (b) => (b.status === "confirmed" ? "Confirmada" : "Pendiente") },
+  {
+    id: "status",
+    label: "Estado",
+    thClass: "col-status",
+    cellClass: "col-status",
+    hideBelowWidth: 980,
+    // Estado is rendered as a tick/cross icon (not text) so the table scans
+    // faster at a glance. Coordination id: reservas_status_icons_v1
+    render: (b) => {
+      const confirmed = b.status === "confirmed";
+      const label = confirmed ? "Confirmada" : "Pendiente";
+      return (
+        <span
+          className={`bo-reservasStatus${confirmed ? " is-confirmed" : " is-pending"}`}
+          role="img"
+          aria-label={label}
+          title={label}
+          data-testid={`reservas-status-${b.id}`}
+        >
+          {confirmed
+            ? <Check className="bo-ico" size={16} strokeWidth={2.4} aria-hidden="true" />
+            : <X className="bo-ico" size={16} strokeWidth={2.4} aria-hidden="true" />}
+        </span>
+      );
+    },
+  },
   { id: "floor", label: "Planta", render: (b) => bookingFloorDisplay(b) || "—" },
   { id: "salon", label: "Salón", render: (b) => bookingSalonDisplay(b) || "—" },
   { id: "pax", label: "Pax", thClass: "num", cellClass: "num", render: (b) => b.party_size },
