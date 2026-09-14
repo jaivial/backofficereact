@@ -183,6 +183,18 @@
     font-weight: 720;
   }
 
+  /* Name and surname share one row on cards. */
+  .bo-table--facturas td.col-customer_name .bo-tableCustomer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 6px;
+  }
+
+  .bo-table--facturas td.col-customer_name .bo-tableCustomerSurname {
+    white-space: nowrap;
+  }
+
   .bo-table--facturas td.col-status {
     grid-column: 2;
     grid-row: 1;
