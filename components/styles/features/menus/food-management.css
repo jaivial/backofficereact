@@ -1781,3 +1781,24 @@ body.is-navigating .bo-fadeout {
   max-width: 100%;
   margin-bottom: 18px;
 }
+
+/* ── Bebidas: category accordion sections ─────────────────────────────────────
+   The list groups its rows with the same panel/accordion shell as the dish
+   sections of the menu editor (bo-accordionSection + bo-accordionBody).
+   Coordination id: bebidas_category_sections_v1 */
+.bo-beverageCategorySections {
+  display: grid;
+  gap: 10px;
+}
+
+.bo-beverageCategorySection .bo-accordionHeadLeft {
+  font-weight: var(--bo-weight-semibold);
+}
+
+.bo-beverageCategoryBody {
+  padding: 0 14px 14px;
+}
+
+.bo-beverageCategoryBody .bo-foodGrid {
+  margin-top: 4px;
+}

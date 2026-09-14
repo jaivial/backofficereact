@@ -72,7 +72,9 @@ export const FoodFilters = React.memo(function FoodFilters({
   const [isExpanded, setIsExpanded] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  const supportsCategories = foodType === "platos";
+  // Bebidas shares the dish catalogue filter: its items are grouped into
+  // category sections, so the filter selects which sections are shown.
+  const supportsCategories = foodType === "platos" || foodType === "bebidas";
   const supportsAlergenos = foodType === "platos" || foodType === "postres";
   const supportsSuplemento = foodType === "platos";
 
@@ -164,7 +166,7 @@ export const FoodFilters = React.memo(function FoodFilters({
               </div>
 
               {supportsCategories ? (
-                <div className="bo-field bo-foodFilter" data-slot="food-filters-category">
+                <div className="bo-field bo-foodFilter" data-slot="food-filters-category" data-role="food-filters-category">
                   <span className="bo-label" data-role="food-filters-category-label">Categoria</span>
                   <Select
                     value={categoryFilter}
