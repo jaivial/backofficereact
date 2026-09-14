@@ -31,11 +31,11 @@ const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; className: s
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
   const config = INVOICE_STATUS_CONFIG[status] || { label: status, className: "" };
-  return <span className={`bo-badge ${config.className}`}>{config.label}</span>;
+  return <span data-testid="StatusBadge-span" className={`bo-badge ${config.className}`}>{config.label}</span>;
 }
 
 function PaymentMethodBadge({ method }: { method?: string }) {
-  if (!method) return <span className="bo-badge bo-badge--muted">Sin especificar</span>;
+  if (!method) return <span data-testid="PaymentMethodBadge-span" className="bo-badge bo-badge--muted">Sin especificar</span>;
 
   const methodLabels: Record<string, string> = {
     efectivo: "Efectivo",
@@ -45,7 +45,7 @@ function PaymentMethodBadge({ method }: { method?: string }) {
     cheque: "Cheque",
   };
 
-  return <span className="bo-badge bo-badge--info">{methodLabels[method] || method}</span>;
+  return <span data-testid="PaymentMethodBadge-span-2" className="bo-badge bo-badge--info">{methodLabels[method] || method}</span>;
 }
 
 export function CustomerHistoryModal({
@@ -124,16 +124,16 @@ export function CustomerHistoryModal({
 
   return (
     <Modal open={open} title={`Historial de ${customerName}`} onClose={onClose} widthPx={800}>
-      <div className="bo-customerHistoryModal" data-slot="customer-history-modal">
+      <div data-testid="customer-history-modal" className="bo-customerHistoryModal" data-slot="customer-history-modal">
         {/* Customer Info Header */}
-        <div className="bo-customerHistoryHeader" data-slot="customer-history-header">
-          <div className="bo-customerHistoryAvatar" data-slot="customer-history-avatar">
+        <div data-testid="customer-history-header" className="bo-customerHistoryHeader" data-slot="customer-history-header">
+          <div data-testid="customer-history-avatar" className="bo-customerHistoryAvatar" data-slot="customer-history-avatar">
             {customerName.charAt(0).toUpperCase()}
           </div>
-          <div className="bo-customerHistoryInfo" data-slot="customer-history-info">
-            <h3 className="bo-customerHistoryName" data-slot="customerHistoryModal-customerHistoryName">{customerName}</h3>
-            <div className="bo-customerHistoryContact" data-slot="customer-history-contact">
-              <span className="bo-customerHistoryEmail" data-slot="customerHistoryModal-customerHistoryEmail">
+          <div data-testid="customer-history-info" className="bo-customerHistoryInfo" data-slot="customer-history-info">
+            <h3 data-testid="customerHistoryModal-customerHistoryName" className="bo-customerHistoryName" data-slot="customerHistoryModal-customerHistoryName">{customerName}</h3>
+            <div data-testid="customer-history-contact" className="bo-customerHistoryContact" data-slot="customer-history-contact">
+              <span data-testid="customerHistoryModal-customerHistoryEmail" className="bo-customerHistoryEmail" data-slot="customerHistoryModal-customerHistoryEmail">
                 <Mail size={14} />
                 {customerEmail}
               </span>
@@ -142,53 +142,53 @@ export function CustomerHistoryModal({
         </div>
 
         {/* Statistics Cards */}
-        <div className="bo-customerHistoryStats" data-slot="customer-history-stats">
-          <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-total">
-            <div className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
+        <div data-testid="customer-history-stats" className="bo-customerHistoryStats" data-slot="customer-history-stats">
+          <div data-testid="customer-history-stat-card-total" className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-total">
+            <div data-testid="customerHistoryModal-customerHistoryStatIcon" className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
               <TrendingUp size={20} />
             </div>
-            <div className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
-              <div className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Total gastado</div>
-              <div className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{formatPrice(stats.totalSpend)}</div>
+            <div data-testid="customerHistoryModal-customerHistoryStatContent" className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
+              <div data-testid="customerHistoryModal-customerHistoryStatLabel" className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Total gastado</div>
+              <div data-testid="customerHistoryModal-customerHistoryStatValue" className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{formatPrice(stats.totalSpend)}</div>
             </div>
           </div>
 
-          <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-average">
-            <div className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
+          <div data-testid="customer-history-stat-card-average" className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-average">
+            <div data-testid="customerHistoryModal-customerHistoryStatIcon-2" className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
               <FileText size={20} />
             </div>
-            <div className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
-              <div className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Media por factura</div>
-              <div className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{formatPrice(stats.averageInvoice)}</div>
+            <div data-testid="customerHistoryModal-customerHistoryStatContent-2" className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
+              <div data-testid="customerHistoryModal-customerHistoryStatLabel-2" className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Media por factura</div>
+              <div data-testid="customerHistoryModal-customerHistoryStatValue-2" className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{formatPrice(stats.averageInvoice)}</div>
             </div>
           </div>
 
-          <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-invoices">
-            <div className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
+          <div data-testid="customer-history-stat-card-invoices" className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-invoices">
+            <div data-testid="customerHistoryModal-customerHistoryStatIcon-3" className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
               <Calendar size={20} />
             </div>
-            <div className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
-              <div className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Facturas</div>
-              <div className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{stats.invoiceCount}</div>
+            <div data-testid="customerHistoryModal-customerHistoryStatContent-3" className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
+              <div data-testid="customerHistoryModal-customerHistoryStatLabel-3" className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Facturas</div>
+              <div data-testid="customerHistoryModal-customerHistoryStatValue-3" className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{stats.invoiceCount}</div>
             </div>
           </div>
 
-          <div className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-pending">
-            <div className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
+          <div data-testid="customer-history-stat-card-pending" className="bo-customerHistoryStatCard" data-slot="customer-history-stat-card-pending">
+            <div data-testid="customerHistoryModal-customerHistoryStatIcon-4" className="bo-customerHistoryStatIcon" data-slot="customerHistoryModal-customerHistoryStatIcon">
               <CreditCard size={20} />
             </div>
-            <div className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
-              <div className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Pendientes</div>
-              <div className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{stats.pendingCount}</div>
+            <div data-testid="customerHistoryModal-customerHistoryStatContent-4" className="bo-customerHistoryStatContent" data-slot="customerHistoryModal-customerHistoryStatContent">
+              <div data-testid="customerHistoryModal-customerHistoryStatLabel-4" className="bo-customerHistoryStatLabel" data-slot="customerHistoryModal-customerHistoryStatLabel">Pendientes</div>
+              <div data-testid="customerHistoryModal-customerHistoryStatValue-4" className="bo-customerHistoryStatValue" data-slot="customerHistoryModal-customerHistoryStatValue">{stats.pendingCount}</div>
             </div>
           </div>
         </div>
 
         {/* Date Range */}
         {stats.firstInvoiceDate && stats.lastInvoiceDate && (
-          <div className="bo-customerHistoryDateRange" data-slot="customer-history-date-range">
-            <span className="bo-customerHistoryDateLabel" data-slot="customerHistoryModal-customerHistoryDateLabel">Cliente desde:</span>
-            <span className="bo-customerHistoryDateValue" data-slot="customerHistoryModal-customerHistoryDateValue">
+          <div data-testid="customer-history-date-range" className="bo-customerHistoryDateRange" data-slot="customer-history-date-range">
+            <span data-testid="customerHistoryModal-customerHistoryDateLabel" className="bo-customerHistoryDateLabel" data-slot="customerHistoryModal-customerHistoryDateLabel">Cliente desde:</span>
+            <span data-testid="customerHistoryModal-customerHistoryDateValue" className="bo-customerHistoryDateValue" data-slot="customerHistoryModal-customerHistoryDateValue">
               {formatDate(stats.firstInvoiceDate)} - {formatDate(stats.lastInvoiceDate)}
             </span>
           </div>
@@ -196,29 +196,29 @@ export function CustomerHistoryModal({
 
         {/* Loading State */}
         {loading && (
-          <div className="bo-customerHistoryLoading" data-slot="customer-history-loading">
+          <div data-testid="customer-history-loading" className="bo-customerHistoryLoading" data-slot="customer-history-loading">
             <Loader2 size={24} className="bo-spinner" />
-            <span data-slot="customerHistoryModal-ial">Cargando historial...</span>
+            <span data-testid="customerHistoryModal-ial" data-slot="customerHistoryModal-ial">Cargando historial...</span>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="bo-customerHistoryError" data-slot="customer-history-error">
-            <p data-slot="customerHistoryModal-ror">{error}</p>
+          <div data-testid="customer-history-error" className="bo-customerHistoryError" data-slot="customer-history-error">
+            <p data-testid="customerHistoryModal-ror" data-slot="customerHistoryModal-ror">{error}</p>
           </div>
         )}
 
         {/* Invoices List */}
         {!loading && !error && invoices.length > 0 && (
-          <div className="bo-customerHistoryInvoices" data-slot="customer-history-invoices">
-            <h4 className="bo-customerHistoryInvoicesTitle" data-slot="customerHistoryModal-customerHistoryInvoicesTitle">Historial de facturas</h4>
+          <div data-testid="customer-history-invoices" className="bo-customerHistoryInvoices" data-slot="customer-history-invoices">
+            <h4 data-testid="customerHistoryModal-customerHistoryInvoicesTitle" className="bo-customerHistoryInvoicesTitle" data-slot="customerHistoryModal-customerHistoryInvoicesTitle">Historial de facturas</h4>
             <ScrollArea dataSlot="customer-history-invoices-list">
-              <div data-slot="customerHistoryModal-customerHistoryInvoicesList" className="bo-customerHistoryInvoicesList">
+              <div data-testid="customerHistoryModal-customerHistoryInvoicesList" data-slot="customerHistoryModal-customerHistoryInvoicesList" className="bo-customerHistoryInvoicesList">
               {invoices
                 .sort((a, b) => new Date(b.invoice_date).getTime() - new Date(a.invoice_date).getTime())
                 .map((invoice) => (
-                  <div
+                  <div data-testid="customer-history-invoice-row"
                     key={invoice.id}
                     className="bo-customerHistoryInvoiceRow"
                     onClick={() => handleInvoiceClick(invoice)}
@@ -227,17 +227,17 @@ export function CustomerHistoryModal({
                     onKeyDown={(e) => e.key === "Enter" && handleInvoiceClick(invoice)}
                     data-slot="customer-history-invoice-row"
                   >
-                    <div className="bo-customerHistoryInvoiceMain" data-slot="customer-history-invoice-main">
-                      <div className="bo-customerHistoryInvoiceNumber" data-slot="customerHistoryModal-customerHistoryInvoiceNumber">
+                    <div data-testid="customer-history-invoice-main" className="bo-customerHistoryInvoiceMain" data-slot="customer-history-invoice-main">
+                      <div data-testid="customerHistoryModal-customerHistoryInvoiceNumber" className="bo-customerHistoryInvoiceNumber" data-slot="customerHistoryModal-customerHistoryInvoiceNumber">
                         {invoice.invoice_number || `Factura #${invoice.id}`}
                       </div>
-                      <div className="bo-customerHistoryInvoiceDate" data-slot="customerHistoryModal-customerHistoryInvoiceDate">{formatDate(invoice.invoice_date)}</div>
+                      <div data-testid="customerHistoryModal-customerHistoryInvoiceDate" className="bo-customerHistoryInvoiceDate" data-slot="customerHistoryModal-customerHistoryInvoiceDate">{formatDate(invoice.invoice_date)}</div>
                     </div>
-                    <div className="bo-customerHistoryInvoiceDetails" data-slot="customer-history-invoice-details">
+                    <div data-testid="customer-history-invoice-details" className="bo-customerHistoryInvoiceDetails" data-slot="customer-history-invoice-details">
                       <StatusBadge status={invoice.status} />
                       <PaymentMethodBadge method={invoice.payment_method} />
                     </div>
-                    <div className="bo-customerHistoryInvoiceAmount" data-slot="customer-history-invoice-amount">
+                    <div data-testid="customer-history-invoice-amount" className="bo-customerHistoryInvoiceAmount" data-slot="customer-history-invoice-amount">
                       {formatPrice(invoice.amount)}
                     </div>
                   </div>
@@ -249,14 +249,14 @@ export function CustomerHistoryModal({
 
         {/* Empty State */}
         {!loading && !error && invoices.length === 0 && (
-          <div className="bo-customerHistoryEmpty" data-slot="customer-history-empty">
+          <div data-testid="customer-history-empty" className="bo-customerHistoryEmpty" data-slot="customer-history-empty">
             <FileText size={48} />
-            <p data-slot="customerHistoryModal-nte">No se encontraron facturas para este cliente</p>
+            <p data-testid="customerHistoryModal-nte" data-slot="customerHistoryModal-nte">No se encontraron facturas para este cliente</p>
           </div>
         )}
 
         {/* Actions */}
-        <div className="bo-modalActions" data-slot="customer-history-actions">
+        <div data-testid="customer-history-actions" className="bo-modalActions" data-slot="customer-history-actions">
           <button className="bo-btn bo-btn--ghost" type="button" onClick={onClose} data-testid="customer-history-close-btn">
             Cerrar
           </button>
