@@ -232,16 +232,16 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose} data-slot="reminderTemplatesModal-modal-overlay">
-      <div className="bo-modal bo-modal--lg" onClick={(e) => e.stopPropagation()} data-slot="reminderTemplatesModal-modal--lg">
+    <div data-testid="reminderTemplatesModal-modal-overlay" className="bo-modal-overlay" onClick={onClose} data-slot="reminderTemplatesModal-modal-overlay">
+      <div data-testid="reminderTemplatesModal-modal-lg" className="bo-modal bo-modal--lg" onClick={(e) => e.stopPropagation()} data-slot="reminderTemplatesModal-modal--lg">
         <ModalHeader title="Plantillas de recordatorios" onClose={onClose} />
 
-        <div className="bo-modalBody" data-slot="reminderTemplatesModal-modalBody">
+        <div data-testid="reminderTemplatesModal-modalBody" className="bo-modalBody" data-slot="reminderTemplatesModal-modalBody">
           {isEditing ? (
             // Edit/Create Form
-            <div className="bo-templateForm" data-slot="reminderTemplatesModal-templateForm">
-              <div className="bo-field" data-slot="reminderTemplatesModal-field">
-                <label className="bo-label" htmlFor="template-name" data-slot="reminderTemplatesModal-label">
+            <div data-testid="reminderTemplatesModal-templateForm" className="bo-templateForm" data-slot="reminderTemplatesModal-templateForm">
+              <div data-testid="reminderTemplatesModal-field" className="bo-field" data-slot="reminderTemplatesModal-field">
+                <label data-testid="reminderTemplatesModal-label" className="bo-label" htmlFor="template-name" data-slot="reminderTemplatesModal-label">
                   Nombre de la plantilla
                 </label>
                 <input
@@ -254,10 +254,10 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                 />
               </div>
 
-              <div className="bo-field" data-slot="reminderTemplatesModal-field">
-                <label className="bo-label" data-slot="reminderTemplatesModal-label">Tipo de envio</label>
-                <div className="bo-radioGroup" data-slot="reminderTemplatesModal-radioGroup">
-                  <label className="bo-radio" data-slot="reminderTemplatesModal-radio">
+              <div data-testid="reminderTemplatesModal-field-2" className="bo-field" data-slot="reminderTemplatesModal-field">
+                <label data-testid="reminderTemplatesModal-label-2" className="bo-label" data-slot="reminderTemplatesModal-label">Tipo de envio</label>
+                <div data-testid="reminderTemplatesModal-radioGroup" className="bo-radioGroup" data-slot="reminderTemplatesModal-radioGroup">
+                  <label data-testid="reminderTemplatesModal-radio" className="bo-radio" data-slot="reminderTemplatesModal-radio">
                     <input
                       type="radio"
                       name="template_type"
@@ -267,9 +267,9 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                       data-testid="reminder-template-type-email"
                     />
                     <Mail size={14} />
-                    <span data-slot="reminderTemplatesModal-ail">Email</span>
+                    <span data-testid="reminderTemplatesModal-ail" data-slot="reminderTemplatesModal-ail">Email</span>
                   </label>
-                  <label className="bo-radio" data-slot="reminderTemplatesModal-radio">
+                  <label data-testid="reminderTemplatesModal-radio-2" className="bo-radio" data-slot="reminderTemplatesModal-radio">
                     <input
                       type="radio"
                       name="template_type"
@@ -279,14 +279,14 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                       data-testid="reminder-template-type-whatsapp"
                     />
                     <MessageSquare size={14} />
-                    <span data-slot="reminderTemplatesModal-app">WhatsApp</span>
+                    <span data-testid="reminderTemplatesModal-app" data-slot="reminderTemplatesModal-app">WhatsApp</span>
                   </label>
                 </div>
               </div>
 
               {formData.send_via === "email" && (
-                <div className="bo-field" data-slot="reminderTemplatesModal-field">
-                  <label className="bo-label" htmlFor="template-subject" data-slot="reminderTemplatesModal-label">
+                <div data-testid="reminderTemplatesModal-field-3" className="bo-field" data-slot="reminderTemplatesModal-field">
+                  <label data-testid="reminderTemplatesModal-label-3" className="bo-label" htmlFor="template-subject" data-slot="reminderTemplatesModal-label">
                     Asunto
                   </label>
                   <input
@@ -297,14 +297,14 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                     placeholder="Recordatorio de pago - Factura {invoice_number}"
                     data-testid="reminder-template-subject-input"
                   />
-                  <div className="bo-fieldHelp" data-slot="reminderTemplatesModal-fieldHelp">
+                  <div data-testid="reminderTemplatesModal-fieldHelp" className="bo-fieldHelp" data-slot="reminderTemplatesModal-fieldHelp">
                     Usa {"{customer_name}"}, {"{invoice_number}"}, {"{amount}"}, {"{due_date}"} como variables
                   </div>
                 </div>
               )}
 
-              <div className="bo-field" data-slot="reminderTemplatesModal-field">
-                <label className="bo-label" htmlFor="template-body" data-slot="reminderTemplatesModal-label">
+              <div data-testid="reminderTemplatesModal-field-4" className="bo-field" data-slot="reminderTemplatesModal-field">
+                <label data-testid="reminderTemplatesModal-label-4" className="bo-label" htmlFor="template-body" data-slot="reminderTemplatesModal-label">
                   Cuerpo del mensaje
                 </label>
                 <textarea
@@ -315,12 +315,12 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                   rows={8}
                   data-testid="reminder-template-body-textarea"
                 />
-                <div className="bo-fieldHelp" data-slot="reminderTemplatesModal-fieldHelp">
+                <div data-testid="reminderTemplatesModal-fieldHelp-2" className="bo-fieldHelp" data-slot="reminderTemplatesModal-fieldHelp">
                   Usa {"{customer_name}"}, {"{invoice_number}"}, {"{amount}"}, {"{due_date}"} como variables
                 </div>
               </div>
 
-              <div className="bo-formActions" data-slot="reminderTemplatesModal-formActions">
+              <div data-testid="reminderTemplatesModal-formActions" className="bo-formActions" data-slot="reminderTemplatesModal-formActions">
                 <button className="bo-btn bo-btn--ghost" onClick={handleCancelEdit} data-testid="reminder-template-cancel-edit">
                   Cancelar
                 </button>
@@ -337,7 +337,7 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
           ) : (
             // Templates List
             <>
-              <div className="bo-templatesHeader" data-slot="reminderTemplatesModal-templatesHeader">
+              <div data-testid="reminderTemplatesModal-templatesHeader" className="bo-templatesHeader" data-slot="reminderTemplatesModal-templatesHeader">
                 <button className="bo-btn bo-btn--primary bo-btn--sm" onClick={handleCreateNew} data-testid="reminder-template-new">
                   <Plus size={16} />
                   Nueva plantilla
@@ -345,30 +345,30 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
               </div>
 
               {loading && (
-                <div className="bo-loadingState" data-slot="reminderTemplatesModal-loadingState">
-                  <div className="bo-spinner" data-slot="reminderTemplatesModal-spinner" />
-                  <span data-slot="reminderTemplatesModal-las">Cargando plantillas...</span>
+                <div data-testid="reminderTemplatesModal-loadingState" className="bo-loadingState" data-slot="reminderTemplatesModal-loadingState">
+                  <div data-testid="reminderTemplatesModal-spinner" className="bo-spinner" data-slot="reminderTemplatesModal-spinner" />
+                  <span data-testid="reminderTemplatesModal-las" data-slot="reminderTemplatesModal-las">Cargando plantillas...</span>
                 </div>
               )}
 
               {!loading && templates.length === 0 && (
-                <div className="bo-emptyState" data-slot="reminderTemplatesModal-emptyState">
+                <div data-testid="reminderTemplatesModal-emptyState" className="bo-emptyState" data-slot="reminderTemplatesModal-emptyState">
                   <AlertCircle size={32} />
-                  <p data-slot="reminderTemplatesModal-ios">No hay plantillas de recordatorios</p>
-                  <span className="bo-mutedText" data-slot="reminderTemplatesModal-mutedText">
+                  <p data-testid="reminderTemplatesModal-ios" data-slot="reminderTemplatesModal-ios">No hay plantillas de recordatorios</p>
+                  <span data-testid="reminderTemplatesModal-mutedText" className="bo-mutedText" data-slot="reminderTemplatesModal-mutedText">
                     Crea tu primera plantilla para enviar recordatorios de pago
                   </span>
                 </div>
               )}
 
               {!loading && templates.length > 0 && (
-                <div className="bo-templatesList" data-slot="reminderTemplatesModal-templatesList">
+                <div data-testid="reminderTemplatesModal-templatesList" className="bo-templatesList" data-slot="reminderTemplatesModal-templatesList">
                   {templates.map((template) => (
-                    <div key={template.id} className="bo-templateItem" data-slot="reminderTemplatesModal-templateItem">
-                      <div className="bo-templateItemHeader" data-slot="reminderTemplatesModal-templateItemHeader">
-                        <div className="bo-templateItemInfo" data-slot="reminderTemplatesModal-templateItemInfo">
-                          <span className="bo-templateItemName" data-slot="reminderTemplatesModal-templateItemName">{template.name}</span>
-                          <span className="bo-templateItemType" data-slot="reminderTemplatesModal-templateItemType">
+                    <div data-testid="reminderTemplatesModal-templateItem" key={template.id} className="bo-templateItem" data-slot="reminderTemplatesModal-templateItem">
+                      <div data-testid="reminderTemplatesModal-templateItemHeader" className="bo-templateItemHeader" data-slot="reminderTemplatesModal-templateItemHeader">
+                        <div data-testid="reminderTemplatesModal-templateItemInfo" className="bo-templateItemInfo" data-slot="reminderTemplatesModal-templateItemInfo">
+                          <span data-testid="reminderTemplatesModal-templateItemName" className="bo-templateItemName" data-slot="reminderTemplatesModal-templateItemName">{template.name}</span>
+                          <span data-testid="reminderTemplatesModal-templateItemType" className="bo-templateItemType" data-slot="reminderTemplatesModal-templateItemType">
                             {template.send_via === "email" ? (
                               <><Mail size={12} /> Email</>
                             ) : (
@@ -376,13 +376,13 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                             )}
                           </span>
                           {template.is_default && (
-                            <span className="bo-badge bo-badge--success bo-badge--sm" data-slot="reminderTemplatesModal-badge--sm">
+                            <span data-testid="reminderTemplatesModal-badge-sm" className="bo-badge bo-badge--success bo-badge--sm" data-slot="reminderTemplatesModal-badge--sm">
                               <Star size={10} />
                               Predeterminada
                             </span>
                           )}
                         </div>
-                        <div className="bo-templateItemActions" data-slot="reminderTemplatesModal-templateItemActions">
+                        <div data-testid="reminderTemplatesModal-templateItemActions" className="bo-templateItemActions" data-slot="reminderTemplatesModal-templateItemActions">
                           {!template.is_default && (
                             <button
                               className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -411,9 +411,9 @@ export function ReminderTemplatesModal({ open, onClose, onTemplatesChanged }: Re
                           </button>
                         </div>
                       </div>
-                      <div className="bo-templateItemPreview" data-slot="reminderTemplatesModal-templateItemPreview">
-                        {template.subject && <div className="bo-templateItemSubject">{template.subject}</div>}
-                        <div className="bo-templateItemBody" data-slot="reminderTemplatesModal-templateItemBody">{template.body.substring(0, 150)}...</div>
+                      <div data-testid="reminderTemplatesModal-templateItemPreview" className="bo-templateItemPreview" data-slot="reminderTemplatesModal-templateItemPreview">
+                        {template.subject && <div data-testid="ReminderTemplatesModal-div" className="bo-templateItemSubject">{template.subject}</div>}
+                        <div data-testid="reminderTemplatesModal-templateItemBody" className="bo-templateItemBody" data-slot="reminderTemplatesModal-templateItemBody">{template.body.substring(0, 150)}...</div>
                       </div>
                     </div>
                   ))}

@@ -443,7 +443,7 @@ export default function Page() {
   
 
   return (
-    <div className="bo-facturasPage" data-slot="facturas-facturasPage">
+    <div data-testid="facturas-facturasPage" className="bo-facturasPage" data-slot="facturas-facturasPage">
       <style>{`@media (max-width: 768px) {
         /* ── Table cards ── */
         .bo-table--facturas thead{display:none}
@@ -481,7 +481,7 @@ export default function Page() {
         .bo-bulkBar .bo-bulkBarInfo{width:100%}
 
         /* ── Form container ── */
-        .bo-facturasFormContainer{padding:0 8px!important}
+        .bo-facturasFormContainer{padding:0!important}
         /* ── Form ── */
         .bo-invoiceFormTopGrid{flex-direction:column;gap:var(--bo-space-4)}
         .bo-invoiceFormHeader{flex-direction:column;align-items:stretch}
@@ -512,8 +512,8 @@ export default function Page() {
       }`}</style>
       <Tabs tabs={TABS} activeId={activeTab} ariaLabel="Facturas" className="bo-tabs--reservas bo-tabs--facturas" onNavigate={onNavigateTab} />
       {activeTab === "resumen" ? (
-        <div role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen" data-slot="facturas-div">
-        <div className="bo-facturasSummary" data-slot="facturas-facturasSummary">
+        <div data-testid="facturas-div" role="tabpanel" id="panel-resumen" aria-labelledby="tab-resumen" data-slot="facturas-div">
+        <div data-testid="facturas-facturasSummary" className="bo-facturasSummary" data-slot="facturas-facturasSummary">
           <InvoiceFilters
             searchText={searchText}
             searchBy={searchBy}
@@ -579,9 +579,9 @@ export default function Page() {
       ) : null}
 
       {activeTab === "añadir" ? (
-        <div role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir" data-slot="facturas-div">
-        <div className="bo-formContainer" data-slot="facturas-formContainer">
-          <div className="bo-container bo-facturasFormContainer" data-slot="facturas-facturasFormContainer">
+        <div data-testid="facturas-div-2" role="tabpanel" id="panel-añadir" aria-labelledby="tab-añadir" data-slot="facturas-div">
+        <div data-testid="facturas-formContainer" className="bo-formContainer" data-slot="facturas-formContainer">
+          <div data-testid="facturas-facturasFormContainer" className="bo-container bo-facturasFormContainer" data-slot="facturas-facturasFormContainer">
             <Panel bodyClassName="bo-facturasFormPanelBody" className="bo-facturasFormPanel" data-slot="facturas-facturasFormPanel">
                 <InvoiceForm
                   invoice={editingInvoice}

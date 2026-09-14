@@ -45,7 +45,7 @@ function ReminderStatusBadge({ status }: { status: InvoiceReminder["status"] }) 
   const { label, icon, className } = config[status] || config.pending;
 
   return (
-    <span className={`bo-badge ${className}`} data-slot="reminderHistoryModal-span">
+    <span data-testid="reminderHistoryModal-span" className={`bo-badge ${className}`} data-slot="reminderHistoryModal-span">
       {icon}
       {label}
     </span>
@@ -55,7 +55,7 @@ function ReminderStatusBadge({ status }: { status: InvoiceReminder["status"] }) 
 function SentViaBadge({ via }: { via: InvoiceReminder["sent_via"] }) {
   if (via === "email") {
     return (
-      <span className="bo-badge bo-badge--info" data-slot="reminderHistoryModal-badge--info">
+      <span data-testid="reminderHistoryModal-badge-info" className="bo-badge bo-badge--info" data-slot="reminderHistoryModal-badge--info">
         <Mail size={12} />
         Email
       </span>
@@ -63,7 +63,7 @@ function SentViaBadge({ via }: { via: InvoiceReminder["sent_via"] }) {
   }
   if (via === "whatsapp") {
     return (
-      <span className="bo-badge bo-badge--info" data-slot="reminderHistoryModal-badge--info">
+      <span data-testid="reminderHistoryModal-badge-info-2" className="bo-badge bo-badge--info" data-slot="reminderHistoryModal-badge--info">
         <MessageSquare size={12} />
         WhatsApp
       </span>
@@ -110,32 +110,32 @@ export function ReminderHistoryModal({
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose} data-slot="reminder-history-overlay">
-      <div className="bo-modal bo-modal--md" onClick={(e) => e.stopPropagation()} data-slot="reminder-history-modal">
+    <div data-testid="reminder-history-overlay" className="bo-modal-overlay" onClick={onClose} data-slot="reminder-history-overlay">
+      <div data-testid="reminder-history-modal" className="bo-modal bo-modal--md" onClick={(e) => e.stopPropagation()} data-slot="reminder-history-modal">
         <ModalHeader title="Historial de recordatorios" onClose={onClose} />
 
-        <div className="bo-modalBody" data-slot="reminder-history-body">
+        <div data-testid="reminder-history-body" className="bo-modalBody" data-slot="reminder-history-body">
           {/* Invoice Info */}
-          <div className="bo-reminderHistoryInfo" data-slot="reminder-history-info">
-            <span data-slot="reminderHistoryModal-span">
-              <strong>{customerName}</strong>
+          <div data-testid="reminder-history-info" className="bo-reminderHistoryInfo" data-slot="reminder-history-info">
+            <span data-testid="reminderHistoryModal-span-2" data-slot="reminderHistoryModal-span">
+              <strong data-testid="ReminderHistoryModal-strong">{customerName}</strong>
             </span>
-            <span className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">
+            <span data-testid="reminderHistoryModal-mutedText" className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">
               Factura {invoiceNumber || `#${invoiceId}`}
             </span>
           </div>
 
           {/* Loading State */}
           {loading && (
-            <div className="bo-loadingState" data-slot="reminder-history-loading">
-              <div className="bo-spinner" data-slot="reminderHistoryModal-spinner" />
-              <span data-slot="reminderHistoryModal-ial">Cargando historial...</span>
+            <div data-testid="reminder-history-loading" className="bo-loadingState" data-slot="reminder-history-loading">
+              <div data-testid="reminderHistoryModal-spinner" className="bo-spinner" data-slot="reminderHistoryModal-spinner" />
+              <span data-testid="reminderHistoryModal-ial" data-slot="reminderHistoryModal-ial">Cargando historial...</span>
             </div>
           )}
 
           {/* Error State */}
           {error && (
-            <div className="bo-alert bo-alert--error" data-slot="reminder-history-error">
+            <div data-testid="reminder-history-error" className="bo-alert bo-alert--error" data-slot="reminder-history-error">
               <AlertCircle size={16} />
               {error}
             </div>
@@ -143,10 +143,10 @@ export function ReminderHistoryModal({
 
           {/* Empty State */}
           {!loading && !error && reminders.length === 0 && (
-            <div className="bo-emptyState" data-slot="reminder-history-empty">
+            <div data-testid="reminder-history-empty" className="bo-emptyState" data-slot="reminder-history-empty">
               <Clock size={32} />
-              <p data-slot="reminderHistoryModal-dos">No hay recordatorios enviados</p>
-              <span className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">
+              <p data-testid="reminderHistoryModal-dos" data-slot="reminderHistoryModal-dos">No hay recordatorios enviados</p>
+              <span data-testid="reminderHistoryModal-mutedText-2" className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">
                 Los recordatorios de pago apareceran aqui
               </span>
             </div>
@@ -154,31 +154,31 @@ export function ReminderHistoryModal({
 
           {/* Reminder List */}
           {!loading && !error && reminders.length > 0 && (
-            <div className="bo-reminderHistoryList" data-slot="reminder-history-list">
+            <div data-testid="reminder-history-list" className="bo-reminderHistoryList" data-slot="reminder-history-list">
               {reminders.map((reminder) => (
-                <div key={reminder.id} className="bo-reminderHistoryItem" data-slot="reminder-history-item">
-                  <div className="bo-reminderHistoryItemHeader" data-slot="reminder-history-item-header">
-                    <div className="bo-reminderHistoryItemStatus" data-slot="reminder-history-item-status">
+                <div data-testid="reminder-history-item" key={reminder.id} className="bo-reminderHistoryItem" data-slot="reminder-history-item">
+                  <div data-testid="reminder-history-item-header" className="bo-reminderHistoryItemHeader" data-slot="reminder-history-item-header">
+                    <div data-testid="reminder-history-item-status" className="bo-reminderHistoryItemStatus" data-slot="reminder-history-item-status">
                       <ReminderStatusBadge status={reminder.status} />
                       {reminder.sent_via && <SentViaBadge via={reminder.sent_via} />}
                     </div>
-                    <div className="bo-reminderHistoryItemDate" data-slot="reminderHistoryModal-reminderHistoryItemDate">
+                    <div data-testid="reminderHistoryModal-reminderHistoryItemDate" className="bo-reminderHistoryItemDate" data-slot="reminderHistoryModal-reminderHistoryItemDate">
                       {reminder.sent_at ? (
                         formatDate(reminder.sent_at)
                       ) : (
-                        <span className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">Pendiente</span>
+                        <span data-testid="reminderHistoryModal-mutedText-3" className="bo-mutedText" data-slot="reminderHistoryModal-mutedText">Pendiente</span>
                       )}
                     </div>
                   </div>
 
                   {reminder.template_name && (
-                    <div className="bo-reminderHistoryItemTemplate" data-slot="reminder-history-item-template">
+                    <div data-testid="reminder-history-item-template" className="bo-reminderHistoryItemTemplate" data-slot="reminder-history-item-template">
                       Plantilla: {reminder.template_name}
                     </div>
                   )}
 
                   {reminder.error_message && (
-                    <div className="bo-reminderHistoryItemError" data-slot="reminder-history-item-error">
+                    <div data-testid="reminder-history-item-error" className="bo-reminderHistoryItemError" data-slot="reminder-history-item-error">
                       <AlertCircle size={14} />
                       {reminder.error_message}
                     </div>
@@ -189,7 +189,7 @@ export function ReminderHistoryModal({
           )}
         </div>
 
-        <div className="bo-modalFooter" data-slot="reminderHistoryModal-modalFooter">
+        <div data-testid="reminderHistoryModal-modalFooter" className="bo-modalFooter" data-slot="reminderHistoryModal-modalFooter">
           <button className="bo-btn bo-btn--ghost" onClick={onClose} data-testid="reminder-history-close-footer-btn">
             Cerrar
           </button>
