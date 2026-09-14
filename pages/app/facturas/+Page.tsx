@@ -445,40 +445,11 @@ export default function Page() {
   return (
     <div data-testid="facturas-facturasPage" className="bo-facturasPage" data-slot="facturas-facturasPage">
       <style>{`@media (max-width: 768px) {
-        /* ── Table cards ── */
-        .bo-table--facturas thead{display:none}
-        .bo-table--facturas,.bo-table--facturas tbody,.bo-tableWrap .bo-tableScroll{display:block}
-        .bo-table--facturas tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:0;padding:14px;border:1px solid var(--bo-border);border-radius:14px;margin-bottom:10px;background:var(--bo-surface);position:relative}
-        .bo-table--facturas tbody td{padding:2px 0;text-align:left}
-        .bo-table--facturas tbody td::before{display:none}
-
-        /* Card rows: full-width elements */
-        .bo-table--facturas td.col-selection{display:none!important}
-        .bo-table--facturas td.col-customer_name{width:calc(100% - 90px);font-weight:720;font-size:15px;order:1;padding:0 0 2px}
-        .bo-table--facturas td.col-status{width:80px;text-align:right;order:2;padding:0 0 2px}
-        .bo-table--facturas td.col-amount{width:100%;font-weight:780;font-size:20px;color:var(--bo-accent);order:3;padding:0 0 8px}
-        .bo-table--facturas td.col-invoice_date{order:4;font-size:12px;color:var(--bo-muted);padding:0 8px 6px 0}
-        .bo-table--facturas td.col-payment_progress{width:100%;order:5;padding:4px 0}
-        .bo-table--facturas td.col-actions{width:100%;order:99;display:flex;justify-content:flex-end;padding-top:10px;margin-top:6px;border-top:1px solid var(--bo-border);gap:4px}
-
-        /* Hide noise + low-value cells */
-        .bo-table--facturas td.col-customer_email,.bo-table--facturas td.col-currency,.bo-table--facturas td.col-payment_date,.bo-table--facturas td.col-payment_method,.bo-table--facturas td.col-is_reservation,.bo-table--facturas td.col-deposit,.bo-table--facturas td.col-category,.bo-table--facturas td.col-attachment,.bo-table--facturas td.col-invoice_number,.bo-table--facturas td.col-due_date{display:none}
-
-
-
-        /* ── Strip table wrapper on mobile ── */
-        .bo-tableWrap{background:transparent!important;border:none!important;border-radius:0!important;margin-top:0!important;padding:0!important}
-        .bo-tableScroll{overflow:visible!important}
-        .bo-table--facturas{border:none!important;background:transparent!important}
-        /* ── tfoot: hidden on mobile ── */
-        .bo-table--facturas tfoot{display:none!important}
         /* ── Pager ── */
         .bo-pager{flex-direction:column;align-items:stretch;gap:8px;padding:10px 14px;background:var(--bo-surface);border:1px solid var(--bo-border);border-radius:12px}
         .bo-pager .bo-pagerText{text-align:center;font-size:12px;color:var(--bo-faint)}
         .bo-pager .bo-pagerBtns{justify-content:center;gap:8px}
         .bo-pager .bo-pagerBtns .bo-btn{flex:1}
-        .bo-bulkBar{flex-wrap:wrap;gap:8px}
-        .bo-bulkBar .bo-bulkBarInfo{width:100%}
 
         /* ── Form container ── */
         .bo-facturasFormContainer{padding:0!important}

@@ -257,7 +257,7 @@ function TableSkeletonRow() {
 
 function TableSkeleton() {
   return (
-    <div data-testid="invoice-table-wrap" className="bo-tableWrap" data-slot="invoice-table-wrap">
+    <div data-testid="invoice-table-wrap" className="bo-tableWrap bo-tableWrap--facturas" data-slot="invoice-table-wrap">
       <div data-testid="invoice-table-scroll" className="bo-tableScroll" data-slot="invoice-table-scroll">
         <table data-testid="invoice-table-2" className="bo-table bo-table--facturas" aria-label="Cargando facturas..." data-slot="invoice-table">
           <thead data-testid="invoice-thead" data-slot="invoice-thead">
@@ -558,7 +558,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
   }
 
   return (
-    <div data-testid="invoiceTable-tableWrap" className="bo-tableWrap" data-slot="invoiceTable-tableWrap">
+    <div data-testid="invoiceTable-tableWrap" className="bo-tableWrap bo-tableWrap--facturas" data-slot="invoiceTable-tableWrap">
       {/* Bulk Actions Bar */}
       {someSelected && (
         <div data-testid="invoiceTable-bulkBar" className="bo-bulkBar" role="region" aria-live="polite" data-slot="invoiceTable-bulkBar">
