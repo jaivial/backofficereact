@@ -708,3 +708,63 @@
     padding: 8px 8px;
   }
 }
+
+/* ── Reservas page: download placements + filters/search order + status icons ──
+   Coordination id: reservas_download_and_order_v1
+   Descargar lives at the right of the display row and below the pagination, for
+   every viewport. The search / filters order flips at <=1400px. */
+.bo-reservasLayout {
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-reservasLayout > .bo-reservasGrid {
+  order: 1;
+}
+
+.bo-reservasLayout > .bo-bookingSearch {
+  order: 2;
+}
+
+.bo-reservasLayout > .bo-reservasOpenContent,
+.bo-reservasLayout > .bo-reservasClosedContent {
+  order: 3;
+}
+
+/* <=1400px: the booking search swaps places with the filters section. */
+@media (max-width: 1400px) {
+  .bo-reservasLayout > .bo-bookingSearch {
+    order: 1;
+  }
+
+  .bo-reservasLayout > .bo-reservasGrid {
+    order: 2;
+  }
+}
+
+/* Right side of the Tabla/Grid display row. */
+.bo-btn--downloadRight {
+  margin-left: auto;
+}
+
+/* Below the reservations pagination. */
+.bo-reservasPagerDownload {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 1rem 1rem;
+}
+
+/* Reservas estado cell: tick / cross icon instead of text. */
+.bo-reservasStatus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bo-reservasStatus.is-confirmed {
+  color: var(--bo-text-success);
+}
+
+.bo-reservasStatus.is-pending {
+  color: var(--bo-text-danger);
+}

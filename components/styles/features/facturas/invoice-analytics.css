@@ -430,7 +430,9 @@
 
 .bo-table--reservas th.col-phone,
 .bo-table--reservas td.col-phone {
-  width: 130px;
+  width: 172px;
+  min-width: 172px;
+  white-space: nowrap;
 }
 
 .bo-table--reservas th.col-rice,
