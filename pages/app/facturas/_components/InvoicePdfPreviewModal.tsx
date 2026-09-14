@@ -91,18 +91,18 @@ export function InvoicePdfPreviewModal({
 
   return (
     <Modal open={true} title="Vista previa de factura" onClose={onClose} widthPx={800} className="bo-pdf-preview-modal">
-      <div className="bo-pdf-preview" data-slot="pdf-preview">
+      <div data-testid="pdf-preview" className="bo-pdf-preview" data-slot="pdf-preview">
         {/* Header Actions */}
-        <div className="bo-pdf-preview-header" data-slot="pdf-preview-header">
-          <div className="bo-pdf-preview-info" data-slot="pdf-preview-info">
-            <span className="bo-pdf-preview-number" data-slot="pdf-preview-number">
+        <div data-testid="pdf-preview-header" className="bo-pdf-preview-header" data-slot="pdf-preview-header">
+          <div data-testid="pdf-preview-info" className="bo-pdf-preview-info" data-slot="pdf-preview-info">
+            <span data-testid="pdf-preview-number" className="bo-pdf-preview-number" data-slot="pdf-preview-number">
               {invoiceData.invoice_number || `Nueva Factura`}
             </span>
-            <span className="bo-pdf-preview-customer" data-slot="pdf-preview-customer">
+            <span data-testid="pdf-preview-customer" className="bo-pdf-preview-customer" data-slot="pdf-preview-customer">
               {invoiceData.customer_name}
             </span>
           </div>
-          <div className="bo-pdf-preview-actions" data-slot="pdf-preview-actions">
+          <div data-testid="pdf-preview-actions" className="bo-pdf-preview-actions" data-slot="pdf-preview-actions">
             {pdfReady && pdfUrl && (
               <a
                 href={pdfUrl}
@@ -130,13 +130,13 @@ export function InvoicePdfPreviewModal({
         </div>
 
         {/* PDF Viewer */}
-        <div className="bo-pdf-preview-viewer" data-slot="pdf-preview-viewer">
+        <div data-testid="pdf-preview-viewer" className="bo-pdf-preview-viewer" data-slot="pdf-preview-viewer">
           {loading && (
-            <div className="bo-pdf-preview-loading" data-slot="pdf-preview-loading">
+            <div data-testid="pdf-preview-loading" className="bo-pdf-preview-loading" data-slot="pdf-preview-loading">
               <Loader2 size={32} className="bo-spinner" />
-              <p data-slot="pdf-preview-loading-text">Cargando vista previa...</p>
+              <p data-testid="pdf-preview-loading-text" data-slot="pdf-preview-loading-text">Cargando vista previa...</p>
               {!hasInvoiceId && (
-                <p className="bo-pdf-preview-hint" data-slot="pdf-preview-loading-hint">
+                <p data-testid="pdf-preview-loading-hint" className="bo-pdf-preview-hint" data-slot="pdf-preview-loading-hint">
                   Guardando la factura primero...
                 </p>
               )}
@@ -144,9 +144,9 @@ export function InvoicePdfPreviewModal({
           )}
 
           {error && (
-            <div className="bo-pdf-preview-error" data-slot="pdf-preview-error">
+            <div data-testid="pdf-preview-error" className="bo-pdf-preview-error" data-slot="pdf-preview-error">
               <FileText size={48} />
-              <p data-slot="pdf-preview-error-text">{error}</p>
+              <p data-testid="pdf-preview-error-text" data-slot="pdf-preview-error-text">{error}</p>
               {hasInvoiceId && (
                 <button
                   type="button"
@@ -180,18 +180,18 @@ export function InvoicePdfPreviewModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="bo-pdf-preview-footer" data-slot="pdf-preview-footer">
-          <div className="bo-pdf-preview-summary" data-slot="pdf-preview-summary">
-            <span className="bo-pdf-preview-total" data-slot="pdf-preview-total">
+        <div data-testid="pdf-preview-footer" className="bo-pdf-preview-footer" data-slot="pdf-preview-footer">
+          <div data-testid="pdf-preview-summary" className="bo-pdf-preview-summary" data-slot="pdf-preview-summary">
+            <span data-testid="pdf-preview-total" className="bo-pdf-preview-total" data-slot="pdf-preview-total">
               Total: {formatPrice(invoiceData.total || invoiceData.amount, invoiceData.currency)}
             </span>
             {!hasInvoiceId && (
-              <span className="bo-pdf-preview-hint-text" data-slot="pdf-preview-hint-text">
+              <span data-testid="pdf-preview-hint-text" className="bo-pdf-preview-hint-text" data-slot="pdf-preview-hint-text">
                 La factura se guardara al hacer clic en &quot;Vista previa&quot;
               </span>
             )}
           </div>
-          <div className="bo-pdf-preview-footer-actions" data-slot="pdf-preview-footer-actions">
+          <div data-testid="pdf-preview-footer-actions" className="bo-pdf-preview-footer-actions" data-slot="pdf-preview-footer-actions">
             <button
               type="button"
               className="bo-btn bo-btn--secondary"

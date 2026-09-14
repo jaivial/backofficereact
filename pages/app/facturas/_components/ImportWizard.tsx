@@ -735,13 +735,13 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={handleClose} data-slot="importWizard-modal-overlay">
-      <div className="bo-modal-content bo-importWizard" onClick={(e) => e.stopPropagation()} data-slot="importWizard-importWizard">
+    <div data-testid="importWizard-modal-overlay" className="bo-modal-overlay" onClick={handleClose} data-slot="importWizard-modal-overlay">
+      <div data-testid="importWizard-importWizard" className="bo-modal-content bo-importWizard" onClick={(e) => e.stopPropagation()} data-slot="importWizard-importWizard">
         {/* Header */}
-        <div className="bo-modal-header" data-slot="importWizard-modal-header">
-          <div className="bo-modal-title" data-slot="importWizard-modal-title">
+        <div data-testid="importWizard-modal-header" className="bo-modal-header" data-slot="importWizard-modal-header">
+          <div data-testid="importWizard-modal-title" className="bo-modal-title" data-slot="importWizard-modal-title">
             <FileSpreadsheet size={20} />
-            <span data-slot="importWizard-csv">Importar facturas desde CSV</span>
+            <span data-testid="importWizard-csv" data-slot="importWizard-csv">Importar facturas desde CSV</span>
           </div>
           <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={handleClose} aria-label="Cerrar" data-testid="import-wizard-close-btn">
             <X size={18} />
@@ -749,34 +749,34 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
         </div>
 
         {/* Progress Steps */}
-        <div className="bo-importWizardSteps" data-slot="importWizard-importWizardSteps">
-          <div className={`bo-importWizardStep ${currentStep === "upload" ? "active" : ""} ${["mapping", "preview", "importing", "complete"].includes(currentStep) ? "completed" : ""}`} data-slot="importWizard-div">
-            <div className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">1</div>
-            <div className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Subir archivo</div>
+        <div data-testid="importWizard-importWizardSteps" className="bo-importWizardSteps" data-slot="importWizard-importWizardSteps">
+          <div data-testid="importWizard-div" className={`bo-importWizardStep ${currentStep === "upload" ? "active" : ""} ${["mapping", "preview", "importing", "complete"].includes(currentStep) ? "completed" : ""}`} data-slot="importWizard-div">
+            <div data-testid="importWizard-importWizardStepNumber" className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">1</div>
+            <div data-testid="importWizard-importWizardStepLabel" className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Subir archivo</div>
           </div>
-          <div className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
-          <div className={`bo-importWizardStep ${currentStep === "mapping" ? "active" : ""} ${["preview", "importing", "complete"].includes(currentStep) ? "completed" : ""}`} data-slot="importWizard-div">
-            <div className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">2</div>
-            <div className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Mapear columnas</div>
+          <div data-testid="importWizard-importWizardStepConnector" className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
+          <div data-testid="importWizard-div-2" className={`bo-importWizardStep ${currentStep === "mapping" ? "active" : ""} ${["preview", "importing", "complete"].includes(currentStep) ? "completed" : ""}`} data-slot="importWizard-div">
+            <div data-testid="importWizard-importWizardStepNumber-2" className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">2</div>
+            <div data-testid="importWizard-importWizardStepLabel-2" className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Mapear columnas</div>
           </div>
-          <div className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
-          <div className={`bo-importWizardStep ${currentStep === "preview" ? "active" : ""} ${["importing", "complete"].includes(currentStep) ? "completed" : ""}`} data-slot="importWizard-div">
-            <div className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">3</div>
-            <div className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Validar y previsualizar</div>
+          <div data-testid="importWizard-importWizardStepConnector-2" className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
+          <div data-testid="importWizard-div-3" className={`bo-importWizardStep ${currentStep === "preview" ? "active" : ""} ${["importing", "complete"].includes(currentStep) ? "completed" : ""}`} data-slot="importWizard-div">
+            <div data-testid="importWizard-importWizardStepNumber-3" className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">3</div>
+            <div data-testid="importWizard-importWizardStepLabel-3" className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Validar y previsualizar</div>
           </div>
-          <div className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
-          <div className={`bo-importWizardStep ${currentStep === "complete" ? "active" : ""}`} data-slot="importWizard-div">
-            <div className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">4</div>
-            <div className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Completado</div>
+          <div data-testid="importWizard-importWizardStepConnector-3" className="bo-importWizardStepConnector" data-slot="importWizard-importWizardStepConnector" />
+          <div data-testid="importWizard-div-4" className={`bo-importWizardStep ${currentStep === "complete" ? "active" : ""}`} data-slot="importWizard-div">
+            <div data-testid="importWizard-importWizardStepNumber-4" className="bo-importWizardStepNumber" data-slot="importWizard-importWizardStepNumber">4</div>
+            <div data-testid="importWizard-importWizardStepLabel-4" className="bo-importWizardStepLabel" data-slot="importWizard-importWizardStepLabel">Completado</div>
           </div>
         </div>
 
         {/* Body */}
-        <ScrollArea dataSlot="importWizard-modal-body"><div className="bo-modal-body bo-importWizardBody" data-slot="importWizard-importWizardBody">
+        <ScrollArea dataSlot="importWizard-modal-body"><div data-testid="importWizard-importWizardBody" className="bo-modal-body bo-importWizardBody" data-slot="importWizard-importWizardBody">
           {/* Step 1: Upload */}
           {currentStep === "upload" && (
-            <div className="bo-importWizardUpload" data-slot="importWizard-importWizardUpload">
-              <div data-slot="importWizard-div"
+            <div data-testid="importWizard-importWizardUpload" className="bo-importWizardUpload" data-slot="importWizard-importWizardUpload">
+              <div data-testid="importWizard-div-5" data-slot="importWizard-div"
                 className={`bo-importWizardDropzone ${isDragging ? "dragging" : ""} ${selectedFile ? "has-file" : ""}`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -796,19 +796,19 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                 ) : selectedFile ? (
                   <>
                     <FileSpreadsheet size={48} />
-                    <p className="bo-importWizardFilename" data-slot="importWizard-importWizardFilename">{selectedFile.name}</p>
-                    <p className="bo-importWizardHint" data-slot="importWizard-importWizardHint">Haz clic para cambiar el archivo</p>
+                    <p data-testid="importWizard-importWizardFilename" className="bo-importWizardFilename" data-slot="importWizard-importWizardFilename">{selectedFile.name}</p>
+                    <p data-testid="importWizard-importWizardHint" className="bo-importWizardHint" data-slot="importWizard-importWizardHint">Haz clic para cambiar el archivo</p>
                   </>
                 ) : (
                   <>
                     <Upload size={48} />
-                    <p className="bo-importWizardHint" data-slot="importWizard-importWizardHint">Arrastra un archivo CSV aqui</p>
-                    <p className="bo-importWizardSubhint" data-slot="importWizard-importWizardSubhint">o haz clic para seleccionar</p>
+                    <p data-testid="importWizard-importWizardHint-2" className="bo-importWizardHint" data-slot="importWizard-importWizardHint">Arrastra un archivo CSV aqui</p>
+                    <p data-testid="importWizard-importWizardSubhint" className="bo-importWizardSubhint" data-slot="importWizard-importWizardSubhint">o haz clic para seleccionar</p>
                   </>
                 )}
               </div>
 
-              <div className="bo-importWizardActions" data-slot="importWizard-importWizardActions">
+              <div data-testid="importWizard-importWizardActions" className="bo-importWizardActions" data-slot="importWizard-importWizardActions">
                 <button className="bo-btn bo-btn--outline" onClick={handleDownloadSample} data-testid="import-wizard-download-sample-btn">
                   <Download size={16} />
                   Descargar ejemplo CSV
@@ -816,41 +816,41 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
               </div>
 
               {/* Settings */}
-              <div className="bo-importWizardSettings" data-slot="importWizard-importWizardSettings">
-                <h4 data-slot="importWizard-h4">
+              <div data-testid="importWizard-importWizardSettings" className="bo-importWizardSettings" data-slot="importWizard-importWizardSettings">
+                <h4 data-testid="importWizard-h4" data-slot="importWizard-h4">
                   <Settings size={16} />
                   Configuracion de importacion
                 </h4>
-                <div className="bo-importWizardSettingsGrid" data-slot="importWizard-importWizardSettingsGrid">
-                  <div className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
-                    <label data-slot="import-wizard-default-status-label">Estado por defecto</label>
+                <div data-testid="importWizard-importWizardSettingsGrid" className="bo-importWizardSettingsGrid" data-slot="importWizard-importWizardSettingsGrid">
+                  <div data-testid="importWizard-importWizardSetting" className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
+                    <label data-testid="import-wizard-default-status-label" data-slot="import-wizard-default-status-label">Estado por defecto</label>
                     <select
                       value={localSettings.defaultStatus}
                       onChange={(e) => setLocalSettings((s) => ({ ...s, defaultStatus: e.target.value as InvoiceStatus }))}
                       data-testid="import-wizard-default-status-select"
                     >
-                      <option value="borrador">Borrador</option>
-                      <option value="solicitada">Solicitada</option>
-                      <option value="pendiente">Pendiente</option>
-                      <option value="enviada">Enviada</option>
-                      <option value="pagada">Pagada</option>
+                      <option data-testid="ImportWizard-option" value="borrador">Borrador</option>
+                      <option data-testid="ImportWizard-option-2" value="solicitada">Solicitada</option>
+                      <option data-testid="ImportWizard-option-3" value="pendiente">Pendiente</option>
+                      <option data-testid="ImportWizard-option-4" value="enviada">Enviada</option>
+                      <option data-testid="ImportWizard-option-5" value="pagada">Pagada</option>
                     </select>
                   </div>
-                  <div className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
-                    <label data-slot="import-wizard-default-category-label">Categoria por defecto</label>
+                  <div data-testid="importWizard-importWizardSetting-2" className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
+                    <label data-testid="import-wizard-default-category-label" data-slot="import-wizard-default-category-label">Categoria por defecto</label>
                     <select
                       value={localSettings.defaultCategory}
                       onChange={(e) => setLocalSettings((s) => ({ ...s, defaultCategory: e.target.value as InvoiceCategory }))}
                       data-testid="import-wizard-default-category-select"
                     >
-                      <option value="reserva">Reserva</option>
-                      <option value="productos">Productos</option>
-                      <option value="servicios">Servicios</option>
-                      <option value="otros">Otros</option>
+                      <option data-testid="ImportWizard-option-6" value="reserva">Reserva</option>
+                      <option data-testid="ImportWizard-option-7" value="productos">Productos</option>
+                      <option data-testid="ImportWizard-option-8" value="servicios">Servicios</option>
+                      <option data-testid="ImportWizard-option-9" value="otros">Otros</option>
                     </select>
                   </div>
-                  <div className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
-                    <label data-slot="import-wizard-default-iva-rate-label">IVA por defecto (%)</label>
+                  <div data-testid="importWizard-importWizardSetting-3" className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
+                    <label data-testid="import-wizard-default-iva-rate-label" data-slot="import-wizard-default-iva-rate-label">IVA por defecto (%)</label>
                     <input
                       type="number"
                       value={localSettings.defaultIvaRate}
@@ -860,7 +860,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                       max="100"
                     />
                   </div>
-                  <div className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
+                  <div data-testid="importWizard-importWizardSetting-4" className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
                     <label data-slot="import-wizard-skip-header-label" data-testid="import-wizard-skip-header-label">
                       <input
                         type="checkbox"
@@ -878,39 +878,39 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
 
           {/* Step 2: Mapping */}
           {currentStep === "mapping" && parsedData && (
-            <div className="bo-importWizardMapping" data-slot="importWizard-importWizardMapping">
-              <div className="bo-importWizardMappingHeader" data-slot="importWizard-importWizardMappingHeader">
-                <h4 data-slot="importWizard-ura">Mapear columnas del archivo a campos de factura</h4>
-                <p className="bo-importWizardHint" data-slot="importWizard-importWizardHint">
+            <div data-testid="importWizard-importWizardMapping" className="bo-importWizardMapping" data-slot="importWizard-importWizardMapping">
+              <div data-testid="importWizard-importWizardMappingHeader" className="bo-importWizardMappingHeader" data-slot="importWizard-importWizardMappingHeader">
+                <h4 data-testid="importWizard-ura" data-slot="importWizard-ura">Mapear columnas del archivo a campos de factura</h4>
+                <p data-testid="importWizard-importWizardHint-3" className="bo-importWizardHint" data-slot="importWizard-importWizardHint">
                   Columnas detectadas: {parsedData.headers.length} | Filas: {parsedData.rows.length}
                 </p>
               </div>
 
-              <div className="bo-importWizardMappingTable" data-slot="importWizard-importWizardMappingTable">
-                <table data-slot="importWizard-table">
-                  <thead data-slot="importWizard-thead">
-                    <tr data-slot="importWizard-tr">
-                      <th data-slot="importWizard-ivo">Columna del archivo</th>
-                      <th data-slot="importWizard-lor">Ejemplo de valor</th>
-                      <th data-slot="importWizard-ura">Campo de factura</th>
+              <div data-testid="importWizard-importWizardMappingTable" className="bo-importWizardMappingTable" data-slot="importWizard-importWizardMappingTable">
+                <table data-testid="importWizard-table" data-slot="importWizard-table">
+                  <thead data-testid="importWizard-thead" data-slot="importWizard-thead">
+                    <tr data-testid="importWizard-tr" data-slot="importWizard-tr">
+                      <th data-testid="importWizard-ivo" data-slot="importWizard-ivo">Columna del archivo</th>
+                      <th data-testid="importWizard-lor" data-slot="importWizard-lor">Ejemplo de valor</th>
+                      <th data-testid="importWizard-ura-2" data-slot="importWizard-ura">Campo de factura</th>
                     </tr>
                   </thead>
-                  <tbody data-slot="importWizard-tbody">
+                  <tbody data-testid="importWizard-tbody" data-slot="importWizard-tbody">
                     {parsedData.headers.map((header) => {
                       const firstValue = parsedData.rows[0]?.[parsedData.headers.indexOf(header)] || "";
                       return (
-                        <tr key={header} data-slot="importWizard-tr">
-                          <td className="bo-importWizardColumnName" data-slot="importWizard-importWizardColumnName">{header}</td>
-                          <td className="bo-importWizardColumnValue" data-slot="importWizard-importWizardColumnValue">{firstValue}</td>
-                          <td data-slot="importWizard-td">
+                        <tr data-testid="importWizard-tr-2" key={header} data-slot="importWizard-tr">
+                          <td data-testid="importWizard-importWizardColumnName" className="bo-importWizardColumnName" data-slot="importWizard-importWizardColumnName">{header}</td>
+                          <td data-testid="importWizard-importWizardColumnValue" className="bo-importWizardColumnValue" data-slot="importWizard-importWizardColumnValue">{firstValue}</td>
+                          <td data-testid="importWizard-td" data-slot="importWizard-td">
                             <select
                               value={columnMapping[header] || "ignore"}
                               onChange={(e) => handleMappingChange(header, e.target.value as ImportFieldType)}
                               data-testid={`import-wizard-column-select-${header}`}
                             >
-                              <option value="ignore">Ignorar</option>
+                              <option data-testid="ImportWizard-option-10" value="ignore">Ignorar</option>
                               {IMPORT_FIELD_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
+                                <option data-testid="ImportWizard-option-11" key={opt.value} value={opt.value}>
                                   {opt.label} {opt.required ? "*" : ""}
                                 </option>
                               ))}
@@ -923,76 +923,76 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                 </table>
               </div>
 
-              <div className="bo-importWizardMappingActions" data-slot="importWizard-importWizardMappingActions">
-                <p className="bo-importWizardRequiredNote" data-slot="importWizard-importWizardRequiredNote">* Campos obligatorios</p>
+              <div data-testid="importWizard-importWizardMappingActions" className="bo-importWizardMappingActions" data-slot="importWizard-importWizardMappingActions">
+                <p data-testid="importWizard-importWizardRequiredNote" className="bo-importWizardRequiredNote" data-slot="importWizard-importWizardRequiredNote">* Campos obligatorios</p>
               </div>
             </div>
           )}
 
           {/* Step 3: Preview */}
           {currentStep === "preview" && (
-            <div className="bo-importWizardPreview" data-slot="importWizard-importWizardPreview">
+            <div data-testid="importWizard-importWizardPreview" className="bo-importWizardPreview" data-slot="importWizard-importWizardPreview">
               {/* Stats */}
-              <div className="bo-importWizardStats" data-slot="importWizard-importWizardStats">
-                <div className="bo-importWizardStat valid" data-slot="importWizard-valid">
+              <div data-testid="importWizard-importWizardStats" className="bo-importWizardStats" data-slot="importWizard-importWizardStats">
+                <div data-testid="importWizard-valid" className="bo-importWizardStat valid" data-slot="importWizard-valid">
                   <CheckCircle size={20} />
-                  <span className="bo-importWizardStatValue" data-slot="importWizard-importWizardStatValue">{stats.valid}</span>
-                  <span className="bo-importWizardStatLabel" data-slot="importWizard-importWizardStatLabel">Validas</span>
+                  <span data-testid="importWizard-importWizardStatValue" className="bo-importWizardStatValue" data-slot="importWizard-importWizardStatValue">{stats.valid}</span>
+                  <span data-testid="importWizard-importWizardStatLabel" className="bo-importWizardStatLabel" data-slot="importWizard-importWizardStatLabel">Validas</span>
                 </div>
-                <div className="bo-importWizardStat error" data-slot="importWizard-error">
+                <div data-testid="importWizard-error" className="bo-importWizardStat error" data-slot="importWizard-error">
                   <AlertCircle size={20} />
-                  <span className="bo-importWizardStatValue" data-slot="importWizard-importWizardStatValue">{stats.errors}</span>
-                  <span className="bo-importWizardStatLabel" data-slot="importWizard-importWizardStatLabel">Con errores</span>
+                  <span data-testid="importWizard-importWizardStatValue-2" className="bo-importWizardStatValue" data-slot="importWizard-importWizardStatValue">{stats.errors}</span>
+                  <span data-testid="importWizard-importWizardStatLabel-2" className="bo-importWizardStatLabel" data-slot="importWizard-importWizardStatLabel">Con errores</span>
                 </div>
-                <div className="bo-importWizardStat total" data-slot="importWizard-total">
+                <div data-testid="importWizard-total" className="bo-importWizardStat total" data-slot="importWizard-total">
                   <FileText size={20} />
-                  <span className="bo-importWizardStatValue" data-slot="importWizard-importWizardStatValue">{stats.total}</span>
-                  <span className="bo-importWizardStatLabel" data-slot="importWizard-importWizardStatLabel">Total</span>
+                  <span data-testid="importWizard-importWizardStatValue-3" className="bo-importWizardStatValue" data-slot="importWizard-importWizardStatValue">{stats.total}</span>
+                  <span data-testid="importWizard-importWizardStatLabel-3" className="bo-importWizardStatLabel" data-slot="importWizard-importWizardStatLabel">Total</span>
                 </div>
               </div>
 
               {/* Error summary */}
               {stats.errors > 0 && (
-                <div className="bo-importWizardErrorSummary" data-slot="importWizard-importWizardErrorSummary">
+                <div data-testid="importWizard-importWizardErrorSummary" className="bo-importWizardErrorSummary" data-slot="importWizard-importWizardErrorSummary">
                   <AlertTriangle size={16} />
-                  <span data-slot="importWizard-span">
+                  <span data-testid="importWizard-span" data-slot="importWizard-span">
                     {stats.errors} fila(s) tienen errores y no se importaran. Puedes revisar los errores abajo.
                   </span>
                 </div>
               )}
 
               {/* Preview table */}
-              <div className="bo-importWizardPreviewTable" data-slot="importWizard-importWizardPreviewTable">
-                <table data-slot="importWizard-table">
-                  <thead data-slot="importWizard-thead">
-                    <tr data-slot="importWizard-tr">
-                      <th data-slot="importWizard-ila">Fila</th>
-                      <th data-slot="importWizard-nte">Cliente</th>
-                      <th data-slot="importWizard-ail">Email</th>
-                      <th data-slot="importWizard-rte">Importe</th>
-                      <th data-slot="importWizard-cha">Fecha</th>
-                      <th data-slot="importWizard-ado">Estado</th>
-                      <th data-slot="importWizard-res">Errores</th>
+              <div data-testid="importWizard-importWizardPreviewTable" className="bo-importWizardPreviewTable" data-slot="importWizard-importWizardPreviewTable">
+                <table data-testid="importWizard-table-2" data-slot="importWizard-table">
+                  <thead data-testid="importWizard-thead-2" data-slot="importWizard-thead">
+                    <tr data-testid="importWizard-tr-3" data-slot="importWizard-tr">
+                      <th data-testid="importWizard-ila" data-slot="importWizard-ila">Fila</th>
+                      <th data-testid="importWizard-nte" data-slot="importWizard-nte">Cliente</th>
+                      <th data-testid="importWizard-ail" data-slot="importWizard-ail">Email</th>
+                      <th data-testid="importWizard-rte" data-slot="importWizard-rte">Importe</th>
+                      <th data-testid="importWizard-cha" data-slot="importWizard-cha">Fecha</th>
+                      <th data-testid="importWizard-ado" data-slot="importWizard-ado">Estado</th>
+                      <th data-testid="importWizard-res" data-slot="importWizard-res">Errores</th>
                     </tr>
                   </thead>
-                  <tbody data-slot="importWizard-tbody">
+                  <tbody data-testid="importWizard-tbody-2" data-slot="importWizard-tbody">
                     {previewRows.slice(0, 50).map((row) => (
-                      <tr key={row.rowNumber} className={row.status === "error" ? "row-error" : "row-valid"} data-slot="importWizard-tr">
-                        <td data-slot="importWizard-ber">{row.rowNumber}</td>
-                        <td data-slot="importWizard-ame">{row.mappedData.customer_name || "-"}</td>
-                        <td data-slot="importWizard-ail">{row.mappedData.customer_email || "-"}</td>
-                        <td data-slot="importWizard-xed">{row.mappedData.amount?.toFixed(2) || "-"}</td>
-                        <td data-slot="importWizard-ate">{row.mappedData.invoice_date || "-"}</td>
-                        <td data-slot="importWizard-td">
-                          <span className={`bo-importWizardStatusBadge ${row.status}`} data-slot="importWizard-span">
+                      <tr data-testid="importWizard-tr-4" key={row.rowNumber} className={row.status === "error" ? "row-error" : "row-valid"} data-slot="importWizard-tr">
+                        <td data-testid="importWizard-ber" data-slot="importWizard-ber">{row.rowNumber}</td>
+                        <td data-testid="importWizard-ame" data-slot="importWizard-ame">{row.mappedData.customer_name || "-"}</td>
+                        <td data-testid="importWizard-ail-2" data-slot="importWizard-ail">{row.mappedData.customer_email || "-"}</td>
+                        <td data-testid="importWizard-xed" data-slot="importWizard-xed">{row.mappedData.amount?.toFixed(2) || "-"}</td>
+                        <td data-testid="importWizard-ate" data-slot="importWizard-ate">{row.mappedData.invoice_date || "-"}</td>
+                        <td data-testid="importWizard-td-2" data-slot="importWizard-td">
+                          <span data-testid="importWizard-span-2" className={`bo-importWizardStatusBadge ${row.status}`} data-slot="importWizard-span">
                             {row.status === "valid" ? "Valido" : "Error"}
                           </span>
                         </td>
-                        <td data-slot="importWizard-td">
+                        <td data-testid="importWizard-td-3" data-slot="importWizard-td">
                           {row.errors.length > 0 && (
-                            <div className="bo-importWizardErrors" data-slot="importWizard-importWizardErrors">
+                            <div data-testid="importWizard-importWizardErrors" className="bo-importWizardErrors" data-slot="importWizard-importWizardErrors">
                               {row.errors.map((err, i) => (
-                                <div key={i} className="bo-importWizardErrorItem" data-slot="importWizard-importWizardErrorItem">
+                                <div data-testid="importWizard-importWizardErrorItem" key={i} className="bo-importWizardErrorItem" data-slot="importWizard-importWizardErrorItem">
                                   {err.field}: {err.message}
                                 </div>
                               ))}
@@ -1004,7 +1004,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                   </tbody>
                 </table>
                 {previewRows.length > 50 && (
-                  <p className="bo-importWizardPreviewNote" data-slot="importWizard-importWizardPreviewNote">Mostrando las primeras 50 filas de {previewRows.length}</p>
+                  <p data-testid="importWizard-importWizardPreviewNote" className="bo-importWizardPreviewNote" data-slot="importWizard-importWizardPreviewNote">Mostrando las primeras 50 filas de {previewRows.length}</p>
                 )}
               </div>
             </div>
@@ -1012,51 +1012,51 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
 
           {/* Step 4: Importing */}
           {currentStep === "importing" && (
-            <div className="bo-importWizardImporting" data-slot="importWizard-importWizardImporting">
+            <div data-testid="importWizard-importWizardImporting" className="bo-importWizardImporting" data-slot="importWizard-importWizardImporting">
               <RefreshCw className="spinning" size={64} />
-              <h3 data-slot="importWizard-ras">Importando facturas...</h3>
-              <p data-slot="importWizard-ras">Por favor, espera mientras se importan las facturas</p>
+              <h3 data-testid="importWizard-ras" data-slot="importWizard-ras">Importando facturas...</h3>
+              <p data-testid="importWizard-ras-2" data-slot="importWizard-ras">Por favor, espera mientras se importan las facturas</p>
             </div>
           )}
 
           {/* Step 5: Complete */}
           {currentStep === "complete" && importResult && (
-            <div className="bo-importWizardComplete" data-slot="importWizard-importWizardComplete">
+            <div data-testid="importWizard-importWizardComplete" className="bo-importWizardComplete" data-slot="importWizard-importWizardComplete">
               {importResult.successCount > 0 ? (
                 <CheckCircle className="success-icon" size={64} />
               ) : (
                 <XCircle className="error-icon" size={64} />
               )}
 
-              <h3 data-slot="importWizard-h3">
+              <h3 data-testid="importWizard-h3" data-slot="importWizard-h3">
                 {importResult.successCount > 0 ? "Importacion completada" : "Importacion fallida"}
               </h3>
 
-              <div className="bo-importWizardResultStats" data-slot="importWizard-importWizardResultStats">
-                <div className="bo-importWizardResultStat" data-slot="importWizard-importWizardResultStat">
-                  <span className="bo-importWizardResultStatValue" data-slot="importWizard-importWizardResultStatValue">{importResult.successCount}</span>
-                  <span className="bo-importWizardResultStatLabel" data-slot="importWizard-importWizardResultStatLabel">Facturas importadas</span>
+              <div data-testid="importWizard-importWizardResultStats" className="bo-importWizardResultStats" data-slot="importWizard-importWizardResultStats">
+                <div data-testid="importWizard-importWizardResultStat" className="bo-importWizardResultStat" data-slot="importWizard-importWizardResultStat">
+                  <span data-testid="importWizard-importWizardResultStatValue" className="bo-importWizardResultStatValue" data-slot="importWizard-importWizardResultStatValue">{importResult.successCount}</span>
+                  <span data-testid="importWizard-importWizardResultStatLabel" className="bo-importWizardResultStatLabel" data-slot="importWizard-importWizardResultStatLabel">Facturas importadas</span>
                 </div>
                 {importResult.errorCount > 0 && (
-                  <div className="bo-importWizardResultStat error" data-slot="importWizard-error">
-                    <span className="bo-importWizardResultStatValue" data-slot="importWizard-importWizardResultStatValue">{importResult.errorCount}</span>
-                    <span className="bo-importWizardResultStatLabel" data-slot="importWizard-importWizardResultStatLabel">Errores</span>
+                  <div data-testid="importWizard-error-2" className="bo-importWizardResultStat error" data-slot="importWizard-error">
+                    <span data-testid="importWizard-importWizardResultStatValue-2" className="bo-importWizardResultStatValue" data-slot="importWizard-importWizardResultStatValue">{importResult.errorCount}</span>
+                    <span data-testid="importWizard-importWizardResultStatLabel-2" className="bo-importWizardResultStatLabel" data-slot="importWizard-importWizardResultStatLabel">Errores</span>
                   </div>
                 )}
               </div>
 
               {importResult.errors.length > 0 && (
-                <div className="bo-importWizardResultErrors" data-slot="importWizard-importWizardResultErrors">
-                  <h4 data-slot="importWizard-res">Errores:</h4>
+                <div data-testid="importWizard-importWizardResultErrors" className="bo-importWizardResultErrors" data-slot="importWizard-importWizardResultErrors">
+                  <h4 data-testid="importWizard-res-2" data-slot="importWizard-res">Errores:</h4>
                   <ScrollArea dataSlot="importWizard-result-errors">
-                    <div data-slot="importWizard-importWizardResultErrorsList" className="bo-importWizardResultErrorsList">
+                    <div data-testid="importWizard-importWizardResultErrorsList" data-slot="importWizard-importWizardResultErrorsList" className="bo-importWizardResultErrorsList">
                     {importResult.errors.slice(0, 10).map((err, i) => (
-                      <div key={i} className="bo-importWizardResultErrorItem" data-slot="importWizard-importWizardResultErrorItem">
+                      <div data-testid="importWizard-importWizardResultErrorItem" key={i} className="bo-importWizardResultErrorItem" data-slot="importWizard-importWizardResultErrorItem">
                         Fila {err.row}: {err.message}
                       </div>
                     ))}
                     {importResult.errors.length > 10 && (
-                      <div className="bo-importWizardResultErrorItem more" data-slot="importWizard-more">
+                      <div data-testid="importWizard-more" className="bo-importWizardResultErrorItem more" data-slot="importWizard-more">
                         ...y {importResult.errors.length - 10} errores mas
                       </div>
                     )}
@@ -1070,7 +1070,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
         </ScrollArea>
 
         {/* Footer */}
-        <div className="bo-modal-footer bo-importWizardFooter" data-slot="importWizard-importWizardFooter">
+        <div data-testid="importWizard-importWizardFooter" className="bo-modal-footer bo-importWizardFooter" data-slot="importWizard-importWizardFooter">
           {currentStep === "upload" && (
             <button className="bo-btn bo-btn--ghost" onClick={handleClose} data-testid="import-wizard-cancel-btn">
               Cancelar

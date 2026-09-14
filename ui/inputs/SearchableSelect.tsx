@@ -166,8 +166,8 @@ export function SearchableSelect({
                 }}
                 data-ui="searchable-select-listbox"
               >
-                <div data-slot="searchableSelect-bg-[var(-bo" className="flex-none flex items-center gap-2 px-2 py-2 border-b border-[var(--bo-border)] bg-[var(--bo-surface)]">
-                  <Search size={14} className="text-[var(--bo-muted)] shrink-0" aria-hidden="true" />
+                <div data-slot="searchableSelect-bg-[var(-bo" className="bo-selectSearch">
+                  <Search size={14} className="bo-selectSearchIcon" aria-hidden="true" />
                   <input
                     ref={searchRef}
                     type="text"
@@ -175,7 +175,7 @@ export function SearchableSelect({
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); close(); btnRef.current?.focus(); } }}
                     placeholder={searchPlaceholder ?? "Buscar..."}
-                    className="w-full bg-transparent outline-none text-sm text-[var(--bo-text)]"
+                    className="bo-selectSearchInput"
                     data-role="searchable-select-search"
                     aria-label="Buscar"
                   />

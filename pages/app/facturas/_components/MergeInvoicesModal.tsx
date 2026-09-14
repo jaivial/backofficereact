@@ -70,12 +70,12 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose} data-slot="merge-invoice-overlay">
-      <div className="bo-modal-content bo-mergeModal" onClick={(e) => e.stopPropagation()} data-slot="merge-invoice-modal">
-        <div className="bo-modal-header" data-slot="merge-invoice-header">
-          <div className="bo-modal-title" data-slot="mergeInvoicesModal-modal-title">
+    <div data-testid="merge-invoice-overlay" className="bo-modal-overlay" onClick={onClose} data-slot="merge-invoice-overlay">
+      <div data-testid="merge-invoice-modal" className="bo-modal-content bo-mergeModal" onClick={(e) => e.stopPropagation()} data-slot="merge-invoice-modal">
+        <div data-testid="merge-invoice-header" className="bo-modal-header" data-slot="merge-invoice-header">
+          <div data-testid="mergeInvoicesModal-modal-title" className="bo-modal-title" data-slot="mergeInvoicesModal-modal-title">
             <AlertTriangle size={20} />
-            <span data-slot="mergeInvoicesModal-ras">Fusionar facturas</span>
+            <span data-testid="mergeInvoicesModal-ras" data-slot="mergeInvoicesModal-ras">Fusionar facturas</span>
           </div>
           <button
             className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -88,31 +88,31 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
           </button>
         </div>
 
-        <div className="bo-modal-body" data-slot="merge-invoice-body">
+        <div data-testid="merge-invoice-body" className="bo-modal-body" data-slot="merge-invoice-body">
           {/* Warning */}
-          <div className="bo-mergeWarning" data-slot="merge-invoice-warning">
+          <div data-testid="merge-invoice-warning" className="bo-mergeWarning" data-slot="merge-invoice-warning">
             <AlertTriangle size={16} />
-            <span data-slot="mergeInvoicesModal-span">
+            <span data-testid="mergeInvoicesModal-span" data-slot="mergeInvoicesModal-span">
               Se fusionaran {invoices.length} facturas en una sola factura
             </span>
           </div>
 
           {/* Selected invoices list */}
-          <div className="bo-mergeList" data-slot="merge-invoice-list">
-            <h4 data-slot="mergeInvoicesModal-nar">Facturas a fusionar</h4>
+          <div data-testid="merge-invoice-list" className="bo-mergeList" data-slot="merge-invoice-list">
+            <h4 data-testid="mergeInvoicesModal-nar" data-slot="mergeInvoicesModal-nar">Facturas a fusionar</h4>
             <ScrollArea dataSlot="merge-invoice-list-items">
-              <div data-slot="mergeInvoicesModal-mergeListItems" className="bo-mergeListItems">
+              <div data-testid="mergeInvoicesModal-mergeListItems" data-slot="mergeInvoicesModal-mergeListItems" className="bo-mergeListItems">
               {invoices.map((inv) => (
-                <div key={inv.id} className="bo-mergeListItem" data-slot="merge-invoice-list-item">
-                  <div className="bo-mergeListItemMain" data-slot="merge-invoice-list-item-main">
-                    <span className="bo-mergeListItemNumber" data-slot="mergeInvoicesModal-mergeListItemNumber">
+                <div data-testid="merge-invoice-list-item" key={inv.id} className="bo-mergeListItem" data-slot="merge-invoice-list-item">
+                  <div data-testid="merge-invoice-list-item-main" className="bo-mergeListItemMain" data-slot="merge-invoice-list-item-main">
+                    <span data-testid="mergeInvoicesModal-mergeListItemNumber" className="bo-mergeListItemNumber" data-slot="mergeInvoicesModal-mergeListItemNumber">
                       {inv.invoice_number || `#${inv.id}`}
                     </span>
-                    <span className="bo-mergeListItemCustomer" data-slot="mergeInvoicesModal-mergeListItemCustomer">
+                    <span data-testid="mergeInvoicesModal-mergeListItemCustomer" className="bo-mergeListItemCustomer" data-slot="mergeInvoicesModal-mergeListItemCustomer">
                       {inv.customer_name}
                     </span>
                   </div>
-                  <div className="bo-mergeListItemAmount" data-slot="mergeInvoicesModal-mergeListItemAmount">
+                  <div data-testid="mergeInvoicesModal-mergeListItemAmount" className="bo-mergeListItemAmount" data-slot="mergeInvoicesModal-mergeListItemAmount">
                     {formatPrice(inv.amount, inv.currency)}
                   </div>
                 </div>
@@ -123,34 +123,34 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
 
           {/* Different customers warning */}
           {totals.customerCount > 1 && (
-            <div className="bo-mergeCustomersWarning" data-slot="merge-invoice-customers-warning">
+            <div data-testid="merge-invoice-customers-warning" className="bo-mergeCustomersWarning" data-slot="merge-invoice-customers-warning">
               <User size={16} />
-              <span data-slot="mergeInvoicesModal-span">
-                <strong>Atencion:</strong> Las facturas son de {totals.customerCount} clientes diferentes.
+              <span data-testid="mergeInvoicesModal-span-2" data-slot="mergeInvoicesModal-span">
+                <strong data-testid="MergeInvoicesModal-strong">Atencion:</strong> Las facturas son de {totals.customerCount} clientes diferentes.
                 La factura fusionada usara los datos del primer cliente.
               </span>
             </div>
           )}
 
           {/* Combined totals */}
-          <div className="bo-mergeTotals" data-slot="merge-invoice-totals">
-            <div className="bo-mergeTotalsRow" data-slot="mergeInvoicesModal-mergeTotalsRow">
-              <span data-slot="mergeInvoicesModal-ble">Base imponible:</span>
-              <span data-slot="mergeInvoicesModal-unt">{formatPrice(totals.combinedAmount)}</span>
+          <div data-testid="merge-invoice-totals" className="bo-mergeTotals" data-slot="merge-invoice-totals">
+            <div data-testid="mergeInvoicesModal-mergeTotalsRow" className="bo-mergeTotalsRow" data-slot="mergeInvoicesModal-mergeTotalsRow">
+              <span data-testid="mergeInvoicesModal-ble" data-slot="mergeInvoicesModal-ble">Base imponible:</span>
+              <span data-testid="mergeInvoicesModal-unt" data-slot="mergeInvoicesModal-unt">{formatPrice(totals.combinedAmount)}</span>
             </div>
-            <div className="bo-mergeTotalsRow" data-slot="mergeInvoicesModal-mergeTotalsRow">
-              <span data-slot="mergeInvoicesModal-iva">IVA:</span>
-              <span data-slot="mergeInvoicesModal-iva">{formatPrice(totals.combinedIva)}</span>
+            <div data-testid="mergeInvoicesModal-mergeTotalsRow-2" className="bo-mergeTotalsRow" data-slot="mergeInvoicesModal-mergeTotalsRow">
+              <span data-testid="mergeInvoicesModal-iva" data-slot="mergeInvoicesModal-iva">IVA:</span>
+              <span data-testid="mergeInvoicesModal-iva-2" data-slot="mergeInvoicesModal-iva">{formatPrice(totals.combinedIva)}</span>
             </div>
-            <div className="bo-mergeTotalsRow bo-mergeTotalsRow--total" data-slot="mergeInvoicesModal-mergeTotalsRow--total">
-              <span data-slot="mergeInvoicesModal-tal">Total:</span>
-              <span data-slot="mergeInvoicesModal-tal">{formatPrice(totals.combinedTotal)}</span>
+            <div data-testid="mergeInvoicesModal-mergeTotalsRow-total" className="bo-mergeTotalsRow bo-mergeTotalsRow--total" data-slot="mergeInvoicesModal-mergeTotalsRow--total">
+              <span data-testid="mergeInvoicesModal-tal" data-slot="mergeInvoicesModal-tal">Total:</span>
+              <span data-testid="mergeInvoicesModal-tal-2" data-slot="mergeInvoicesModal-tal">{formatPrice(totals.combinedTotal)}</span>
             </div>
           </div>
 
           {/* Delete originals option */}
-          <div className="bo-mergeOptions" data-slot="merge-invoice-options">
-            <label className="bo-checkboxContainer" data-slot="mergeInvoicesModal-checkboxContainer">
+          <div data-testid="merge-invoice-options" className="bo-mergeOptions" data-slot="merge-invoice-options">
+            <label data-testid="mergeInvoicesModal-checkboxContainer" className="bo-checkboxContainer" data-slot="mergeInvoicesModal-checkboxContainer">
               <input
                 type="checkbox"
                 checked={deleteOriginals}
@@ -158,20 +158,20 @@ export function MergeInvoicesModal({ open, invoices, onClose, onMerge }: MergeIn
                 disabled={isSubmitting}
                 data-testid="merge-invoices-delete-originals-checkbox"
               />
-              <span className="bo-checkboxMark" data-slot="mergeInvoicesModal-checkboxMark"></span>
-              <span className="bo-checkboxLabel" data-slot="mergeInvoicesModal-checkboxLabel">
+              <span data-testid="mergeInvoicesModal-checkboxMark" className="bo-checkboxMark" data-slot="mergeInvoicesModal-checkboxMark"></span>
+              <span data-testid="mergeInvoicesModal-checkboxLabel" className="bo-checkboxLabel" data-slot="mergeInvoicesModal-checkboxLabel">
                 Eliminar facturas originales despues de fusionar
               </span>
             </label>
             {!deleteOriginals && (
-              <p className="bo-mergeOptionsHint" data-slot="mergeInvoicesModal-mergeOptionsHint">
+              <p data-testid="mergeInvoicesModal-mergeOptionsHint" className="bo-mergeOptionsHint" data-slot="mergeInvoicesModal-mergeOptionsHint">
                 Las facturas originales se mantendran como borradores
               </p>
             )}
           </div>
         </div>
 
-        <div className="bo-modal-footer" data-slot="merge-invoice-footer">
+        <div data-testid="merge-invoice-footer" className="bo-modal-footer" data-slot="merge-invoice-footer">
           <button
             className="bo-btn bo-btn--ghost"
             onClick={onClose}

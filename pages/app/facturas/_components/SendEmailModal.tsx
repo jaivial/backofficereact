@@ -266,21 +266,21 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
   return (
     <Modal open={open} onClose={handleClose} title={modalTitle} widthPx={550}>
-      <div className="bo-sendEmailModal" data-slot="send-email-modal">
+      <div data-testid="send-email-modal" className="bo-sendEmailModal" data-slot="send-email-modal">
         {/* Success state */}
         {sent ? (
-          <div className="bo-sendEmailSuccess" data-slot="send-email-success">
-            <div className="bo-sendEmailSuccessIcon" data-slot="send-email-success-icon">
+          <div data-testid="send-email-success" className="bo-sendEmailSuccess" data-slot="send-email-success">
+            <div data-testid="send-email-success-icon" className="bo-sendEmailSuccessIcon" data-slot="send-email-success-icon">
               <CheckCircle size={48} />
             </div>
-            <h3 data-slot="send-email-success-title">{successTitle}</h3>
-            <p data-slot="send-email-success-description">La factura ha sido enviada correctamente a:</p>
-            <p className="bo-sendEmailTo" data-slot="send-email-success-recipient">{successDestination}</p>
+            <h3 data-testid="send-email-success-title" data-slot="send-email-success-title">{successTitle}</h3>
+            <p data-testid="send-email-success-description" data-slot="send-email-success-description">La factura ha sido enviada correctamente a:</p>
+            <p data-testid="send-email-success-recipient" className="bo-sendEmailTo" data-slot="send-email-success-recipient">{successDestination}</p>
           </div>
         ) : (
           <>
             {/* Notification method toggle */}
-            <div className="bo-sendNotificationToggle" data-slot="send-email-notification-toggle">
+            <div data-testid="send-email-notification-toggle" className="bo-sendNotificationToggle" data-slot="send-email-notification-toggle">
               <button
                 type="button"
                 className={`bo-sendNotificationTab ${notificationMethod === "email" ? "is-active" : ""}`}
@@ -289,7 +289,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 data-testid="send-email-method-email"
               >
                 <Mail size={16} />
-                <span data-slot="sendEmailModal-ail">Email</span>
+                <span data-testid="sendEmailModal-ail" data-slot="sendEmailModal-ail">Email</span>
               </button>
               <button
                 type="button"
@@ -299,32 +299,32 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 data-testid="send-email-method-whatsapp"
               >
                 <MessageCircle size={16} />
-                <span data-slot="sendEmailModal-app">WhatsApp</span>
+                <span data-testid="sendEmailModal-app" data-slot="sendEmailModal-app">WhatsApp</span>
               </button>
             </div>
 
             {/* Invoice summary */}
-            <div className="bo-sendEmailSummary" data-slot="send-email-invoice-summary">
-              <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-customer">
+            <div data-testid="send-email-invoice-summary" className="bo-sendEmailSummary" data-slot="send-email-invoice-summary">
+              <div data-testid="send-email-summary-row-customer" className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-customer">
                 <User size={16} />
-                <span data-slot="send-email-customer-name">
+                <span data-testid="send-email-customer-name" data-slot="send-email-customer-name">
                   {invoice.customer_name} {invoice.customer_surname}
                 </span>
               </div>
               {notificationMethod === "email" ? (
-                <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-email">
+                <div data-testid="send-email-summary-row-email" className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-email">
                   <Mail size={16} />
-                  <span data-slot="send-email-customer-email">{invoice.customer_email || "Sin email"}</span>
+                  <span data-testid="send-email-customer-email" data-slot="send-email-customer-email">{invoice.customer_email || "Sin email"}</span>
                 </div>
               ) : (
-                <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-phone">
+                <div data-testid="send-email-summary-row-phone" className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-phone">
                   <Phone size={16} />
-                  <span data-slot="send-email-customer-phone">{invoice.customer_phone || "Sin telefono"}</span>
+                  <span data-testid="send-email-customer-phone" data-slot="send-email-customer-phone">{invoice.customer_phone || "Sin telefono"}</span>
                 </div>
               )}
-              <div className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-invoice">
+              <div data-testid="send-email-summary-row-invoice" className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-invoice">
                 <FileText size={16} />
-                <span data-slot="send-email-invoice-detail">
+                <span data-testid="send-email-invoice-detail" data-slot="send-email-invoice-detail">
                   Factura {invoice.invoice_number || `#${invoice.id}`} - {formatPrice(invoice.total || invoice.amount)}
                 </span>
               </div>
@@ -332,16 +332,16 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
             {/* Resend warning */}
             {isResend && (
-              <div className="bo-sendEmailWarning" data-slot="send-email-resend-warning">
+              <div data-testid="send-email-resend-warning" className="bo-sendEmailWarning" data-slot="send-email-resend-warning">
                 <AlertCircle size={16} />
-                <span data-slot="send-email-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo email.</span>
+                <span data-testid="send-email-resend-text" data-slot="send-email-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo email.</span>
               </div>
             )}
 
             {/* Email form */}
-            <div className="bo-sendEmailForm" data-slot="send-email-form">
-              <div className="bo-field" data-slot="send-email-field-subject">
-                <label className="bo-label" data-slot="sendEmailModal-label">Asunto</label>
+            <div data-testid="send-email-form" className="bo-sendEmailForm" data-slot="send-email-form">
+              <div data-testid="send-email-field-subject" className="bo-field" data-slot="send-email-field-subject">
+                <label data-testid="sendEmailModal-label" className="bo-label" data-slot="sendEmailModal-label">Asunto</label>
                 <input
                   className="bo-input"
                   type="text"
@@ -351,14 +351,14 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                   disabled={sending}
                   data-testid="send-email-subject-input"
                 />
-                <span className="bo-fieldHint" data-slot="sendEmailModal-fieldHint">
+                <span data-testid="sendEmailModal-fieldHint" className="bo-fieldHint" data-slot="sendEmailModal-fieldHint">
                   Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"}, {"{invoice_link}"}
                 </span>
               </div>
 
-              <div className="bo-field" data-slot="send-email-field-message">
-                <div className="bo-fieldHeader" data-slot="send-email-message-header">
-                  <label className="bo-label" data-slot="sendEmailModal-label">Mensaje</label>
+              <div data-testid="send-email-field-message" className="bo-field" data-slot="send-email-field-message">
+                <div data-testid="send-email-message-header" className="bo-fieldHeader" data-slot="send-email-message-header">
+                  <label data-testid="sendEmailModal-label-2" className="bo-label" data-slot="sendEmailModal-label">Mensaje</label>
                   <button
                     type="button"
                     className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -370,7 +370,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                   </button>
                 </div>
                 {showPreview ? (
-                  <div className="bo-sendEmailPreview" data-slot="send-email-message-preview">{previewContent.message}</div>
+                  <div data-testid="send-email-message-preview" className="bo-sendEmailPreview" data-slot="send-email-message-preview">{previewContent.message}</div>
                 ) : (
                   <textarea
                     className="bo-textarea"
@@ -386,7 +386,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
             </div>
 
             {/* Actions */}
-            <div className="bo-sendEmailActions" data-slot="send-email-actions">
+            <div data-testid="send-email-actions" className="bo-sendEmailActions" data-slot="send-email-actions">
               <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending} data-testid="send-email-cancel">
                 Cancelar
               </button>
@@ -428,7 +428,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                   className="bo-btn bo-btn--primary"
                   onClick={handleSend}
                   disabled={sending || (notificationMethod === "email" && !invoice.customer_email)}
-                  data-testid="send-email-submit"
+                  data-testid="send-email-submit-2"
                 >
                   {sending ? (
                     <>

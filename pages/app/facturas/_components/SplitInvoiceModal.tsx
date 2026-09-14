@@ -215,27 +215,27 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
         <ModalHeader title="Dividir factura" onClose={onClose} />
 
         <form onSubmit={handleSubmit} data-testid="split-invoice-form">
-          <div className="bo-modalBody" data-slot="splitInvoiceModal-modalBody">
+          <div data-testid="splitInvoiceModal-modalBody" className="bo-modalBody" data-slot="splitInvoiceModal-modalBody">
             {/* Original Invoice Info */}
-            <div className="bo-formSection" data-slot="splitInvoiceModal-formSection">
-              <h3 className="bo-formSectionTitle" data-slot="splitInvoiceModal-formSectionTitle">Factura original</h3>
-              <div className="bo-invoiceSplitOriginal" data-slot="splitInvoiceModal-invoiceSplitOriginal">
-                <div className="bo-invoiceSplitOriginalInfo" data-slot="splitInvoiceModal-invoiceSplitOriginalInfo">
-                  <span className="bo-invoiceSplitOriginalNumber" data-slot="splitInvoiceModal-invoiceSplitOriginalNumber">{invoice.invoice_number || `#${invoice.id}`}</span>
-                  <span className="bo-invoiceSplitOriginalCustomer" data-slot="splitInvoiceModal-invoiceSplitOriginalCustomer">{invoice.customer_name}</span>
+            <div data-testid="splitInvoiceModal-formSection" className="bo-formSection" data-slot="splitInvoiceModal-formSection">
+              <h3 data-testid="splitInvoiceModal-formSectionTitle" className="bo-formSectionTitle" data-slot="splitInvoiceModal-formSectionTitle">Factura original</h3>
+              <div data-testid="splitInvoiceModal-invoiceSplitOriginal" className="bo-invoiceSplitOriginal" data-slot="splitInvoiceModal-invoiceSplitOriginal">
+                <div data-testid="splitInvoiceModal-invoiceSplitOriginalInfo" className="bo-invoiceSplitOriginalInfo" data-slot="splitInvoiceModal-invoiceSplitOriginalInfo">
+                  <span data-testid="splitInvoiceModal-invoiceSplitOriginalNumber" className="bo-invoiceSplitOriginalNumber" data-slot="splitInvoiceModal-invoiceSplitOriginalNumber">{invoice.invoice_number || `#${invoice.id}`}</span>
+                  <span data-testid="splitInvoiceModal-invoiceSplitOriginalCustomer" className="bo-invoiceSplitOriginalCustomer" data-slot="splitInvoiceModal-invoiceSplitOriginalCustomer">{invoice.customer_name}</span>
                 </div>
-                <div className="bo-invoiceSplitOriginalAmount" data-slot="splitInvoiceModal-invoiceSplitOriginalAmount">
-                  <span className="bo-invoiceSplitOriginalAmountLabel" data-slot="splitInvoiceModal-invoiceSplitOriginalAmountLabel">Importe original:</span>
-                  <span className="bo-invoiceSplitOriginalAmountValue" data-slot="splitInvoiceModal-invoiceSplitOriginalAmountValue">{formatPrice(originalAmount, currency)}</span>
+                <div data-testid="splitInvoiceModal-invoiceSplitOriginalAmount" className="bo-invoiceSplitOriginalAmount" data-slot="splitInvoiceModal-invoiceSplitOriginalAmount">
+                  <span data-testid="splitInvoiceModal-invoiceSplitOriginalAmountLabel" className="bo-invoiceSplitOriginalAmountLabel" data-slot="splitInvoiceModal-invoiceSplitOriginalAmountLabel">Importe original:</span>
+                  <span data-testid="splitInvoiceModal-invoiceSplitOriginalAmountValue" className="bo-invoiceSplitOriginalAmountValue" data-slot="splitInvoiceModal-invoiceSplitOriginalAmountValue">{formatPrice(originalAmount, currency)}</span>
                 </div>
               </div>
             </div>
 
             {/* Split Method Selection */}
-            <div className="bo-formSection" data-slot="splitInvoiceModal-formSection">
-              <h3 className="bo-formSectionTitle" data-slot="splitInvoiceModal-formSectionTitle">Metodo de division</h3>
-              <div className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                <label className="bo-radioGroup" data-slot="splitInvoiceModal-radioGroup">
+            <div data-testid="splitInvoiceModal-formSection-2" className="bo-formSection" data-slot="splitInvoiceModal-formSection">
+              <h3 data-testid="splitInvoiceModal-formSectionTitle-2" className="bo-formSectionTitle" data-slot="splitInvoiceModal-formSectionTitle">Metodo de division</h3>
+              <div data-testid="splitInvoiceModal-formGroup" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
+                <label data-testid="splitInvoiceModal-radioGroup" className="bo-radioGroup" data-slot="splitInvoiceModal-radioGroup">
                   <input
                     type="radio"
                     name="method"
@@ -245,12 +245,12 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     className="bo-radioInput"
                     data-testid="split-invoice-method-percentage-input"
                   />
-                  <span className="bo-radioLabel" data-slot="splitInvoiceModal-radioLabel">
-                    <strong>Porcentaje personalizado</strong>
-                    <span className="bo-radioDescription" data-slot="splitInvoiceModal-radioDescription">Definir el porcentaje para cada cliente</span>
+                  <span data-testid="splitInvoiceModal-radioLabel" className="bo-radioLabel" data-slot="splitInvoiceModal-radioLabel">
+                    <strong data-testid="SplitInvoiceModal-strong">Porcentaje personalizado</strong>
+                    <span data-testid="splitInvoiceModal-radioDescription" className="bo-radioDescription" data-slot="splitInvoiceModal-radioDescription">Definir el porcentaje para cada cliente</span>
                   </span>
                 </label>
-                <label className="bo-radioGroup" data-slot="splitInvoiceModal-radioGroup">
+                <label data-testid="splitInvoiceModal-radioGroup-2" className="bo-radioGroup" data-slot="splitInvoiceModal-radioGroup">
                   <input
                     type="radio"
                     name="method"
@@ -260,19 +260,19 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     className="bo-radioInput"
                     data-testid="split-invoice-method-equal-input"
                   />
-                  <span className="bo-radioLabel" data-slot="splitInvoiceModal-radioLabel">
-                    <strong>Division igualitaria</strong>
-                    <span className="bo-radioDescription" data-slot="splitInvoiceModal-radioDescription">Dividir en partes iguales</span>
+                  <span data-testid="splitInvoiceModal-radioLabel-2" className="bo-radioLabel" data-slot="splitInvoiceModal-radioLabel">
+                    <strong data-testid="SplitInvoiceModal-strong-2">Division igualitaria</strong>
+                    <span data-testid="splitInvoiceModal-radioDescription-2" className="bo-radioDescription" data-slot="splitInvoiceModal-radioDescription">Dividir en partes iguales</span>
                   </span>
                 </label>
               </div>
             </div>
 
             {/* Split Configuration */}
-            <div className="bo-formSection" data-slot="splitInvoiceModal-formSection">
+            <div data-testid="splitInvoiceModal-formSection-3" className="bo-formSection" data-slot="splitInvoiceModal-formSection">
               {method === "equal" ? (
-                <div className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                  <label htmlFor="splitCount" className="bo-label" data-slot="split-invoice-split-count-label">Numero de partes</label>
+                <div data-testid="splitInvoiceModal-formGroup-2" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
+                  <label data-testid="split-invoice-split-count-label" htmlFor="splitCount" className="bo-label" data-slot="split-invoice-split-count-label">Numero de partes</label>
                   <input
                     id="splitCount"
                     type="number"
@@ -283,14 +283,14 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     className="bo-input"
                     data-testid="split-invoice-split-count-input"
                   />
-                  <p className="bo-formHelp" data-slot="splitInvoiceModal-formHelp">
-                    Cada parte sera de: <strong>{formatPrice(originalAmount / splitCount, currency)}</strong>
+                  <p data-testid="splitInvoiceModal-formHelp" className="bo-formHelp" data-slot="splitInvoiceModal-formHelp">
+                    Cada parte sera de: <strong data-testid="SplitInvoiceModal-strong-3">{formatPrice(originalAmount / splitCount, currency)}</strong>
                   </p>
                 </div>
               ) : (
                 <>
-                  <div className="bo-splitItemsHeader" data-slot="splitInvoiceModal-splitItemsHeader">
-                    <h3 className="bo-formSectionTitle" data-slot="splitInvoiceModal-formSectionTitle">Facturas resultantes</h3>
+                  <div data-testid="splitInvoiceModal-splitItemsHeader" className="bo-splitItemsHeader" data-slot="splitInvoiceModal-splitItemsHeader">
+                    <h3 data-testid="splitInvoiceModal-formSectionTitle-3" className="bo-formSectionTitle" data-slot="splitInvoiceModal-formSectionTitle">Facturas resultantes</h3>
                     <button
                       type="button"
                       className="bo-btn bo-btn--secondary bo-btn--sm"
@@ -307,10 +307,10 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                     const totalPct = splitItems.reduce((sum, item) => sum + (item.percentage || 0), 0);
                     const isValid = Math.abs(totalPct - 100) < 0.01;
                     return (
-                      <div className={`bo-splitPercentageTotal ${isValid ? "is-valid" : "is-invalid"}`} data-slot="splitInvoiceModal-div">
-                        <span data-slot="splitInvoiceModal-xed">Total: {totalPct.toFixed(1)}%</span>
+                      <div data-testid="splitInvoiceModal-div" className={`bo-splitPercentageTotal ${isValid ? "is-valid" : "is-invalid"}`} data-slot="splitInvoiceModal-div">
+                        <span data-testid="splitInvoiceModal-xed" data-slot="splitInvoiceModal-xed">Total: {totalPct.toFixed(1)}%</span>
                         {!isValid && (
-                          <span className="bo-splitPercentageWarning" data-slot="splitInvoiceModal-splitPercentageWarning">
+                          <span data-testid="splitInvoiceModal-splitPercentageWarning" className="bo-splitPercentageWarning" data-slot="splitInvoiceModal-splitPercentageWarning">
                             <AlertCircle size={14} />
                             Debe ser 100%
                           </span>
@@ -320,11 +320,11 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                   })()}
 
                   {/* Split Items */}
-                  <div className="bo-splitItems" data-slot="splitInvoiceModal-splitItems">
+                  <div data-testid="splitInvoiceModal-splitItems" className="bo-splitItems" data-slot="splitInvoiceModal-splitItems">
                     {splitItems.map((item, index) => (
-                      <div key={index} className="bo-splitItem" data-slot="splitInvoiceModal-splitItem">
-                        <div className="bo-splitItemHeader" data-slot="splitInvoiceModal-splitItemHeader">
-                          <span className="bo-splitItemNumber" data-slot="splitInvoiceModal-splitItemNumber">Factura {index + 1}</span>
+                      <div data-testid="splitInvoiceModal-splitItem" key={index} className="bo-splitItem" data-slot="splitInvoiceModal-splitItem">
+                        <div data-testid="splitInvoiceModal-splitItemHeader" className="bo-splitItemHeader" data-slot="splitInvoiceModal-splitItemHeader">
+                          <span data-testid="splitInvoiceModal-splitItemNumber" className="bo-splitItemNumber" data-slot="splitInvoiceModal-splitItemNumber">Factura {index + 1}</span>
                           {splitItems.length > 2 && (
                             <button
                               type="button"
@@ -338,10 +338,10 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                           )}
                         </div>
 
-                        <div className="bo-splitItemFields" data-slot="splitInvoiceModal-splitItemFields">
-                          <div className="bo-formRow" data-slot="splitInvoiceModal-formRow">
-                            <div className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                              <label className="bo-label" data-slot="split-invoice-customer-name-label">Nombre del cliente *</label>
+                        <div data-testid="splitInvoiceModal-splitItemFields" className="bo-splitItemFields" data-slot="splitInvoiceModal-splitItemFields">
+                          <div data-testid="splitInvoiceModal-formRow" className="bo-formRow" data-slot="splitInvoiceModal-formRow">
+                            <div data-testid="splitInvoiceModal-formGroup-3" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
+                              <label data-testid="split-invoice-customer-name-label" className="bo-label" data-slot="split-invoice-customer-name-label">Nombre del cliente *</label>
                               <input
                                 type="text"
                                 value={item.customer_name}
@@ -352,8 +352,8 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                 data-testid={`split-invoice-customer-name-${index}-input`}
                               />
                             </div>
-                            <div className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                              <label className="bo-label" data-slot="split-invoice-customer-surname-label">Apellidos</label>
+                            <div data-testid="splitInvoiceModal-formGroup-4" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
+                              <label data-testid="split-invoice-customer-surname-label" className="bo-label" data-slot="split-invoice-customer-surname-label">Apellidos</label>
                               <input
                                 type="text"
                                 value={item.customer_surname || ""}
@@ -365,9 +365,9 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                             </div>
                           </div>
 
-                          <div className="bo-formRow" data-slot="splitInvoiceModal-formRow">
-                            <div className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                              <label className="bo-label" data-slot="split-invoice-customer-email-label">Email *</label>
+                          <div data-testid="splitInvoiceModal-formRow-2" className="bo-formRow" data-slot="splitInvoiceModal-formRow">
+                            <div data-testid="splitInvoiceModal-formGroup-5" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
+                              <label data-testid="split-invoice-customer-email-label" className="bo-label" data-slot="split-invoice-customer-email-label">Email *</label>
                               <input
                                 type="email"
                                 value={item.customer_email}
@@ -378,8 +378,8 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                 data-testid={`split-invoice-customer-email-${index}-input`}
                               />
                             </div>
-                            <div className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                              <label className="bo-label" data-slot="split-invoice-customer-dni-label">DNI/CIF</label>
+                            <div data-testid="splitInvoiceModal-formGroup-6" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
+                              <label data-testid="split-invoice-customer-dni-label" className="bo-label" data-slot="split-invoice-customer-dni-label">DNI/CIF</label>
                               <input
                                 type="text"
                                 value={item.customer_dni_cif || ""}
@@ -391,9 +391,9 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                             </div>
                           </div>
 
-                          <div className="bo-formRow" data-slot="splitInvoiceModal-formRow">
-                            <div className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                              <label className="bo-label" data-slot="split-invoice-customer-phone-label">Telefono</label>
+                          <div data-testid="splitInvoiceModal-formRow-3" className="bo-formRow" data-slot="splitInvoiceModal-formRow">
+                            <div data-testid="splitInvoiceModal-formGroup-7" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
+                              <label data-testid="split-invoice-customer-phone-label" className="bo-label" data-slot="split-invoice-customer-phone-label">Telefono</label>
                               <input
                                 type="tel"
                                 value={item.customer_phone || ""}
@@ -403,9 +403,9 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                 data-testid={`split-invoice-customer-phone-${index}-input`}
                               />
                             </div>
-                            <div className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                              <label className="bo-label" data-slot="split-invoice-percentage-label">Porcentaje (%)</label>
-                              <div className="bo-inputGroup" data-slot="splitInvoiceModal-inputGroup">
+                            <div data-testid="splitInvoiceModal-formGroup-8" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
+                              <label data-testid="split-invoice-percentage-label" className="bo-label" data-slot="split-invoice-percentage-label">Porcentaje (%)</label>
+                              <div data-testid="splitInvoiceModal-inputGroup" className="bo-inputGroup" data-slot="splitInvoiceModal-inputGroup">
                                 <input
                                   type="number"
                                   min="0"
@@ -417,14 +417,14 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
                                   required
                                   data-testid={`split-invoice-percentage-${index}-input`}
                                 />
-                                <span className="bo-inputGroupAddon" data-slot="splitInvoiceModal-inputGroupAddon">%</span>
+                                <span data-testid="splitInvoiceModal-inputGroupAddon" className="bo-inputGroupAddon" data-slot="splitInvoiceModal-inputGroupAddon">%</span>
                               </div>
                             </div>
                           </div>
 
-                          <div className="bo-splitItemAmount" data-slot="splitInvoiceModal-splitItemAmount">
-                            <span data-slot="splitInvoiceModal-rte">Importe:</span>
-                            <strong>{formatPrice((originalAmount * (item.percentage || 0)) / 100, currency)}</strong>
+                          <div data-testid="splitInvoiceModal-splitItemAmount" className="bo-splitItemAmount" data-slot="splitInvoiceModal-splitItemAmount">
+                            <span data-testid="splitInvoiceModal-rte" data-slot="splitInvoiceModal-rte">Importe:</span>
+                            <strong data-testid="SplitInvoiceModal-strong-4">{formatPrice((originalAmount * (item.percentage || 0)) / 100, currency)}</strong>
                           </div>
                         </div>
                       </div>
@@ -435,31 +435,31 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             </div>
 
             {/* Preview */}
-            <div className="bo-formSection" data-slot="splitInvoiceModal-formSection">
-              <h3 className="bo-formSectionTitle" data-slot="splitInvoiceModal-formSectionTitle">Vista previa</h3>
-              <div className="bo-splitPreview" data-slot="splitInvoiceModal-splitPreview">
+            <div data-testid="splitInvoiceModal-formSection-4" className="bo-formSection" data-slot="splitInvoiceModal-formSection">
+              <h3 data-testid="splitInvoiceModal-formSectionTitle-4" className="bo-formSectionTitle" data-slot="splitInvoiceModal-formSectionTitle">Vista previa</h3>
+              <div data-testid="splitInvoiceModal-splitPreview" className="bo-splitPreview" data-slot="splitInvoiceModal-splitPreview">
                 {method === "equal" ? (
                   Array.from({ length: splitCount }).map((_, index) => (
-                    <div key={index} className="bo-splitPreviewItem" data-slot="splitInvoiceModal-splitPreviewItem">
-                      <div className="bo-splitPreviewItemHeader" data-slot="splitInvoiceModal-splitPreviewItemHeader">
-                        <span data-slot="splitInvoiceModal-dex">Factura {index + 1}</span>
+                    <div data-testid="splitInvoiceModal-splitPreviewItem" key={index} className="bo-splitPreviewItem" data-slot="splitInvoiceModal-splitPreviewItem">
+                      <div data-testid="splitInvoiceModal-splitPreviewItemHeader" className="bo-splitPreviewItemHeader" data-slot="splitInvoiceModal-splitPreviewItemHeader">
+                        <span data-testid="splitInvoiceModal-dex" data-slot="splitInvoiceModal-dex">Factura {index + 1}</span>
                         <ArrowRight size={14} />
                       </div>
-                      <div className="bo-splitPreviewItemAmount" data-slot="splitInvoiceModal-splitPreviewItemAmount">
+                      <div data-testid="splitInvoiceModal-splitPreviewItemAmount" className="bo-splitPreviewItemAmount" data-slot="splitInvoiceModal-splitPreviewItemAmount">
                         {formatPrice(originalAmount / splitCount, currency)}
                       </div>
                     </div>
                   ))
                 ) : (
                   splitItems.map((item, index) => (
-                    <div key={index} className="bo-splitPreviewItem" data-slot="splitInvoiceModal-splitPreviewItem">
-                      <div className="bo-splitPreviewItemHeader" data-slot="splitInvoiceModal-splitPreviewItemHeader">
-                        <span data-slot="splitInvoiceModal-dex">{item.customer_name || `Cliente ${index + 1}`}</span>
+                    <div data-testid="splitInvoiceModal-splitPreviewItem-2" key={index} className="bo-splitPreviewItem" data-slot="splitInvoiceModal-splitPreviewItem">
+                      <div data-testid="splitInvoiceModal-splitPreviewItemHeader-2" className="bo-splitPreviewItemHeader" data-slot="splitInvoiceModal-splitPreviewItemHeader">
+                        <span data-testid="splitInvoiceModal-dex-2" data-slot="splitInvoiceModal-dex">{item.customer_name || `Cliente ${index + 1}`}</span>
                         <ArrowRight size={14} />
                       </div>
-                      <div className="bo-splitPreviewItemDetails" data-slot="splitInvoiceModal-splitPreviewItemDetails">
-                        <span className="bo-splitPreviewItemPercentage" data-slot="splitInvoiceModal-splitPreviewItemPercentage">{item.percentage || 0}%</span>
-                        <span className="bo-splitPreviewItemAmount" data-slot="splitInvoiceModal-splitPreviewItemAmount">
+                      <div data-testid="splitInvoiceModal-splitPreviewItemDetails" className="bo-splitPreviewItemDetails" data-slot="splitInvoiceModal-splitPreviewItemDetails">
+                        <span data-testid="splitInvoiceModal-splitPreviewItemPercentage" className="bo-splitPreviewItemPercentage" data-slot="splitInvoiceModal-splitPreviewItemPercentage">{item.percentage || 0}%</span>
+                        <span data-testid="splitInvoiceModal-splitPreviewItemAmount-2" className="bo-splitPreviewItemAmount" data-slot="splitInvoiceModal-splitPreviewItemAmount">
                           {formatPrice((originalAmount * (item.percentage || 0)) / 100, currency)}
                         </span>
                       </div>
@@ -471,18 +471,18 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
 
             {/* Validation Errors */}
             {validationErrors.length > 0 && (
-              <div className="bo-alert bo-alert--error" data-slot="splitInvoiceModal-alert--error">
+              <div data-testid="splitInvoiceModal-alert-error" className="bo-alert bo-alert--error" data-slot="splitInvoiceModal-alert--error">
                 <AlertCircle size={16} />
-                <ul className="bo-alertList" data-slot="splitInvoiceModal-alertList">
+                <ul data-testid="splitInvoiceModal-alertList" className="bo-alertList" data-slot="splitInvoiceModal-alertList">
                   {validationErrors.map((error, index) => (
-                    <li key={index} data-slot="splitInvoiceModal-ror">{error}</li>
+                    <li data-testid="splitInvoiceModal-ror" key={index} data-slot="splitInvoiceModal-ror">{error}</li>
                   ))}
                 </ul>
               </div>
             )}
           </div>
 
-          <div className="bo-modalFooter" data-slot="splitInvoiceModal-modalFooter">
+          <div data-testid="splitInvoiceModal-modalFooter" className="bo-modalFooter" data-slot="splitInvoiceModal-modalFooter">
             <button
               type="button"
               className="bo-btn bo-btn--secondary"

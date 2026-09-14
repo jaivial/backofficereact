@@ -359,11 +359,11 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
   );
 
   return (
-    <div className="bo-panel bo-invoiceFilters" aria-label="Filtros de facturas" data-slot="invoiceFilters-filtros-de-facturas">
-      <div className="bo-invoiceFiltersHead" data-slot="invoiceFilters-invoiceFiltersHead">
-        <div className="bo-invoiceFiltersTitle" data-slot="invoiceFilters-invoiceFiltersTitle">
+    <div data-testid="invoiceFilters-filtros-de-facturas" className="bo-panel bo-invoiceFilters" aria-label="Filtros de facturas" data-slot="invoiceFilters-filtros-de-facturas">
+      <div data-testid="invoiceFilters-invoiceFiltersHead" className="bo-invoiceFiltersHead" data-slot="invoiceFilters-invoiceFiltersHead">
+        <div data-testid="invoiceFilters-invoiceFiltersTitle" className="bo-invoiceFiltersTitle" data-slot="invoiceFilters-invoiceFiltersTitle">
           <Filter size={15} />
-          <span data-slot="invoiceFilters-ros">Filtros</span>
+          <span data-testid="invoiceFilters-ros" data-slot="invoiceFilters-ros">Filtros</span>
         </div>
         <button
           className="bo-btn bo-btn--ghost bo-btn--sm bo-invoiceFiltersToggle"
@@ -387,11 +387,11 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
             exit={reduceMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0, y: -6 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="bo-invoiceFiltersGrid" data-slot="invoiceFilters-invoiceFiltersGrid">
+            <div data-testid="invoiceFilters-invoiceFiltersGrid" className="bo-invoiceFiltersGrid" data-slot="invoiceFilters-invoiceFiltersGrid">
               {/* Row 1: Buscar — Select left, input right */}
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--search" data-slot="invoiceFilters-invoiceFilter--search">
-                <span className="bo-label" data-slot="invoiceFilters-label">Buscar</span>
-                <div className="bo-searchWithDropdown" data-slot="invoiceFilters-searchWithDropdown">
+              <label data-testid="invoiceFilters-invoiceFilter-search" className="bo-field bo-invoiceFilter bo-invoiceFilter--search" data-slot="invoiceFilters-invoiceFilter--search">
+                <span data-testid="invoiceFilters-label" className="bo-label" data-slot="invoiceFilters-label">Buscar</span>
+                <div data-testid="invoiceFilters-searchWithDropdown" className="bo-searchWithDropdown" data-slot="invoiceFilters-searchWithDropdown">
                   <Select
                     value={searchBy}
                     onChange={(value) => onSearchByChange(value as SearchByOption)}
@@ -422,9 +422,9 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               </label>
 
               {/* Row 2: Estado + Categoria */}
-              <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-estadoCategoriaRow">
-                <label className="bo-field bo-invoiceFilter bo-invoiceFilter--status" data-slot="invoiceFilters-invoiceFilter--status">
-                  <span className="bo-label" data-slot="invoiceFilters-label">Estado</span>
+              <div data-testid="invoiceFilters-estadoCategoriaRow" className="bo-invoiceFilterRow" data-slot="invoiceFilters-estadoCategoriaRow">
+                <label data-testid="invoiceFilters-invoiceFilter-status" className="bo-field bo-invoiceFilter bo-invoiceFilter--status" data-slot="invoiceFilters-invoiceFilter--status">
+                  <span data-testid="invoiceFilters-label-2" className="bo-label" data-slot="invoiceFilters-label">Estado</span>
                   <Select
                     value={statusFilter}
                     onChange={(value) => onStatusFilterChange(value as InvoiceStatus | "")}
@@ -434,8 +434,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   />
                 </label>
 
-                <label className="bo-field bo-invoiceFilter bo-invoiceFilter--category" data-slot="invoiceFilters-invoiceFilter--category">
-                  <span className="bo-label" data-slot="invoiceFilters-label">Categoria</span>
+                <label data-testid="invoiceFilters-invoiceFilter-category" className="bo-field bo-invoiceFilter bo-invoiceFilter--category" data-slot="invoiceFilters-invoiceFilter--category">
+                  <span data-testid="invoiceFilters-label-3" className="bo-label" data-slot="invoiceFilters-label">Categoria</span>
                   <Select
                     value={categoryFilter}
                     onChange={(value) => onCategoryFilterChange(value as InvoiceCategory | "")}
@@ -447,8 +447,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               </div>
 
               {/* Row 3: Etiqueta */}
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--tag" data-slot="invoiceFilters-invoiceFilter--tag">
-                <span className="bo-label" data-slot="invoiceFilters-label">Etiqueta</span>
+              <label data-testid="invoiceFilters-invoiceFilter-tag" className="bo-field bo-invoiceFilter bo-invoiceFilter--tag" data-slot="invoiceFilters-invoiceFilter--tag">
+                <span data-testid="invoiceFilters-label-4" className="bo-label" data-slot="invoiceFilters-label">Etiqueta</span>
                 <input
                   className="bo-input"
                   type="text"
@@ -460,9 +460,9 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               </label>
 
               {/* Row 4: Tipo de fecha + Periodo */}
-              <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-tipoFechaPeriodoRow">
-                <div className="bo-field bo-invoiceFilter bo-invoiceFilter--dateType" data-slot="invoiceFilters-invoiceFilter--dateType">
-                  <span className="bo-label" data-slot="invoiceFilters-label">Tipo de fecha</span>
+              <div data-testid="invoiceFilters-tipoFechaPeriodoRow" className="bo-invoiceFilterRow" data-slot="invoiceFilters-tipoFechaPeriodoRow">
+                <div data-testid="invoiceFilters-invoiceFilter-dateType" className="bo-field bo-invoiceFilter bo-invoiceFilter--dateType" data-slot="invoiceFilters-invoiceFilter--dateType">
+                  <span data-testid="invoiceFilters-label-5" className="bo-label" data-slot="invoiceFilters-label">Tipo de fecha</span>
                   <Select
                     value={dateType}
                     onChange={(value) => onDateTypeChange(value as "invoice_date" | "reservation_date")}
@@ -475,8 +475,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   />
                 </div>
 
-                <div className="bo-field bo-invoiceFilter bo-invoiceFilter--datePresets" data-slot="invoiceFilters-invoiceFilter--datePresets">
-                  <span className="bo-label" data-slot="invoiceFilters-label">Periodo</span>
+                <div data-testid="invoiceFilters-invoiceFilter-datePresets" className="bo-field bo-invoiceFilter bo-invoiceFilter--datePresets" data-slot="invoiceFilters-invoiceFilter--datePresets">
+                  <span data-testid="invoiceFilters-label-6" className="bo-label" data-slot="invoiceFilters-label">Periodo</span>
                   <Select
                     value={datePreset}
                     onChange={(value) => handlePresetClick(value as DatePreset)}
@@ -497,23 +497,23 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
 
               {/* Custom Date Range Pickers - shown when "Personalizado" is selected */}
               {(showCustomDatePicker || datePreset === "custom") && (
-                <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-customDateRow">
-                  <label className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--customDateFrom">
-                    <span className="bo-label" data-slot="invoiceFilters-label">Desde</span>
+                <div data-testid="invoiceFilters-customDateRow" className="bo-invoiceFilterRow" data-slot="invoiceFilters-customDateRow">
+                  <label data-testid="invoiceFilters-invoiceFilter-customDateFrom" className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--customDateFrom">
+                    <span data-testid="invoiceFilters-label-7" className="bo-label" data-slot="invoiceFilters-label">Desde</span>
                     <DatePicker value={dateFrom || ""} onChange={handleDateFromChangeInternal} data-testid="invoice-filter-datefrom-picker" />
                   </label>
 
-                  <label className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--customDateTo">
-                    <span className="bo-label" data-slot="invoiceFilters-label">Hasta</span>
+                  <label data-testid="invoiceFilters-invoiceFilter-customDateTo" className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--customDateTo">
+                    <span data-testid="invoiceFilters-label-8" className="bo-label" data-slot="invoiceFilters-label">Hasta</span>
                     <DatePicker value={dateTo || ""} onChange={handleDateToChangeInternal} data-testid="invoice-filter-dateto-picker" />
                   </label>
                 </div>
               )}
 
               {/* Row 5: Reserva + Nota de credito */}
-              <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-reservaCreditoRow">
-                <div className="bo-field bo-invoiceFilter bo-invoiceFilter--isReservation" data-slot="invoiceFilters-invoiceFilter--isReservation">
-                  <span className="bo-label" data-slot="invoiceFilters-label">Reserva</span>
+              <div data-testid="invoiceFilters-reservaCreditoRow" className="bo-invoiceFilterRow" data-slot="invoiceFilters-reservaCreditoRow">
+                <div data-testid="invoiceFilters-invoiceFilter-isReservation" className="bo-field bo-invoiceFilter bo-invoiceFilter--isReservation" data-slot="invoiceFilters-invoiceFilter--isReservation">
+                  <span data-testid="invoiceFilters-label-9" className="bo-label" data-slot="invoiceFilters-label">Reserva</span>
                   <Select
                     value={isReservation === null ? "" : isReservation ? "true" : "false"}
                     onChange={(value) => {
@@ -530,8 +530,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   />
                 </div>
 
-                <div className="bo-field bo-invoiceFilter bo-invoiceFilter--isCreditNote" data-slot="invoiceFilters-invoiceFilter--isCreditNote">
-                  <span className="bo-label" data-slot="invoiceFilters-label">Nota de credito</span>
+                <div data-testid="invoiceFilters-invoiceFilter-isCreditNote" className="bo-field bo-invoiceFilter bo-invoiceFilter--isCreditNote" data-slot="invoiceFilters-invoiceFilter--isCreditNote">
+                  <span data-testid="invoiceFilters-label-10" className="bo-label" data-slot="invoiceFilters-label">Nota de credito</span>
                   <Select
                     value={isCreditNote === null ? "" : isCreditNote ? "true" : "false"}
                     onChange={(value) => {
@@ -550,8 +550,8 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               </div>
 
               {/* Row 6: Vencimiento */}
-              <div className="bo-field bo-invoiceFilter bo-invoiceFilter--dueDate" data-slot="invoiceFilters-invoiceFilter--dueDate">
-                <span className="bo-label" data-slot="invoiceFilters-label">Vencimiento</span>
+              <div data-testid="invoiceFilters-invoiceFilter-dueDate" className="bo-field bo-invoiceFilter bo-invoiceFilter--dueDate" data-slot="invoiceFilters-invoiceFilter--dueDate">
+                <span data-testid="invoiceFilters-label-11" className="bo-label" data-slot="invoiceFilters-label">Vencimiento</span>
                 <Select
                   value={isOverdue === null ? "" : isOverdue ? "overdue" : "not_overdue"}
                   onChange={(value) => {
@@ -569,21 +569,21 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               </div>
 
               {/* Row 7: Desde vencimiento + Hasta vencimiento */}
-              <div className="bo-invoiceFilterRow" data-slot="invoiceFilters-vencimientoRow">
-                <label className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--dueDateFrom">
-                  <span className="bo-label" data-slot="invoiceFilters-label">Desde vencimiento</span>
+              <div data-testid="invoiceFilters-vencimientoRow" className="bo-invoiceFilterRow" data-slot="invoiceFilters-vencimientoRow">
+                <label data-testid="invoiceFilters-invoiceFilter-dueDateFrom" className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--dueDateFrom">
+                  <span data-testid="invoiceFilters-label-12" className="bo-label" data-slot="invoiceFilters-label">Desde vencimiento</span>
                   <DatePicker value={dueDateFrom || ""} onChange={onDueDateFromChange} data-testid="invoice-filter-duedatefrom-picker" />
                 </label>
 
-                <label className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--dueDateTo">
-                  <span className="bo-label" data-slot="invoiceFilters-label">Hasta vencimiento</span>
+                <label data-testid="invoiceFilters-invoiceFilter-dueDateTo" className="bo-field bo-invoiceFilter" data-slot="invoiceFilters-invoiceFilter--dueDateTo">
+                  <span data-testid="invoiceFilters-label-13" className="bo-label" data-slot="invoiceFilters-label">Hasta vencimiento</span>
                   <DatePicker value={dueDateTo || ""} onChange={onDueDateToChange} data-testid="invoice-filter-duedateto-picker" />
                 </label>
               </div>
 
               {/* Row 8: Ordenar */}
-              <label className="bo-field bo-invoiceFilter bo-invoiceFilter--sort" data-slot="invoiceFilters-invoiceFilter--sort">
-                <span className="bo-label" data-slot="invoiceFilters-label">Ordenar</span>
+              <label data-testid="invoiceFilters-invoiceFilter-sort" className="bo-field bo-invoiceFilter bo-invoiceFilter--sort" data-slot="invoiceFilters-invoiceFilter--sort">
+                <span data-testid="invoiceFilters-label-14" className="bo-label" data-slot="invoiceFilters-label">Ordenar</span>
                 <Select
                   value={sortBy}
                   onChange={onSortByChange}
@@ -594,17 +594,17 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
               </label>
             </div>
 
-            <div className="bo-invoiceFiltersFoot" data-slot="invoiceFilters-invoiceFiltersFoot">
-              <div className="bo-invoiceFiltersSummary" data-slot="invoiceFilters-invoiceFiltersSummary">
-                <span className="bo-mutedText bo-invoiceFiltersCount" data-slot="invoiceFilters-invoiceFiltersCount">{summaryText}</span>
+            <div data-testid="invoiceFilters-invoiceFiltersFoot" className="bo-invoiceFiltersFoot" data-slot="invoiceFilters-invoiceFiltersFoot">
+              <div data-testid="invoiceFilters-invoiceFiltersSummary" className="bo-invoiceFiltersSummary" data-slot="invoiceFilters-invoiceFiltersSummary">
+                <span data-testid="invoiceFilters-invoiceFiltersCount" className="bo-mutedText bo-invoiceFiltersCount" data-slot="invoiceFilters-invoiceFiltersCount">{summaryText}</span>
                 {dateRangeText && (
-                  <span className="bo-invoiceFiltersDateRange" data-slot="invoiceFilters-invoiceFiltersDateRange">
+                  <span data-testid="invoiceFilters-invoiceFiltersDateRange" className="bo-invoiceFiltersDateRange" data-slot="invoiceFilters-invoiceFiltersDateRange">
                     <Calendar size={12} />
                     {dateRangeText}
                   </span>
                 )}
               </div>
-              <div className="bo-invoiceFiltersActions" data-slot="invoiceFilters-invoiceFiltersActions">
+              <div data-testid="invoiceFilters-invoiceFiltersActions" className="bo-invoiceFiltersActions" data-slot="invoiceFilters-invoiceFiltersActions">
                 {onImport && (
                   <button
                     className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -673,9 +673,9 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="bo-filterSaveDialogContent" data-slot="invoiceFilters-filterSaveDialogContent">
-                    <label className="bo-field" data-slot="invoiceFilters-field">
-                      <span className="bo-label" data-slot="invoiceFilters-label">Nombre del filtro</span>
+                  <div data-testid="invoiceFilters-filterSaveDialogContent" className="bo-filterSaveDialogContent" data-slot="invoiceFilters-filterSaveDialogContent">
+                    <label data-testid="invoiceFilters-field" className="bo-field" data-slot="invoiceFilters-field">
+                      <span data-testid="invoiceFilters-label-15" className="bo-label" data-slot="invoiceFilters-label">Nombre del filtro</span>
                       <input
                         className="bo-input"
                         type="text"
@@ -687,7 +687,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         data-testid="invoice-filter-save-dialog-name-input"
                       />
                     </label>
-                    <div className="bo-filterSaveDialogActions" data-slot="invoiceFilters-filterSaveDialogActions">
+                    <div data-testid="invoiceFilters-filterSaveDialogActions" className="bo-filterSaveDialogActions" data-slot="invoiceFilters-filterSaveDialogActions">
                       <button
                         className="bo-btn bo-btn--ghost bo-btn--sm"
                         type="button"
@@ -717,14 +717,14 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
 
             {/* Saved Filters Section */}
             {savedFilters.length > 0 && (
-              <div className="bo-savedFilters" data-slot="invoiceFilters-savedFilters">
-                <div className="bo-savedFiltersHead" data-slot="invoiceFilters-savedFiltersHead">
+              <div data-testid="invoiceFilters-savedFilters" className="bo-savedFilters" data-slot="invoiceFilters-savedFilters">
+                <div data-testid="invoiceFilters-savedFiltersHead" className="bo-savedFiltersHead" data-slot="invoiceFilters-savedFiltersHead">
                   <Bookmark size={14} />
-                  <span data-slot="invoiceFilters-dos">Mis filtros guardados</span>
+                  <span data-testid="invoiceFilters-dos" data-slot="invoiceFilters-dos">Mis filtros guardados</span>
                 </div>
-                <div className="bo-savedFiltersList" data-slot="invoiceFilters-savedFiltersList">
+                <div data-testid="invoiceFilters-savedFiltersList" className="bo-savedFiltersList" data-slot="invoiceFilters-savedFiltersList">
                   {savedFilters.map((preset) => (
-                    <div
+                    <div data-testid="invoice-filter-saved-pill"
                       key={preset.id}
                       className="bo-savedFilterPill"
                       data-slot="invoice-filter-saved-pill"
@@ -738,7 +738,7 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                         title={`Aplicar: ${preset.name}`}
                         data-testid={`invoice-filter-saved-apply-${preset.id}-btn`}
                       >
-                        <span className="bo-savedFilterName" data-slot="invoiceFilters-savedFilterName">{preset.name}</span>
+                        <span data-testid="invoiceFilters-savedFilterName" className="bo-savedFilterName" data-slot="invoiceFilters-savedFilterName">{preset.name}</span>
                       </button>
                       <button
                         className="bo-savedFilterDelete"
