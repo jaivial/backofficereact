@@ -16,11 +16,13 @@ type LineItemsProps = {
   onChange: (items: InvoiceLineItem[]) => void;
   currency?: CurrencyCode;
   defaultIvaRate?: number;
+  /** When true the entered prices already include IVA: never split it out. */
+  ivaIncluded?: boolean;
   disabled?: boolean;
 };
 
 export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function LineItems(
-  { items, onChange, currency = "EUR", defaultIvaRate = 10, disabled = false }: LineItemsProps,
+  { items, onChange, currency = "EUR", defaultIvaRate = 10, ivaIncluded = false, disabled = false }: LineItemsProps,
   ref
 ) {
   const currencySymbol = CURRENCY_SYMBOLS[currency] || "€";
@@ -29,12 +31,13 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
   // Calculate item totals
   const calculateItemTotal = useCallback((quantity: number, unitPrice: number, ivaRate: number) => {
     const base = quantity * unitPrice;
-    const iva = base * (ivaRate / 100);
+    // IVA incluido: the price is gross, so there is nothing to split out.
+    const iva = ivaIncluded ? 0 : base * (ivaRate / 100);
     return {
       ivaAmount: iva,
       total: base + iva,
     };
-  }, []);
+  }, [ivaIncluded]);
 
   // Add new item
   const handleAddItem = useCallback(() => {
@@ -94,12 +97,16 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
     items.forEach((item) => {
       const base = item.quantity * item.unit_price;
       subtotal += base;
-      totalIva += item.iva_amount;
-      total += item.total;
+      if (ivaIncluded) {
+        total += base;
+      } else {
+        totalIva += item.iva_amount;
+        total += item.total;
+      }
     });
 
     return { subtotal, totalIva, total };
-  }, [items]);
+  }, [items, ivaIncluded]);
 
   const openLineItemDetails = useCallback((index: number) => {
     setLineItemDetailsIndex(index);
@@ -121,7 +128,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
         description: item.description,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        iva_rate: item.iva_rate,
+        iva_rate: ivaIncluded ? 0 : item.iva_rate,
       }));
     },
     isValid: () => {
@@ -130,9 +137,9 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
   }));
 
   return (
-    <div className="bo-lineItems" data-slot="line-items">
-      <div className="bo-lineItemsHeader" data-slot="line-items-header">
-        <h4 className="bo-lineItemsTitle" data-slot="line-items-title">Lineas de factura</h4>
+    <div data-testid="line-items" className="bo-lineItems" data-slot="line-items">
+      <div data-testid="line-items-header" className="bo-lineItemsHeader" data-slot="line-items-header">
+        <h4 data-testid="line-items-title" className="bo-lineItemsTitle" data-slot="line-items-title">Lineas de factura</h4>
         <button
           type="button"
           className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -146,8 +153,8 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
       </div>
 
       {items.length === 0 ? (
-        <div className="bo-lineItemsEmpty" data-slot="line-items-empty">
-          <p data-slot="line-items-empty-text">No hay lineas de factura. Añade una linea para continuar.</p>
+        <div data-testid="line-items-empty" className="bo-lineItemsEmpty" data-slot="line-items-empty">
+          <p data-testid="line-items-empty-text" data-slot="line-items-empty-text">No hay lineas de factura. Añade una linea para continuar.</p>
           <button
             type="button"
             className="bo-btn bo-btn--secondary bo-btn--sm"
@@ -161,38 +168,42 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
         </div>
       ) : (
         <>
-          <div className="bo-lineItemsTable" data-slot="line-items-table">
-            <div className="bo-lineItemsTableHeader" data-slot="line-items-table-header">
-              <div className="bo-lineItemCell bo-lineItemCell--description" data-slot="line-items-cell-description">
+          <div data-testid="line-items-table" className="bo-lineItemsTable" data-slot="line-items-table">
+            <div data-testid="line-items-table-header" className="bo-lineItemsTableHeader" data-slot="line-items-table-header">
+              <div data-testid="line-items-cell-description" className="bo-lineItemCell bo-lineItemCell--description" data-slot="line-items-cell-description">
                 <List size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly" data-slot="lineItems-srOnly">Descripcion</span>
+                <span data-testid="lineItems-srOnly" className="bo-srOnly" data-slot="lineItems-srOnly">Descripcion</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--quantity" data-slot="line-items-cell-quantity">
+              <div data-testid="line-items-cell-quantity" className="bo-lineItemCell bo-lineItemCell--quantity" data-slot="line-items-cell-quantity">
                 <Hash size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly" data-slot="lineItems-srOnly">Cantidad</span>
+                <span data-testid="lineItems-srOnly-2" className="bo-srOnly" data-slot="lineItems-srOnly">Cantidad</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--price" data-slot="line-items-cell-price">
+              <div data-testid="line-items-cell-price" className="bo-lineItemCell bo-lineItemCell--price" data-slot="line-items-cell-price">
                 <CircleDollarSign size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly" data-slot="lineItems-srOnly">Precio unit.</span>
+                <span data-testid="lineItems-srOnly-3" className="bo-srOnly" data-slot="lineItems-srOnly">Precio unit.</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--iva" data-slot="line-items-cell-iva">
-                <Percent size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly" data-slot="lineItems-srOnly">IVA</span>
-              </div>
-              <div className="bo-lineItemCell bo-lineItemCell--ivaAmount" data-slot="line-items-cell-ivaAmount">
-                <Receipt size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly" data-slot="lineItems-srOnly">Importe IVA</span>
-              </div>
-              <div className="bo-lineItemCell bo-lineItemCell--total" data-slot="line-items-cell-total">
+              {!ivaIncluded && (
+                <>
+                  <div data-testid="line-items-cell-iva" className="bo-lineItemCell bo-lineItemCell--iva" data-slot="line-items-cell-iva">
+                    <Percent size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
+                    <span data-testid="lineItems-srOnly-4" className="bo-srOnly" data-slot="lineItems-srOnly">IVA</span>
+                  </div>
+                  <div data-testid="line-items-cell-ivaAmount" className="bo-lineItemCell bo-lineItemCell--ivaAmount" data-slot="line-items-cell-ivaAmount">
+                    <Receipt size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
+                    <span data-testid="lineItems-srOnly-5" className="bo-srOnly" data-slot="lineItems-srOnly">Importe IVA</span>
+                  </div>
+                </>
+              )}
+              <div data-testid="line-items-cell-total" className="bo-lineItemCell bo-lineItemCell--total" data-slot="line-items-cell-total">
                 <Calculator size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span className="bo-srOnly" data-slot="lineItems-srOnly">Total</span>
+                <span data-testid="lineItems-srOnly-6" className="bo-srOnly" data-slot="lineItems-srOnly">Total</span>
               </div>
-              <div className="bo-lineItemCell bo-lineItemCell--actions" data-slot="line-items-cell-actions"></div>
+              <div data-testid="line-items-cell-actions" className="bo-lineItemCell bo-lineItemCell--actions" data-slot="line-items-cell-actions"></div>
             </div>
 
             {items.map((item, index) => (
-              <div key={index} className="bo-lineItemsTableRow" data-slot="line-items-row">
-                <div className="bo-lineItemCell bo-lineItemCell--description" data-slot="line-items-row-description">
+              <div data-testid="line-items-row" key={index} className="bo-lineItemsTableRow" data-slot="line-items-row">
+                <div data-testid="line-items-row-description" className="bo-lineItemCell bo-lineItemCell--description" data-slot="line-items-row-description">
                   <input
                     type="text"
                     className="bo-input"
@@ -203,7 +214,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     data-testid={`line-item-description-${index}`}
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--quantity" data-slot="line-items-row-quantity">
+                <div data-testid="line-items-row-quantity" className="bo-lineItemCell bo-lineItemCell--quantity" data-slot="line-items-row-quantity">
                   <input
                     type="number"
                     className="bo-input bo-lineItemInputNumber"
@@ -217,7 +228,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     data-testid={`line-item-quantity-${index}`}
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--price" data-slot="line-items-row-price">
+                <div data-testid="line-items-row-price" className="bo-lineItemCell bo-lineItemCell--price" data-slot="line-items-row-price">
                   <input
                     type="number"
                     className="bo-input bo-lineItemInputNumber"
@@ -231,32 +242,36 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     data-testid={`line-item-unit-price-${index}`}
                   />
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--iva" data-slot="line-items-row-iva">
-                  <input
-                    type="number"
-                    className="bo-input bo-lineItemInputNumber"
-                    inputMode="decimal"
-                    value={item.iva_rate}
-                    onChange={(e) => handleUpdateItem(index, "iva_rate", e.target.value)}
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    disabled={disabled}
-                    aria-label="IVA"
-                    data-testid={`line-item-iva-rate-${index}`}
-                  />
-                </div>
-                <div className="bo-lineItemCell bo-lineItemCell--ivaAmount" data-slot="line-items-row-ivaAmount">
-                  <span className="bo-lineItemValue" data-slot="line-items-iva-value">
-                    {item.iva_amount.toFixed(2)} {currencySymbol}
+                {!ivaIncluded && (
+                  <>
+                    <div data-testid="line-items-row-iva" className="bo-lineItemCell bo-lineItemCell--iva" data-slot="line-items-row-iva">
+                      <input
+                        type="number"
+                        className="bo-input bo-lineItemInputNumber"
+                        inputMode="decimal"
+                        value={item.iva_rate}
+                        onChange={(e) => handleUpdateItem(index, "iva_rate", e.target.value)}
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        disabled={disabled}
+                        aria-label="IVA"
+                        data-testid={`line-item-iva-rate-${index}`}
+                      />
+                    </div>
+                    <div data-testid="line-items-row-ivaAmount" className="bo-lineItemCell bo-lineItemCell--ivaAmount" data-slot="line-items-row-ivaAmount">
+                      <span data-testid="line-items-iva-value" className="bo-lineItemValue" data-slot="line-items-iva-value">
+                        {item.iva_amount.toFixed(2)} {currencySymbol}
+                      </span>
+                    </div>
+                  </>
+                )}
+                <div data-testid="line-items-row-total" className="bo-lineItemCell bo-lineItemCell--total" data-slot="line-items-row-total">
+                  <span data-testid="line-items-total-value" className="bo-lineItemValue bo-lineItemValue--total" data-slot="line-items-total-value">
+                    {(ivaIncluded ? item.quantity * item.unit_price : item.total).toFixed(2)} {currencySymbol}
                   </span>
                 </div>
-                <div className="bo-lineItemCell bo-lineItemCell--total" data-slot="line-items-row-total">
-                  <span className="bo-lineItemValue bo-lineItemValue--total" data-slot="line-items-total-value">
-                    {item.total.toFixed(2)} {currencySymbol}
-                  </span>
-                </div>
-                <div className="bo-lineItemCell bo-lineItemCell--actions" data-slot="line-items-row-actions">
+                <div data-testid="line-items-row-actions" className="bo-lineItemCell bo-lineItemCell--actions" data-slot="line-items-row-actions">
                   <DropdownMenu
                     label={`Acciones linea ${index + 1}`}
                     items={[
@@ -272,18 +287,20 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
           </div>
 
           {/* Summary */}
-          <div className="bo-lineItemsSummary" data-slot="line-items-summary">
-            <div className="bo-lineItemsSummaryRow" data-slot="line-items-summary-row-subtotal">
-              <span className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-subtotal">Subtotal:</span>
-              <span className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-subtotal">{summary.subtotal.toFixed(2)} {currencySymbol}</span>
+          <div data-testid="line-items-summary" className="bo-lineItemsSummary" data-slot="line-items-summary">
+            <div data-testid="line-items-summary-row-subtotal" className="bo-lineItemsSummaryRow" data-slot="line-items-summary-row-subtotal">
+              <span data-testid="line-items-summary-label-subtotal" className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-subtotal">Subtotal:</span>
+              <span data-testid="line-items-summary-value-subtotal" className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-subtotal">{summary.subtotal.toFixed(2)} {currencySymbol}</span>
             </div>
-            <div className="bo-lineItemsSummaryRow" data-slot="line-items-summary-row-iva">
-              <span className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-iva">Total IVA:</span>
-              <span className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-iva">{summary.totalIva.toFixed(2)} {currencySymbol}</span>
-            </div>
-            <div className="bo-lineItemsSummaryRow bo-lineItemsSummaryRow--total" data-slot="line-items-summary-row-total">
-              <span className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-total">Total:</span>
-              <span className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-total">{summary.total.toFixed(2)} {currencySymbol}</span>
+            {!ivaIncluded && (
+              <div data-testid="line-items-summary-row-iva" className="bo-lineItemsSummaryRow" data-slot="line-items-summary-row-iva">
+                <span data-testid="line-items-summary-label-iva" className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-iva">Total IVA:</span>
+                <span data-testid="line-items-summary-value-iva" className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-iva">{summary.totalIva.toFixed(2)} {currencySymbol}</span>
+              </div>
+            )}
+            <div data-testid="line-items-summary-row-total" className="bo-lineItemsSummaryRow bo-lineItemsSummaryRow--total" data-slot="line-items-summary-row-total">
+              <span data-testid="line-items-summary-label-total" className="bo-lineItemsSummaryLabel" data-slot="line-items-summary-label-total">Total:</span>
+              <span data-testid="line-items-summary-value-total" className="bo-lineItemsSummaryValue" data-slot="line-items-summary-value-total">{summary.total.toFixed(2)} {currencySymbol}</span>
             </div>
           </div>
         </>
@@ -299,37 +316,41 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
         >
           <ModalHeader title={`Detalle de línea ${lineItemDetailsIndex !== null ? lineItemDetailsIndex + 1 : ""}`} onClose={closeLineItemDetails} />
 
-          <div className="bo-lineItemsDetail" data-slot="lineItems-lineItemsDetail">
-            <div className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
-              <span className="bo-label" data-slot="lineItems-label">Descripción</span>
-              <div className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">{selectedLineItem.description || "—"}</div>
+          <div data-testid="lineItems-lineItemsDetail" className="bo-lineItemsDetail" data-slot="lineItems-lineItemsDetail">
+            <div data-testid="lineItems-lineItemsDetailField" className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
+              <span data-testid="lineItems-label" className="bo-label" data-slot="lineItems-label">Descripción</span>
+              <div data-testid="lineItems-lineItemsDetailValue" className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">{selectedLineItem.description || "—"}</div>
             </div>
 
-            <div className="bo-lineItemsDetailGrid" data-slot="lineItems-lineItemsDetailGrid">
-              <div className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
-                <span className="bo-label" data-slot="lineItems-label">Cantidad</span>
-                <div className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">{selectedLineItem.quantity}</div>
+            <div data-testid="lineItems-lineItemsDetailGrid" className="bo-lineItemsDetailGrid" data-slot="lineItems-lineItemsDetailGrid">
+              <div data-testid="lineItems-lineItemsDetailField-2" className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
+                <span data-testid="lineItems-label-2" className="bo-label" data-slot="lineItems-label">Cantidad</span>
+                <div data-testid="lineItems-lineItemsDetailValue-2" className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">{selectedLineItem.quantity}</div>
               </div>
-              <div className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
-                <span className="bo-label" data-slot="lineItems-label">Precio unitario</span>
-                <div className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">
+              <div data-testid="lineItems-lineItemsDetailField-3" className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
+                <span data-testid="lineItems-label-3" className="bo-label" data-slot="lineItems-label">Precio unitario</span>
+                <div data-testid="lineItems-lineItemsDetailValue-3" className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">
                   {selectedLineItem.unit_price.toFixed(2)} {currencySymbol}
                 </div>
               </div>
-              <div className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
-                <span className="bo-label" data-slot="lineItems-label">IVA</span>
-                <div className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">{selectedLineItem.iva_rate}%</div>
-              </div>
-              <div className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
-                <span className="bo-label" data-slot="lineItems-label">Importe IVA</span>
-                <div className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">
-                  {selectedLineItem.iva_amount.toFixed(2)} {currencySymbol}
-                </div>
-              </div>
-              <div className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
-                <span className="bo-label" data-slot="lineItems-label">Total</span>
-                <div className="bo-lineItemsDetailValue bo-lineItemsDetailValue--strong" data-slot="lineItems-lineItemsDetailValue--strong">
-                  {selectedLineItem.total.toFixed(2)} {currencySymbol}
+              {!ivaIncluded && (
+                <>
+                  <div data-testid="lineItems-lineItemsDetailField-4" className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
+                    <span data-testid="lineItems-label-4" className="bo-label" data-slot="lineItems-label">IVA</span>
+                    <div data-testid="lineItems-lineItemsDetailValue-4" className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">{selectedLineItem.iva_rate}%</div>
+                  </div>
+                  <div data-testid="lineItems-lineItemsDetailField-5" className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
+                    <span data-testid="lineItems-label-5" className="bo-label" data-slot="lineItems-label">Importe IVA</span>
+                    <div data-testid="lineItems-lineItemsDetailValue-5" className="bo-lineItemsDetailValue" data-slot="lineItems-lineItemsDetailValue">
+                      {selectedLineItem.iva_amount.toFixed(2)} {currencySymbol}
+                    </div>
+                  </div>
+                </>
+              )}
+              <div data-testid="lineItems-lineItemsDetailField-6" className="bo-lineItemsDetailField" data-slot="lineItems-lineItemsDetailField">
+                <span data-testid="lineItems-label-6" className="bo-label" data-slot="lineItems-label">Total</span>
+                <div data-testid="lineItems-lineItemsDetailValue-strong" className="bo-lineItemsDetailValue bo-lineItemsDetailValue--strong" data-slot="lineItems-lineItemsDetailValue--strong">
+                  {(ivaIncluded ? selectedLineItem.quantity * selectedLineItem.unit_price : selectedLineItem.total).toFixed(2)} {currencySymbol}
                 </div>
               </div>
             </div>

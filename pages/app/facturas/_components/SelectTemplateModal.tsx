@@ -101,12 +101,12 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
 
   return (
     <Modal open={open} onClose={onClose} title="Seleccionar Plantilla" widthPx={700}>
-      <div className="bo-templateModal" data-slot="select-template-modal">
+      <div data-testid="select-template-modal" className="bo-templateModal" data-slot="select-template-modal">
         {!showCreateForm ? (
           <>
             {/* Search and actions bar */}
-            <div className="bo-templateModalHeader" data-slot="select-template-header">
-              <div className="bo-templateSearch" data-slot="select-template-search-wrapper">
+            <div data-testid="select-template-header" className="bo-templateModalHeader" data-slot="select-template-header">
+              <div data-testid="select-template-search-wrapper" className="bo-templateSearch" data-slot="select-template-search-wrapper">
                 <Search size={16} className="bo-templateSearchIcon" />
                 <input
                   type="text"
@@ -125,16 +125,16 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
 
             {/* Templates list */}
             <ScrollArea dataSlot="select-template-list">
-              <div data-slot="selectTemplateModal-templateList" className="bo-templateList">
+              <div data-testid="selectTemplateModal-templateList" data-slot="selectTemplateModal-templateList" className="bo-templateList">
               {loading ? (
-                <div className="bo-templateLoading" data-slot="select-template-loading">
+                <div data-testid="select-template-loading" className="bo-templateLoading" data-slot="select-template-loading">
                   <Loader2 size={24} className="bo-spin bo-spin--sm" />
-                  <span data-slot="select-template-loading-text">Cargando plantillas...</span>
+                  <span data-testid="select-template-loading-text" data-slot="select-template-loading-text">Cargando plantillas...</span>
                 </div>
               ) : filteredTemplates.length === 0 ? (
-                <div className="bo-templateEmpty" data-slot="select-template-empty">
+                <div data-testid="select-template-empty" className="bo-templateEmpty" data-slot="select-template-empty">
                   <FileText size={48} strokeWidth={1} />
-                  <p data-slot="select-template-empty-text">{searchText ? "No se encontraron plantillas" : "No hay plantillas creadas"}</p>
+                  <p data-testid="select-template-empty-text" data-slot="select-template-empty-text">{searchText ? "No se encontraron plantillas" : "No hay plantillas creadas"}</p>
                   <button className="bo-btn bo-btn--secondary" onClick={handleCreateNew} data-testid="select-template-create-first-btn">
                     <Plus size={16} />
                     Crear primera plantilla
@@ -142,7 +142,7 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                 </div>
               ) : (
                 filteredTemplates.map((template) => (
-                  <div
+                  <div data-testid="select-template-item"
                     key={template.id}
                     className="bo-templateItem"
                     onClick={() => handleSelect(template)}
@@ -151,25 +151,25 @@ export function SelectTemplateModal({ open, onClose, onSelect }: SelectTemplateM
                     onKeyDown={(e) => e.key === "Enter" && handleSelect(template)}
                     data-slot="select-template-item"
                   >
-                    <div className="bo-templateItemIcon" data-slot="select-template-item-icon">
+                    <div data-testid="select-template-item-icon" className="bo-templateItemIcon" data-slot="select-template-item-icon">
                       <FileText size={20} />
                     </div>
-                    <div className="bo-templateItemContent" data-slot="select-template-item-content">
-                      <div className="bo-templateItemName" data-slot="select-template-item-name">{template.name}</div>
-                      <div className="bo-templateItemDetails" data-slot="select-template-item-details">
-                        <span data-slot="selectTemplateModal-ame">{template.customer_name}</span>
-                        {template.customer_email && <span>{template.customer_email}</span>}
+                    <div data-testid="select-template-item-content" className="bo-templateItemContent" data-slot="select-template-item-content">
+                      <div data-testid="select-template-item-name" className="bo-templateItemName" data-slot="select-template-item-name">{template.name}</div>
+                      <div data-testid="select-template-item-details" className="bo-templateItemDetails" data-slot="select-template-item-details">
+                        <span data-testid="selectTemplateModal-ame" data-slot="selectTemplateModal-ame">{template.customer_name}</span>
+                        {template.customer_email && <span data-testid="SelectTemplateModal-span">{template.customer_email}</span>}
                         {template.default_amount > 0 && (
-                          <span className="bo-templateItemAmount" data-slot="selectTemplateModal-templateItemAmount">{template.default_amount.toFixed(2)} €</span>
+                          <span data-testid="selectTemplateModal-templateItemAmount" className="bo-templateItemAmount" data-slot="selectTemplateModal-templateItemAmount">{template.default_amount.toFixed(2)} €</span>
                         )}
                         {template.default_payment_method && (
-                          <span className="bo-templateItemPayment" data-slot="selectTemplateModal-templateItemPayment">
+                          <span data-testid="selectTemplateModal-templateItemPayment" className="bo-templateItemPayment" data-slot="selectTemplateModal-templateItemPayment">
                             {PAYMENT_METHOD_LABELS[template.default_payment_method]}
                           </span>
                         )}
                       </div>
                     </div>
-                    <div className="bo-templateItemActions" data-slot="select-template-item-actions">
+                    <div data-testid="select-template-item-actions" className="bo-templateItemActions" data-slot="select-template-item-actions">
                       <button
                         className="bo-btn bo-btn--ghost bo-btn--sm"
                         onClick={(e) => handleEdit(template, e)}
@@ -327,18 +327,18 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
 
   return (
     <form className="bo-templateForm" onSubmit={handleSubmit} data-slot="select-template-form" data-testid="select-template-form">
-      <div className="bo-templateFormHeader" data-slot="select-template-form-header">
-        <h3 data-slot="select-template-form-title">{template ? "Editar Plantilla" : "Nueva Plantilla"}</h3>
+      <div data-testid="select-template-form-header" className="bo-templateFormHeader" data-slot="select-template-form-header">
+        <h3 data-testid="select-template-form-title" data-slot="select-template-form-title">{template ? "Editar Plantilla" : "Nueva Plantilla"}</h3>
         <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onCancel} data-testid="select-template-close-btn">
           <X size={18} />
         </button>
       </div>
 
       <ScrollArea dataSlot="select-template-form-body">
-        <div data-slot="selectTemplateModal-templateFormBody" className="bo-templateFormBody">
+        <div data-testid="selectTemplateModal-templateFormBody" data-slot="selectTemplateModal-templateFormBody" className="bo-templateFormBody">
         {/* Template name */}
-        <div className="bo-field" data-slot="select-template-field-name">
-          <label className="bo-label" data-slot="selectTemplateModal-label">Nombre de la plantilla *</label>
+        <div data-testid="select-template-field-name" className="bo-field" data-slot="select-template-field-name">
+          <label data-testid="selectTemplateModal-label" className="bo-label" data-slot="selectTemplateModal-label">Nombre de la plantilla *</label>
           <input
             className="bo-input"
             type="text"
@@ -351,11 +351,11 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
         </div>
 
         {/* Customer info */}
-        <div className="bo-templateFormSection" data-slot="select-template-section-customer">
-          <h4 data-slot="select-template-section-customer-title">Datos del cliente</h4>
-          <div className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Nombre *</span>
+        <div data-testid="select-template-section-customer" className="bo-templateFormSection" data-slot="select-template-section-customer">
+          <h4 data-testid="select-template-section-customer-title" data-slot="select-template-section-customer-title">Datos del cliente</h4>
+          <div data-testid="selectTemplateModal-invoiceFormRow" className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
+            <label data-testid="selectTemplateModal-field" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-2" className="bo-label" data-slot="selectTemplateModal-label">Nombre *</span>
               <input
                 className="bo-input"
                 type="text"
@@ -365,65 +365,65 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
                 data-testid="select-template-customerName-input"
               />
             </label>
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Apellidos</span>
+            <label data-testid="selectTemplateModal-field-2" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-3" className="bo-label" data-slot="selectTemplateModal-label">Apellidos</span>
               <input className="bo-input" type="text" value={customerSurname} onChange={(e) => setCustomerSurname(e.target.value)} data-testid="select-template-customerSurname-input" />
             </label>
           </div>
-          <div className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Email *</span>
+          <div data-testid="selectTemplateModal-invoiceFormRow-2" className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
+            <label data-testid="selectTemplateModal-field-3" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-4" className="bo-label" data-slot="selectTemplateModal-label">Email *</span>
               <input className="bo-input" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} required data-testid="select-template-customerEmail-input" />
             </label>
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Telefono</span>
+            <label data-testid="selectTemplateModal-field-4" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-5" className="bo-label" data-slot="selectTemplateModal-label">Telefono</span>
               <input className="bo-input" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} data-testid="select-template-customerPhone-input" />
             </label>
           </div>
-          <div className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">DNI/CIF</span>
+          <div data-testid="selectTemplateModal-invoiceFormRow-3" className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
+            <label data-testid="selectTemplateModal-field-5" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-6" className="bo-label" data-slot="selectTemplateModal-label">DNI/CIF</span>
               <input className="bo-input" type="text" value={customerDniCif} onChange={(e) => setCustomerDniCif(e.target.value)} data-testid="select-template-customerDniCif-input" />
             </label>
           </div>
-          <div className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Calle</span>
+          <div data-testid="selectTemplateModal-invoiceFormRow-4" className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
+            <label data-testid="selectTemplateModal-field-6" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-7" className="bo-label" data-slot="selectTemplateModal-label">Calle</span>
               <input className="bo-input" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} data-testid="select-template-customerAddressStreet-input" />
             </label>
-            <label className="bo-field bo-field--number" data-slot="selectTemplateModal-field--number">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Numero</span>
+            <label data-testid="selectTemplateModal-field-number" className="bo-field bo-field--number" data-slot="selectTemplateModal-field--number">
+              <span data-testid="selectTemplateModal-label-8" className="bo-label" data-slot="selectTemplateModal-label">Numero</span>
               <input className="bo-input" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} data-testid="select-template-customerAddressNumber-input" />
             </label>
           </div>
-          <div className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Codigo Postal</span>
+          <div data-testid="selectTemplateModal-invoiceFormRow-5" className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
+            <label data-testid="selectTemplateModal-field-7" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-9" className="bo-label" data-slot="selectTemplateModal-label">Codigo Postal</span>
               <input className="bo-input" type="text" value={customerAddressPostalCode} onChange={(e) => setCustomerAddressPostalCode(e.target.value)} data-testid="select-template-customerAddressPostalCode-input" />
             </label>
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Localidad</span>
+            <label data-testid="selectTemplateModal-field-8" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-10" className="bo-label" data-slot="selectTemplateModal-label">Localidad</span>
               <input className="bo-input" type="text" value={customerAddressCity} onChange={(e) => setCustomerAddressCity(e.target.value)} data-testid="select-template-customerAddressCity-input" />
             </label>
           </div>
-          <div className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Provincia</span>
+          <div data-testid="selectTemplateModal-invoiceFormRow-6" className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
+            <label data-testid="selectTemplateModal-field-9" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-11" className="bo-label" data-slot="selectTemplateModal-label">Provincia</span>
               <input className="bo-input" type="text" value={customerAddressProvince} onChange={(e) => setCustomerAddressProvince(e.target.value)} data-testid="select-template-customerAddressProvince-input" />
             </label>
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Pais</span>
+            <label data-testid="selectTemplateModal-field-10" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-12" className="bo-label" data-slot="selectTemplateModal-label">Pais</span>
               <input className="bo-input" type="text" value={customerAddressCountry} onChange={(e) => setCustomerAddressCountry(e.target.value)} data-testid="select-template-customerAddressCountry-input" />
             </label>
           </div>
         </div>
 
         {/* Default values */}
-        <div className="bo-templateFormSection" data-slot="select-template-section-defaults">
-          <h4 data-slot="select-template-section-defaults-title">Valores por defecto</h4>
-          <div className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Importe</span>
+        <div data-testid="select-template-section-defaults" className="bo-templateFormSection" data-slot="select-template-section-defaults">
+          <h4 data-testid="select-template-section-defaults-title" data-slot="select-template-section-defaults-title">Valores por defecto</h4>
+          <div data-testid="selectTemplateModal-invoiceFormRow-7" className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
+            <label data-testid="selectTemplateModal-field-11" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-13" className="bo-label" data-slot="selectTemplateModal-label">Importe</span>
               <input
                 className="bo-input"
                 type="number"
@@ -435,39 +435,39 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
                 data-testid="select-template-defaultAmount-input"
               />
             </label>
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">IVA (%)</span>
+            <label data-testid="selectTemplateModal-field-12" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-14" className="bo-label" data-slot="selectTemplateModal-label">IVA (%)</span>
               <input className="bo-input" type="number" step="0.1" min="0" max="100" value={defaultIvaRate} onChange={(e) => setDefaultIvaRate(e.target.value)} data-testid="select-template-defaultIvaRate-input" />
             </label>
           </div>
-          <div className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
-            <label className="bo-field" data-slot="selectTemplateModal-field">
-              <span className="bo-label" data-slot="selectTemplateModal-label">Metodo de pago</span>
+          <div data-testid="selectTemplateModal-invoiceFormRow-8" className="bo-invoiceFormRow" data-slot="selectTemplateModal-invoiceFormRow">
+            <label data-testid="selectTemplateModal-field-13" className="bo-field" data-slot="selectTemplateModal-field">
+              <span data-testid="selectTemplateModal-label-15" className="bo-label" data-slot="selectTemplateModal-label">Metodo de pago</span>
               <select className="bo-select" value={defaultPaymentMethod} onChange={(e) => setDefaultPaymentMethod(e.target.value as PaymentMethod | "")} data-testid="select-template-defaultPaymentMethod-select">
-                <option value="">Seleccionar...</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="transferencia">Transferencia</option>
-                <option value="bizum">Bizum</option>
-                <option value="cheque">Cheque</option>
+                <option data-testid="TemplateForm-option" value="">Seleccionar...</option>
+                <option data-testid="TemplateForm-option-2" value="efectivo">Efectivo</option>
+                <option data-testid="TemplateForm-option-3" value="tarjeta">Tarjeta</option>
+                <option data-testid="TemplateForm-option-4" value="transferencia">Transferencia</option>
+                <option data-testid="TemplateForm-option-5" value="bizum">Bizum</option>
+                <option data-testid="TemplateForm-option-6" value="cheque">Cheque</option>
               </select>
             </label>
           </div>
-          <div className="bo-field" data-slot="select-template-field-notes">
-            <label className="bo-label" data-slot="selectTemplateModal-label">Notas</label>
+          <div data-testid="select-template-field-notes" className="bo-field" data-slot="select-template-field-notes">
+            <label data-testid="selectTemplateModal-label-16" className="bo-label" data-slot="selectTemplateModal-label">Notas</label>
             <textarea className="bo-textarea" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Notas adicionales..." data-testid="select-template-notes-textarea" />
           </div>
         </div>
 
         {/* Active toggle */}
-        <div className="bo-field bo-field--switch" data-slot="select-template-field-active-toggle">
+        <div data-testid="select-template-field-active-toggle" className="bo-field bo-field--switch" data-slot="select-template-field-active-toggle">
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} id="isActive" data-testid="select-template-isActive-input" />
-          <label htmlFor="isActive" data-slot="selectTemplateModal-iva">Plantilla activa</label>
+          <label data-testid="selectTemplateModal-iva" htmlFor="isActive" data-slot="selectTemplateModal-iva">Plantilla activa</label>
         </div>
       </div>
       </ScrollArea>
 
-      <div className="bo-templateFormActions" data-slot="select-template-form-actions">
+      <div data-testid="select-template-form-actions" className="bo-templateFormActions" data-slot="select-template-form-actions">
         <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={saving} data-testid="select-template-cancel-btn">
           Cancelar
         </button>

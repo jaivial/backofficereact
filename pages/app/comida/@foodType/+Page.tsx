@@ -171,6 +171,7 @@ function FoodTypePage() {
         singularLabel={singularLabel}
         listLabel={listLabel}
         showMedia={showImages}
+        categories={categories}
         onOpenDetail={onOpenDetail}
         onOpenEdit={onOpenEdit}
         onDelete={(item) => setDeleteConfirm({ open: true, item })}

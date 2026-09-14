@@ -104,70 +104,70 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
   if (!open) return null;
 
   return (
-    <div className="bo-modal-overlay" onClick={onClose} data-slot="import-history-overlay">
-      <div className="bo-modal-content bo-importHistory" onClick={(e) => e.stopPropagation()} data-slot="import-history-modal">
-        <div className="bo-modal-header" data-slot="import-history-header">
-          <div className="bo-modal-title" data-slot="importHistoryModal-modal-title">
+    <div data-testid="import-history-overlay" className="bo-modal-overlay" onClick={onClose} data-slot="import-history-overlay">
+      <div data-testid="import-history-modal" className="bo-modal-content bo-importHistory" onClick={(e) => e.stopPropagation()} data-slot="import-history-modal">
+        <div data-testid="import-history-header" className="bo-modal-header" data-slot="import-history-header">
+          <div data-testid="importHistoryModal-modal-title" className="bo-modal-title" data-slot="importHistoryModal-modal-title">
             <History size={20} />
-            <span data-slot="importHistoryModal-nes">Historial de importaciones</span>
+            <span data-testid="importHistoryModal-nes" data-slot="importHistoryModal-nes">Historial de importaciones</span>
           </div>
           <button className="bo-btn bo-btn--ghost bo-btn--sm" onClick={onClose} aria-label="Cerrar" data-testid="import-history-close-btn">
             <X size={18} />
           </button>
         </div>
 
-        <div className="bo-modal-body" data-slot="import-history-body">
+        <div data-testid="import-history-body" className="bo-modal-body" data-slot="import-history-body">
           {history.length === 0 ? (
-            <div className="bo-importHistoryEmpty" data-slot="import-history-empty">
+            <div data-testid="import-history-empty" className="bo-importHistoryEmpty" data-slot="import-history-empty">
               <FileText size={48} />
-              <p data-slot="importHistoryModal-ias">No hay importaciones previas</p>
-              <span data-slot="importHistoryModal-qui">El historial de importaciones aparecera aqui</span>
+              <p data-testid="importHistoryModal-ias" data-slot="importHistoryModal-ias">No hay importaciones previas</p>
+              <span data-testid="importHistoryModal-qui" data-slot="importHistoryModal-qui">El historial de importaciones aparecera aqui</span>
             </div>
           ) : (
-            <div className="bo-importHistoryList" data-slot="import-history-list">
+            <div data-testid="import-history-list" className="bo-importHistoryList" data-slot="import-history-list">
               {history.map((entry) => (
-                <div key={entry.id} className="bo-importHistoryItem" data-slot="import-history-item">
-                  <div className="bo-importHistoryItemHeader" data-slot="import-history-item-header">
-                    <div className="bo-importHistoryItemFile" data-slot="importHistoryModal-importHistoryItemFile">
+                <div data-testid="import-history-item" key={entry.id} className="bo-importHistoryItem" data-slot="import-history-item">
+                  <div data-testid="import-history-item-header" className="bo-importHistoryItemHeader" data-slot="import-history-item-header">
+                    <div data-testid="importHistoryModal-importHistoryItemFile" className="bo-importHistoryItemFile" data-slot="importHistoryModal-importHistoryItemFile">
                       <FileText size={16} />
-                      <span className="bo-importHistoryItemFilename" data-slot="importHistoryModal-importHistoryItemFilename">{entry.filename}</span>
+                      <span data-testid="importHistoryModal-importHistoryItemFilename" className="bo-importHistoryItemFilename" data-slot="importHistoryModal-importHistoryItemFilename">{entry.filename}</span>
                     </div>
-                    <div className={`bo-importHistoryItemStatus ${entry.status}`} data-slot="importHistoryModal-div">
+                    <div data-testid="importHistoryModal-div" className={`bo-importHistoryItemStatus ${entry.status}`} data-slot="importHistoryModal-div">
                       {getStatusIcon(entry.status)}
-                      <span data-slot="importHistoryModal-tus">{getStatusLabel(entry.status)}</span>
+                      <span data-testid="importHistoryModal-tus" data-slot="importHistoryModal-tus">{getStatusLabel(entry.status)}</span>
                     </div>
                   </div>
 
-                  <div className="bo-importHistoryItemMeta" data-slot="import-history-item-meta">
-                    <span className="bo-importHistoryItemDate" data-slot="importHistoryModal-importHistoryItemDate">
+                  <div data-testid="import-history-item-meta" className="bo-importHistoryItemMeta" data-slot="import-history-item-meta">
+                    <span data-testid="importHistoryModal-importHistoryItemDate" className="bo-importHistoryItemDate" data-slot="importHistoryModal-importHistoryItemDate">
                       <Clock size={12} />
                       {formatDate(entry.created_at)}
                     </span>
-                    <span className="bo-importHistoryItemStats" data-slot="importHistoryModal-importHistoryItemStats">
+                    <span data-testid="importHistoryModal-importHistoryItemStats" className="bo-importHistoryItemStats" data-slot="importHistoryModal-importHistoryItemStats">
                       {entry.success_count > 0 && (
-                        <span className="stat success" data-slot="importHistoryModal-success">{entry.success_count} ok</span>
+                        <span data-testid="importHistoryModal-success" className="stat success" data-slot="importHistoryModal-success">{entry.success_count} ok</span>
                       )}
                       {entry.error_count > 0 && (
-                        <span className="stat error" data-slot="importHistoryModal-error">{entry.error_count} errores</span>
+                        <span data-testid="importHistoryModal-error" className="stat error" data-slot="importHistoryModal-error">{entry.error_count} errores</span>
                       )}
-                      <span className="stat total" data-slot="importHistoryModal-total">{entry.total_rows} total</span>
+                      <span data-testid="importHistoryModal-total" className="stat total" data-slot="importHistoryModal-total">{entry.total_rows} total</span>
                     </span>
                   </div>
 
                   {entry.errors.length > 0 && (
-                    <div className="bo-importHistoryItemErrors" data-slot="import-history-item-errors">
+                    <div data-testid="import-history-item-errors" className="bo-importHistoryItemErrors" data-slot="import-history-item-errors">
                       <details>
                         <summary>
                           Ver errores ({entry.errors.length})
                         </summary>
-                        <div className="bo-importHistoryItemErrorsList" data-slot="import-history-item-errors-list">
+                        <div data-testid="import-history-item-errors-list" className="bo-importHistoryItemErrorsList" data-slot="import-history-item-errors-list">
                           {entry.errors.slice(0, 10).map((err, i) => (
-                            <div key={i} className="bo-importHistoryErrorItem" data-slot="importHistoryModal-importHistoryErrorItem">
+                            <div data-testid="importHistoryModal-importHistoryErrorItem" key={i} className="bo-importHistoryErrorItem" data-slot="importHistoryModal-importHistoryErrorItem">
                               Fila {err.row}: {err.message}
                             </div>
                           ))}
                           {entry.errors.length > 10 && (
-                            <div className="bo-importHistoryErrorItem more" data-slot="importHistoryModal-more">
+                            <div data-testid="importHistoryModal-more" className="bo-importHistoryErrorItem more" data-slot="importHistoryModal-more">
                               ...y {entry.errors.length - 10} errores mas
                             </div>
                           )}
@@ -182,7 +182,7 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
         </div>
 
         {history.length > 0 && (
-          <div className="bo-modal-footer" data-slot="import-history-footer">
+          <div data-testid="import-history-footer" className="bo-modal-footer" data-slot="import-history-footer">
             <button className="bo-btn bo-btn--ghost" onClick={clearHistory} data-testid="import-history-clear-btn">
               <Trash2 size={16} />
               Limpiar historial
