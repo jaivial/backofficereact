@@ -202,6 +202,15 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
   onDatePresetChange,
 }: InvoiceFiltersProps, ref) {
   const [isExpanded, setIsExpanded] = useState(true);
+
+  // On phones the filters panel starts collapsed to keep the invoice list in
+  // view. The check runs after mount so the SSR markup matches the first client
+  // render and hydration stays clean.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches) {
+      setIsExpanded(false);
+    }
+  }, []);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [filterName, setFilterName] = useState("");
   const [datePreset, setDatePreset] = useState<DatePreset>("");
