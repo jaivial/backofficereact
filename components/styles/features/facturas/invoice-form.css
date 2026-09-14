@@ -1360,3 +1360,28 @@
     flex-wrap: wrap;
   }
 }
+
+/* ── IVA mode row: toggle on the left, summary aligned to the right ── */
+.bo-invoiceForm .bo-ivaModeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-3);
+}
+
+.bo-invoiceForm .bo-ivaModeRow > .bo-field {
+  flex: 0 0 auto;
+  align-self: center;
+  margin: 0;
+}
+
+.bo-invoiceForm .bo-ivaModeRow > .bo-ivaSummary {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .bo-invoiceForm .bo-ivaModeRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

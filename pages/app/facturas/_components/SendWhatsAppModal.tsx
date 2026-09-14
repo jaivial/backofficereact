@@ -227,34 +227,34 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
       title={isResend ? "Reenviar factura por WhatsApp" : "Enviar factura por WhatsApp"}
       widthPx={550}
     >
-      <div className="bo-sendWhatsAppModal" data-slot="send-whatsapp-modal">
+      <div data-testid="send-whatsapp-modal" className="bo-sendWhatsAppModal" data-slot="send-whatsapp-modal">
         {/* Success state */}
         {sent ? (
-          <div className="bo-sendWhatsAppSuccess" data-slot="send-whatsapp-success">
-            <div className="bo-sendWhatsAppSuccessIcon" data-slot="send-whatsapp-success-icon">
+          <div data-testid="send-whatsapp-success" className="bo-sendWhatsAppSuccess" data-slot="send-whatsapp-success">
+            <div data-testid="send-whatsapp-success-icon" className="bo-sendWhatsAppSuccessIcon" data-slot="send-whatsapp-success-icon">
               <CheckCircle size={48} />
             </div>
-            <h3 data-slot="send-whatsapp-success-title">WhatsApp preparado</h3>
-            <p data-slot="send-whatsapp-success-description">El mensaje ha sido preparado para enviarse a:</p>
-            <p className="bo-sendWhatsAppTo" data-slot="send-whatsapp-success-recipient">{invoice.customer_phone}</p>
+            <h3 data-testid="send-whatsapp-success-title" data-slot="send-whatsapp-success-title">WhatsApp preparado</h3>
+            <p data-testid="send-whatsapp-success-description" data-slot="send-whatsapp-success-description">El mensaje ha sido preparado para enviarse a:</p>
+            <p data-testid="send-whatsapp-success-recipient" className="bo-sendWhatsAppTo" data-slot="send-whatsapp-success-recipient">{invoice.customer_phone}</p>
           </div>
         ) : (
           <>
             {/* Invoice summary */}
-            <div className="bo-sendWhatsAppSummary" data-slot="send-whatsapp-summary">
-              <div className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-customer">
+            <div data-testid="send-whatsapp-summary" className="bo-sendWhatsAppSummary" data-slot="send-whatsapp-summary">
+              <div data-testid="send-whatsapp-summary-row-customer" className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-customer">
                 <User size={16} />
-                <span data-slot="send-whatsapp-customer-name">
+                <span data-testid="send-whatsapp-customer-name" data-slot="send-whatsapp-customer-name">
                   {invoice.customer_name} {invoice.customer_surname}
                 </span>
               </div>
-              <div className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-phone">
+              <div data-testid="send-whatsapp-summary-row-phone" className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-phone">
                 <Phone size={16} />
-                <span data-slot="send-whatsapp-customer-phone">{invoice.customer_phone || "Sin telefono"}</span>
+                <span data-testid="send-whatsapp-customer-phone" data-slot="send-whatsapp-customer-phone">{invoice.customer_phone || "Sin telefono"}</span>
               </div>
-              <div className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-invoice">
+              <div data-testid="send-whatsapp-summary-row-invoice" className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-invoice">
                 <FileText size={16} />
-                <span data-slot="send-whatsapp-invoice-detail">
+                <span data-testid="send-whatsapp-invoice-detail" data-slot="send-whatsapp-invoice-detail">
                   Factura {invoice.invoice_number || `#${invoice.id}`} - {formatPrice(invoice.total || invoice.amount)}
                 </span>
               </div>
@@ -262,26 +262,26 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
 
             {/* No phone warning */}
             {!hasPhone && (
-              <div className="bo-sendWhatsAppWarning" data-slot="send-whatsapp-no-phone-warning">
+              <div data-testid="send-whatsapp-no-phone-warning" className="bo-sendWhatsAppWarning" data-slot="send-whatsapp-no-phone-warning">
                 <AlertCircle size={16} />
-                <span data-slot="send-whatsapp-no-phone-text">El cliente no tiene un numero de telefono registrado. No se puede enviar WhatsApp.</span>
+                <span data-testid="send-whatsapp-no-phone-text" data-slot="send-whatsapp-no-phone-text">El cliente no tiene un numero de telefono registrado. No se puede enviar WhatsApp.</span>
               </div>
             )}
 
             {/* Resend warning */}
             {isResend && hasPhone && (
-              <div className="bo-sendWhatsAppWarning" data-slot="send-whatsapp-resend-warning">
+              <div data-testid="send-whatsapp-resend-warning" className="bo-sendWhatsAppWarning" data-slot="send-whatsapp-resend-warning">
                 <AlertCircle size={16} />
-                <span data-slot="send-whatsapp-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo numero.</span>
+                <span data-testid="send-whatsapp-resend-text" data-slot="send-whatsapp-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo numero.</span>
               </div>
             )}
 
             {/* WhatsApp form */}
             {hasPhone && (
-              <div className="bo-sendWhatsAppForm" data-slot="send-whatsapp-form">
-                <div className="bo-field" data-slot="send-whatsapp-field-message">
-                  <div className="bo-fieldHeader" data-slot="send-whatsapp-message-header">
-                    <label className="bo-label" data-slot="sendWhatsAppModal-label">Mensaje</label>
+              <div data-testid="send-whatsapp-form" className="bo-sendWhatsAppForm" data-slot="send-whatsapp-form">
+                <div data-testid="send-whatsapp-field-message" className="bo-field" data-slot="send-whatsapp-field-message">
+                  <div data-testid="send-whatsapp-message-header" className="bo-fieldHeader" data-slot="send-whatsapp-message-header">
+                    <label data-testid="sendWhatsAppModal-label" className="bo-label" data-slot="sendWhatsAppModal-label">Mensaje</label>
                     <button
                       type="button"
                       className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -293,7 +293,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                     </button>
                   </div>
                   {showPreview ? (
-                    <div className="bo-sendWhatsAppPreview" data-slot="send-whatsapp-message-preview">{previewContent.message}</div>
+                    <div data-testid="send-whatsapp-message-preview" className="bo-sendWhatsAppPreview" data-slot="send-whatsapp-message-preview">{previewContent.message}</div>
                   ) : (
                     <textarea
                       className="bo-textarea"
@@ -305,7 +305,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                       data-testid="whatsapp-message-textarea"
                     />
                   )}
-                  <span className="bo-fieldHint" data-slot="sendWhatsAppModal-fieldHint">
+                  <span data-testid="sendWhatsAppModal-fieldHint" className="bo-fieldHint" data-slot="sendWhatsAppModal-fieldHint">
                     Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"}, {"{invoice_link}"}
                   </span>
                 </div>
@@ -313,7 +313,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
             )}
 
             {/* Actions */}
-            <div className="bo-sendWhatsAppActions" data-slot="send-whatsapp-actions">
+            <div data-testid="send-whatsapp-actions" className="bo-sendWhatsAppActions" data-slot="send-whatsapp-actions">
               <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending} data-testid="whatsapp-cancel-button">
                 Cancelar
               </button>

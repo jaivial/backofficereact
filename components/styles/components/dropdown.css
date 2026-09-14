@@ -368,3 +368,42 @@
   width: 100%;
   justify-content: space-between;
 }
+
+/* Reusable search field for select/listbox popovers (SearchableSelect).
+   One definition keeps every searchable dropdown visually consistent. */
+.bo-selectSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin: 2px 2px 6px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--bo-surface-2);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.bo-selectSearch:focus-within {
+  border-color: var(--bo-accent);
+  background: var(--bo-surface);
+}
+
+.bo-selectSearchIcon {
+  flex: 0 0 auto;
+  color: var(--bo-muted);
+}
+
+.bo-selectSearchInput {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.bo-selectSearchInput::placeholder {
+  color: var(--bo-faint);
+}

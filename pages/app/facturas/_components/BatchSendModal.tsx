@@ -224,12 +224,12 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
 
   return (
     <Modal open={open} onClose={handleClose} title="Enviar facturas por email" widthPx={600}>
-      <div className="bo-batchSendModal" data-slot="batch-send-modal">
+      <div data-testid="batch-send-modal" className="bo-batchSendModal" data-slot="batch-send-modal">
         {/* Warning for invoices without email */}
         {invalidInvoices.length > 0 && (
-          <div className="bo-batchSendWarning" data-slot="batch-send-warning">
+          <div data-testid="batch-send-warning" className="bo-batchSendWarning" data-slot="batch-send-warning">
             <AlertCircle size={16} />
-            <span data-slot="batch-send-warning-text">
+            <span data-testid="batch-send-warning-text" data-slot="batch-send-warning-text">
               {invalidInvoices.length} factura{invalidInvoices.length !== 1 ? "s" : ""} sin email no se
               enviara{invalidInvoices.length !== 1 ? "n" : ""}
             </span>
@@ -238,29 +238,29 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
 
         {isCompleted ? (
           /* Completion State */
-          <div className="bo-batchSendComplete" data-slot="batch-send-complete">
-            <div className="bo-batchSendSummary" data-slot="batch-send-summary">
-              <div className="bo-batchSendSummaryItem bo-batchSendSummaryItem--success" data-slot="batch-send-summary-success">
+          <div data-testid="batch-send-complete" className="bo-batchSendComplete" data-slot="batch-send-complete">
+            <div data-testid="batch-send-summary" className="bo-batchSendSummary" data-slot="batch-send-summary">
+              <div data-testid="batch-send-summary-success" className="bo-batchSendSummaryItem bo-batchSendSummaryItem--success" data-slot="batch-send-summary-success">
                 <CheckCircle size={24} />
-                <span className="bo-batchSendSummaryCount" data-slot="batch-send-success-count">{summary.sent}</span>
-                <span className="bo-batchSendSummaryLabel" data-slot="batch-send-success-label">Enviadas</span>
+                <span data-testid="batch-send-success-count" className="bo-batchSendSummaryCount" data-slot="batch-send-success-count">{summary.sent}</span>
+                <span data-testid="batch-send-success-label" className="bo-batchSendSummaryLabel" data-slot="batch-send-success-label">Enviadas</span>
               </div>
               {summary.failed > 0 && (
-                <div className="bo-batchSendSummaryItem bo-batchSendSummaryItem--error" data-slot="batch-send-summary-error">
+                <div data-testid="batch-send-summary-error" className="bo-batchSendSummaryItem bo-batchSendSummaryItem--error" data-slot="batch-send-summary-error">
                   <XCircle size={24} />
-                  <span className="bo-batchSendSummaryCount" data-slot="batch-send-error-count">{summary.failed}</span>
-                  <span className="bo-batchSendSummaryLabel" data-slot="batch-send-error-label">Fallidas</span>
+                  <span data-testid="batch-send-error-count" className="bo-batchSendSummaryCount" data-slot="batch-send-error-count">{summary.failed}</span>
+                  <span data-testid="batch-send-error-label" className="bo-batchSendSummaryLabel" data-slot="batch-send-error-label">Fallidas</span>
                 </div>
               )}
             </div>
 
             {/* Results List */}
             <ScrollArea dataSlot="batch-send-results">
-              <div data-slot="batchSendModal-batchSendResults" className="bo-batchSendResults">
-              <h4 data-slot="batch-send-results-title">Detalles</h4>
-              <div className="bo-batchSendResultsList" data-slot="batch-send-results-list">
+              <div data-testid="batchSendModal-batchSendResults" data-slot="batchSendModal-batchSendResults" className="bo-batchSendResults">
+              <h4 data-testid="batch-send-results-title" data-slot="batch-send-results-title">Detalles</h4>
+              <div data-testid="batch-send-results-list" className="bo-batchSendResultsList" data-slot="batch-send-results-list">
                 {results.map((result) => (
-                  <div
+                  <div data-testid="batch-send-result-item"
                     key={result.invoiceId}
                     className={`bo-batchSendResultItem ${result.success ? "is-success" : "is-error"}`}
                     data-slot="batch-send-result-item"
@@ -270,11 +270,11 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                     ) : (
                       <XCircle size={16} className="bo-batchSendResultIcon" data-slot="batch-send-result-icon-error" />
                     )}
-                    <span className="bo-batchSendResultNumber" data-slot="batch-send-result-number">{result.invoiceNumber}</span>
-                    <span className="bo-batchSendResultCustomer" data-slot="batch-send-result-customer">{result.customerName}</span>
-                    <span className="bo-batchSendResultEmail" data-slot="batch-send-result-email">{result.customerEmail}</span>
+                    <span data-testid="batch-send-result-number" className="bo-batchSendResultNumber" data-slot="batch-send-result-number">{result.invoiceNumber}</span>
+                    <span data-testid="batch-send-result-customer" className="bo-batchSendResultCustomer" data-slot="batch-send-result-customer">{result.customerName}</span>
+                    <span data-testid="batch-send-result-email" className="bo-batchSendResultEmail" data-slot="batch-send-result-email">{result.customerEmail}</span>
                     {!result.success && (
-                      <span className="bo-batchSendResultError" data-slot="batch-send-result-error" title={result.error}>
+                      <span data-testid="batch-send-result-error" className="bo-batchSendResultError" data-slot="batch-send-result-error" title={result.error}>
                         {result.error}
                       </span>
                     )}
@@ -286,7 +286,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
 
             {/* Retry Button */}
             {summary.failed > 0 && (
-              <div className="bo-batchSendRetry" data-slot="batch-send-retry">
+              <div data-testid="batch-send-retry-2" className="bo-batchSendRetry" data-slot="batch-send-retry">
                 <button
                   type="button"
                   className="bo-btn bo-btn--primary"
@@ -310,7 +310,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
             )}
 
             {/* Close Button */}
-            <div className="bo-batchSendActions" data-slot="batch-send-actions">
+            <div data-testid="batch-send-actions" className="bo-batchSendActions" data-slot="batch-send-actions">
               <button type="button" className="bo-btn bo-btn--secondary" onClick={onClose} data-testid="batch-send-close">
                 Cerrar
               </button>
@@ -320,27 +320,27 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
           <>
             {/* Progress State */}
             {(isProcessing || results.length > 0) && (
-              <div className="bo-batchSendProgress" data-slot="batch-send-progress">
-                <div className="bo-batchSendProgressHeader" data-slot="batch-send-progress-header">
-                  <span data-slot="batch-send-progress-text">
+              <div data-testid="batch-send-progress" className="bo-batchSendProgress" data-slot="batch-send-progress">
+                <div data-testid="batch-send-progress-header" className="bo-batchSendProgressHeader" data-slot="batch-send-progress-header">
+                  <span data-testid="batch-send-progress-text" data-slot="batch-send-progress-text">
                     Enviando factura {currentIndex + 1} de {validInvoices.length}...
                   </span>
-                  <span className="bo-batchSendProgressPercent" data-slot="batchSendModal-batchSendProgressPercent">{Math.round(progress)}%</span>
+                  <span data-testid="batchSendModal-batchSendProgressPercent" className="bo-batchSendProgressPercent" data-slot="batchSendModal-batchSendProgressPercent">{Math.round(progress)}%</span>
                 </div>
-                <div className="bo-batchSendProgressBar" data-slot="batch-send-progress-bar">
-                  <div
+                <div data-testid="batch-send-progress-bar" className="bo-batchSendProgressBar" data-slot="batch-send-progress-bar">
+                  <div data-testid="batch-send-progress-fill"
                     className="bo-batchSendProgressFill"
                     style={{ width: `${progress}%` }}
                     data-slot="batch-send-progress-fill"
                   />
                 </div>
                 {results.length > 0 && (
-                  <div className="bo-batchSendProgressStats" data-slot="batch-send-progress-stats">
-                    <span className="bo-batchSendProgressStat bo-batchSendProgressStat--success" data-slot="batch-send-progress-stat-success">
+                  <div data-testid="batch-send-progress-stats" className="bo-batchSendProgressStats" data-slot="batch-send-progress-stats">
+                    <span data-testid="batch-send-progress-stat-success" className="bo-batchSendProgressStat bo-batchSendProgressStat--success" data-slot="batch-send-progress-stat-success">
                       <Check size={14} /> {summary.sent} enviadas
                     </span>
                     {summary.failed > 0 && (
-                      <span className="bo-batchSendProgressStat bo-batchSendProgressStat--error" data-slot="batch-send-progress-stat-error">
+                      <span data-testid="batch-send-progress-stat-error" className="bo-batchSendProgressStat bo-batchSendProgressStat--error" data-slot="batch-send-progress-stat-error">
                         <X size={14} /> {summary.failed} fallidas
                       </span>
                     )}
@@ -352,16 +352,16 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
             {/* Configuration Form */}
             {!isProcessing && results.length === 0 && (
               <>
-                <div className="bo-batchSendInfo" data-slot="batch-send-info">
+                <div data-testid="batch-send-info" className="bo-batchSendInfo" data-slot="batch-send-info">
                   <Mail size={20} />
-                  <div data-slot="batch-send-info-text">
-                    <strong>{validInvoices.length} facturas</strong> seran enviadas por email
+                  <div data-testid="batch-send-info-text" data-slot="batch-send-info-text">
+                    <strong data-testid="BatchSendModal-strong">{validInvoices.length} facturas</strong> seran enviadas por email
                   </div>
                 </div>
 
-                <div className="bo-batchSendForm" data-slot="batch-send-form">
-                  <div className="bo-field" data-slot="batch-send-field-subject">
-                    <label className="bo-label" data-slot="batchSendModal-label">Asunto</label>
+                <div data-testid="batch-send-form" className="bo-batchSendForm" data-slot="batch-send-form">
+                  <div data-testid="batch-send-field-subject" className="bo-field" data-slot="batch-send-field-subject">
+                    <label data-testid="batchSendModal-label" className="bo-label" data-slot="batchSendModal-label">Asunto</label>
                     <input
                       className="bo-input"
                       type="text"
@@ -370,15 +370,15 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                       placeholder="Asunto del email"
                       data-testid="batch-send-subject-input"
                     />
-                    <span className="bo-fieldHint" data-slot="batchSendModal-fieldHint">
+                    <span data-testid="batchSendModal-fieldHint" className="bo-fieldHint" data-slot="batchSendModal-fieldHint">
                       Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"},{" "}
                       {"{invoice_link}"}
                     </span>
                   </div>
 
-                  <div className="bo-field" data-slot="batch-send-field-message">
-                    <div className="bo-fieldHeader" data-slot="batch-send-message-header">
-                      <label className="bo-label" data-slot="batchSendModal-label">Mensaje</label>
+                  <div data-testid="batch-send-field-message" className="bo-field" data-slot="batch-send-field-message">
+                    <div data-testid="batch-send-message-header" className="bo-fieldHeader" data-slot="batch-send-message-header">
+                      <label data-testid="batchSendModal-label-2" className="bo-label" data-slot="batchSendModal-label">Mensaje</label>
                       <button
                         type="button"
                         className="bo-btn bo-btn--ghost bo-btn--sm"
@@ -389,7 +389,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
                       </button>
                     </div>
                     {showPreview ? (
-                      <div className="bo-sendEmailPreview" data-slot="batch-send-message-preview">{previewContent.message}</div>
+                      <div data-testid="batch-send-message-preview" className="bo-sendEmailPreview" data-slot="batch-send-message-preview">{previewContent.message}</div>
                     ) : (
                       <textarea
                         className="bo-textarea"
@@ -406,7 +406,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
             )}
 
             {/* Actions */}
-            <div className="bo-batchSendActions" data-slot="batchSendModal-batchSendActions">
+            <div data-testid="batchSendModal-batchSendActions" className="bo-batchSendActions" data-slot="batchSendModal-batchSendActions">
               <button
                 type="button"
                 className="bo-btn bo-btn--secondary"
