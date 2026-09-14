@@ -91,46 +91,46 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
   }, [onDeletePayment, pushToast]);
 
   return (
-    <div className="bo-modalOverlay" onClick={onClose} data-slot="registerPaymentModal-modalOverlay">
-      <div className="bo-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="payment-modal-title" data-slot="registerPaymentModal-modal">
+    <div data-testid="registerPaymentModal-modalOverlay" className="bo-modalOverlay" onClick={onClose} data-slot="registerPaymentModal-modalOverlay">
+      <div data-testid="registerPaymentModal-modal" className="bo-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="payment-modal-title" data-slot="registerPaymentModal-modal">
         <ModalHeader title="Registrar pago" onClose={onClose} />
 
-        <div className="bo-modalBody" data-slot="register-payment-modal-body">
+        <div data-testid="register-payment-modal-body" className="bo-modalBody" data-slot="register-payment-modal-body">
           {/* Invoice Summary */}
-          <div className="bo-paymentSummary" data-slot="register-payment-summary">
-            <div className="bo-paymentSummaryRow" data-slot="registerPaymentModal-paymentSummaryRow">
-              <span data-slot="registerPaymentModal-ura">Factura:</span>
-              <strong>{invoice.invoice_number || `#${invoice.id}`}</strong>
+          <div data-testid="register-payment-summary" className="bo-paymentSummary" data-slot="register-payment-summary">
+            <div data-testid="registerPaymentModal-paymentSummaryRow" className="bo-paymentSummaryRow" data-slot="registerPaymentModal-paymentSummaryRow">
+              <span data-testid="registerPaymentModal-ura" data-slot="registerPaymentModal-ura">Factura:</span>
+              <strong data-testid="RegisterPaymentModal-strong">{invoice.invoice_number || `#${invoice.id}`}</strong>
             </div>
-            <div className="bo-paymentSummaryRow" data-slot="registerPaymentModal-paymentSummaryRow">
-              <span data-slot="registerPaymentModal-nte">Cliente:</span>
-              <strong>{invoice.customer_name} {invoice.customer_surname || ""}</strong>
+            <div data-testid="registerPaymentModal-paymentSummaryRow-2" className="bo-paymentSummaryRow" data-slot="registerPaymentModal-paymentSummaryRow">
+              <span data-testid="registerPaymentModal-nte" data-slot="registerPaymentModal-nte">Cliente:</span>
+              <strong data-testid="RegisterPaymentModal-strong-2">{invoice.customer_name} {invoice.customer_surname || ""}</strong>
             </div>
-            <div className="bo-paymentSummaryRow" data-slot="registerPaymentModal-paymentSummaryRow">
-              <span data-slot="registerPaymentModal-tal">Importe total:</span>
-              <strong>{formatPrice(totalAmount)}</strong>
+            <div data-testid="registerPaymentModal-paymentSummaryRow-3" className="bo-paymentSummaryRow" data-slot="registerPaymentModal-paymentSummaryRow">
+              <span data-testid="registerPaymentModal-tal" data-slot="registerPaymentModal-tal">Importe total:</span>
+              <strong data-testid="RegisterPaymentModal-strong-3">{formatPrice(totalAmount)}</strong>
             </div>
-            <div className="bo-paymentSummaryRow" data-slot="registerPaymentModal-paymentSummaryRow">
-              <span data-slot="registerPaymentModal-ado">Pagado:</span>
-              <strong className={isFullyPaid ? "bo-text--success" : ""}>{formatPrice(paidAmount)}</strong>
+            <div data-testid="registerPaymentModal-paymentSummaryRow-4" className="bo-paymentSummaryRow" data-slot="registerPaymentModal-paymentSummaryRow">
+              <span data-testid="registerPaymentModal-ado" data-slot="registerPaymentModal-ado">Pagado:</span>
+              <strong data-testid="RegisterPaymentModal-strong-4" className={isFullyPaid ? "bo-text--success" : ""}>{formatPrice(paidAmount)}</strong>
             </div>
-            <div className="bo-paymentSummaryRow bo-paymentSummaryRow--remaining" data-slot="registerPaymentModal-paymentSummaryRow--remaining">
-              <span data-slot="registerPaymentModal-nte">Pendiente:</span>
-              <strong className={isFullyPaid ? "bo-text--success" : "bo-text--warning"}>
+            <div data-testid="registerPaymentModal-paymentSummaryRow-remaining" className="bo-paymentSummaryRow bo-paymentSummaryRow--remaining" data-slot="registerPaymentModal-paymentSummaryRow--remaining">
+              <span data-testid="registerPaymentModal-nte-2" data-slot="registerPaymentModal-nte">Pendiente:</span>
+              <strong data-testid="RegisterPaymentModal-strong-5" className={isFullyPaid ? "bo-text--success" : "bo-text--warning"}>
                 {isFullyPaid ? "0.00 €" : formatPrice(remainingBalance)}
               </strong>
             </div>
 
             {/* Progress bar */}
-            <div className="bo-paymentProgress" data-slot="register-payment-progress">
-              <div className="bo-paymentProgressBar" data-slot="register-payment-progress-bar">
-                <div
+            <div data-testid="register-payment-progress" className="bo-paymentProgress" data-slot="register-payment-progress">
+              <div data-testid="register-payment-progress-bar" className="bo-paymentProgressBar" data-slot="register-payment-progress-bar">
+                <div data-testid="register-payment-progress-fill"
                   className={`bo-paymentProgressFill ${isFullyPaid ? "is-complete" : ""}`}
                   style={{ width: `${Math.min((paidAmount / totalAmount) * 100, 100)}%` }}
                   data-slot="register-payment-progress-fill"
                 />
               </div>
-              <span className="bo-paymentProgressLabel" data-slot="register-payment-progress-label">
+              <span data-testid="register-payment-progress-label" className="bo-paymentProgressLabel" data-slot="register-payment-progress-label">
                 {Math.round((paidAmount / totalAmount) * 100)}% pagado
               </span>
             </div>
@@ -138,17 +138,17 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
 
           {/* Payment History */}
           {payments.length > 0 && (
-            <div className="bo-paymentHistory" data-slot="register-payment-history">
-              <h3 className="bo-paymentHistoryTitle" data-slot="register-payment-history-title">Historial de pagos</h3>
-              <div className="bo-paymentHistoryList" data-slot="register-payment-history-list">
+            <div data-testid="register-payment-history" className="bo-paymentHistory" data-slot="register-payment-history">
+              <h3 data-testid="register-payment-history-title" className="bo-paymentHistoryTitle" data-slot="register-payment-history-title">Historial de pagos</h3>
+              <div data-testid="register-payment-history-list" className="bo-paymentHistoryList" data-slot="register-payment-history-list">
                 {payments.map((payment) => (
-                  <div key={payment.id} className="bo-paymentHistoryItem" data-slot="register-payment-history-item">
-                    <div className="bo-paymentHistoryItemInfo" data-slot="register-payment-history-item-info">
-                      <span className="bo-paymentHistoryItemAmount" data-slot="register-payment-history-item-amount">{formatPrice(payment.amount)}</span>
-                      <span className="bo-paymentHistoryItemMethod" data-slot="register-payment-history-item-method">
+                  <div data-testid="register-payment-history-item" key={payment.id} className="bo-paymentHistoryItem" data-slot="register-payment-history-item">
+                    <div data-testid="register-payment-history-item-info" className="bo-paymentHistoryItemInfo" data-slot="register-payment-history-item-info">
+                      <span data-testid="register-payment-history-item-amount" className="bo-paymentHistoryItemAmount" data-slot="register-payment-history-item-amount">{formatPrice(payment.amount)}</span>
+                      <span data-testid="register-payment-history-item-method" className="bo-paymentHistoryItemMethod" data-slot="register-payment-history-item-method">
                         {PAYMENT_METHOD_OPTIONS.find((o) => o.value === payment.payment_method)?.label || payment.payment_method}
                       </span>
-                      <span className="bo-paymentHistoryItemDate" data-slot="registerPaymentModal-paymentHistoryItemDate">{formatDate(payment.payment_date)}</span>
+                      <span data-testid="registerPaymentModal-paymentHistoryItemDate" className="bo-paymentHistoryItemDate" data-slot="registerPaymentModal-paymentHistoryItemDate">{formatDate(payment.payment_date)}</span>
                     </div>
                     <button
                       className="bo-btn bo-btn--ghost bo-btn--sm bo-btn--danger"
@@ -169,11 +169,11 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
           {/* Add Payment Form */}
           {!isFullyPaid && (
             <form onSubmit={handleSubmit} className="bo-paymentForm" data-slot="register-payment-form" data-testid="register-payment-form">
-              <h3 className="bo-paymentFormTitle" data-slot="register-payment-form-title">Nuevo pago</h3>
+              <h3 data-testid="register-payment-form-title" className="bo-paymentFormTitle" data-slot="register-payment-form-title">Nuevo pago</h3>
 
-              <div className="bo-paymentFormRow" data-slot="register-payment-form-row-amount">
-                <label className="bo-field" data-slot="registerPaymentModal-field">
-                  <span className="bo-label" data-slot="registerPaymentModal-label">Importe *</span>
+              <div data-testid="register-payment-form-row-amount" className="bo-paymentFormRow" data-slot="register-payment-form-row-amount">
+                <label data-testid="registerPaymentModal-field" className="bo-field" data-slot="registerPaymentModal-field">
+                  <span data-testid="registerPaymentModal-label" className="bo-label" data-slot="registerPaymentModal-label">Importe *</span>
                   <input
                     className="bo-input"
                     type="number"
@@ -189,9 +189,9 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                 </label>
               </div>
 
-              <div className="bo-paymentFormRow" data-slot="register-payment-form-row-method">
-                <label className="bo-field" data-slot="registerPaymentModal-field">
-                  <span className="bo-label" data-slot="registerPaymentModal-label">Método de pago</span>
+              <div data-testid="register-payment-form-row-method" className="bo-paymentFormRow" data-slot="register-payment-form-row-method">
+                <label data-testid="registerPaymentModal-field-2" className="bo-field" data-slot="registerPaymentModal-field">
+                  <span data-testid="registerPaymentModal-label-2" className="bo-label" data-slot="registerPaymentModal-label">Método de pago</span>
                   <Select
                     value={paymentMethod}
                     onChange={(value) => setPaymentMethod(value as PaymentMethod)}
@@ -202,16 +202,16 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
                 </label>
               </div>
 
-              <div className="bo-paymentFormRow" data-slot="register-payment-form-row-date">
-                <label className="bo-field" data-slot="registerPaymentModal-field">
-                  <span className="bo-label" data-slot="registerPaymentModal-label">Fecha de pago</span>
+              <div data-testid="register-payment-form-row-date" className="bo-paymentFormRow" data-slot="register-payment-form-row-date">
+                <label data-testid="registerPaymentModal-field-3" className="bo-field" data-slot="registerPaymentModal-field">
+                  <span data-testid="registerPaymentModal-label-3" className="bo-label" data-slot="registerPaymentModal-label">Fecha de pago</span>
                   <DatePicker value={paymentDate} onChange={setPaymentDate} />
                 </label>
               </div>
 
-              <div className="bo-paymentFormRow" data-slot="register-payment-form-row-notes">
-                <label className="bo-field" data-slot="registerPaymentModal-field">
-                  <span className="bo-label" data-slot="registerPaymentModal-label">Notas</span>
+              <div data-testid="register-payment-form-row-notes" className="bo-paymentFormRow" data-slot="register-payment-form-row-notes">
+                <label data-testid="registerPaymentModal-field-4" className="bo-field" data-slot="registerPaymentModal-field">
+                  <span data-testid="registerPaymentModal-label-4" className="bo-label" data-slot="registerPaymentModal-label">Notas</span>
                   <input
                     className="bo-input"
                     type="text"
@@ -242,8 +242,8 @@ export function RegisterPaymentModal({ invoice, payments, onClose, onAddPayment,
           )}
 
           {isFullyPaid && (
-            <div className="bo-paymentComplete" data-slot="register-payment-complete">
-              <p data-slot="register-payment-complete-text">La factura está completamente pagada.</p>
+            <div data-testid="register-payment-complete" className="bo-paymentComplete" data-slot="register-payment-complete">
+              <p data-testid="register-payment-complete-text" data-slot="register-payment-complete-text">La factura está completamente pagada.</p>
             </div>
           )}
         </div>

@@ -1,12 +1,15 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Plus } from "lucide-react";
 
+import type { FoodCategory } from "../../../../../../api/types";
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
 import { Select } from "../../../../../../ui/inputs/Select";
 import { FloatingActionButton } from "../../../../../../ui/actions/FloatingActionButton";
+import { Accordion } from "../../../../../../ui/overlays/Accordion";
 import { FoodItemCard } from "../../../_components/FoodItemCard";
 import type { ListItem } from "../../types";
 import type { FoodType } from "../../../_components/foodTypes";
+import { groupItemsByCategory } from "../../helpers";
 import { PAGE_SIZE_OPTIONS } from "../../constants";
 
 interface FoodListProps {
@@ -29,6 +32,8 @@ interface FoodListProps {
   onPageSizeChange: (pageSize: number) => void;
   listLabel: string;
   showMedia?: boolean;
+  /** Food-type catalogue, used to build one accordion section per beverage category. */
+  categories?: FoodCategory[];
 }
 
 export function FoodList({
@@ -51,8 +56,32 @@ export function FoodList({
   onPageSizeChange,
   listLabel,
   showMedia = true,
+  categories = [],
 }: FoodListProps) {
   const safeItems = Array.isArray(items) ? items : [];
+  // Bebidas groups its rows into one accordion section per category, using the
+  // same panel shell as the dish sections of the menu editor.
+  // Coordination id: bebidas_category_sections_v1
+  const isCategorized = foodType === "bebidas";
+  const categorySections = useMemo(
+    () => (isCategorized ? groupItemsByCategory(safeItems, categories) : []),
+    [isCategorized, safeItems, categories],
+  );
+  const renderCard = (item: ListItem) => (
+    <FoodItemCard
+      key={item.num}
+      item={item}
+      foodType={foodType}
+      busy={processing}
+      onOpen={() => onOpenDetail(item)}
+      onEdit={() => onOpenEdit(item)}
+      onDelete={() => onDelete(item)}
+      onToggle={() => {
+        void onToggle(item);
+      }}
+      showMedia={showMedia}
+    />
+  );
   const createButton = (
     <FloatingActionButton
       icon={<Plus size={24} data-role="food-list-create-icon" />}
@@ -87,23 +116,38 @@ export function FoodList({
 
   return (
     <>
-      <div className="bo-foodGrid pb-4" role="list" data-ui="food-list-grid">
-        {safeItems.map((item) => (
-          <FoodItemCard
-            key={item.num}
-            item={item}
-            foodType={foodType}
-            busy={processing}
-            onOpen={() => onOpenDetail(item)}
-            onEdit={() => onOpenEdit(item)}
-            onDelete={() => onDelete(item)}
-            onToggle={() => {
-              void onToggle(item);
-            }}
-            showMedia={showMedia}
-          />
-        ))}
-      </div>
+      {isCategorized ? (
+        <div className="bo-beverageCategorySections" data-ui="beverage-category-sections" data-role="beverage-category-sections">
+          {categorySections.map((section) => (
+            <Accordion
+              key={section.key}
+              variant="panel"
+              className="bo-beverageCategorySection"
+              title={section.name}
+              defaultOpen
+              testId={`food-beverage-category-${section.key}`}
+              bodyClassName="bo-beverageCategoryBody"
+              actions={
+                <span
+                  className="bo-accordionBadge"
+                  data-slot="food-beverage-category-count"
+                  data-testid={`food-beverage-category-count-${section.key}`}
+                >
+                  {section.items.length}
+                </span>
+              }
+            >
+              <div className="bo-foodGrid" role="list" data-ui="food-list-category-grid" data-role="food-list-category-grid">
+                {section.items.map((item) => renderCard(item))}
+              </div>
+            </Accordion>
+          ))}
+        </div>
+      ) : (
+        <div className="bo-foodGrid pb-4" role="list" data-ui="food-list-grid" data-role="food-list-grid">
+          {safeItems.map((item) => renderCard(item))}
+        </div>
+      )}
 
       <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginacion" data-ui="food-list-pager">
         <div className="bo-pagerText" data-role="food-list-pager-info">
