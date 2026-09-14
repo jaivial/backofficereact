@@ -209,6 +209,33 @@ const BookingRow = React.memo(function BookingRow({
   );
 });
 
+// ─── DownloadButton (single source of truth for the "Descargar" CTA) ──────────
+// Coordination id: reservas_download_and_order_v1
+
+const DownloadButton = React.memo(function DownloadButton({
+  onDownload,
+  disabled,
+  testId,
+  className,
+}: {
+  onDownload: () => void;
+  disabled: boolean;
+  testId: string;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      className={`bo-btn bo-btn--primary bo-btn--download${className ? ` ${className}` : ""}`}
+      onClick={onDownload}
+      disabled={disabled}
+      data-testid={testId}
+    >
+      <Download className="bo-ico" /> Descargar
+    </button>
+  );
+});
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function Page() {
@@ -685,7 +712,8 @@ export default function Page() {
     <section aria-label="Reservas" data-testid="reservas-section">
       <AnimatePresence initial={false}>
         {!searchMode ? (
-          <motion.div key="reservas-grid" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={searchFadeTransition}>
+          <motion.div key="reservas-grid" className="bo-reservasLayout" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={searchFadeTransition}>
+            {isDayOpen ? <BookingSearch onSearch={onSearch} onClear={onSearchClear} busy={busy || searchBusy} reduceMotion={reduceMotion === true} /> : null}
             <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`} data-slot="reservas-div">
               <MonthCalendar year={view.year} month={view.month} days={calendarDays} selectedDateISO={date} onSelectDate={onSelectDate} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} loading={monthBusy} />
 
@@ -698,9 +726,6 @@ export default function Page() {
                       <div className="bo-filtersTop" data-slot="reservas-filtersTop">
                         <button className="bo-btn bo-btn--ghost bo-filtersToggle" type="button" onClick={() => setFiltersOpen((v) => !v)} aria-expanded={filtersOpen} aria-controls="bo-reservas-filters-body" data-testid="reservas-page-filters-toggle">
                           <Filter className="bo-ico" /> Filtros
-                        </button>
-                        <button className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadTop" type="button" onClick={onDownloadPDF} disabled={pdfBusy || busy} data-testid="reservas-page-download-top">
-                          <Download className="bo-ico" /> Descargar
                         </button>
                       </div>
                       <div id="bo-reservas-filters-body" className="bo-filtersBody" data-slot="reservas-filtersBody">
@@ -718,9 +743,6 @@ export default function Page() {
                             <input className="bo-input bo-input--sm" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre" onKeyDown={(e) => { if (e.key === "Enter") applyFilters(); }} data-testid="reservas-page-search-input" />
                             <button className="bo-btn bo-btn--ghost" type="button" onClick={applyFilters} disabled={busy} data-testid="reservas-page-search-button">Buscar</button>
                           </div>
-                          <button className="bo-btn bo-btn--primary bo-btn--download bo-btn--downloadInline" type="button" onClick={onDownloadPDF} disabled={pdfBusy || busy} data-testid="reservas-page-download-inline">
-                            <Download className="bo-ico" /> Descargar
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -731,8 +753,7 @@ export default function Page() {
 
             <AnimatePresence mode="wait" initial={false}>
               {isDayOpen ? (
-                <motion.div key="reservas-open-content" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
-                  <BookingSearch onSearch={onSearch} onClear={onSearchClear} busy={busy || searchBusy} reduceMotion={reduceMotion === true} />
+                <motion.div key="reservas-open-content" className="bo-reservasOpenContent" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
                   <BookingsViewTabs
                     date={date}
                     activeTab={viewTab}
@@ -765,6 +786,12 @@ export default function Page() {
                             <MoreVertical size={18} strokeWidth={1.8} />
                           </button>
                         ) : null}
+                        <DownloadButton
+                          onDownload={onDownloadPDF}
+                          disabled={pdfBusy || busy}
+                          testId="reservas-page-download-display-row"
+                          className="bo-btn--downloadRight"
+                        />
                       </div>
                       {displayMode === "tabla" ? (
                         <div className="bo-tableWrap" style={{ marginTop: 10 }} data-slot="reservas-tableWrap">
@@ -803,11 +830,18 @@ export default function Page() {
                         </div>
                       )}
                       {pagerEl}
+                      <div className="bo-reservasPagerDownload" data-slot="reservas-page-pagination-download" data-testid="reservas-page-pagination-download">
+                        <DownloadButton
+                          onDownload={onDownloadPDF}
+                          disabled={pdfBusy || busy}
+                          testId="reservas-page-download-pagination"
+                        />
+                      </div>
                     </>
                   ) : null}
                 </motion.div>
               ) : (
-                <motion.div key="reservas-closed-content" style={{ marginTop: 14 }} initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
+                <motion.div key="reservas-closed-content" className="bo-reservasClosedContent" style={{ marginTop: 14 }} initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
                   <ReservationDayPanel title="Día cerrado" meta={date} day={day ?? { date, isOpen: false }} busy={busy} onToggleDay={openDay} actionMode="openOnly" bodyClassName="bo-configDayLimitRow--single" />
                 </motion.div>
               )}
