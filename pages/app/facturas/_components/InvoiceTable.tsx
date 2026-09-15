@@ -599,12 +599,13 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
               <DropdownMenu
                 label="Cambiar estado"
                 items={bulkStatusOptions}
-                triggerContent={
-                  <button className="bo-btn bo-btn--secondary bo-btn--sm" type="button" data-testid="invoice-bulk-status-btn">
-                    Cambiar estado
-                  </button>
-                }
-                triggerClassName="bo-bulkAction"
+                triggerContent={<>Cambiar estado</>}
+                /* Text trigger: the bo-btn classes go on the trigger button
+                   itself (see QR tabs). Nesting a <button> inside the trigger
+                   rendered a duplicate, misaligned control. */
+                triggerClassName="bo-btn bo-btn--secondary bo-btn--sm bo-bulkAction"
+                triggerDataSlot="invoiceTable-bulkStatusTrigger"
+                triggerDataTestId="invoice-bulk-status-btn"
               />
               <button
                 className="bo-btn bo-btn--secondary bo-btn--sm"
