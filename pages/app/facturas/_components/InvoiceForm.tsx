@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from "react";
-import { Save, Send, Upload, X, Search, Loader2, Check, AlertCircle, FileText, Tag, Plus, XCircle, List, Eye } from "lucide-react";
+import { Save, Send, Upload, X, Search, Loader2, Check, AlertCircle, FileText, Tag, Plus, XCircle, List, Eye, ChevronDown, Clock } from "lucide-react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
 import { SearchableSelect } from "../../../../ui/inputs/SearchableSelect";
@@ -8,6 +8,7 @@ import { SPAIN_PROVINCES, SPAIN_MUNICIPIOS_BY_PROVINCE } from "../constants/spai
 import { PROVINCE_NAME_BY_CODE, PROVINCE_CODE_BY_NAME, allMunicipios, provinceCodeForMunicipio } from "../constants/spainLocations.helpers";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { SwitchField } from "../../../../ui/inputs/SwitchField";
+import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { FillFromReservationModal } from "./FillFromReservationModal";
 import { SelectTemplateModal } from "./SelectTemplateModal";
 import { InvoicePdfPreviewModal } from "./InvoicePdfPreviewModal";
@@ -1798,26 +1799,51 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         </div>
       </div>
 
-      {/* Form actions */}
+      {/* Form actions — Guardar is one popover with both save destinations;
+          labels collapse to icons ≤899px (invoice_form_actions_icons_v1). */}
       <div data-testid="invoiceForm-invoiceFormActions" className="bo-invoiceFormActions" data-slot="invoiceForm-invoiceFormActions">
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)" data-testid="invoice-cancel-btn">
-          Cancelar
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)" aria-label="Cancelar" data-testid="invoice-cancel-btn">
+          <X size={16} />
+          <span className="bo-btnText" data-testid="invoice-cancel-btn-text">Cancelar</span>
         </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSaveDraft} disabled={!isValid || isSubmitting} title="Guardar borrador (Ctrl+S)" data-testid="invoice-save-draft-btn">
-          <Save size={16} />
-          Guardar borrador
-        </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSavePending} disabled={!isValid || isSubmitting} title="Guardar como pendiente (Ctrl+S)" data-testid="invoice-save-pending-btn">
-          <Save size={16} />
-          Guardar como pendiente
-        </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF" data-testid="invoice-preview-btn">
+        <DropdownMenu
+          label="Guardar factura"
+          disabled={!isValid || isSubmitting}
+          triggerContent={
+            <>
+              <Save size={16} />
+              <span className="bo-btnText" data-testid="invoice-save-btn-text">Guardar</span>
+              <ChevronDown size={14} />
+            </>
+          }
+          triggerClassName="bo-btn bo-btn--secondary"
+          triggerDataSlot="invoiceForm-saveTrigger"
+          triggerDataTestId="invoice-save-btn"
+          menuMinWidthPx={220}
+          items={[
+            {
+              id: "save-draft",
+              label: "Guardar borrador",
+              icon: <Save size={14} />,
+              testId: "invoice-save-draft-btn",
+              onSelect: handleSaveDraft,
+            },
+            {
+              id: "save-pending",
+              label: "Guardar como pendiente",
+              icon: <Clock size={14} />,
+              testId: "invoice-save-pending-btn",
+              onSelect: handleSavePending,
+            },
+          ]}
+        />
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF" aria-label="Vista previa" data-testid="invoice-preview-btn">
           <Eye size={16} />
-          Vista previa
+          <span className="bo-btnText" data-testid="invoice-preview-btn-text">Vista previa</span>
         </button>
-        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!customerEmail.trim() || !isValid || isSubmitting} title={!customerEmail.trim() ? "Se requiere email del cliente para enviar" : "Enviar factura (Ctrl+S)"} data-testid="invoice-submit-btn">
+        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!customerEmail.trim() || !isValid || isSubmitting} title={!customerEmail.trim() ? "Se requiere email del cliente para enviar" : "Enviar factura (Ctrl+S)"} aria-label="Enviar" data-testid="invoice-submit-btn">
           <Send size={16} />
-          Enviar
+          <span className="bo-btnText" data-testid="invoice-submit-btn-text">Enviar</span>
         </button>
       </div>
 
