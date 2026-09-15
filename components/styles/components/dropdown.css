@@ -10,7 +10,22 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.10)),
     var(--bo-surface);
   box-shadow: var(--bo-shadow-soft);
-  padding: 6px;
+  padding: 0;
+}
+
+/* Menu body: the shared ScrollArea rendered by DropdownMenu. The inset that
+   used to be .bo-menu padding now lives here (bo_menu_scroll_inset_v1). */
+.bo-menu .bo-menuScroll {
+  margin: 0.3rem;
+  gap: 1rem;
+  overflow: visible;
+}
+
+.bo-menu .bo-menuScroll .bo-scrollAreaViewport {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  overflow: visible;
 }
 
 /* Panel-styled menu: reuse the .bo-panel .bo-invoiceFilters surface for the

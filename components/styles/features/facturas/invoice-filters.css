@@ -47,12 +47,21 @@
 
 /* Responsive filters */
 @media (max-width: 639px) {
+  /* Stack the row and let every filter field stretch to the full width so the
+     selectors/date pickers fill the available space on phones. */
   .bo-invoiceFilterRow {
     flex-direction: column;
+    align-items: stretch;
   }
 
-  .bo-invoiceFiltersGrid > * {
+  .bo-invoiceFiltersGrid > *,
+  .bo-invoiceFilterRow > * {
     width: 100%;
+  }
+
+  .bo-invoiceFilter--category,
+  .bo-invoiceFilter--tag {
+    min-width: 0;
   }
 
   .bo-searchWithDropdown {

@@ -1,25 +1,37 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
 import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput, ReservationSearchResult } from "../../../api/types";
+import { sessionAtom } from "../../../state/atoms";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
-import { FileText, PlusCircle } from "lucide-react";
+import { FileText, PlusCircle, Table as TableIcon, LayoutGrid, MoreVertical } from "lucide-react";
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 import { Panel } from "../../../ui/shell/Panel";
 import { InvoiceFilters } from "./_components/InvoiceFilters";
 import { InvoiceTable } from "./_components/InvoiceTable";
+import { InvoiceCardGrid } from "./_components/InvoiceCardGrid";
+import { InvoiceColumnsModal } from "./_components/InvoiceColumnsModal";
+import { INVOICE_COLUMN_IDS, invoiceColumnVisibility, sortInvoicesByColumn, type InvoiceColumnId } from "./_components/invoiceColumns";
+import type { SortDirection, SortField } from "./types/table";
 import { InvoiceForm } from "./_components/InvoiceForm";
 import { SendEmailModal } from "./_components/SendEmailModal";
 import { SendWhatsAppModal } from "./_components/SendWhatsAppModal";
 import { BatchSendModal } from "./_components/BatchSendModal";
 import { InvoiceDetailsModal } from "./_components/InvoiceDetailsModal";
 
+type FacturasDisplayMode = "tabla" | "grid";
+
 type PageData = {
   invoices: Invoice[];
   total: number;
   page: number;
   limit: number;
+  /** Persisted display mode (tabla | grid). facturas_display_preference_v1 */
+  displayMode: FacturasDisplayMode;
+  /** Persisted CSV of visible table columns. facturas_columns_preference_v1 */
+  visibleColumns: string;
   error: string | null;
 };
 
@@ -47,6 +59,8 @@ export default function Page() {
   const data = pageContext.data as PageData;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
+  const session = useAtomValue(sessionAtom);
+  const setSession = useSetAtom(sessionAtom);
 
   const error = data.error;
   const [invoices, setInvoices] = useState<Invoice[]>(data.invoices || []);
@@ -54,6 +68,19 @@ export default function Page() {
   const [page, setPage] = useState(data.page);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("resumen");
+
+  // Display mode (tabla | grid of cards), hydrated from the user's persisted
+  // preference via SSR. Coordination id: facturas_display_preference_v1
+  const [displayMode, setDisplayMode] = useState<FacturasDisplayMode>(data.displayMode === "grid" ? "grid" : "tabla");
+
+  // Visible table columns, hydrated from the user's persisted preference.
+  // Coordination id: facturas_columns_preference_v1
+  const [visibleColumns, setVisibleColumns] = useState<InvoiceColumnId[]>(() => invoiceColumnVisibility.parse(data.visibleColumns));
+  const [columnsModalOpen, setColumnsModalOpen] = useState(false);
+
+  // Page-only client-side sort: header clicks reorder the current page without
+  // touching the API sort or the DB. Coordination id: facturas_page_sort_v1
+  const [clientSort, setClientSort] = useState<{ field: SortField; direction: SortDirection } | null>(null);
 
   // Filters state
   const [searchText, setSearchText] = useState("");
@@ -222,6 +249,8 @@ export default function Page() {
 
   const totalPages = useMemo(() => Math.ceil(total / data.limit), [total, data.limit]);
 
+  const showPagerBtns = totalPages > 1;
+
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
   }, []);
@@ -263,12 +292,16 @@ export default function Page() {
     setEditingInvoice(null);
     setIsCreatingNew(false);
     setInitialReservation(null);
+    setActiveTab("resumen");
     updateUrl({ tab: "resumen", id: "" });
   }, []);
 
-  // Handle save invoice
+  // Handle save invoice. Returns the saved invoice id (undefined on
+  // failure). opts.keepOpen keeps the form mounted and adopts a newly
+  // created invoice into edit state so the next save updates instead of
+  // duplicating (invoices_preview_save_first_v1).
   const handleSaveInvoice = useCallback(
-    async (input: InvoiceInput, shouldSend: boolean = false) => {
+    async (input: InvoiceInput, shouldSend: boolean = false, opts?: { keepOpen?: boolean }): Promise<number | undefined> => {
       try {
         let res;
         let invoiceId: number | undefined;
@@ -280,7 +313,7 @@ export default function Page() {
           res = await api.invoices.create(input);
           if (!res.success) {
             pushToast({ kind: "error", title: "Error", message: "No se pudo crear la factura" });
-            return;
+            return undefined;
           }
           invoiceId = "id" in res ? res.id : undefined;
         }
@@ -298,13 +331,22 @@ export default function Page() {
           }
         } else {
           pushToast({ kind: "error", title: "Error", message: "No se pudo guardar la factura" });
+          return undefined;
         }
 
-        setEditingInvoice(null);
-        setIsCreatingNew(false);
+        if (opts?.keepOpen) {
+          if (!editingInvoice && invoiceId) {
+            setEditingInvoice({ ...input, id: invoiceId } as Invoice);
+          }
+        } else {
+          setEditingInvoice(null);
+          setIsCreatingNew(false);
+        }
         fetchInvoices();
+        return invoiceId;
       } catch (e) {
         pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "Error desconocido" });
+        return undefined;
       }
     },
     [api, editingInvoice, pushToast, fetchInvoices],
@@ -419,10 +461,58 @@ export default function Page() {
     setBatchSendInvoices([]);
   }, []);
 
-  // Filtered/sorted invoices (client-side is handled by API, just display)
+  // Filtered/sorted invoices (client-side is handled by API, just display).
+  // The header-click sort (facturas_page_sort_v1) reorders the current page.
   const filteredInvoices = useMemo(() => {
-    return invoices;
-  }, [invoices]);
+    if (!clientSort) return invoices;
+    return sortInvoicesByColumn(invoices, clientSort.field, clientSort.direction);
+  }, [invoices, clientSort]);
+
+  const handleClientSort = useCallback((field: SortField) => {
+    setClientSort((prev) => {
+      if (prev && prev.field === field) {
+        return prev.direction === "asc" ? { field, direction: "desc" } : null;
+      }
+      return { field, direction: "asc" };
+    });
+  }, []);
+
+  // Persist the tabla/grid choice per user (PUT /api/admin/me/preferences).
+  // The initial value hydrates from SSR (data.displayMode) so no save fires
+  // for the default. Coordination id: facturas_display_preference_v1
+  const changeDisplayMode = useCallback((mode: FacturasDisplayMode) => {
+    if (mode === displayMode) return;
+    setDisplayMode(mode);
+    if (!session) return;
+    setSession((prev) => (prev ? { ...prev, preferences: { ...(prev.preferences ?? {}), facturasDisplayMode: mode } } : prev));
+    void api.auth.setPreference("facturasDisplayMode", mode).then((res) => {
+      if (!res.success) pushToast({ kind: "error", title: "Preferencia", message: res.message || "No se pudo guardar" });
+    });
+  }, [api.auth, displayMode, session, setSession, pushToast]);
+
+  // Persists the visible columns for this user.
+  // Coordination id: facturas_columns_preference_v1
+  const persistColumns = useCallback((next: InvoiceColumnId[]) => {
+    if (next.length === 0) return;
+    const value = next.join(",");
+    setVisibleColumns(next);
+    if (!session) return;
+    setSession((prev) => (prev ? { ...prev, preferences: { ...(prev.preferences ?? {}), facturasVisibleColumns: value } } : prev));
+    void api.auth.setPreference("facturasVisibleColumns", value).then((res) => {
+      if (!res.success) pushToast({ kind: "error", title: "Columnas", message: res.message || "No se pudo guardar" });
+    });
+  }, [api.auth, pushToast, session, setSession]);
+
+  const toggleColumn = useCallback((id: InvoiceColumnId, next: boolean) => {
+    const selected = new Set(visibleColumns);
+    if (next) selected.add(id); else selected.delete(id);
+    const ordered = INVOICE_COLUMN_IDS.filter((cid) => selected.has(cid));
+    // Never let the table end up with zero columns.
+    if (ordered.length === 0) return;
+    persistColumns(ordered);
+  }, [persistColumns, visibleColumns]);
+
+  const resetColumns = useCallback(() => persistColumns([...INVOICE_COLUMN_IDS]), [persistColumns]);
 
   const TABS = useMemo<TabItem[]>(
     () => [
@@ -445,40 +535,11 @@ export default function Page() {
   return (
     <div data-testid="facturas-facturasPage" className="bo-facturasPage" data-slot="facturas-facturasPage">
       <style>{`@media (max-width: 768px) {
-        /* ── Table cards ── */
-        .bo-table--facturas thead{display:none}
-        .bo-table--facturas,.bo-table--facturas tbody,.bo-tableWrap .bo-tableScroll{display:block}
-        .bo-table--facturas tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:0;padding:14px;border:1px solid var(--bo-border);border-radius:14px;margin-bottom:10px;background:var(--bo-surface);position:relative}
-        .bo-table--facturas tbody td{padding:2px 0;text-align:left}
-        .bo-table--facturas tbody td::before{display:none}
-
-        /* Card rows: full-width elements */
-        .bo-table--facturas td.col-selection{display:none!important}
-        .bo-table--facturas td.col-customer_name{width:calc(100% - 90px);font-weight:720;font-size:15px;order:1;padding:0 0 2px}
-        .bo-table--facturas td.col-status{width:80px;text-align:right;order:2;padding:0 0 2px}
-        .bo-table--facturas td.col-amount{width:100%;font-weight:780;font-size:20px;color:var(--bo-accent);order:3;padding:0 0 8px}
-        .bo-table--facturas td.col-invoice_date{order:4;font-size:12px;color:var(--bo-muted);padding:0 8px 6px 0}
-        .bo-table--facturas td.col-payment_progress{width:100%;order:5;padding:4px 0}
-        .bo-table--facturas td.col-actions{width:100%;order:99;display:flex;justify-content:flex-end;padding-top:10px;margin-top:6px;border-top:1px solid var(--bo-border);gap:4px}
-
-        /* Hide noise + low-value cells */
-        .bo-table--facturas td.col-customer_email,.bo-table--facturas td.col-currency,.bo-table--facturas td.col-payment_date,.bo-table--facturas td.col-payment_method,.bo-table--facturas td.col-is_reservation,.bo-table--facturas td.col-deposit,.bo-table--facturas td.col-category,.bo-table--facturas td.col-attachment,.bo-table--facturas td.col-invoice_number,.bo-table--facturas td.col-due_date{display:none}
-
-
-
-        /* ── Strip table wrapper on mobile ── */
-        .bo-tableWrap{background:transparent!important;border:none!important;border-radius:0!important;margin-top:0!important;padding:0!important}
-        .bo-tableScroll{overflow:visible!important}
-        .bo-table--facturas{border:none!important;background:transparent!important}
-        /* ── tfoot: hidden on mobile ── */
-        .bo-table--facturas tfoot{display:none!important}
         /* ── Pager ── */
         .bo-pager{flex-direction:column;align-items:stretch;gap:8px;padding:10px 14px;background:var(--bo-surface);border:1px solid var(--bo-border);border-radius:12px}
         .bo-pager .bo-pagerText{text-align:center;font-size:12px;color:var(--bo-faint)}
         .bo-pager .bo-pagerBtns{justify-content:center;gap:8px}
         .bo-pager .bo-pagerBtns .bo-btn{flex:1}
-        .bo-bulkBar{flex-wrap:wrap;gap:8px}
-        .bo-bulkBar .bo-bulkBarInfo{width:100%}
 
         /* ── Form container ── */
         .bo-facturasFormContainer{padding:0!important}
@@ -539,16 +600,41 @@ export default function Page() {
             onApplyFilters={fetchInvoices}
           />
 
-          <InvoiceTable
-            invoices={filteredInvoices}
-            loading={loading}
-            page={page}
-            totalPages={totalPages}
-            total={total}
-            sortField={null}
-            sortDirection="desc"
-            onSort={() => {}}
-            hasFilters={hasFilters}
+          <div className="bo-facturasDisplayRow" data-testid="facturas-display-row" data-slot="facturas-display-row" data-coordination-id="facturas_display_preference_v1">
+            <div className="bo-displayToggle" role="tablist" aria-label="Vista facturas" data-testid="facturas-display-toggle" data-slot="facturas-display-toggle">
+              <button type="button" role="tab" aria-selected={displayMode === "tabla"} className={`bo-displayToggleBtn${displayMode === "tabla" ? " is-active" : ""}`} onClick={() => changeDisplayMode("tabla")} data-testid="facturas-display-tabla">
+                <TableIcon size={16} strokeWidth={1.8} /> <span>Tabla</span>
+              </button>
+              <button type="button" role="tab" aria-selected={displayMode === "grid"} className={`bo-displayToggleBtn${displayMode === "grid" ? " is-active" : ""}`} onClick={() => changeDisplayMode("grid")} data-testid="facturas-display-grid">
+                <LayoutGrid size={16} strokeWidth={1.8} /> <span>Grid</span>
+              </button>
+            </div>
+            {displayMode === "tabla" ? (
+              <button
+                type="button"
+                className="bo-btn bo-btn--ghost bo-facturasColumnsBtn"
+                aria-label="Elegir columnas visibles"
+                title="Columnas visibles"
+                onClick={() => setColumnsModalOpen(true)}
+                data-testid="facturas-columns-open"
+              >
+                <MoreVertical size={18} strokeWidth={1.8} />
+              </button>
+            ) : null}
+          </div>
+
+          {displayMode === "tabla" ? (
+            <InvoiceTable
+              invoices={filteredInvoices}
+              visibleColumns={visibleColumns}
+              loading={loading}
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              sortField={clientSort?.field ?? null}
+              sortDirection={clientSort?.direction ?? "desc"}
+              onSort={handleClientSort}
+              hasFilters={hasFilters}
             onCreateNew={handleCreateNew}
             onEdit={handleEditInvoice}
             onDuplicate={() => {}}
@@ -574,6 +660,26 @@ export default function Page() {
             onShowReminderHistory={() => {}}
             onManageTemplates={() => {}}
           />
+          ) : (
+            <>
+              <InvoiceCardGrid invoices={filteredInvoices} onOpenDetails={(inv) => setDetailsInvoice(inv)} />
+              <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-testid="facturas-grid-pager" data-slot="facturas-grid-pager">
+                <div className="bo-pagerText" data-testid="facturas-grid-pagerText" data-slot="facturas-grid-pagerText">
+                  Página {page} de {totalPages} · {total} resultados
+                </div>
+                {showPagerBtns ? (
+                  <div className="bo-pagerBtns" data-slot="facturas-grid-pagerBtns">
+                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => handlePageChange(page - 1)} disabled={loading || page <= 1} data-testid="facturas-grid-pagination-prev">
+                      Anterior
+                    </button>
+                    <button className="bo-btn bo-btn--ghost" type="button" onClick={() => handlePageChange(page + 1)} disabled={loading || page >= totalPages} data-testid="facturas-grid-pagination-next">
+                      Siguiente
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </>
+          )}
         </div>
       </div>
       ) : null}
@@ -625,6 +731,15 @@ export default function Page() {
           setDetailsInvoice(null);
           handleSendWhatsApp(inv);
         }}
+      />
+
+      {/* Column Picker Modal (facturas_columns_preference_v1) */}
+      <InvoiceColumnsModal
+        open={columnsModalOpen}
+        visible={visibleColumns}
+        onToggle={toggleColumn}
+        onReset={resetColumns}
+        onClose={() => setColumnsModalOpen(false)}
       />
 
       {/* Batch Send Modal */}

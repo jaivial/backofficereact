@@ -1,4 +1,14 @@
 /* Invoice Table - uses bo-table classes */
+/* Headers centered (facturas_table_headers_v1); utility/action cols keep their own alignment. */
+.bo-table--facturas thead th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.bo-table--facturas .bo-tableRow--clickable {
+  cursor: pointer;
+}
+
 .bo-table--facturas th.col-invoice_number,
 .bo-table--facturas td.col-invoice_number {
   width: 100px;
@@ -17,6 +27,9 @@
 .bo-table--facturas th.col-amount,
 .bo-table--facturas td.col-amount {
   width: 100px;
+}
+
+.bo-table--facturas td.col-amount {
   text-align: right;
 }
 
@@ -62,7 +75,12 @@
 
 .bo-table--facturas th.col-is_reservation,
 .bo-table--facturas td.col-is_reservation {
-  width: 100px;
+  width: 150px;
+}
+
+/* Tipo shows its full badge text on one line (facturas_tipo_column_v1). */
+.bo-table--facturas td.col-is_reservation {
+  white-space: nowrap;
 }
 
 .bo-table--facturas th.col-category,
@@ -102,67 +120,162 @@
   }
 }
 
-/* Responsive table for facturas */
+/* Responsive table for facturas: card layout (≤900px). */
 @media (max-width: 900px) {
-  .bo-table--facturas {
-    display: block;
-    overflow-x: auto;
+  .bo-tableWrap--facturas {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin-top: 0;
+    padding: 0;
+    overflow: visible;
   }
 
-  .bo-table--facturas thead {
+  .bo-tableWrap--facturas .bo-tableScroll {
+    overflow: visible;
+  }
+
+  .bo-table--facturas {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+  }
+
+  .bo-table--facturas thead,
+  .bo-table--facturas tfoot {
     display: none;
   }
 
-  .bo-table--facturas tbody,
-  .bo-table--facturas tr,
-  .bo-table--facturas td {
+  .bo-table--facturas tbody {
     display: block;
     width: 100%;
   }
 
-  .bo-table--facturas tr {
-    padding: 12px;
-    border-bottom: 1px solid var(--bo-border);
-    margin-bottom: 8px;
+  /* One card per invoice: two fixed columns, each cell owns its grid row. */
+  .bo-table--facturas tbody tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: 12px;
+    row-gap: 6px;
+    padding: 14px 16px;
+    border: 1px solid var(--bo-border);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    background: var(--bo-surface);
   }
 
-  .bo-table--facturas td {
-    padding: 4px 0;
+  .bo-table--facturas tbody td {
+    width: auto;
+    padding: 0;
     border: none;
     text-align: left;
   }
 
-  .bo-table--facturas td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--bo-muted);
-    display: block;
-    margin-bottom: 2px;
+  .bo-table--facturas tbody td::before {
+    display: none;
+  }
+
+  /* Fold low-value columns into the primary card cells. */
+  .bo-table--facturas td.col-selection,
+  .bo-table--facturas td.col-invoice_number,
+  .bo-table--facturas td.col-customer_email,
+  .bo-table--facturas td.col-currency,
+  .bo-table--facturas td.col-due_date,
+  .bo-table--facturas td.col-payment_date,
+  .bo-table--facturas td.col-payment_method,
+  .bo-table--facturas td.col-is_reservation,
+  .bo-table--facturas td.col-deposit,
+  .bo-table--facturas td.col-category,
+  .bo-table--facturas td.col-attachment {
+    display: none;
   }
 
   .bo-table--facturas td.col-customer_name {
-    font-size: 16px;
-    font-weight: 600;
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 720;
+  }
+
+  /* Name and surname share one row on cards. */
+  .bo-table--facturas td.col-customer_name .bo-tableCustomer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 6px;
+  }
+
+  .bo-table--facturas td.col-customer_name .bo-tableCustomerSurname {
+    white-space: nowrap;
+  }
+
+  .bo-table--facturas td.col-status {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 
   .bo-table--facturas td.col-amount {
-    font-weight: 600;
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    font-size: 20px;
+    font-weight: 780;
+    line-height: 1.1;
     color: var(--bo-accent);
   }
 
+  .bo-table--facturas td.col-invoice_date {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    align-self: center;
+    justify-self: end;
+    font-size: 12px;
+    color: var(--bo-muted);
+    white-space: nowrap;
+  }
+
+  .bo-table--facturas td.col-payment_progress {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: 100%;
+    padding-top: 2px;
+  }
+
   .bo-table--facturas td.col-actions {
-    padding-top: 8px;
+    grid-column: 1 / -1;
+    grid-row: 4;
+    width: 100%;
     display: flex;
-    gap: 4px;
     justify-content: flex-end;
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1px solid var(--bo-border);
+  }
+
+  .bo-bulkBar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .bo-bulkBar .bo-bulkBarInfo {
+    width: 100%;
   }
 }
 
+/* Name and surname share one row in the table's Cliente column. */
 .bo-tableCustomer {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+  min-width: 0;
 }
 
 .bo-tableCustomerName {
@@ -236,6 +349,16 @@
   text-align: left;
 }
 
+/* Per-column lucide icon in the header (facturas_header_icons_v1). */
+.bo-tableColIcon {
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+.bo-tableSortBtn:hover .bo-tableColIcon {
+  opacity: 1;
+}
+
 .bo-tableSortBtn:hover {
   color: var(--bo-accent);
 }
@@ -264,65 +387,185 @@
 }
 
 
-/* ── Mobile: responsive table ───────────────────────── */
-@media (max-width: 768px) {
-  .bo-table--facturas thead {
-    display: none;
-  }
-
+/* ── Phone cards (≤769px): pinned badge + full-width data ── */
+@media (max-width: 769px) {
   .bo-table--facturas tbody tr {
-    display: block;
-    padding: 14px 12px;
-    border: 1px solid var(--bo-border);
-    border-radius: 12px;
-    margin-bottom: 10px;
-    background: var(--bo-surface);
+    padding: 14px;
   }
 
-  .bo-table--facturas td {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 5px 0;
-    text-align: left;
+  /* Status badge pinned to the card's top-right corner. */
+  .bo-table--facturas td.col-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    padding: 0;
   }
 
-  .bo-table--facturas td::before {
-    content: attr(data-label);
-    font-size: 10px;
-    font-weight: 650;
-    color: var(--bo-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    flex-shrink: 0;
-    min-width: 72px;
+  /* Customer name uses the full card width, clearing the pinned badge. */
+  .bo-table--facturas td.col-customer_name {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding-right: 92px;
   }
 
-  .bo-table--facturas td.col-selection {
-    padding: 0 0 8px 0;
+  /* Every data cell stretches across the whole card, on its own row. */
+  .bo-table--facturas td.col-amount {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
   }
 
-  .bo-table--facturas td.col-selection::before {
-    display: none;
+  .bo-table--facturas td.col-invoice_date {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: stretch;
   }
 
+  .bo-table--facturas td.col-payment_progress {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    justify-self: stretch;
+  }
+
+  /* Keep the actions trigger above the pinned badge and tappable. */
   .bo-table--facturas td.col-actions {
-    justify-content: flex-end;
-    padding-top: 10px;
-    margin-top: 6px;
-    border-top: 1px solid var(--bo-border);
+    grid-row: 5;
+    position: relative;
+    z-index: 2;
   }
 
-  .bo-table--facturas td.col-actions::before {
+  .bo-table--facturas td.col-actions .bo-actionBtn {
+    touch-action: manipulation;
+  }
+
+  /* The 3-dots column picker only appears above 900px (facturas_columns_preference_v1). */
+  .bo-facturasColumnsBtn {
     display: none;
   }
+}
 
-  .bo-bulkBar {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+/* ── Facturas: display mode row (tabla/grid) ──────────────────────────── */
+.bo-facturasDisplayRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 10px;
+}
 
-  .bo-bulkBar .bo-bulkBarInfo {
-    width: 100%;
-  }
+/* ── Facturas: card grid display mode (facturas_cards_v1) ─────────── */
+.bo-invoiceCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.bo-invoiceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--bo-border);
+  border-radius: 14px;
+  background: var(--bo-surface);
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.bo-invoiceCard:hover,
+.bo-invoiceCard:focus-visible {
+  border-color: var(--bo-accent);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .08);
+  outline: none;
+}
+
+.bo-invoiceCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bo-invoiceCardNumber {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--bo-muted);
+}
+
+.bo-invoiceCardClient {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+  font-size: 15px;
+  font-weight: 720;
+  min-width: 0;
+}
+
+.bo-invoiceCardClientName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-invoiceCardAmount {
+  font-size: 20px;
+  font-weight: 780;
+  line-height: 1.1;
+  color: var(--bo-accent);
+}
+
+.bo-invoiceCardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-invoiceCardType {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bo-invoiceCardDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.bo-invoiceCardPaid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bo-invoiceCardPaidBar {
+  width: 100%;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bo-surface-2, rgba(0, 0, 0, .08));
+  overflow: hidden;
+}
+
+.bo-invoiceCardPaidFill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--bo-accent-2, var(--bo-accent));
+}
+
+.bo-invoiceCardPaidFill.is-complete {
+  background: var(--bo-accent);
+}
+
+.bo-invoiceCardPaidText {
+  font-size: 11px;
+  color: var(--bo-faint, var(--bo-muted));
 }

@@ -121,6 +121,7 @@ export function DropdownMenu({
   wrapperClassName,
   menuStyle,
   itemStyle,
+  disabled,
 }: {
   label: string;
   items: MenuItem[];
@@ -134,6 +135,7 @@ export function DropdownMenu({
   wrapperClassName?: string;
   menuStyle?: React.CSSProperties;
   itemStyle?: React.CSSProperties;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -218,6 +220,7 @@ export function DropdownMenu({
     <button
       ref={triggerRef}
       type="button"
+      disabled={disabled}
       className={cn("bo-actionBtn", triggerClassName)}
       aria-haspopup="menu"
       aria-expanded={open}
@@ -259,7 +262,7 @@ export function DropdownMenu({
           }}
           data-ui="dropdown-menu"
         >
-          <ScrollArea dataSlot="dropdown-menu-list">
+          <ScrollArea dataSlot="dropdown-menu-list" className="bo-menuScroll">
             {items.map((it) => (
               <button
                 key={it.id}
