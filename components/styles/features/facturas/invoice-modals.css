@@ -2245,12 +2245,26 @@
 }
 
 .bo-pdf-preview-viewer {
+  position: relative;
   flex: 1;
   min-height: 0;
   background: var(--bo-bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* The preview iframe fills the viewer and stays mounted while the loading
+   overlay paints above it (invoices_pdf_preview_mount_v1). */
+.bo-pdf-preview-viewer .bo-pdf-preview-iframe {
+  position: absolute;
+  inset: 0;
+}
+
+.bo-pdf-preview-viewer .bo-pdf-preview-loading,
+.bo-pdf-preview-viewer .bo-pdf-preview-error {
+  position: absolute;
+  inset: 0;
 }
 
 .bo-pdf-preview-iframe {
