@@ -70,7 +70,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
   if (!invoice) return null;
 
   return (
-    <Modal open={open} title="Detalles de factura" onClose={onClose} size="md" hideClose>
+    <Modal open={open} title="Detalles de factura" onClose={onClose} size="md" hideClose className="bo-invoiceDetailsModal">
       <ModalHeader title="Detalles de factura" onClose={onClose} />
       <div data-testid="invoiceDetailsModal-invoiceDetails" data-slot="invoiceDetailsModal-invoiceDetails" className="bo-invoiceDetails">
         <ScrollArea dataSlot="invoice-details-body">
@@ -208,29 +208,30 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
               </div>
             </div>
           )}
+
+          {/* Action buttons — inside the scroll body so every action stays
+              reachable on short screens (invoices_details_mobile_modal_v1). */}
+          {hasActions && (
+            <div data-testid="invoiceDetailsModal-invoiceDetailsActions" data-slot="invoiceDetailsModal-invoiceDetailsActions" className="bo-invoiceDetailsActions">
+              {onDownloadPdf && (
+                <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => onDownloadPdf(invoice)} data-testid="details-download-btn">
+                  <Download size={14} /> Descargar PDF
+                </button>
+              )}
+              {invoice.customer_email && onSendEmail && (
+                <button type="button" className="bo-btn bo-btn--secondary bo-btn--sm" onClick={() => onSendEmail(invoice)} data-testid="details-send-email-btn">
+                  <Send size={14} /> Email
+                </button>
+              )}
+              {invoice.customer_phone && onSendWhatsApp && (
+                <button type="button" className="bo-btn bo-btn--secondary bo-btn--sm" onClick={() => onSendWhatsApp(invoice)} data-testid="details-send-whatsapp-btn">
+                  <MessageCircle size={14} /> WhatsApp
+                </button>
+              )}
+            </div>
+          )}
         </div>
         </ScrollArea>
-
-        {/* Action buttons at the bottom */}
-        {hasActions && (
-          <div data-testid="invoiceDetailsModal-invoiceDetailsActions" data-slot="invoiceDetailsModal-invoiceDetailsActions" className="bo-invoiceDetailsActions">
-            {onDownloadPdf && (
-              <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => onDownloadPdf(invoice)} data-testid="details-download-btn">
-                <Download size={14} /> Descargar PDF
-              </button>
-            )}
-            {invoice.customer_email && onSendEmail && (
-              <button type="button" className="bo-btn bo-btn--secondary bo-btn--sm" onClick={() => onSendEmail(invoice)} data-testid="details-send-email-btn">
-                <Send size={14} /> Email
-              </button>
-            )}
-            {invoice.customer_phone && onSendWhatsApp && (
-              <button type="button" className="bo-btn bo-btn--secondary bo-btn--sm" onClick={() => onSendWhatsApp(invoice)} data-testid="details-send-whatsapp-btn">
-                <MessageCircle size={14} /> WhatsApp
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </Modal>
   );
