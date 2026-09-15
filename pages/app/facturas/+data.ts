@@ -41,5 +41,13 @@ export async function data(pageContext: PageContextServer) {
     error = e instanceof Error ? e.message : "Error cargando facturas";
   }
 
-  return { invoices, total, page, limit, error };
+  // Page REST data endpoint also serves the persisted view preferences so the
+  // tabla/grid mode and visible columns are correct on first paint with no
+  // extra round-trip (rides the /api/admin/me session handshake).
+  // Coordination ids: facturas_display_preference_v1, facturas_columns_preference_v1
+  const rawDisplayMode = pageContext.bo?.session?.preferences?.facturasDisplayMode;
+  const displayMode: "tabla" | "grid" = rawDisplayMode === "grid" ? "grid" : "tabla";
+  const visibleColumns = pageContext.bo?.session?.preferences?.facturasVisibleColumns ?? "";
+
+  return { invoices, total, page, limit, displayMode, visibleColumns, error };
 }
