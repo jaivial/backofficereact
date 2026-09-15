@@ -332,3 +332,42 @@
     font-size: 11px;
   }
 }
+/* ── Tablet & mobile (viewport ≤899px) ──────────────────
+   The details modal becomes a fixed 85vh sheet: all content — including
+   the Descargar/Email/WhatsApp actions — scrolls inside it, and the box
+   keeps its rounded corners on every side (overlay padding keeps it off
+   the viewport edges). Actions stay in a row at every width.
+   Coordination id: invoices_details_mobile_modal_v1 */
+@media (max-width: 899px) {
+  .bo-invoiceDetailsModal.bo-modal {
+    height: 85vh;
+    height: 85dvh;
+    max-height: 85vh;
+    max-height: 85dvh;
+    overflow-y: hidden;
+  }
+
+  /* Header stays auto; the body (ScrollArea) fills the rest. */
+  .bo-invoiceDetailsModal.bo-modal {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bo-invoiceDetailsModal .bo-invoiceDetails {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+  }
+
+  .bo-invoiceDetailsModal .bo-invoiceDetailsActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .bo-invoiceDetailsModal .bo-invoiceDetailsActions .bo-btn {
+    width: auto;
+  }
+}
