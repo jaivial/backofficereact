@@ -26,7 +26,7 @@ type InvoiceFormProps = {
   invoice: Invoice | null;
   isDuplicate?: boolean;
   isSubmitting?: boolean;
-  onSave: (input: InvoiceInput, shouldSend: boolean) => void;
+  onSave: (input: InvoiceInput, shouldSend?: boolean, opts?: { keepOpen?: boolean }) => Promise<number | undefined>;
   onCancel: () => void;
   searchReservations: (params: {
     date_from?: string;
@@ -243,6 +243,11 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  // Invoice id obtained by the preview flow's implicit save (kept separate
+  // from the invoice prop because the parent owns that identity).
+  // Coordination id: invoices_preview_save_first_v1
+  const [previewInvoiceId, setPreviewInvoiceId] = useState<number | null>(null);
+  const [previewSaving, setPreviewSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [reservationSelectionMode, setReservationSelectionMode] = useState<"full" | "booking">("full");
   const [pendingReservationSelection, setPendingReservationSelection] = useState(false);
@@ -958,19 +963,25 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   }), [formData, onSave]);
 
   // Handle preview - first save as draft, then show preview
-  const handlePreview = useCallback(() => {
-    // First save as draft to get an ID for the PDF
+  const handlePreview = useCallback(async () => {
+    if (previewSaving || isSubmitting) return;
+    // First save as draft to get an ID for the PDF; the parent keeps the
+    // form open and adopts the created invoice (invoices_preview_save_first_v1).
     const input: InvoiceInput = {
       ...formData,
       status: "borrador",
     };
-    // Save without sending, then show preview
-    onSave(input, false);
-    // Show a toast to inform the user
-    pushToast({ kind: "info", title: "Guardando factura", message: "La factura se esta guardando para generar la vista previa" });
-    // Show preview modal - it will handle the case where the invoice hasn't been saved yet
-    setShowPreviewModal(true);
-  }, [formData, onSave, pushToast]);
+    setPreviewSaving(true);
+    setPreviewInvoiceId(null);
+    try {
+      const savedId = await onSave(input, false, { keepOpen: true });
+      if (!savedId) return; // failure toast already surfaced by the parent
+      setPreviewInvoiceId(savedId);
+      setShowPreviewModal(true);
+    } finally {
+      setPreviewSaving(false);
+    }
+  }, [formData, onSave, isSubmitting, previewSaving]);
 
   // Validate all required fields - form is valid only if all validation errors are null
   const isValid = useMemo(() => {
@@ -1869,7 +1880,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       {showPreviewModal && (
         <InvoicePdfPreviewModal
           invoiceData={{
-            id: invoice?.id,
+            id: invoice?.id ?? previewInvoiceId ?? undefined,
             invoice_number: invoice?.invoice_number,
             customer_name: customerName,
             customer_surname: customerSurname,
