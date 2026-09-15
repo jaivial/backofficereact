@@ -1325,6 +1325,29 @@
   }
 }
 
+/* ── Compact (viewport ≤899px): icon-only form actions ──
+   Labels hide; icons plus title/aria-label carry the meaning, and the
+   full labels remain inside the Guardar popover menu. Placed after the
+   ≤768px stacked block so these row overrides win the cascade there too.
+   Coordination id: invoice_form_actions_icons_v1 */
+@media (max-width: 899px) {
+  .bo-invoiceForm .bo-invoiceFormActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .bo-invoiceForm .bo-invoiceFormActions .bo-btn {
+    width: auto;
+    padding: 0 10px;
+  }
+
+  .bo-invoiceFormActions .bo-btnText {
+    display: none;
+  }
+}
+
 /* ── Narrow (viewport ≤600px) ───────────────────────────
    The three-column rows (Importe/Moneda/IVA and the reservation row) get too
    cramped before the two-column pairs do, so collapse them first. */
