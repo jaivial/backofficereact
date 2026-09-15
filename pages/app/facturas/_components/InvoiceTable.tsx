@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { Paperclip, PencilLine, FolderOpen, Trash2, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Eye, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Paperclip, PencilLine, FolderOpen, Trash2, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Eye, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine, Check } from "lucide-react";
 import type { Invoice, InvoiceStatus, InvoiceAttachment, PaymentMethod, InvoiceCategory, InvoiceDepositType } from "../../../../api/types";
 import type { SortField, SortDirection, InvoiceTableProps } from "../types/table";
 import { DEPOSIT_CONFIG } from "../types/table";
@@ -290,6 +291,18 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkStatusConfirmOpen, setBulkStatusConfirmOpen] = useState(false);
   const [pendingBulkStatus, setPendingBulkStatus] = useState<InvoiceStatus | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  // Shared motion for the bulk bars: subtle enter (opacity + small y + blur),
+  // softer exit. Coordination id: facturas_bulkbar_motion_v1
+  const bulkBarMotion = {
+    initial: reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12, filter: "blur(4px)" },
+    animate: reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" },
+    exit: reduceMotion
+      ? { opacity: 0, transition: { duration: 0 } }
+      : { opacity: 0, y: -12, filter: "blur(4px)", transition: { duration: 0.15, ease: "easeOut" as const } },
+    transition: { duration: 0.2, ease: "easeOut" as const },
+  };
 
   // State for status change confirmation
   const [statusConfirmOpen, setStatusConfirmOpen] = useState(false);
@@ -535,11 +548,24 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
 
   return (
     <div data-testid="invoiceTable-tableWrap" className="bo-tableWrap bo-tableWrap--facturas" data-slot="invoiceTable-tableWrap">
-      {/* Bulk Actions Bar */}
-      {someSelected && (
-        <div data-testid="invoiceTable-bulkBar" className="bo-bulkBar" role="region" aria-live="polite" data-slot="invoiceTable-bulkBar">
+      {/* Bulk Actions Bar — accent-tinted so the toolbar reads as the static
+          cue for the selected rows (facturas_bulkbar_motion_v1). */}
+      <AnimatePresence initial={false}>
+        {someSelected && (
+        <motion.div
+          key="bulk-selected"
+          {...bulkBarMotion}
+          data-testid="invoiceTable-bulkBar"
+          className="bo-bulkBar bo-bulkBar--selected"
+          role="region"
+          aria-live="polite"
+          data-slot="invoiceTable-bulkBar"
+        >
           <div data-testid="invoiceTable-bulkBarContent" className="bo-bulkBarContent" data-slot="invoiceTable-bulkBarContent">
             <div data-testid="invoiceTable-bulkBarInfo" className="bo-bulkBarInfo" data-slot="invoiceTable-bulkBarInfo">
+              <span data-testid="invoiceTable-bulkBarIcon" className="bo-bulkBarBadge" aria-hidden="true" data-slot="invoiceTable-bulkBarIcon">
+                <Check size={14} strokeWidth={2} />
+              </span>
               <span data-testid="invoiceTable-bulkBarCount" className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{selectedIds.size} elemento{selectedIds.size !== 1 ? "s" : ""} seleccionado{selectedIds.size !== 1 ? "s" : ""}</span>
             </div>
             <div data-testid="invoiceTable-bulkBarActions" className="bo-bulkBarActions" data-slot="invoiceTable-bulkBarActions">
@@ -589,6 +615,9 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                 <Combine size={16} />
                 Fusionar
               </button>
+              {/* Destructive actions sit apart: a divider keeps the safe and
+                  danger clusters optically separated. */}
+              <span data-testid="invoiceTable-bulkBarDivider" className="bo-bulkBarDivider" aria-hidden="true" data-slot="invoiceTable-bulkBarDivider" />
               <button
                 className="bo-btn bo-btn--danger bo-btn--sm"
                 type="button"
@@ -609,11 +638,21 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
       {/* Print All Visible Bar - shown when there are invoices but nothing is selected */}
-      {!someSelected && invoices.length > 0 && (
-        <div data-testid="invoiceTable-bulkBar-2" className="bo-bulkBar" role="region" aria-live="polite" data-slot="invoiceTable-bulkBar">
+      <AnimatePresence initial={false}>
+        {!someSelected && invoices.length > 0 && (
+        <motion.div
+          key="bulk-print"
+          {...bulkBarMotion}
+          data-testid="invoiceTable-bulkBar-2"
+          className="bo-bulkBar"
+          role="region"
+          aria-live="polite"
+          data-slot="invoiceTable-bulkBar"
+        >
           <div data-testid="invoiceTable-bulkBarContent-2" className="bo-bulkBarContent" data-slot="invoiceTable-bulkBarContent">
             <div data-testid="invoiceTable-bulkBarInfo-2" className="bo-bulkBarInfo" data-slot="invoiceTable-bulkBarInfo">
               <span data-testid="invoiceTable-bulkBarCount-2" className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{invoices.length} facturas en esta pagina</span>
@@ -630,8 +669,9 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
       <div data-testid="invoice-table-scroll-2" className="bo-tableScroll" data-slot="invoice-table-scroll">
         <table className="bo-table bo-table--facturas" aria-label="Tabla de facturas" data-testid="invoice-table" data-slot="invoice-table">
           <thead data-testid="invoice-thead-2" data-slot="invoice-thead">
