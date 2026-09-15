@@ -136,6 +136,17 @@
   display: inline-flex;
 }
 
+/* The dropdown trigger carries .bo-actionBtn, whose later rules override
+   .bo-btn--sm (14px radius, 12px padding, 40px height). Normalize to the
+   neighbouring bar buttons (Fusionar/Imprimir): .bo-btn--sm box. */
+.bo-bulkBar .bo-bulkBarActions .bo-dropdownWrapper .bo-bulkAction {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  gap: 8px;
+}
+
 @media (max-width: 720px) {
   .bo-bulkBarContent {
     flex-direction: column;
