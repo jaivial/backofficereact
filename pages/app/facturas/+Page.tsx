@@ -295,9 +295,12 @@ export default function Page() {
     updateUrl({ tab: "resumen", id: "" });
   }, []);
 
-  // Handle save invoice
+  // Handle save invoice. Returns the saved invoice id (undefined on
+  // failure). opts.keepOpen keeps the form mounted and adopts a newly
+  // created invoice into edit state so the next save updates instead of
+  // duplicating (invoices_preview_save_first_v1).
   const handleSaveInvoice = useCallback(
-    async (input: InvoiceInput, shouldSend: boolean = false) => {
+    async (input: InvoiceInput, shouldSend: boolean = false, opts?: { keepOpen?: boolean }): Promise<number | undefined> => {
       try {
         let res;
         let invoiceId: number | undefined;
@@ -309,7 +312,7 @@ export default function Page() {
           res = await api.invoices.create(input);
           if (!res.success) {
             pushToast({ kind: "error", title: "Error", message: "No se pudo crear la factura" });
-            return;
+            return undefined;
           }
           invoiceId = "id" in res ? res.id : undefined;
         }
@@ -327,13 +330,22 @@ export default function Page() {
           }
         } else {
           pushToast({ kind: "error", title: "Error", message: "No se pudo guardar la factura" });
+          return undefined;
         }
 
-        setEditingInvoice(null);
-        setIsCreatingNew(false);
+        if (opts?.keepOpen) {
+          if (!editingInvoice && invoiceId) {
+            setEditingInvoice({ ...input, id: invoiceId } as Invoice);
+          }
+        } else {
+          setEditingInvoice(null);
+          setIsCreatingNew(false);
+        }
         fetchInvoices();
+        return invoiceId;
       } catch (e) {
         pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "Error desconocido" });
+        return undefined;
       }
     },
     [api, editingInvoice, pushToast, fetchInvoices],
