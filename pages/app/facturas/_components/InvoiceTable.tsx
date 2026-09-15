@@ -293,14 +293,15 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
   const [pendingBulkStatus, setPendingBulkStatus] = useState<InvoiceStatus | null>(null);
   const reduceMotion = useReducedMotion();
 
-  // Shared motion for the bulk bars: subtle enter (opacity + small y + blur),
-  // softer exit. Coordination id: facturas_bulkbar_motion_v1
+  // Shared motion for the bulk bars: pure opacity+blur crossfade (no y slide),
+  // so the in-flow bar never overlaps the filters above while animating.
+  // Coordination id: facturas_bulkbar_motion_v1
   const bulkBarMotion = {
-    initial: reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12, filter: "blur(4px)" },
-    animate: reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" },
+    initial: reduceMotion ? { opacity: 0 } : { opacity: 0, filter: "blur(4px)" },
+    animate: reduceMotion ? { opacity: 1 } : { opacity: 1, filter: "blur(0px)" },
     exit: reduceMotion
       ? { opacity: 0, transition: { duration: 0 } }
-      : { opacity: 0, y: -12, filter: "blur(4px)", transition: { duration: 0.15, ease: "easeOut" as const } },
+      : { opacity: 0, filter: "blur(4px)", transition: { duration: 0.15, ease: "easeOut" as const } },
     transition: { duration: 0.2, ease: "easeOut" as const },
   };
 
@@ -549,8 +550,10 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
   return (
     <div data-testid="invoiceTable-tableWrap" className="bo-tableWrap bo-tableWrap--facturas" data-slot="invoiceTable-tableWrap">
       {/* Bulk Actions Bar — accent-tinted so the toolbar reads as the static
-          cue for the selected rows (facturas_bulkbar_motion_v1). */}
-      <AnimatePresence initial={false}>
+          cue for the selected rows (facturas_bulkbar_motion_v1). mode="wait"
+          keeps the print bar and the selection bar from ever being in the
+          flow at the same time. */}
+      <AnimatePresence initial={false} mode="wait">
         {someSelected && (
         <motion.div
           key="bulk-selected"
@@ -640,9 +643,6 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
           </div>
         </motion.div>
         )}
-      </AnimatePresence>
-      {/* Print All Visible Bar - shown when there are invoices but nothing is selected */}
-      <AnimatePresence initial={false}>
         {!someSelected && invoices.length > 0 && (
         <motion.div
           key="bulk-print"
