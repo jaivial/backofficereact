@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Paperclip, PencilLine, FolderOpen, Trash2, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Eye, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine, Check } from "lucide-react";
+import { Paperclip, PencilLine, FolderOpen, Trash2, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Eye, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine, Check, RefreshCw } from "lucide-react";
 import type { Invoice, InvoiceStatus, InvoiceAttachment, PaymentMethod, InvoiceCategory, InvoiceDepositType } from "../../../../api/types";
 import type { SortField, SortDirection, InvoiceTableProps } from "../types/table";
 import { DEPOSIT_CONFIG } from "../types/table";
@@ -599,10 +599,14 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
               <DropdownMenu
                 label="Cambiar estado"
                 items={bulkStatusOptions}
-                triggerContent={<>Cambiar estado</>}
-                /* Text trigger: the bo-btn classes go on the trigger button
-                   itself (see QR tabs). Nesting a <button> inside the trigger
-                   rendered a duplicate, misaligned control. */
+                /* Same visual DNA as the Fusionar button: icon + text at
+                   bo-btn--sm sizing (see .bo-bulkAction override in CSS). */
+                triggerContent={
+                  <>
+                    <RefreshCw size={16} />
+                    Cambiar estado
+                  </>
+                }
                 triggerClassName="bo-btn bo-btn--secondary bo-btn--sm bo-bulkAction"
                 triggerDataSlot="invoiceTable-bulkStatusTrigger"
                 triggerDataTestId="invoice-bulk-status-btn"
