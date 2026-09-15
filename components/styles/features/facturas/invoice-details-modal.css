@@ -340,14 +340,27 @@
    Coordination id: invoices_details_mobile_modal_v1 */
 @media (max-width: 899px) {
   .bo-invoiceDetailsModal.bo-modal {
-    height: 85vh;
-    height: 85dvh;
-    max-height: 85vh;
-    max-height: 85dvh;
+    /* min() guarantees the sheet always fits the overlay with slack on
+       both ends, so margin:auto centers it and the bottom corners (and
+       their radius) always stay inside the viewport. */
+    height: min(85vh, calc(100% - 24px));
+    height: min(85dvh, calc(100% - 24px));
+    max-height: none;
     overflow-y: hidden;
-    /* Auto margins center the sheet on the page height and collapse to 0
-       when the box nears the viewport, keeping it scroll-safe. */
     margin: auto;
+    border-radius: var(--bo-radius-lg);
+  }
+
+  /* WebKit samples backdrop-filter in a square region that bleeds past
+     the rounded corners; render a solid sheet instead on touch layouts. */
+  .bo-modalOverlay .bo-invoiceDetailsModal.bo-modal {
+    background: var(--bo-surface-2);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  :root[data-theme="light"] .bo-modalOverlay .bo-invoiceDetailsModal.bo-modal {
+    background: var(--bo-surface-2);
   }
 
   /* Header stays auto; the body (ScrollArea) fills the rest. */
