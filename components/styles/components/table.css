@@ -109,7 +109,8 @@
 
 /* Buttons keep their label width and wrap to a new line instead of
    squashing into each other inside the overflow-hidden table wrap. */
-.bo-bulkBarActions .bo-btn {
+.bo-bulkBarActions .bo-btn,
+.bo-bulkBarActions .bo-dropdownWrapper {
   flex-shrink: 0;
 }
 
