@@ -4,12 +4,32 @@
  */
 
 import type { Invoice, InvoiceStatus, InvoiceAttachment, InvoiceDepositType } from "../../../../api/types";
+import type { InvoiceColumnId } from "../_components/invoiceColumns";
 
-export type SortField = "amount" | "invoice_date";
+export type { InvoiceColumnId };
+
+/** Sortable invoice columns; matches the InvoiceColumnId set (facturas_columns_preference_v1). */
+export type SortField =
+  | "invoice_number"
+  | "customer_name"
+  | "customer_email"
+  | "amount"
+  | "currency"
+  | "payment_progress"
+  | "invoice_date"
+  | "due_date"
+  | "payment_date"
+  | "payment_method"
+  | "status"
+  | "is_reservation"
+  | "deposit"
+  | "category";
 export type SortDirection = "asc" | "desc";
 
 export interface InvoiceTableProps {
   invoices: Invoice[];
+  /** Visible data columns (user preference facturasVisibleColumns). facturas_columns_preference_v1 */
+  visibleColumns: InvoiceColumnId[];
   loading: boolean;
   page: number;
   totalPages: number;
