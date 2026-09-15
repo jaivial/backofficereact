@@ -262,7 +262,7 @@ export function DropdownMenu({
           }}
           data-ui="dropdown-menu"
         >
-          <ScrollArea dataSlot="dropdown-menu-list">
+          <ScrollArea dataSlot="dropdown-menu-list" className="bo-menuScroll">
             {items.map((it) => (
               <button
                 key={it.id}
