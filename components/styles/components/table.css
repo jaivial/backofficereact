@@ -69,14 +69,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
 }
 
 .bo-bulkBarInfo {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 0;
+  flex: 0 0 auto;
 }
 
 /* Selected-count badge: static cue (check mark) beside the count.
@@ -101,7 +102,15 @@
 .bo-bulkBarActions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+  min-width: 0;
+}
+
+/* Buttons keep their label width and wrap to a new line instead of
+   squashing into each other inside the overflow-hidden table wrap. */
+.bo-bulkBarActions .bo-btn {
+  flex-shrink: 0;
 }
 
 /* Divider between safe and destructive clusters. */
