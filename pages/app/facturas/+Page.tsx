@@ -292,6 +292,7 @@ export default function Page() {
     setEditingInvoice(null);
     setIsCreatingNew(false);
     setInitialReservation(null);
+    setActiveTab("resumen");
     updateUrl({ tab: "resumen", id: "" });
   }, []);
 
