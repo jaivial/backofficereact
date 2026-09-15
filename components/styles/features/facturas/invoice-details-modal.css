@@ -345,6 +345,9 @@
     max-height: 85vh;
     max-height: 85dvh;
     overflow-y: hidden;
+    /* Auto margins center the sheet on the page height and collapse to 0
+       when the box nears the viewport, keeping it scroll-safe. */
+    margin: auto;
   }
 
   /* Header stays auto; the body (ScrollArea) fills the rest. */
