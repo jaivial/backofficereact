@@ -1101,7 +1101,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         if (disposed) { socket?.close(); return; }
         menuAIWSAttemptsRef.current = 0;
         if (menuAIWSRetryRef.current) window.clearTimeout(menuAIWSRetryRef.current);
-        try { socket?.send(JSON.stringify({ type: "weekday_refresh", menuId })); } catch { /* ignore */ }
+        try { socket?.send(JSON.stringify({ type: "weekday_refresh", menu_id: menuId })); } catch { /* ignore */ }
       });
 
       socket.addEventListener("message", (event: MessageEvent) => {
