@@ -4,7 +4,16 @@ import { INVOICE_STATUS_CONFIG } from "../types/invoice";
 import { formatDate, formatPrice } from "../utils";
 import { INVOICE_COLUMNS, type InvoiceColumnId } from "./invoiceColumns";
 
-/** Plain-text value for the generic card rows; "-" mirrors the table cells. */
+/** Featured slots get dedicated card blocks; the rest stack as detail rows. */
+const FEATURED_COLUMNS: ReadonlySet<InvoiceColumnId> = new Set<InvoiceColumnId>([
+  "invoice_number",
+  "status",
+  "customer_name",
+  "amount",
+  "payment_progress",
+]);
+
+/** Plain-text value for the detail rows; "-" mirrors the table cells. */
 function invoiceColumnValue(invoice: Invoice, id: InvoiceColumnId): string {
   switch (id) {
     case "customer_email":
@@ -32,8 +41,9 @@ function invoiceColumnValue(invoice: Invoice, id: InvoiceColumnId): string {
 
 /**
  * Card grid alternative to the invoices table ("grid" display mode).
- * Every visible table column owns a slot on the card, so column
- * visibility prefs drive the cards exactly like the table.
+ * Card hierarchy (better-ui): header (number + status), primary block
+ * (client + amount), payment progress, then a divided details list of
+ * every other visible column. Column visibility prefs drive all slots.
  * Coordination id: facturas_cards_v1 / facturas_cards_columns_v1
  */
 export function InvoiceCardGrid({
@@ -55,6 +65,10 @@ export function InvoiceCardGrid({
         const percentPaid = total > 0 ? Math.min((paid / total) * 100, 100) : 0;
         const showNumber = visibleSet.has("invoice_number");
         const showStatus = visibleSet.has("status");
+        const showClient = visibleSet.has("customer_name");
+        const showAmount = visibleSet.has("amount");
+        const showProgress = visibleSet.has("payment_progress");
+        const detailColumns = INVOICE_COLUMNS.filter((col) => visibleSet.has(col.id) && !FEATURED_COLUMNS.has(col.id));
         return (
           <article
             key={invoice.id}
@@ -80,46 +94,46 @@ export function InvoiceCardGrid({
                 ) : null}
               </header>
             ) : null}
-            {INVOICE_COLUMNS.map((col) => {
-              if (!visibleSet.has(col.id)) return null;
-              if (col.id === "invoice_number" || col.id === "status") return null; // header slots
-              if (col.id === "customer_name") {
-                return (
-                  <div className="bo-invoiceCardClient" key={col.id} data-testid={`facturas-invoice-card-client-${invoice.id}`} data-slot="facturas-invoice-card-client">
+
+            {showClient || showAmount ? (
+              <div className="bo-invoiceCardPrimary" data-testid={`facturas-invoice-card-primary-${invoice.id}`} data-slot="facturas-invoice-card-primary">
+                {showClient ? (
+                  <div className="bo-invoiceCardClient" data-testid={`facturas-invoice-card-client-${invoice.id}`} data-slot="facturas-invoice-card-client">
                     <span className="bo-invoiceCardClientName" data-slot="facturas-invoice-card-client-name">{invoice.customer_name}</span>
                     {invoice.customer_surname ? (
                       <span className="bo-tableCustomerSurname" data-slot="facturas-invoice-card-client-surname">{invoice.customer_surname}</span>
                     ) : null}
                   </div>
-                );
-              }
-              if (col.id === "amount") {
-                return (
-                  <div className="bo-invoiceCardAmount" key={col.id} data-testid={`facturas-invoice-card-amount-${invoice.id}`} data-slot="facturas-invoice-card-amount">
+                ) : null}
+                {showAmount ? (
+                  <div className="bo-invoiceCardAmount" data-testid={`facturas-invoice-card-amount-${invoice.id}`} data-slot="facturas-invoice-card-amount">
                     {formatPrice(invoice.amount, invoice.currency)}
                   </div>
-                );
-              }
-              if (col.id === "payment_progress") {
-                return (
-                  <div className="bo-invoiceCardPaid" key={col.id} data-testid={`facturas-invoice-card-paid-${invoice.id}`} data-slot="facturas-invoice-card-paid">
-                    <div className="bo-invoiceCardPaidBar" data-slot="facturas-invoice-card-paid-bar">
-                      <span className={`bo-invoiceCardPaidFill${percentPaid >= 100 ? " is-complete" : ""}`} style={{ width: `${percentPaid}%` }} data-slot="facturas-invoice-card-paid-fill" />
-                    </div>
-                    <span className="bo-invoiceCardPaidText" data-slot="facturas-invoice-card-paid-text">
-                      {formatPrice(paid, invoice.currency)} / {formatPrice(total, invoice.currency)}
-                    </span>
-                  </div>
-                );
-              }
-              return (
-                <div className="bo-invoiceCardRow" key={col.id} data-testid={`facturas-invoice-card-col-${col.id}-${invoice.id}`} data-slot={`facturas-invoice-card-col-${col.id}`}>
-                  <col.icon size={11} aria-hidden="true" />
-                  <span className="bo-invoiceCardRowLabel" data-slot={`facturas-invoice-card-col-label-${col.id}`}>{col.label}</span>
-                  <span className="bo-invoiceCardRowValue" data-slot={`facturas-invoice-card-col-value-${col.id}`}>{invoiceColumnValue(invoice, col.id)}</span>
+                ) : null}
+              </div>
+            ) : null}
+
+            {showProgress ? (
+              <div className="bo-invoiceCardPaid" data-testid={`facturas-invoice-card-paid-${invoice.id}`} data-slot="facturas-invoice-card-paid">
+                <div className="bo-invoiceCardPaidBar" data-slot="facturas-invoice-card-paid-bar">
+                  <span className={`bo-invoiceCardPaidFill${percentPaid >= 100 ? " is-complete" : ""}`} style={{ width: `${percentPaid}%` }} data-slot="facturas-invoice-card-paid-fill" />
                 </div>
-              );
-            })}
+                <span className="bo-invoiceCardPaidText" data-slot="facturas-invoice-card-paid-text">
+                  {formatPrice(paid, invoice.currency)} / {formatPrice(total, invoice.currency)}
+                </span>
+              </div>
+            ) : null}
+
+            {detailColumns.length > 0 ? (
+              <div className="bo-invoiceCardDetails" data-testid={`facturas-invoice-card-details-${invoice.id}`} data-slot="facturas-invoice-card-details">
+                {detailColumns.map((col) => (
+                  <div className="bo-invoiceCardRow" key={col.id} data-testid={`facturas-invoice-card-col-${col.id}-${invoice.id}`} data-slot={`facturas-invoice-card-col-${col.id}`}>
+                    <span className="bo-invoiceCardRowLabel" data-slot={`facturas-invoice-card-col-label-${col.id}`}>{col.label}</span>
+                    <span className="bo-invoiceCardRowValue" data-slot={`facturas-invoice-card-col-value-${col.id}`}>{invoiceColumnValue(invoice, col.id)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </article>
         );
       })}
