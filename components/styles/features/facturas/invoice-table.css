@@ -120,27 +120,6 @@
   }
 }
 
-/* ≤900px: single-column card grid only — the tabla pane and the
-   tabla/grid tabs never render there. Visibility prefs drive the cards
-   (facturas_cards_columns_v1). */
-@media (max-width: 900px) {
-  .bo-facturasDisplayRow {
-    display: none;
-  }
-
-  .bo-facturasPane[data-visible] {
-    display: none;
-  }
-
-  .bo-facturasPane--grid[data-visible] {
-    display: block;
-  }
-
-  .bo-invoiceCards {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* Name and surname share one row in the table's Cliente column. */
 .bo-tableCustomer {
   display: flex;
@@ -480,4 +459,23 @@
   font-size: 11px;
   color: var(--bo-faint, var(--bo-muted));
   font-variant-numeric: tabular-nums;
+}
+
+/* ── ≤900px: single-column card grid only ───────────────
+   The tabla pane and the tabla/grid tabs never render here. This block
+   lives at the end of the file so it wins the cascade ties against the
+   base pane/display-row rules above (facturas_cards_columns_v1). */
+@media (max-width: 900px) {
+  .bo-facturasDisplayRow,
+  .bo-facturasPane[data-visible] {
+    display: none;
+  }
+
+  .bo-facturasPane--grid[data-visible] {
+    display: block;
+  }
+
+  .bo-invoiceCards {
+    grid-template-columns: 1fr;
+  }
 }
