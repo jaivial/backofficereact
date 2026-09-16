@@ -1,4 +1,8 @@
 /* Facturas Page */
+.bo-facturasPane--grid [data-testid="facturas-grid-pager"] {
+  margin-top: 0.5rem;
+}
+
 .bo-facturasPage {
   position: relative;
   padding-bottom: 98px;
