@@ -666,7 +666,15 @@ export default function Page() {
             />
           </div>
           <div className="bo-facturasPane bo-facturasPane--grid" data-visible={displayMode} data-testid="facturas-grid-pane" data-slot="facturas-grid-pane">
-            <InvoiceCardGrid invoices={filteredInvoices} visibleColumns={visibleColumns} onOpenDetails={(inv) => setDetailsInvoice(inv)} />
+            <InvoiceCardGrid
+              invoices={filteredInvoices}
+              visibleColumns={visibleColumns}
+              onOpenDetails={(inv) => setDetailsInvoice(inv)}
+              onEdit={handleEditInvoice}
+              onRegisterPayment={() => {}}
+              onSendEmail={handleSendEmail}
+              onDelete={() => {}}
+            />
               <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-testid="facturas-grid-pager" data-slot="facturas-grid-pager">
                 <div className="bo-pagerText" data-testid="facturas-grid-pagerText" data-slot="facturas-grid-pagerText">
                   Página {page} de {totalPages} · {total} resultados

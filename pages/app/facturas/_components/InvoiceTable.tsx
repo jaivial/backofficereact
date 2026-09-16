@@ -1,12 +1,13 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Paperclip, PencilLine, FolderOpen, Trash2, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Eye, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine, Check, RefreshCw } from "lucide-react";
+import { Paperclip, FolderOpen, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine, Check, RefreshCw } from "lucide-react";
 import type { Invoice, InvoiceStatus, InvoiceAttachment, PaymentMethod, InvoiceCategory, InvoiceDepositType } from "../../../../api/types";
 import type { SortField, SortDirection, InvoiceTableProps } from "../types/table";
 import { DEPOSIT_CONFIG } from "../types/table";
 import { INVOICE_STATUS_CONFIG, PAYMENT_METHOD_LABELS, CATEGORY_CONFIG, ALL_INVOICE_STATUSES } from "../types/invoice";
 import { INVOICE_COLUMNS } from "./invoiceColumns";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
+import { buildInvoiceActionItems } from "./invoiceActions";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { AttachmentsModal } from "./AttachmentsModal";
 import { MergeInvoicesModal } from "./MergeInvoicesModal";
@@ -883,41 +884,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                       label={`Acciones de factura ${invoice.invoice_number || invoice.id}`}
                       menuMinWidthPx={200}
                       menuClassName="bo-panel bo-invoiceFilters bo-menu--panel"
-                      items={[
-                        {
-                          id: "view",
-                          label: "Ver detalles",
-                          icon: <Eye size={16} />,
-                          onSelect: () => onPreview(invoice),
-                        },
-                        {
-                          id: "edit",
-                          label: "Editar",
-                          icon: <PencilLine size={16} />,
-                          onSelect: () => onEdit(invoice),
-                        },
-                        {
-                          id: "register-payment",
-                          label: "Registrar pago",
-                          icon: <CreditCard size={16} />,
-                          onSelect: () => onRegisterPayment(invoice),
-                        },
-                        ...(invoice.customer_email
-                          ? [{
-                              id: "send-email",
-                              label: invoice.status === "enviada" ? "Reenviar email" : "Enviar email",
-                              icon: <Mail size={16} />,
-                              onSelect: () => onSendEmail(invoice),
-                            }]
-                          : []),
-                        {
-                          id: "delete",
-                          label: "Borrar",
-                          icon: <Trash2 size={16} />,
-                          tone: "danger" as const,
-                          onSelect: () => onDelete(invoice),
-                        },
-                      ]}
+                      items={buildInvoiceActionItems(invoice, { onPreview, onEdit, onRegisterPayment, onSendEmail, onDelete })}
                     />
                   </div>
                 </td>

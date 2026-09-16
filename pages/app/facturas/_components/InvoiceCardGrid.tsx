@@ -3,6 +3,8 @@ import type { Invoice } from "../../../../api/types";
 import { INVOICE_STATUS_CONFIG } from "../types/invoice";
 import { formatDate, formatPrice } from "../utils";
 import { INVOICE_COLUMNS, type InvoiceColumnId } from "./invoiceColumns";
+import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
+import { buildInvoiceActionItems, type InvoiceActionHandlers } from "./invoiceActions";
 
 /** Featured slots get dedicated card blocks; the rest stack as detail rows. */
 const FEATURED_COLUMNS: ReadonlySet<InvoiceColumnId> = new Set<InvoiceColumnId>([
@@ -50,12 +52,23 @@ export function InvoiceCardGrid({
   invoices,
   visibleColumns,
   onOpenDetails,
+  onEdit,
+  onRegisterPayment,
+  onSendEmail,
+  onDelete,
 }: {
   invoices: Invoice[];
   visibleColumns: InvoiceColumnId[];
   onOpenDetails: (invoice: Invoice) => void;
+  onEdit: (invoice: Invoice) => void;
+  onRegisterPayment: (invoice: Invoice) => void;
+  onSendEmail: (invoice: Invoice) => void;
+  onDelete: (invoice: Invoice) => void;
 }) {
   const visibleSet = new Set(visibleColumns);
+  // The card itself opens details, so "Vista previa" and the 3-dots menu
+  // reuse the same handler; everything else comes from the page.
+  const actions: InvoiceActionHandlers = { onPreview: onOpenDetails, onEdit, onRegisterPayment, onSendEmail, onDelete };
   return (
     <div className="bo-invoiceCards" data-testid="facturas-invoiceCards" data-slot="facturas-invoiceCards" data-coordination-id="facturas_cards_v1">
       {invoices.map((invoice) => {
@@ -76,10 +89,7 @@ export function InvoiceCardGrid({
             data-testid={`facturas-invoice-card-${invoice.id}`}
             data-slot="facturas-invoice-card"
             data-invoice-id={invoice.id}
-            role="button"
-            tabIndex={0}
             onClick={() => onOpenDetails(invoice)}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpenDetails(invoice); } }}
           >
             {showNumber || showStatus ? (
               <header className="bo-invoiceCardHead" data-testid={`facturas-invoice-card-head-${invoice.id}`} data-slot="facturas-invoice-card-head">
@@ -134,6 +144,41 @@ export function InvoiceCardGrid({
                 ))}
               </div>
             ) : null}
+
+            <footer
+              className="bo-invoiceCardFoot"
+              data-testid={`facturas-invoice-card-foot-${invoice.id}`}
+              data-slot="facturas-invoice-card-foot"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bo-invoiceCardFootActions" data-slot="facturas-invoice-card-foot-actions">
+                <button
+                  type="button"
+                  className="bo-btn bo-btn--ghost bo-btn--sm"
+                  onClick={() => onOpenDetails(invoice)}
+                  data-testid={`facturas-invoice-card-preview-${invoice.id}`}
+                >
+                  Vista previa
+                </button>
+                <button
+                  type="button"
+                  className="bo-btn bo-btn--ghost bo-btn--sm"
+                  onClick={() => onSendEmail(invoice)}
+                  disabled={!invoice.customer_email}
+                  title={invoice.customer_email ? "Enviar por email" : "Sin email de cliente"}
+                  data-testid={`facturas-invoice-card-send-${invoice.id}`}
+                >
+                  Enviar
+                </button>
+              </div>
+              <DropdownMenu
+                label={`Acciones de factura ${invoice.invoice_number || invoice.id}`}
+                menuMinWidthPx={200}
+                menuClassName="bo-panel bo-invoiceFilters bo-menu--panel"
+                triggerDataTestId={`facturas-invoice-card-menu-${invoice.id}`}
+                items={buildInvoiceActionItems(invoice, actions)}
+              />
+            </footer>
           </article>
         );
       })}
