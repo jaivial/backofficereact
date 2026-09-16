@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "../shadcn/utils";
 import { ScrollArea } from "../layout/ScrollArea";
 
-type MenuItem = {
+export type MenuItem = {
   id: string;
   label: string;
   tone?: "default" | "danger";
