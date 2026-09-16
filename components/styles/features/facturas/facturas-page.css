@@ -169,6 +169,14 @@
   width: 100%;
 }
 
+/* The table view is the exception to the 768px reading column: it fills the
+   available screen width. The horizontal scroll lives inside the table
+   wrapper so the page keeps a single vertical scrollbar.
+   Coordination id: facturas_table_fullwidth_v1 */
+.bo-facturasPage .bo-facturasSummary > .bo-facturasPane--tabla {
+  max-width: none;
+}
+
 .bo-facturasPage .bo-tableWrap {
   max-width: none;
 }
