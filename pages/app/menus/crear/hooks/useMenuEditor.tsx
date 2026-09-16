@@ -13,6 +13,7 @@ import type {
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../../lib/dishImageCrop";
 import { processSpecialMenuFile } from "../../../../../lib/specialMenuUpload";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
+import { WEEKDAYS, type WeekdayKey } from "../../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 
 import {
   buildBasicsPayload,
@@ -80,6 +81,45 @@ import {
 // general-carta confirmation on their own.
 const IMAGE_ONLY_DISH_PATCH_KEYS = new Set(["foto_url", "ai_requested", "ai_generating", "ai_generated_img"]);
 
+// Coordination id: menu_weekday_availability_v1
+// The 7 canonical weekday keys default to "not served"; the WS hello / DB
+// payload flips them on.
+export function defaultMenuWeekdays(): Record<string, boolean> {
+  const out: Record<string, boolean> = {};
+  for (const day of WEEKDAYS) out[day.key] = false;
+  return out;
+}
+
+function normalizeMenuWeekdayValue(raw: unknown): boolean {
+  if (typeof raw === "boolean") return raw;
+  if (typeof raw === "number") return raw !== 0;
+  if (typeof raw === "string") {
+    const v = raw.trim().toLowerCase();
+    return v === "true" || v === "1" || v === "yes" || v === "on";
+  }
+  return false;
+}
+
+/**
+ * Reads the weekday map from any backend frame that carries it
+ * (`hello`, `snapshot`, `menu_weekdays`, `weekday_saved`, ...). Returns null
+ * when the payload has no weekday information.
+ */
+export function extractMenuWeekdaysFromPayload(payload: Record<string, unknown> | null | undefined): Record<string, boolean> | null {
+  if (!payload) return null;
+  const raw = (payload.menu_weekdays ?? payload.weekdays) as Record<string, unknown> | undefined;
+  if (!raw || typeof raw !== "object") return null;
+  const out: Record<string, boolean> = {};
+  let sawKey = false;
+  for (const day of WEEKDAYS) {
+    if (Object.prototype.hasOwnProperty.call(raw, day.key)) {
+      out[day.key] = normalizeMenuWeekdayValue(raw[day.key]);
+      sawKey = true;
+    }
+  }
+  return sawKey ? out : null;
+}
+
 export type UseMenuEditorReturn = {
   // State
   error: string | null;
@@ -102,6 +142,9 @@ export type UseMenuEditorReturn = {
   includedCoffee: boolean;
   beverageType: string;
   beverageOptions: BeverageOption[];
+  // Coordination id: menu_weekday_availability_v1 (WS hello/DB -> grid -> socket save)
+  menuWeekdays: Record<string, boolean>;
+  menuWeekdayBusy: boolean;
   beverageModalOpen: boolean;
   beverageDeleteTarget: BeverageDeleteTarget | null;
   beveragePrice: string;
@@ -185,6 +228,7 @@ export type UseMenuEditorReturn = {
   setBeveragePrice: (price: string) => void;
   refreshBeverageOptions: () => void;
   setBeverageOptionSelected: (optionId: number, selected: boolean) => void;
+  setMenuWeekday: (weekday: WeekdayKey | string, available: boolean) => void;
   createBeverageOption: (name: string) => void;
   requestBeverageOptionDelete: (option: BeverageDeleteTarget) => void;
   confirmBeverageOptionDelete: () => void;
@@ -306,6 +350,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [includedCoffee, setIncludedCoffee] = useState<boolean>(false);
   const [beverageType, setBeverageType] = useState<string>(DEFAULT_BEVERAGE.type);
   const [beverageOptions, setBeverageOptions] = useState<BeverageOption[]>([]);
+  const [menuWeekdays, setMenuWeekdays] = useState<Record<string, boolean>>(() => defaultMenuWeekdays());
+  const [menuWeekdayBusy, setMenuWeekdayBusy] = useState(false);
   const [beverageModalOpen, setBeverageModalOpen] = useState(false);
   const [beverageDeleteTarget, setBeverageDeleteTarget] = useState<BeverageDeleteTarget | null>(null);
   const [beveragePrice, setBeveragePrice] = useState<string>("");
@@ -1055,6 +1101,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
         if (disposed) { socket?.close(); return; }
         menuAIWSAttemptsRef.current = 0;
         if (menuAIWSRetryRef.current) window.clearTimeout(menuAIWSRetryRef.current);
+        try { socket?.send(JSON.stringify({ type: "weekday_refresh", menuId })); } catch { /* ignore */ }
       });
 
       socket.addEventListener("message", (event: MessageEvent) => {
@@ -1062,6 +1109,17 @@ export function useMenuEditor(): UseMenuEditorReturn {
         let payload: Record<string, unknown> | null = null;
         try { payload = JSON.parse(String(event.data ?? "")) as Record<string, unknown>; } catch { return; }
         const type = String(payload.type ?? "").trim().toLowerCase();
+        // Coordination id: menu_weekday_availability_v1 (WS frame -> grid state)
+        const weekdayPatch = extractMenuWeekdaysFromPayload(payload);
+        if (weekdayPatch) {
+          setMenuWeekdays((prev) => ({ ...prev, ...weekdayPatch }));
+          setMenuWeekdayBusy(false);
+          if (type === "menu_weekdays" || type === "weekday_saved" || type === "weekday_error") return;
+        }
+        if (type === "weekday_error") {
+          setMenuWeekdayBusy(false);
+          return;
+        }
         if (type === "beverage_options" || type === "beverage_error") {
           applyBeverageOptions(payload);
           return;
@@ -1947,6 +2005,29 @@ export function useMenuEditor(): UseMenuEditorReturn {
     console.log(`[checkpoint] beverage_ws_sent type=${String(message.type ?? "")} menu_id=${menuId}`);
   }, [menuId, pushToast]);
 
+  // --- Menu weekly availability: WS-only mutations (no REST) ---
+  // Coordination id: menu_weekday_availability_v1 (grid tap -> weekday_set -> DB).
+  const setMenuWeekday = useCallback((weekday: WeekdayKey | string, available: boolean) => {
+    const key = String(weekday || "").trim().toLowerCase();
+    if (!key) return;
+    const ws = menuAIWSSocketRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN || !menuId) {
+      pushToast({ kind: "error", title: "Error", message: "Conexion no disponible. Intentalo de nuevo." });
+      return;
+    }
+    setMenuWeekdays((prev) => ({ ...prev, [key]: available }));
+    setMenuWeekdayBusy(true);
+    let correlationId = "";
+    try { correlationId = window.sessionStorage.getItem("vcCorrelationId") || ""; } catch { correlationId = ""; }
+    try {
+      ws.send(JSON.stringify({ type: "weekday_set", menu_id: menuId, weekday: key, available, correlation_id: correlationId }));
+    } catch { /* ignore */ }
+    // Named observation point: frontend sent a websocket mutation.
+    console.log(`[checkpoint] weekday_ws_sent menu_id=${menuId} weekday=${key} available=${available}`);
+    // Safety net: never leave the grid disabled if the ack frame is lost.
+    window.setTimeout(() => setMenuWeekdayBusy(false), 3000);
+  }, [menuId, pushToast]);
+
   const refreshBeverageOptions = useCallback(() => {
     setBeverageModalOpen(true);
     sendBeverageMessage({ type: "beverage_refresh" });
@@ -2264,7 +2345,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages, showSectionTabs,
     showMenuPreviewImage, menuPreviewImageUrl, menuPreviewAIRequested, menuPreviewAIGenerating,
     sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement, beverageSupplementPrice,
-    beverageOptions, beverageModalOpen, beverageDeleteTarget,
+    beverageOptions, menuWeekdays, menuWeekdayBusy, beverageModalOpen, beverageDeleteTarget,
     minPartySize, mainLimit, mainLimitNum, comments, importantInfo, specialMenuImage, menuPreviewImageBusy,
     specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen, desktopPreviewDocked,
     previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
@@ -2282,7 +2363,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setMenuId, setIsDraft, setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
     setShowDishImages, setShowSectionTabs, setShowMenuPreviewImage, setMenuPreviewImageUrl, setMenuPreviewAIRequested,
     setMenuPreviewAIGenerating, setSections, setIncludedCoffee, setBeverageType, setBeveragePrice,
-    refreshBeverageOptions, setBeverageOptionSelected, createBeverageOption,
+    refreshBeverageOptions, setBeverageOptionSelected, setMenuWeekday, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize, setMainLimit, setMainLimitNum,
     setComments, setImportantInfo, setSpecialMenuImage, setSaveState, setBusy, setHydrated, setMobileTab,
