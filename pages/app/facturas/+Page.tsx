@@ -662,7 +662,7 @@ export default function Page() {
           />
           ) : (
             <>
-              <InvoiceCardGrid invoices={filteredInvoices} onOpenDetails={(inv) => setDetailsInvoice(inv)} />
+              <InvoiceCardGrid invoices={filteredInvoices} visibleColumns={visibleColumns} onOpenDetails={(inv) => setDetailsInvoice(inv)} />
               <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-testid="facturas-grid-pager" data-slot="facturas-grid-pager">
                 <div className="bo-pagerText" data-testid="facturas-grid-pagerText" data-slot="facturas-grid-pagerText">
                   Página {page} de {totalPages} · {total} resultados
