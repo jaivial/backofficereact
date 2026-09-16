@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Beer,
+  CalendarDays,
   Check,
   ChevronDown,
   ChevronUp,
@@ -35,6 +36,7 @@ import { Breadcrumbs } from "../../../../ui/nav/Breadcrumbs";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 // Coordination id: menu_section_kind_presets_v1 + dessert_section_source_v1
 import { AddSectionModal } from "../../../../ui/widgets/menus/AddSectionModal";
+import WeekdayGrid, { WEEKDAYS } from "../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 import type { AddSectionSelection } from "../../../../ui/widgets/menus/AddSectionModal";
 
 import { useMenuEditor } from "./hooks/useMenuEditor";
@@ -215,7 +217,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   const {
     error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages, showSectionTabs,
     showMenuPreviewImage, sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement,
-    beverageOptions, beverageModalOpen, beverageDeleteTarget,
+    beverageOptions, menuWeekdays, menuWeekdayBusy, beverageModalOpen, beverageDeleteTarget,
     beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, importantInfo, specialMenuImage,
     menuPreviewImageBusy, specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen,
     desktopPreviewDocked, previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
@@ -229,7 +231,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     previewFrameRef, dishImageInputRef, menuPreviewImageInputRef, specialMenuImageInputRef,
     setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
     setShowDishImages, setShowSectionTabs, setShowMenuPreviewImage, setSections, setIncludedCoffee, setBeverageType,
-    refreshBeverageOptions, setBeverageOptionSelected, createBeverageOption,
+    refreshBeverageOptions, setBeverageOptionSelected, setMenuWeekday, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeveragePrice, setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize,
     setMainLimit, setMainLimitNum, setComments, setImportantInfo, setSpecialMenuImage, setSaveState, setBusy,
@@ -732,6 +734,27 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                       <span className="bo-mutedText" data-slot="crear-mutedText">{active ? "Activo" : "No activo"}</span>
                     </label>
                   </div>
+                </div>
+              </motion.div>
+
+              {/* Coordination id: menu_weekday_availability_v1 - weekly calendar
+                  available for every menu type, saved over the group-menus-v2
+                  socket. */}
+              <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel" data-testid="menu-crear-weekday-panel">
+                <div className="bo-panelHead" data-slot="crear-weekdayPanelHead">
+                  <div className="bo-panelTitle" data-slot="crear-weekdayPanelTitle"><CalendarDays size={15} /> Calendario semanal</div>
+                  <div className="bo-panelMeta" data-slot="crear-weekdayPanelMeta">Días en que se sirve este menú</div>
+                </div>
+                <div className="bo-panelBody bo-configWeekdayGrid" data-slot="crear-weekdayGrid" data-coordination-id="menu_weekday_availability_v1">
+                  <WeekdayGrid
+                    days={WEEKDAYS}
+                    selected={menuWeekdays}
+                    onToggle={(weekday) => setMenuWeekday(weekday, !menuWeekdays[weekday])}
+                    busy={menuWeekdayBusy}
+                    disabled={!menuId}
+                    testIdPrefix="menu-crear-weekday"
+                    slotPrefix="menu-crear-weekday"
+                  />
                 </div>
               </motion.div>
 

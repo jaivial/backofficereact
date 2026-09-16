@@ -22,7 +22,7 @@ import { ScrollArea } from "../../../ui/layout/ScrollArea";
 import { ReservationDayPanel } from "../../../ui/widgets/ReservationDayPanel";
 import { Modal } from "../../../ui/overlays/Modal";
 import { BookingEditor, type BookingEditorDraft } from "./functionalComponents/BookingEditor/BookingEditor";
-import { arrozRowsFromBooking, principalesRowsFromBooking } from "./functionalComponents/BookingEditor/bookingDraft";
+import { arrozRowsFromBooking, extrasFromBooking, principalesRowsFromBooking } from "./functionalComponents/BookingEditor/bookingDraft";
 import { BookingSearch, type BookingSearchParams } from "./functionalComponents/BookingSearch/BookingSearch";
 import { BookingDetailsPanel } from "./functionalComponents/BookingDetailsPanel";
 import { SearchResultsTable } from "./functionalComponents/SearchResultsTable";
@@ -588,6 +588,7 @@ export default function Page() {
       special_menu: Boolean(b.special_menu),
       menu_de_grupo_id: b.menu_de_grupo_id || null,
       principales: principalesRowsFromBooking(b),
+      extras: b.special_menu ? [] : extrasFromBooking(b),
       arroz_enabled: !b.special_menu && arroz.length > 0,
       arroz,
       commentary: b.commentary || "",

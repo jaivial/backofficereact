@@ -1,0 +1,132 @@
+/* Reusable toggle-options widget (switch list + manage modal).
+   Coordination id: reusable_options_toggle_v1
+   Disposition mirrors the table columns picker
+   (components/styles/components/columns-picker.css) so option grids read the
+   same everywhere: bordered switch cards, two centered columns, switch right. */
+
+.bo-optionsToggleList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  max-height: min(62vh, 480px);
+  overflow-y: auto;
+  padding: 2px 4px;
+}
+
+/* Inline use (inside a panel that already scrolls): no nested scrollbar. */
+.bo-optionsToggleList--inline {
+  max-height: none;
+  overflow: visible;
+}
+
+.bo-optionsToggleHint {
+  grid-column: 1 / -1;
+  margin: 4px 0 6px;
+  text-align: center;
+}
+
+.bo-optionsToggleEmpty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* One option = a left-aligned card holding the switch row (label left,
+   switch right) and, for custom entries, a delete control. */
+.bo-optionsToggleItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  background: var(--bo-surface-2);
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.bo-optionsToggleItem:hover {
+  border-color: var(--bo-border-2);
+  background: var(--bo-surface-3, var(--bo-surface-2));
+}
+
+.bo-optionsToggleItem > .bo-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bo-optionsToggleItem .bo-switchRow {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.bo-optionsToggleItem .bo-switchRow .bo-label {
+  order: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bo-optionsToggleItem .bo-switchRow .bo-sc-switch {
+  order: 2;
+}
+
+.bo-optionsToggleDelete {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-bg, #16181d) 78%, transparent);
+  color: var(--bo-muted);
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.bo-optionsToggleDelete:hover {
+  color: rgba(255, 166, 166, 0.95);
+  border-color: rgba(255, 166, 166, 0.34);
+  background: color-mix(in srgb, var(--bo-bg, #16181d) 55%, transparent);
+}
+
+.bo-optionsToggleDelete:active {
+  scale: 0.96;
+}
+
+.bo-optionsToggleAdd {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.bo-optionsToggleActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.bo-optionsToggleAdd .bo-btn:active,
+.bo-optionsToggleActions .bo-btn:active {
+  scale: 0.96;
+}
+
+/* Keep two columns down to 420px (the block just gets narrower). */
+@media (max-width: 420px) {
+  .bo-optionsToggleList {
+    gap: 6px 8px;
+  }
+
+  .bo-optionsToggleItem {
+    padding: 8px;
+  }
+}

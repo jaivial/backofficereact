@@ -62,6 +62,17 @@ export type Booking = {
   special_menu: boolean;
   menu_de_grupo_id: number | null;
   principales_json: string | null;
+  // Coordination id: booking_extras_v1
+  extras?: BookingExtra[];
+  extras_json?: string | null;
+};
+
+export type BookingExtra = {
+  id: number;
+  slug: string;
+  name: string;
+  is_custom?: boolean;
+  active?: boolean;
 };
 
 export type CancelledBookingItem = {
