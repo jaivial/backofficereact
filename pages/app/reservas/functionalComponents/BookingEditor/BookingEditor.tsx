@@ -321,6 +321,15 @@ export function BookingEditor({
   // --- Coordination id: booking_extras_v1 ---
   const extrasSelectedIds = useMemo(() => (draft.extras || []).map((extra) => extra.id), [draft.extras]);
 
+  // Stored extras may no longer be in the catalog (custom extra deleted). Show
+  // the union so they stay visible and can be removed instead of silently
+  // disappearing from the section.
+  const extrasDisplayCatalog = useMemo(() => {
+    const catalogIds = new Set(extrasCatalog.map((extra) => extra.id));
+    const orphaned = (draft.extras || []).filter((extra) => !catalogIds.has(extra.id));
+    return [...extrasCatalog, ...orphaned];
+  }, [draft.extras, extrasCatalog]);
+
   const setExtraSelected = useCallback((id: number, selected: boolean) => {
     setFormError(null);
     setDraft((p) => {
@@ -822,7 +831,7 @@ export function BookingEditor({
         <Panel className="bo-bookingPanel--extras" data-slot="bookingEditor-panel" title="Extras" meta={extrasSelectedIds.length > 0 ? `${extrasSelectedIds.length} seleccionados` : "Ninguno"}>
           <div style={{ display: "grid", gap: 10 }} data-slot="booking-editor-extras-body">
             <OptionsSwitchList
-              options={extrasCatalog}
+              options={extrasDisplayCatalog}
               selectedIds={extrasSelectedIds}
               onToggle={(id, selected) => setExtraSelected(id, selected)}
               disabled={busy}
@@ -861,10 +870,10 @@ export function BookingEditor({
         open={extrasModalOpen}
         title="Extras"
         headerTitle="Selecciona extras"
-        options={extrasCatalog}
+        options={extrasDisplayCatalog}
         selectedIds={extrasSelectedIds}
         onToggle={(id, selected) => setExtraSelected(id, selected)}
-        onCreate={(name) => void createExtra(name)}
+        onCreate={(name) => createExtra(name)}
         onRequestDelete={requestExtraDelete}
         onClose={() => setExtrasModalOpen(false)}
         disabled={busy}
