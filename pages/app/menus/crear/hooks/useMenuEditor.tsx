@@ -358,6 +358,10 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const previewDockTimerRef = useRef<number | null>(null);
   const previewFrameRef = useRef<HTMLIFrameElement | null>(null);
   const syncTimerRef = useRef<number | null>(null);
+  // Coordination id: comida_autosave_order_v1 - debounced section saves are chained,
+  // never concurrent: two overlapping syncs can land out of order and the older
+  // snapshot would win on the server, resurrecting text the operator already changed.
+  const syncChainRef = useRef<Promise<void>>(Promise.resolve());
   const annotationsTimerRef = useRef<number | null>(null);
   const basicsTimerRef = useRef<number | null>(null);
   const menuAIWSRetryRef = useRef<number | null>(null);
@@ -829,8 +833,13 @@ export function useMenuEditor(): UseMenuEditorReturn {
   // --- useEffect: auto-save basics ---
   useEffect(() => {
     if (!hydrated || !menuId || step < 1) return;
-    if (lastSavedBasicsRef.current === basicsFingerprint || inFlightBasicsRef.current === basicsFingerprint) return;
+    // Coordination id: comida_autosave_blank_v1 - the debounce timer is cancelled
+    // BEFORE the "nothing to save" check: when the draft returns to the last saved
+    // value (the operator typed and then cleared the field) a pending save of the
+    // intermediate text must not land, or the cleared field resurrects on the next
+    // reconcile/refetch.
     if (basicsTimerRef.current) window.clearTimeout(basicsTimerRef.current);
+    if (lastSavedBasicsRef.current === basicsFingerprint || inFlightBasicsRef.current === basicsFingerprint) return;
     basicsTimerRef.current = window.setTimeout(() => {
       void patchBasics({ payload: basicsPayload, fingerprint: basicsFingerprint });
     }, 500);
@@ -840,13 +849,19 @@ export function useMenuEditor(): UseMenuEditorReturn {
   // --- useEffect: auto-save sections ---
   useEffect(() => {
     if (!hydrated || !menuId || step < 2) return;
+    // Coordination id: comida_autosave_blank_v1 - see the basics autosave above.
+    if (syncTimerRef.current) window.clearTimeout(syncTimerRef.current);
     if (lastSavedSectionsRef.current === sectionsFingerprint || inFlightSectionsRef.current === sectionsFingerprint) return;
     const snapshot = sections;
-    if (syncTimerRef.current) window.clearTimeout(syncTimerRef.current);
     syncTimerRef.current = window.setTimeout(() => {
       void (async () => {
         try {
-          await syncSectionsAndDishes({ sectionsSnapshot: snapshot, fingerprint: sectionsFingerprint });
+          const outcome: { error?: Error } = {};
+          syncChainRef.current = syncChainRef.current
+            .then(() => syncSectionsAndDishes({ sectionsSnapshot: snapshot, fingerprint: sectionsFingerprint }))
+            .then(() => undefined, (e: unknown) => { outcome.error = e instanceof Error ? e : new Error("No se pudo guardar"); });
+          await syncChainRef.current;
+          if (outcome.error) throw outcome.error;
         } catch (e) {
           setSaveState("error");
           pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar" });
@@ -871,8 +886,9 @@ export function useMenuEditor(): UseMenuEditorReturn {
         && fingerprint !== (inFlightSectionAnnotationsRef.current[clientId] || "")
       ));
 
-    if (changedSections.length === 0) return;
+    // Coordination id: comida_autosave_blank_v1 - see the basics autosave above.
     if (annotationsTimerRef.current) window.clearTimeout(annotationsTimerRef.current);
+    if (changedSections.length === 0) return;
     annotationsTimerRef.current = window.setTimeout(() => {
       void (async () => {
         setSaveState("saving");
@@ -880,13 +896,22 @@ export function useMenuEditor(): UseMenuEditorReturn {
           inFlightSectionAnnotationsRef.current[section.clientId] = section.fingerprint;
         }
         try {
-          for (const section of changedSections) {
-            const res = await api.menus.gruposV2.patchSectionAnnotations(menuId, section.id, section.annotations);
-            if (!res.success) throw new Error(res.message || "No se pudieron guardar las anotaciones");
-            const persistedFingerprint = JSON.stringify(normalizeSectionAnnotations(res.annotations ?? section.annotations));
-            lastSavedSectionAnnotationsRef.current[section.clientId] = persistedFingerprint;
-            delete inFlightSectionAnnotationsRef.current[section.clientId];
-          }
+          // Coordination id: comida_autosave_order_v1 - the structure sync also writes
+          // annotations, so both writers share the chain: an annotation PATCH landing
+          // after a structure save must never be the older snapshot.
+          const outcome: { error?: Error } = {};
+          await (syncChainRef.current = syncChainRef.current
+            .then(async () => {
+              for (const section of changedSections) {
+                const res = await api.menus.gruposV2.patchSectionAnnotations(menuId, section.id, section.annotations);
+                if (!res.success) throw new Error(res.message || "No se pudieron guardar las anotaciones");
+                const persistedFingerprint = JSON.stringify(normalizeSectionAnnotations(res.annotations ?? section.annotations));
+                lastSavedSectionAnnotationsRef.current[section.clientId] = persistedFingerprint;
+                delete inFlightSectionAnnotationsRef.current[section.clientId];
+              }
+            })
+            .then(() => undefined, (e: unknown) => { outcome.error = e instanceof Error ? e : new Error("No se pudieron guardar las anotaciones"); }));
+          if (outcome.error) throw outcome.error;
           setSaveState("saved");
         } catch (e) {
           setSaveState("error");
@@ -1425,6 +1450,26 @@ export function useMenuEditor(): UseMenuEditorReturn {
           }
         }
         if (res.success && res.dishes) {
+          // Coordination id: comida_autosave_blank_v1 - a refetch may only hydrate
+          // rows the editor is not writing: while this section still holds text the
+          // operator typed or cleared since the last save, adopting the server rows
+          // would roll that text back to the previous value. The debounced autosave
+          // owns those rows and reconciles them once it lands.
+          const liveSection = sectionsRef.current.find((row) => row.clientId === clientId);
+          const savedDishesFingerprint = lastSavedSectionDishesRef.current[clientId];
+          const sectionDishesUnsaved = !!liveSection
+            && savedDishesFingerprint !== undefined
+            && getSectionDishesFingerprint(liveSection) !== savedDishesFingerprint;
+          if (sectionDishesUnsaved) {
+            setSectionLoadedDishes((prev) => {
+              const next = new Set(prev).add(cacheKey);
+              const settledSection = sectionsRef.current.find((row) => row.clientId === clientId);
+              if (settledSection?.id) next.add(String(settledSection.id));
+              return next;
+            });
+            setSectionLoadingState((prev) => ({ ...prev, [clientId]: null }));
+            return;
+          }
           setSections((prev) => prev.map((sec) => {
             if (sec.clientId !== clientId) return sec;
             return {
