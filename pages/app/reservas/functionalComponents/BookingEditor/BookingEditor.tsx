@@ -5,7 +5,7 @@ import { ReactCountryFlag as CountryFlag } from "react-country-flag";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { createClient } from "../../../../../api/client";
-import type { ConfigFloor, GroupMenu, GroupMenuSummary } from "../../../../../api/types";
+import type { BookingExtra, ConfigFloor, GroupMenu, GroupMenuSummary } from "../../../../../api/types";
 import { MonthCalendarDatePicker } from "../../../../../ui/widgets/MonthCalendarDatePicker";
 import { useMonthCalendar } from "../../../../../ui/hooks/useMonthCalendar";
 import { TimePicker } from "../../../../../ui/inputs/TimePicker";
@@ -14,6 +14,8 @@ import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { InlineCounter } from "../../../../../ui/widgets/InlineCounter";
 import { Panel } from "../../../../../ui/shell/Panel";
 import { ScrollArea } from "../../../../../ui/layout/ScrollArea";
+import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
+import { OptionsSwitchList, OptionsToggleModal } from "../../../../../ui/widgets/OptionsToggle/OptionsToggle";
 
 import { principalesItemsFromMenu, type PrincipalesRow, type RiceRow } from "./bookingDraft";
 
@@ -78,6 +80,9 @@ export type BookingEditorDraft = {
   menu_de_grupo_id: number | null;
   principales: PrincipalesRow[];
 
+  // Coordination id: booking_extras_v1
+  extras?: BookingExtra[];
+
   arroz_enabled: boolean;
   arroz: RiceRow[];
   commentary: string;
@@ -111,11 +116,32 @@ export function BookingEditor({
   footerContainerRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   const reduceMotion = useReducedMotion();
-  const [draft, setDraft] = useState<BookingEditorDraft>(initial);
+  const [draft, setDraft] = useState<BookingEditorDraft>(() => ({ extras: [], ...initial }));
   const [formError, setFormError] = useState<string | null>(null);
+  const [extrasCatalog, setExtrasCatalog] = useState<BookingExtra[]>([]);
+  const [extrasModalOpen, setExtrasModalOpen] = useState(false);
+  const [extrasDeleteTarget, setExtrasDeleteTarget] = useState<BookingExtra | null>(null);
 
   // Reload state if initial changes (booking switch).
-  useEffect(() => setDraft(initial), [initial]);
+  useEffect(() => setDraft({ extras: [], ...initial }), [initial]);
+
+  // Coordination id: booking_extras_v1 - restaurant-scoped extras catalog.
+  useEffect(() => {
+    // Guarded so partial test/storybook API mocks without the extras namespace
+    // still render the editor.
+    if (!api.bookingExtras?.list) return;
+    let cancelled = false;
+    api.bookingExtras
+      .list()
+      .then((res) => {
+        if (cancelled || !res.success) return;
+        setExtrasCatalog(res.extras || []);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [api.bookingExtras]);
 
   const [menus, setMenus] = useState<GroupMenuSummary[]>([]);
   const [menusLoaded, setMenusLoaded] = useState(false);
@@ -292,6 +318,52 @@ export function BookingEditor({
     }));
   }, []);
 
+  // --- Coordination id: booking_extras_v1 ---
+  const extrasSelectedIds = useMemo(() => (draft.extras || []).map((extra) => extra.id), [draft.extras]);
+
+  const setExtraSelected = useCallback((id: number, selected: boolean) => {
+    setFormError(null);
+    setDraft((p) => {
+      const current = p.extras || [];
+      if (selected) {
+        if (current.some((extra) => extra.id === id)) return p;
+        const option = extrasCatalog.find((extra) => extra.id === id);
+        if (!option) return p;
+        return { ...p, extras: [...current, option] };
+      }
+      return { ...p, extras: current.filter((extra) => extra.id !== id) };
+    });
+  }, [extrasCatalog]);
+
+  const createExtra = useCallback(async (name: string) => {
+    try {
+      const res = await api.bookingExtras.create(name);
+      if (!res.success || !res.extra) return;
+      const created = res.extra;
+      setExtrasCatalog((prev) => [...prev.filter((extra) => extra.id !== created.id), created]);
+      setDraft((p) => ({ ...p, extras: [...(p.extras || []).filter((extra) => extra.id !== created.id), created] }));
+    } catch {
+      // ignore: the modal keeps the typed value so the user can retry
+    }
+  }, [api.bookingExtras]);
+
+  const requestExtraDelete = useCallback((option: BookingExtra) => setExtrasDeleteTarget(option), []);
+
+  const confirmExtraDelete = useCallback(async () => {
+    if (!extrasDeleteTarget) return;
+    const targetId = extrasDeleteTarget.id;
+    try {
+      await api.bookingExtras.delete(targetId);
+    } catch {
+      // ignore: fall through and drop it locally
+    }
+    setExtrasCatalog((prev) => prev.filter((extra) => extra.id !== targetId));
+    setDraft((p) => ({ ...p, extras: (p.extras || []).filter((extra) => extra.id !== targetId) }));
+    setExtrasDeleteTarget(null);
+  }, [api.bookingExtras, extrasDeleteTarget]);
+
+  const cancelExtraDelete = useCallback(() => setExtrasDeleteTarget(null), []);
+
   const addPrincipalRow = useCallback(() => {
     setDraft((p) => ({ ...p, principales: [...p.principales, { name: "", servings: 1 }] }));
   }, []);
@@ -350,6 +422,8 @@ export function BookingEditor({
       payload.principales_json = rows;
     } else {
       payload.commentary = String(draft.commentary || "").trim();
+      // Coordination id: booking_extras_v1 - extras only apply without a group menu.
+      payload.extras = (draft.extras || []).map((extra) => extra.id);
       if (draft.arroz_enabled) {
         const rows = draft.arroz
           .map((r) => ({ type: String(r.type || "").trim(), servings: clampInt(Number(r.servings || 0), 0, 10_000) }))
@@ -745,6 +819,32 @@ export function BookingEditor({
       ) : null}
 
       {!draft.special_menu ? (
+        <Panel className="bo-bookingPanel--extras" data-slot="bookingEditor-panel" title="Extras" meta={extrasSelectedIds.length > 0 ? `${extrasSelectedIds.length} seleccionados` : "Ninguno"}>
+          <div style={{ display: "grid", gap: 10 }} data-slot="booking-editor-extras-body">
+            <OptionsSwitchList
+              options={extrasCatalog}
+              selectedIds={extrasSelectedIds}
+              onToggle={(id, selected) => setExtraSelected(id, selected)}
+              disabled={busy}
+              testIdPrefix="booking-editor-extra"
+              slotPrefix="bookingEditorExtra"
+              emptyHint={'No hay extras configurados. Usa \"Gestionar extras\" para crear uno.'}
+            />
+            <button
+              type="button"
+              className="bo-btn bo-btn--ghost"
+              onClick={() => setExtrasModalOpen(true)}
+              disabled={busy}
+              data-slot="booking-editor-extras-manage"
+              data-testid="booking-editor-extras-manage"
+            >
+              <Plus size={18} strokeWidth={1.8} /> Gestionar extras
+            </button>
+          </div>
+        </Panel>
+      ) : null}
+
+      {!draft.special_menu ? (
         <Panel data-slot="bookingEditor-panel" title="Comentario" meta="Opcional">
             <textarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} data-slot="booking-editor-commentary" />
         </Panel>
@@ -755,6 +855,37 @@ export function BookingEditor({
       {/* When stickyFooter, the footer is portaled to the parent-provided
           container at the modal level. When not stickyFooter, render inline. */}
       {!stickyFooter && footerNode}
+
+      {/* Coordination id: booking_extras_v1 - manage/create/delete extras. */}
+      <OptionsToggleModal
+        open={extrasModalOpen}
+        title="Extras"
+        headerTitle="Selecciona extras"
+        options={extrasCatalog}
+        selectedIds={extrasSelectedIds}
+        onToggle={(id, selected) => setExtraSelected(id, selected)}
+        onCreate={(name) => void createExtra(name)}
+        onRequestDelete={requestExtraDelete}
+        onClose={() => setExtrasModalOpen(false)}
+        disabled={busy}
+        placeholder="Añadir extra personalizado"
+        addLabel="Añadir"
+        testIdPrefix="booking-extras-modal"
+        slotPrefix="bookingExtrasModal"
+      />
+      <ConfirmDialog
+        title="Eliminar extra"
+        message={extrasDeleteTarget
+          ? `¿Eliminar "${extrasDeleteTarget.name}"? Se quitará para este restaurante en todas las reservas. Esta acción no se puede deshacer.`
+          : ""}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        danger
+        open={!!extrasDeleteTarget}
+        onCancel={cancelExtraDelete}
+        onClose={cancelExtraDelete}
+        onConfirm={() => void confirmExtraDelete()}
+      />
     </div>
     </>
   );

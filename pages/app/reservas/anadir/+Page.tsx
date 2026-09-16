@@ -81,6 +81,7 @@ export default function Page() {
       special_menu: false,
       menu_de_grupo_id: null,
       principales: [],
+      extras: [],
       arroz_enabled: false,
       arroz: [],
       commentary: "",
