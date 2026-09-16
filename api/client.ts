@@ -82,6 +82,7 @@ import type {
   LegalPageListResponse,
   LegalPageSlug,
   LegalPageUpsertRequest,
+  BookingExtra,
   POSBootstrap,
   POSSettings,
   POSTicket,
@@ -871,6 +872,22 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async getMonth(params: { year: number; month: number }): Promise<APISuccess<{ data: CalendarDay[] }> | APIError> {
         const q = new URLSearchParams({ year: String(params.year), month: String(params.month) });
         return json(`/api/admin/calendar?${q.toString()}`, { method: "GET" });
+      },
+    },
+    // Coordination id: booking_extras_v1 (extras catalog -> booking editor).
+    bookingExtras: {
+      async list(): Promise<APISuccess<{ extras: BookingExtra[] }> | APIError> {
+        return json("/api/admin/booking-extras", { method: "GET" });
+      },
+      async create(name: string): Promise<APISuccess<{ extra: BookingExtra }> | APIError> {
+        return json("/api/admin/booking-extras", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+      },
+      async delete(id: number): Promise<APISuccess | APIError> {
+        return json(`/api/admin/booking-extras/${id}`, { method: "DELETE" });
       },
     },
     reservas: {

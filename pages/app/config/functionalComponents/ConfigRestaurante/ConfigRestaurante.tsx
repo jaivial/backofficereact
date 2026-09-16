@@ -6,7 +6,8 @@ import { Building2, LayoutGrid } from "lucide-react";
 import type { ConfigDefaults, ConfigFloor, OpeningMode, WeekdayOpen } from "../../../../../api/types";
 import type { FloorTab, HourSlot } from "../../../config/helpers/configHelpers";
 import { buildHalfHourSlots, buildFloorsWithCount, clampDailyLimit, formatTableLimit, normalizeTableLimit, normalizeWeekdayOpenMap, readAPIMessage, stepTableLimit, tableLimitValues, toggleHour } from "../../../config/helpers/configHelpers";
-import { openingModeOptions, weekdayCards, type WeekdayCard } from "../../../config/constants/config.constants";
+import { openingModeOptions, weekdayCards } from "../../../config/constants/config.constants";
+import { WeekdayGrid } from "../../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 import type { RestauranteContentProps } from "./types/ConfigRestaurante.types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Switch } from "../../../../../ui/shadcn/Switch";
@@ -256,12 +257,6 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
     return nightSlots.map((slot) => ({ ...slot, active: active.has(slot.value) }));
   }, [defaults.nightHours, nightSlots]);
 
-  const weekdayCardsWithState = useMemo(
-    (): Array<WeekdayCard & { isOpen: boolean }> =>
-      weekdayCards.map((weekday) => ({ ...weekday, isOpen: Boolean(weekdayOpen[weekday.key]) })),
-    [weekdayOpen],
-  );
-
   const handleMorningHour = useCallback(
     (hour: string) => {
       void saveDefaults({ morningHours: toggleHour(defaults.morningHours || [], hour) });
@@ -429,25 +424,16 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
       />
 
       <Panel title="Calendario semanal" meta="Semana genérica (lunes a domingo)" bodyClassName="bo-configWeekdayGrid" data-ui="config-restaurante-weekday-panel">
-          {weekdayCardsWithState.map((weekday: WeekdayCard & { isOpen: boolean }) => (
-            <button
-              key={weekday.key}
-              type="button"
-              className={`bo-hourCard bo-configDayCard${weekday.isOpen ? " is-on" : ""}`}
-              disabled={busy}
-              aria-pressed={weekday.isOpen}
-              aria-label={`${weekday.label} (${weekday.isOpen ? "abierto" : "cerrado"})`}
-              onClick={() => void toggleWeekdayOpen(weekday.key)}
-              data-slot="weekday-button"
-            >
-              <div className="bo-configDayCardLabel" data-slot="configRestaurante-configDayCardLabel">
-                <span className="bo-configDayCardLabelFull" data-slot="configRestaurante-configDayCardLabelFull">{weekday.label}</span>
-                <span className="bo-configDayCardLabelShort" aria-hidden="true" data-slot="configRestaurante-configDayCardLabelShort">
-                  {weekday.shortLabel}
-                </span>
-              </div>
-            </button>
-          ))}
+          <WeekdayGrid
+            days={weekdayCards}
+            selected={weekdayOpen}
+            onToggle={(key) => void toggleWeekdayOpen(key)}
+            busy={busy}
+            testIdPrefix="config-restaurante-weekday"
+            slotPrefix="configRestaurante-weekday"
+            selectedLabel="abierto"
+            unselectedLabel="cerrado"
+          />
       </Panel>
 
       <Panel title="Límites por defecto" meta="Autosave inmediato" bodyClassName="bo-configLimitGrid" data-ui="config-restaurante-limits-panel">

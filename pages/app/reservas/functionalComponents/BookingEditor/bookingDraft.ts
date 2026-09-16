@@ -1,4 +1,4 @@
-import type { Booking, GroupMenu, GroupMenuSummary } from "../../../../../api/types";
+import type { Booking, BookingExtra, GroupMenu, GroupMenuSummary } from "../../../../../api/types";
 
 export type RiceRow = { type: string; servings: number };
 export type PrincipalesRow = { name: string; servings: number };
@@ -66,6 +66,26 @@ export function principalesItemsFromMenu(menu: GroupMenu | null): string[] {
   const items = (menu as any)?.principales?.items;
   if (!Array.isArray(items)) return [];
   return items.map((x) => String(x ?? "").trim()).filter(Boolean);
+}
+
+// Coordination id: booking_extras_v1
+export function extrasFromBooking(b: Booking): BookingExtra[] {
+  if (Array.isArray(b.extras)) {
+    return b.extras
+      .map((extra) => ({ id: Number(extra?.id || 0), slug: String(extra?.slug || ""), name: String(extra?.name || "").trim() }))
+      .filter((extra) => extra.id > 0 && extra.name);
+  }
+  const raw = String(b.extras_json || "").trim();
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((extra) => ({ id: Number(extra?.id || 0), slug: String(extra?.slug || ""), name: String(extra?.name || "").trim() }))
+      .filter((extra) => extra.id > 0 && extra.name);
+  } catch {
+    return [];
+  }
 }
 
 export function findMenuTitle(summaries: GroupMenuSummary[], id: number | null | undefined): string {
