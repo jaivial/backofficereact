@@ -3,14 +3,15 @@ import { Plus, Trash2 } from "lucide-react";
 
 import { Modal } from "../../overlays/Modal";
 import { ModalHeader } from "../../overlays/ModalHeader";
-import { Switch } from "../../shadcn/Switch";
+import { SwitchField } from "../../inputs/SwitchField";
 
 // Coordination id: booking_extras_v1 / reusable_options_toggle_v1
 //
-// Reusable "toggle a catalog of options" UI, extracted from the menu editor's
-// "bebidas incluidas" pattern (chip row + modal with custom-add and delete) so
-// the booking extras section reuses the same interaction and styling. The
-// content is data-driven, so any restaurant-scoped option catalog can use it.
+// Reusable "toggle a catalog of options" UI. The disposition mirrors the table
+// columns picker (ReservasColumnsModal / InvoiceColumnsModal): a centered hint,
+// two columns of bordered switch cards with the switch on the right, and a
+// right-aligned action row. The content is data-driven, so any restaurant-scoped
+// option catalog can reuse it.
 
 export type ToggleOption = {
   id: number;
@@ -23,15 +24,22 @@ function isSelected(selectedIds: number[], id: number): boolean {
   return selectedIds.includes(id);
 }
 
+function listClassName(inline: boolean, extra?: string): string {
+  return ["bo-optionsToggleList", inline ? "bo-optionsToggleList--inline" : "", extra].filter(Boolean).join(" ");
+}
+
 /**
- * Inline list of toggle rows (label + switch). Used for the booking "Extras"
- * section where every catalog option is a switch.
+ * Inline list of toggle switches laid out like the table columns picker. Used
+ * for the booking "Extras" section where every catalog option is a switch.
  */
 export function OptionsSwitchList({
   options,
   selectedIds,
   onToggle,
   disabled = false,
+  hint,
+  inline = false,
+  ariaLabel,
   testIdPrefix = "option",
   slotPrefix = "option",
   emptyHint = "No hay opciones disponibles.",
@@ -40,38 +48,61 @@ export function OptionsSwitchList({
   selectedIds: number[];
   onToggle: (id: number, selected: boolean) => void;
   disabled?: boolean;
+  hint?: string;
+  inline?: boolean;
+  ariaLabel?: string;
   testIdPrefix?: string;
   slotPrefix?: string;
   emptyHint?: string;
 }) {
   return (
-    <div className="bo-stackFields" data-slot={`${slotPrefix}-switchList`} data-testid={`${testIdPrefix}-switch-list`}>
+    <div
+      className={listClassName(inline, "bo-optionsToggleList--section")}
+      role="group"
+      aria-label={ariaLabel}
+      data-slot={`${slotPrefix}-switchList`}
+      data-testid={`${testIdPrefix}-switch-list`}
+    >
+      {hint ? (
+        <p className="bo-mutedText bo-optionsToggleHint" data-slot={`${slotPrefix}-hint`} data-testid={`${testIdPrefix}-hint`}>
+          {hint}
+        </p>
+      ) : null}
       {options.map((option) => (
-        <div key={option.id} className="bo-field bo-field--inline" data-slot={`${slotPrefix}-switchField`}>
-          <div className="bo-label" data-slot={`${slotPrefix}-switchLabel`}>{option.name}</div>
-          <Switch
+        <div
+          key={option.id}
+          className={["bo-optionsToggleItem", option.is_custom ? "bo-optionsToggleItem--deletable" : ""].filter(Boolean).join(" ")}
+          data-slot={`${slotPrefix}-switchItem`}
+          data-testid={`${testIdPrefix}-item-${option.slug}`}
+        >
+          <SwitchField
             checked={isSelected(selectedIds, option.id)}
-            onCheckedChange={(checked) => onToggle(option.id, checked)}
+            onChange={(next) => onToggle(option.id, next)}
+            label={option.name}
             disabled={disabled}
-            aria-label={option.name}
             data-testid={`${testIdPrefix}-switch-${option.slug}`}
           />
         </div>
       ))}
-      {options.length === 0 ? <div className="bo-mutedText" data-slot={`${slotPrefix}-empty`}>{emptyHint}</div> : null}
+      {options.length === 0 ? (
+        <div className="bo-mutedText bo-optionsToggleEmpty" data-slot={`${slotPrefix}-empty`} data-testid={`${testIdPrefix}-empty`}>
+          {emptyHint}
+        </div>
+      ) : null}
     </div>
   );
 }
 
 /**
  * Modal to manage a catalog of toggle options: toggle each option, add a new
- * custom one, and request deleting custom entries. Mirrors the beverage options
- * modal so both surfaces feel identical.
+ * custom one, and request deleting custom entries. Same disposition as the
+ * table columns picker modal so both surfaces feel identical.
  */
 export function OptionsToggleModal({
   open,
   title = "Opciones",
   headerTitle = "Selecciona opciones",
+  hint,
   options,
   selectedIds,
   onToggle,
@@ -81,12 +112,14 @@ export function OptionsToggleModal({
   disabled = false,
   placeholder = "Añadir opción personalizada",
   addLabel = "Añadir",
+  closeLabel = "Listo",
   testIdPrefix = "option-modal",
   slotPrefix = "optionModal",
 }: {
   open: boolean;
   title?: string;
   headerTitle?: string;
+  hint?: string;
   options: ToggleOption[];
   selectedIds: number[];
   onToggle: (id: number, selected: boolean) => void;
@@ -97,6 +130,7 @@ export function OptionsToggleModal({
   disabled?: boolean;
   placeholder?: string;
   addLabel?: string;
+  closeLabel?: string;
   testIdPrefix?: string;
   slotPrefix?: string;
 }) {
@@ -117,58 +151,82 @@ export function OptionsToggleModal({
   };
 
   return (
-    <Modal open={open} title={title} onClose={onClose} widthPx={620} hideClose>
+    <Modal open={open} title={title} onClose={onClose} widthPx={640} className="bo-optionsToggleModal" hideClose>
       <ModalHeader title={headerTitle} onClose={onClose} />
-      <div className="bo-modalBody" data-slot={`${slotPrefix}-body`}>
-        <div className="bo-allergenGrid" data-testid={`${testIdPrefix}-grid`}>
-          {options.map((option) => {
-            const selected = isSelected(selectedIds, option.id);
-            return (
-              <div key={option.id} className="bo-beverageOptionCell" data-testid={`${testIdPrefix}-option-${option.slug}`}>
+      <div
+        className={listClassName(false)}
+        role="group"
+        aria-label={headerTitle}
+        data-slot={`${slotPrefix}-list`}
+        data-testid={`${testIdPrefix}-grid`}
+      >
+        {hint ? (
+          <p className="bo-mutedText bo-optionsToggleHint" data-slot={`${slotPrefix}-hint`} data-testid={`${testIdPrefix}-hint`}>
+            {hint}
+          </p>
+        ) : null}
+        {options.map((option) => {
+          const selected = isSelected(selectedIds, option.id);
+          return (
+            <div
+              key={option.id}
+              className={["bo-optionsToggleItem", option.is_custom ? "bo-optionsToggleItem--deletable" : ""].filter(Boolean).join(" ")}
+              data-slot={`${slotPrefix}-item`}
+              data-testid={`${testIdPrefix}-option-${option.slug}`}
+            >
+              <SwitchField
+                checked={selected}
+                onChange={(next) => onToggle(option.id, next)}
+                label={option.name}
+                disabled={disabled}
+                data-testid={`${testIdPrefix}-toggle-${option.slug}`}
+              />
+              {option.is_custom && onRequestDelete ? (
                 <button
                   type="button"
-                  className={`bo-allergenCircle ${selected ? "is-selected" : ""}`}
-                  onClick={() => onToggle(option.id, !selected)}
+                  className="bo-optionsToggleDelete"
+                  aria-label={`Eliminar ${option.name}`}
+                  onClick={() => onRequestDelete(option)}
                   disabled={disabled}
-                  data-testid={`${testIdPrefix}-toggle-${option.slug}`}
+                  data-slot={`${slotPrefix}-delete`}
+                  data-testid={`${testIdPrefix}-delete-${option.slug}`}
                 >
-                  <span className="bo-allergenCircleLabel" data-slot={`${slotPrefix}-circleLabel`}>{option.name}</span>
+                  <Trash2 size={14} strokeWidth={1.8} />
                 </button>
-                {option.is_custom && onRequestDelete ? (
-                  <button
-                    type="button"
-                    className="bo-beverageDeleteBtn"
-                    aria-label={`Eliminar ${option.name}`}
-                    onClick={() => onRequestDelete(option)}
-                    disabled={disabled}
-                    data-testid={`${testIdPrefix}-delete-${option.slug}`}
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                ) : null}
-              </div>
-            );
-          })}
-          <div className="bo-beverageCustomAdd" data-testid={`${testIdPrefix}-custom-add`}>
-            <input
-              className="bo-input"
-              value={draftName}
-              onChange={(e) => setDraftName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void submitNew(); } }}
-              placeholder={placeholder}
-              data-testid={`${testIdPrefix}-custom-input`}
-            />
-            <button
-              type="button"
-              className="bo-btn bo-btn--ghost bo-btn--sm"
-              onClick={() => void submitNew()}
-              disabled={disabled || creating || !draftName.trim()}
-              data-testid={`${testIdPrefix}-custom-confirm`}
-            >
-              <Plus size={14} /> {addLabel}
-            </button>
+              ) : null}
+            </div>
+          );
+        })}
+        {options.length === 0 ? (
+          <div className="bo-mutedText bo-optionsToggleEmpty" data-slot={`${slotPrefix}-empty`} data-testid={`${testIdPrefix}-empty`}>
+            Todavía no hay opciones. Añade la primera abajo.
           </div>
+        ) : null}
+        <div className="bo-optionsToggleAdd" data-slot={`${slotPrefix}-add`} data-testid={`${testIdPrefix}-custom-add`}>
+          <input
+            className="bo-input"
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void submitNew(); } }}
+            placeholder={placeholder}
+            disabled={disabled}
+            data-testid={`${testIdPrefix}-custom-input`}
+          />
+          <button
+            type="button"
+            className="bo-btn bo-btn--ghost bo-btn--sm"
+            onClick={() => void submitNew()}
+            disabled={disabled || creating || !draftName.trim()}
+            data-testid={`${testIdPrefix}-custom-confirm`}
+          >
+            <Plus size={14} strokeWidth={1.8} /> {addLabel}
+          </button>
         </div>
+      </div>
+      <div className="bo-modalActions" data-slot={`${slotPrefix}-actions`}>
+        <button className="bo-btn bo-btn--primary" type="button" onClick={onClose} disabled={disabled} data-testid={`${testIdPrefix}-close`}>
+          {closeLabel}
+        </button>
       </div>
     </Modal>
   );

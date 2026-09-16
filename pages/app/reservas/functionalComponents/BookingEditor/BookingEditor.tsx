@@ -829,16 +829,19 @@ export function BookingEditor({
 
       {!draft.special_menu ? (
         <Panel className="bo-bookingPanel--extras" data-slot="bookingEditor-panel" title="Extras" meta={extrasSelectedIds.length > 0 ? `${extrasSelectedIds.length} seleccionados` : "Ninguno"}>
-          <div style={{ display: "grid", gap: 10 }} data-slot="booking-editor-extras-body">
-            <OptionsSwitchList
-              options={extrasDisplayCatalog}
-              selectedIds={extrasSelectedIds}
-              onToggle={(id, selected) => setExtraSelected(id, selected)}
-              disabled={busy}
-              testIdPrefix="booking-editor-extra"
-              slotPrefix="bookingEditorExtra"
-              emptyHint={'No hay extras configurados. Usa \"Gestionar extras\" para crear uno.'}
-            />
+          <OptionsSwitchList
+            options={extrasDisplayCatalog}
+            selectedIds={extrasSelectedIds}
+            onToggle={(id, selected) => setExtraSelected(id, selected)}
+            disabled={busy}
+            inline
+            ariaLabel="Extras de la reserva"
+            hint="Activa los extras que apliquen. Solo están disponibles cuando no hay menú de grupo."
+            testIdPrefix="booking-editor-extra"
+            slotPrefix="bookingEditorExtra"
+            emptyHint={'No hay extras configurados. Usa "Gestionar extras" para crear uno.'}
+          />
+          <div className="bo-optionsToggleActions" data-slot="booking-editor-extras-actions">
             <button
               type="button"
               className="bo-btn bo-btn--ghost"
@@ -870,6 +873,7 @@ export function BookingEditor({
         open={extrasModalOpen}
         title="Extras"
         headerTitle="Selecciona extras"
+        hint="Activa los extras que apliquen a esta reserva. Los extras solo se aplican a reservas sin menú de grupo."
         options={extrasDisplayCatalog}
         selectedIds={extrasSelectedIds}
         onToggle={(id, selected) => setExtraSelected(id, selected)}
