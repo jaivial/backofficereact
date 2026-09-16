@@ -310,6 +310,15 @@
   display: block;
 }
 
+/* Full-width table view: the table scrolls horizontally inside its wrapper
+   instead of pushing an overflow-x onto the page.
+   Coordination id: facturas_table_fullwidth_v1 */
+.bo-facturasPane--tabla .bo-tableWrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .bo-facturasDisplayRow {
   display: flex;
   align-items: center;
