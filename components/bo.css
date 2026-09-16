@@ -32,6 +32,7 @@
 @import "./styles/components/date-range.css";
 @import "./styles/components/checkbox.css";
 @import "./styles/components/columns-picker.css";
+@import "./styles/components/options-toggle.css";
 
 /* ── Features extracted from components (kept before the rest of features so
       later feature files can still override them) ─────────────── */
