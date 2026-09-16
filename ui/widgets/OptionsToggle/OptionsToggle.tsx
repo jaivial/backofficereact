@@ -90,7 +90,8 @@ export function OptionsToggleModal({
   options: ToggleOption[];
   selectedIds: number[];
   onToggle: (id: number, selected: boolean) => void;
-  onCreate: (name: string) => void;
+  /** May return a promise; the input is cleared only once it resolves. */
+  onCreate: (name: string) => void | Promise<void>;
   onRequestDelete?: (option: ToggleOption) => void;
   onClose: () => void;
   disabled?: boolean;
@@ -100,12 +101,19 @@ export function OptionsToggleModal({
   slotPrefix?: string;
 }) {
   const [draftName, setDraftName] = useState("");
+  const [creating, setCreating] = useState(false);
 
-  const submitNew = () => {
+  const submitNew = async () => {
     const name = draftName.trim();
-    if (!name) return;
-    onCreate(name);
-    setDraftName("");
+    if (!name || creating) return;
+    setCreating(true);
+    try {
+      await onCreate(name);
+      // Cleared only on success so a failed create keeps the typed value.
+      setDraftName("");
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -146,15 +154,15 @@ export function OptionsToggleModal({
               className="bo-input"
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitNew(); } }}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void submitNew(); } }}
               placeholder={placeholder}
               data-testid={`${testIdPrefix}-custom-input`}
             />
             <button
               type="button"
               className="bo-btn bo-btn--ghost bo-btn--sm"
-              onClick={submitNew}
-              disabled={disabled || !draftName.trim()}
+              onClick={() => void submitNew()}
+              disabled={disabled || creating || !draftName.trim()}
               data-testid={`${testIdPrefix}-custom-confirm`}
             >
               <Plus size={14} /> {addLabel}
