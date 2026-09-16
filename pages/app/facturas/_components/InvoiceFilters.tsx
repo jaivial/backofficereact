@@ -201,7 +201,10 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
   onDeleteFilter = () => {},
   onDatePresetChange,
 }: InvoiceFiltersProps, ref) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  // Filters start collapsed on every viewport: the initial state IS the
+  // rendered state, so there is no expanded-then-fold flash on load.
+  // Users expand via the toggle; focusSearch() expands automatically.
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [filterName, setFilterName] = useState("");
   const [datePreset, setDatePreset] = useState<DatePreset>("");
