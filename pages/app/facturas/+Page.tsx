@@ -623,7 +623,11 @@ export default function Page() {
             ) : null}
           </div>
 
-          {displayMode === "tabla" ? (
+          {/* Both panes always render; CSS picks the visible one so ≤900px
+              shows the single-column card grid from the first paint (SSR
+              matches) with no viewport flash.
+              Coordination id: facturas_cards_columns_v1 */}
+          <div className="bo-facturasPane bo-facturasPane--tabla" data-visible={displayMode} data-testid="facturas-tabla-pane" data-slot="facturas-tabla-pane">
             <InvoiceTable
               invoices={filteredInvoices}
               visibleColumns={visibleColumns}
@@ -659,10 +663,10 @@ export default function Page() {
             onSendReminder={() => {}}
             onShowReminderHistory={() => {}}
             onManageTemplates={() => {}}
-          />
-          ) : (
-            <>
-              <InvoiceCardGrid invoices={filteredInvoices} visibleColumns={visibleColumns} onOpenDetails={(inv) => setDetailsInvoice(inv)} />
+            />
+          </div>
+          <div className="bo-facturasPane bo-facturasPane--grid" data-visible={displayMode} data-testid="facturas-grid-pane" data-slot="facturas-grid-pane">
+            <InvoiceCardGrid invoices={filteredInvoices} visibleColumns={visibleColumns} onOpenDetails={(inv) => setDetailsInvoice(inv)} />
               <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-testid="facturas-grid-pager" data-slot="facturas-grid-pager">
                 <div className="bo-pagerText" data-testid="facturas-grid-pagerText" data-slot="facturas-grid-pagerText">
                   Página {page} de {totalPages} · {total} resultados
@@ -678,8 +682,7 @@ export default function Page() {
                   </div>
                 ) : null}
               </div>
-            </>
-          )}
+          </div>
         </div>
       </div>
       ) : null}
