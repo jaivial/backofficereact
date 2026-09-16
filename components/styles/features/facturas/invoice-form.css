@@ -1325,6 +1325,29 @@
   }
 }
 
+/* ── Compact (viewport ≤899px): icon-only form actions ──
+   Labels hide; icons plus title/aria-label carry the meaning, and the
+   full labels remain inside the Guardar popover menu. Placed after the
+   ≤768px stacked block so these row overrides win the cascade there too.
+   Coordination id: invoice_form_actions_icons_v1 */
+@media (max-width: 899px) {
+  .bo-invoiceForm .bo-invoiceFormActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .bo-invoiceForm .bo-invoiceFormActions .bo-btn {
+    width: auto;
+    padding: 0 10px;
+  }
+
+  .bo-invoiceFormActions .bo-btnText {
+    display: none;
+  }
+}
+
 /* ── Narrow (viewport ≤600px) ───────────────────────────
    The three-column rows (Importe/Moneda/IVA and the reservation row) get too
    cramped before the two-column pairs do, so collapse them first. */
@@ -1361,27 +1384,14 @@
   }
 }
 
-/* ── IVA mode row: toggle on the left, summary aligned to the right ── */
-.bo-invoiceForm .bo-ivaModeRow {
-  display: flex;
-  align-items: center;
-  gap: var(--bo-space-3);
-}
-
-.bo-invoiceForm .bo-ivaModeRow > .bo-field {
-  flex: 0 0 auto;
-  align-self: center;
-  margin: 0;
-}
-
-.bo-invoiceForm .bo-ivaModeRow > .bo-ivaSummary {
-  flex: 1 1 auto;
+/* ── IVA mode: toggle sits just above the IVA input field ── */
+.bo-invoiceForm .bo-ivaModeField {
+  display: grid;
+  gap: var(--bo-space-2);
+  align-content: start;
   min-width: 0;
 }
 
-@media (max-width: 768px) {
-  .bo-invoiceForm .bo-ivaModeRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.bo-invoiceForm .bo-ivaModeField > .bo-field {
+  margin: 0;
 }

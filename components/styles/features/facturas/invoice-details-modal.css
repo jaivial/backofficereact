@@ -332,3 +332,58 @@
     font-size: 11px;
   }
 }
+/* ── Tablet & mobile (viewport ≤899px) ──────────────────
+   The details modal becomes a fixed 85vh sheet: all content — including
+   the Descargar/Email/WhatsApp actions — scrolls inside it, and the box
+   keeps its rounded corners on every side (overlay padding keeps it off
+   the viewport edges). Actions stay in a row at every width.
+   Coordination id: invoices_details_mobile_modal_v1 */
+@media (max-width: 899px) {
+  .bo-invoiceDetailsModal.bo-modal {
+    /* min() guarantees the sheet always fits the overlay with slack on
+       both ends, so margin:auto centers it and the bottom corners (and
+       their radius) always stay inside the viewport. */
+    height: min(85vh, calc(100% - 24px));
+    height: min(85dvh, calc(100% - 24px));
+    max-height: none;
+    overflow-y: hidden;
+    margin: auto;
+    border-radius: var(--bo-radius-lg);
+  }
+
+  /* WebKit samples backdrop-filter in a square region that bleeds past
+     the rounded corners; render a solid sheet instead on touch layouts. */
+  .bo-modalOverlay .bo-invoiceDetailsModal.bo-modal {
+    background: var(--bo-surface-2);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  :root[data-theme="light"] .bo-modalOverlay .bo-invoiceDetailsModal.bo-modal {
+    background: var(--bo-surface-2);
+  }
+
+  /* Header stays auto; the body (ScrollArea) fills the rest. */
+  .bo-invoiceDetailsModal.bo-modal {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bo-invoiceDetailsModal .bo-invoiceDetails {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+  }
+
+  .bo-invoiceDetailsModal .bo-invoiceDetailsActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .bo-invoiceDetailsModal .bo-invoiceDetailsActions .bo-btn {
+    width: auto;
+  }
+}

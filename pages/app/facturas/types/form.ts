@@ -14,7 +14,7 @@ export interface InvoiceFormProps {
   invoice: Invoice | null;
   isDuplicate?: boolean;
   isSubmitting?: boolean;
-  onSave: (input: InvoiceInput, shouldSend: boolean) => void;
+  onSave: (input: InvoiceInput, shouldSend?: boolean, opts?: { keepOpen?: boolean }) => Promise<number | undefined>;
   onCancel: () => void;
   searchReservations: (params: {
     date_from?: string;

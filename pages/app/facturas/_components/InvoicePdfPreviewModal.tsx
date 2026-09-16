@@ -129,9 +129,25 @@ export function InvoicePdfPreviewModal({
           </div>
         </div>
 
-        {/* PDF Viewer */}
+        {/* PDF Viewer — the iframe mounts as soon as pdfUrl exists and stays
+            mounted (visibility toggles); loading/error render as overlays.
+            Gating the iframe behind !loading deadlocked the spinner forever,
+            since only the iframe's onLoad could clear it
+            (invoices_pdf_preview_mount_v1). */}
         <div data-testid="pdf-preview-viewer" className="bo-pdf-preview-viewer" data-slot="pdf-preview-viewer">
-          {loading && (
+          {pdfUrl && !error && (
+            <iframe
+              key={pdfUrl}
+              src={pdfUrl}
+              className="bo-pdf-preview-iframe"
+              style={{ visibility: pdfReady ? "visible" : "hidden" }}
+              onLoad={handleLoad}
+              onError={handleError}
+              title="Vista previa del PDF"
+            />
+          )}
+
+          {loading && !error && (
             <div data-testid="pdf-preview-loading" className="bo-pdf-preview-loading" data-slot="pdf-preview-loading">
               <Loader2 size={32} className="bo-spinner" />
               <p data-testid="pdf-preview-loading-text" data-slot="pdf-preview-loading-text">Cargando vista previa...</p>
@@ -166,16 +182,6 @@ export function InvoicePdfPreviewModal({
                 Volver a editar
               </button>
             </div>
-          )}
-
-          {!loading && !error && pdfUrl && (
-            <iframe
-              src={pdfUrl}
-              className="bo-pdf-preview-iframe"
-              onLoad={handleLoad}
-              onError={handleError}
-              title="Vista previa del PDF"
-            />
           )}
         </div>
 

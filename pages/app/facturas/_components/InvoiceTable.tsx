@@ -1,24 +1,16 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { Paperclip, PencilLine, FolderOpen, Trash2, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Eye, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine } from "lucide-react";
-import type { Invoice, InvoiceStatus, InvoiceAttachment, PaymentMethod, CurrencyCode, InvoiceCategory, InvoiceDepositType } from "../../../../api/types";
-import { CURRENCY_SYMBOLS } from "../../../../api/types";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Paperclip, PencilLine, FolderOpen, Trash2, ArrowUpDown, ArrowUp, ArrowDown, FileText, SearchX, Plus, X, Eye, Printer, CreditCard, Calendar, AlertTriangle, MessageSquare, Mail, Tag, Combine, Check, RefreshCw } from "lucide-react";
+import type { Invoice, InvoiceStatus, InvoiceAttachment, PaymentMethod, InvoiceCategory, InvoiceDepositType } from "../../../../api/types";
 import type { SortField, SortDirection, InvoiceTableProps } from "../types/table";
 import { DEPOSIT_CONFIG } from "../types/table";
 import { INVOICE_STATUS_CONFIG, PAYMENT_METHOD_LABELS, CATEGORY_CONFIG, ALL_INVOICE_STATUSES } from "../types/invoice";
+import { INVOICE_COLUMNS } from "./invoiceColumns";
 import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 import { AttachmentsModal } from "./AttachmentsModal";
 import { MergeInvoicesModal } from "./MergeInvoicesModal";
-
-function formatPrice(price: number, currency: CurrencyCode = "EUR"): string {
-  const symbol = CURRENCY_SYMBOLS[currency] || "€";
-  return `${symbol}${price.toFixed(2)}`;
-}
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
-}
+import { formatDate, formatPrice } from "../utils";
 
 // Calculate days overdue for an invoice
 function getDaysOverdue(invoiceDate: string): number {
@@ -193,7 +185,7 @@ function SortIcon({ field, currentField, direction }: { field: SortField; curren
   return <ArrowDown size={14} className="bo-tableSortIcon bo-tableSortIcon--active" />;
 }
 
-function SortableHeader({ field, label, currentField, sortDirection, onSort }: { field: SortField; label: string; currentField: SortField | null; sortDirection: SortDirection; onSort: (field: SortField) => void }) {
+function SortableHeader({ field, label, icon: Icon, currentField, sortDirection, onSort }: { field: SortField; label: string; icon?: React.ComponentType<{ size?: number; className?: string }>; currentField: SortField | null; sortDirection: SortDirection; onSort: (field: SortField) => void }) {
   return (
     <button
       type="button"
@@ -203,6 +195,7 @@ function SortableHeader({ field, label, currentField, sortDirection, onSort }: {
       aria-sort={currentField === field ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
       data-testid={`invoice-sort-${field}`}
     >
+      {Icon ? <Icon size={14} className="bo-tableColIcon" /> : null}
       {label}
       <SortIcon field={field} currentField={currentField} direction={sortDirection} />
     </button>
@@ -257,7 +250,7 @@ function TableSkeletonRow() {
 
 function TableSkeleton() {
   return (
-    <div data-testid="invoice-table-wrap" className="bo-tableWrap" data-slot="invoice-table-wrap">
+    <div data-testid="invoice-table-wrap" className="bo-tableWrap bo-tableWrap--facturas" data-slot="invoice-table-wrap">
       <div data-testid="invoice-table-scroll" className="bo-tableScroll" data-slot="invoice-table-scroll">
         <table data-testid="invoice-table-2" className="bo-table bo-table--facturas" aria-label="Cargando facturas..." data-slot="invoice-table">
           <thead data-testid="invoice-thead" data-slot="invoice-thead">
@@ -293,11 +286,24 @@ function TableSkeleton() {
   );
 }
 
-export function InvoiceTable({ invoices, loading, page, totalPages, total, sortField, sortDirection, onSort, hasFilters, onCreateNew, onEdit, onDuplicate, onSplit, onDelete, onDownloadPdf, onSendEmail, onSendWhatsApp, onPageChange, onStatusChange, onBulkStatusChange, onBulkDelete, onBulkPrint, onBulkMerge, onBulkSendEmail, onPrintAllVisible, onPreview, onViewCustomerHistory, onShowHistory, onViewNotes, onRegisterPayment, onSendReminder, onShowReminderHistory, onManageTemplates, onCreateCreditNote, onRemoveAttachment, onDownloadAllAttachments, onMergeInvoices }: InvoiceTableProps) {
+export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPages, total, sortField, sortDirection, onSort, hasFilters, onCreateNew, onEdit, onDuplicate, onSplit, onDelete, onDownloadPdf, onSendEmail, onSendWhatsApp, onPageChange, onStatusChange, onBulkStatusChange, onBulkDelete, onBulkPrint, onBulkMerge, onBulkSendEmail, onPrintAllVisible, onPreview, onViewCustomerHistory, onShowHistory, onViewNotes, onRegisterPayment, onSendReminder, onShowReminderHistory, onManageTemplates, onCreateCreditNote, onRemoveAttachment, onDownloadAllAttachments, onMergeInvoices }: InvoiceTableProps) {
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkStatusConfirmOpen, setBulkStatusConfirmOpen] = useState(false);
   const [pendingBulkStatus, setPendingBulkStatus] = useState<InvoiceStatus | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  // Shared motion for the bulk bars: pure opacity+blur crossfade (no y slide),
+  // so the in-flow bar never overlaps the filters above while animating.
+  // Coordination id: facturas_bulkbar_motion_v1
+  const bulkBarMotion = {
+    initial: reduceMotion ? { opacity: 0 } : { opacity: 0, filter: "blur(4px)" },
+    animate: reduceMotion ? { opacity: 1 } : { opacity: 1, filter: "blur(0px)" },
+    exit: reduceMotion
+      ? { opacity: 0, transition: { duration: 0 } }
+      : { opacity: 0, filter: "blur(4px)", transition: { duration: 0.15, ease: "easeOut" as const } },
+    transition: { duration: 0.2, ease: "easeOut" as const },
+  };
 
   // State for status change confirmation
   const [statusConfirmOpen, setStatusConfirmOpen] = useState(false);
@@ -469,28 +475,12 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
     setPendingNewStatus(null);
   };
 
-  const columns = useMemo(
-    () => [
-      { key: "selection", label: "", visible: true, priority: 0, sortable: false },
-      { key: "invoice_number", label: "N. Factura", visible: true, priority: 1, sortable: false },
-      { key: "customer_name", label: "Cliente", visible: true, priority: 1, sortable: false },
-      { key: "customer_email", label: "Email", visible: true, priority: 2, sortable: false },
-      { key: "amount", label: "Importe", visible: true, priority: 1, sortable: true, sortField: "amount" as SortField },
-      { key: "currency", label: "Moneda", visible: true, priority: 2, sortable: false },
-      { key: "payment_progress", label: "Pagado", visible: true, priority: 1, sortable: false },
-      { key: "invoice_date", label: "Fecha", visible: true, priority: 1, sortable: true, sortField: "invoice_date" as SortField },
-      { key: "due_date", label: "Vencimiento", visible: true, priority: 2, sortable: false },
-      { key: "payment_date", label: "F. Pago", visible: true, priority: 2, sortable: false },
-      { key: "payment_method", label: "Metodo", visible: true, priority: 2, sortable: false },
-      { key: "status", label: "Estado", visible: true, priority: 1, sortable: false },
-      { key: "is_reservation", label: "Tipo", visible: true, priority: 2, sortable: false },
-      { key: "deposit", label: "Deposito", visible: true, priority: 2, sortable: false },
-      { key: "category", label: "Categoria", visible: true, priority: 2, sortable: false },
-      { key: "attachment", label: "", visible: true, priority: 3, sortable: false },
-      { key: "actions", label: "", visible: true, priority: 3, sortable: false },
-    ],
-    [],
-  );
+  // Data columns from the single source of truth, filtered by the user's
+  // visible-columns preference. selection/attachment/actions are utility
+  // columns and always render.
+  // Coordination id: facturas_columns_preference_v1
+  const visibleSet = useMemo(() => new Set(visibleColumns), [visibleColumns]);
+  const dataColumns = useMemo(() => INVOICE_COLUMNS.filter((col) => visibleSet.has(col.id)), [visibleSet]);
 
   const showPagerBtns = totalPages > 1;
 
@@ -558,12 +548,27 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
   }
 
   return (
-    <div data-testid="invoiceTable-tableWrap" className="bo-tableWrap" data-slot="invoiceTable-tableWrap">
-      {/* Bulk Actions Bar */}
-      {someSelected && (
-        <div data-testid="invoiceTable-bulkBar" className="bo-bulkBar" role="region" aria-live="polite" data-slot="invoiceTable-bulkBar">
+    <div data-testid="invoiceTable-tableWrap" className="bo-tableWrap bo-tableWrap--facturas" data-slot="invoiceTable-tableWrap">
+      {/* Bulk Actions Bar — accent-tinted so the toolbar reads as the static
+          cue for the selected rows (facturas_bulkbar_motion_v1). mode="wait"
+          keeps the print bar and the selection bar from ever being in the
+          flow at the same time. */}
+      <AnimatePresence initial={false} mode="wait">
+        {someSelected && (
+        <motion.div
+          key="bulk-selected"
+          {...bulkBarMotion}
+          data-testid="invoiceTable-bulkBar"
+          className="bo-bulkBar bo-bulkBar--selected"
+          role="region"
+          aria-live="polite"
+          data-slot="invoiceTable-bulkBar"
+        >
           <div data-testid="invoiceTable-bulkBarContent" className="bo-bulkBarContent" data-slot="invoiceTable-bulkBarContent">
             <div data-testid="invoiceTable-bulkBarInfo" className="bo-bulkBarInfo" data-slot="invoiceTable-bulkBarInfo">
+              <span data-testid="invoiceTable-bulkBarIcon" className="bo-bulkBarBadge" aria-hidden="true" data-slot="invoiceTable-bulkBarIcon">
+                <Check size={14} strokeWidth={2} />
+              </span>
               <span data-testid="invoiceTable-bulkBarCount" className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{selectedIds.size} elemento{selectedIds.size !== 1 ? "s" : ""} seleccionado{selectedIds.size !== 1 ? "s" : ""}</span>
             </div>
             <div data-testid="invoiceTable-bulkBarActions" className="bo-bulkBarActions" data-slot="invoiceTable-bulkBarActions">
@@ -594,12 +599,17 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               <DropdownMenu
                 label="Cambiar estado"
                 items={bulkStatusOptions}
+                /* Same visual DNA as the Fusionar button: icon + text at
+                   bo-btn--sm sizing (see .bo-bulkAction override in CSS). */
                 triggerContent={
-                  <button className="bo-btn bo-btn--secondary bo-btn--sm" type="button" data-testid="invoice-bulk-status-btn">
+                  <>
+                    <RefreshCw size={16} />
                     Cambiar estado
-                  </button>
+                  </>
                 }
-                triggerClassName="bo-bulkAction"
+                triggerClassName="bo-btn bo-btn--secondary bo-btn--sm bo-bulkAction"
+                triggerDataSlot="invoiceTable-bulkStatusTrigger"
+                triggerDataTestId="invoice-bulk-status-btn"
               />
               <button
                 className="bo-btn bo-btn--secondary bo-btn--sm"
@@ -613,6 +623,9 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                 <Combine size={16} />
                 Fusionar
               </button>
+              {/* Destructive actions sit apart: a divider keeps the safe and
+                  danger clusters optically separated. */}
+              <span data-testid="invoiceTable-bulkBarDivider" className="bo-bulkBarDivider" aria-hidden="true" data-slot="invoiceTable-bulkBarDivider" />
               <button
                 className="bo-btn bo-btn--danger bo-btn--sm"
                 type="button"
@@ -633,11 +646,18 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               </button>
             </div>
           </div>
-        </div>
-      )}
-      {/* Print All Visible Bar - shown when there are invoices but nothing is selected */}
-      {!someSelected && invoices.length > 0 && (
-        <div data-testid="invoiceTable-bulkBar-2" className="bo-bulkBar" role="region" aria-live="polite" data-slot="invoiceTable-bulkBar">
+        </motion.div>
+        )}
+        {!someSelected && invoices.length > 0 && (
+        <motion.div
+          key="bulk-print"
+          {...bulkBarMotion}
+          data-testid="invoiceTable-bulkBar-2"
+          className="bo-bulkBar"
+          role="region"
+          aria-live="polite"
+          data-slot="invoiceTable-bulkBar"
+        >
           <div data-testid="invoiceTable-bulkBarContent-2" className="bo-bulkBarContent" data-slot="invoiceTable-bulkBarContent">
             <div data-testid="invoiceTable-bulkBarInfo-2" className="bo-bulkBarInfo" data-slot="invoiceTable-bulkBarInfo">
               <span data-testid="invoiceTable-bulkBarCount-2" className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{invoices.length} facturas en esta pagina</span>
@@ -654,42 +674,43 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
       <div data-testid="invoice-table-scroll-2" className="bo-tableScroll" data-slot="invoice-table-scroll">
         <table className="bo-table bo-table--facturas" aria-label="Tabla de facturas" data-testid="invoice-table" data-slot="invoice-table">
           <thead data-testid="invoice-thead-2" data-slot="invoice-thead">
             <tr data-testid="invoice-table-row-3" data-slot="invoice-table-row">
-              {columns.map((col) => (
-                <th data-testid="invoice-table-header-13" key={col.key} className={`col-${col.key}`} data-slot="invoice-table-header">
-                  {col.key === "selection" ? (
-                    <label data-testid="invoiceTable-checkboxContainer-header" className="bo-checkboxContainer bo-checkboxContainer--header" data-slot="invoiceTable-checkboxContainer--header">
-                      <input
-                        type="checkbox"
-                        checked={allSelected}
-                        onChange={handleSelectAll}
-                        aria-label={allSelected ? "Deseleccionar todos" : "Seleccionar todos"}
-                        data-testid="invoice-select-all-checkbox"
-                      />
-                      <span data-testid="invoiceTable-checkboxMark" className="bo-checkboxMark" data-slot="invoiceTable-checkboxMark"></span>
-                    </label>
-                  ) : "sortField" in col && col.sortable ? (
-                    <SortableHeader
-                      field={col.sortField as SortField}
-                      label={col.label}
-                      currentField={sortField}
-                      sortDirection={sortDirection}
-                      onSort={onSort}
-                    />
-                  ) : col.key === "actions" ? (
-                    <span data-testid="invoiceTable-actionsHeaderLabel" className="bo-srOnly" data-slot="invoiceTable-actionsHeaderLabel">Acciones</span>
-                  ) : col.key === "attachment" ? (
-                    <span data-testid="invoiceTable-attachmentHeaderLabel" className="bo-srOnly" data-slot="invoiceTable-attachmentHeaderLabel">Adjuntos</span>
-                  ) : (
-                    col.label
-                  )}
+              <th data-testid="invoice-table-header-sel" className="col-selection" data-slot="invoice-table-header">
+                <label data-testid="invoiceTable-checkboxContainer-header" className="bo-checkboxContainer bo-checkboxContainer--header" data-slot="invoiceTable-checkboxContainer--header">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={handleSelectAll}
+                    aria-label={allSelected ? "Deseleccionar todos" : "Seleccionar todos"}
+                    data-testid="invoice-select-all-checkbox"
+                  />
+                  <span data-testid="invoiceTable-checkboxMark" className="bo-checkboxMark" data-slot="invoiceTable-checkboxMark"></span>
+                </label>
+              </th>
+              {dataColumns.map((col) => (
+                <th data-testid={`invoice-table-header-${col.id}`} key={col.id} className={`col-${col.id}`} data-slot="invoice-table-header">
+                  <SortableHeader
+                    field={col.id}
+                    label={col.label}
+                    icon={col.icon}
+                    currentField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={onSort}
+                  />
                 </th>
               ))}
+              <th data-testid="invoice-table-header-att" className="col-attachment" data-slot="invoice-table-header">
+                <span data-testid="invoiceTable-attachmentHeaderLabel" className="bo-srOnly" data-slot="invoiceTable-attachmentHeaderLabel">Adjuntos</span>
+              </th>
+              <th data-testid="invoice-table-header-act" className="col-actions" data-slot="invoice-table-header">
+                <span data-testid="invoiceTable-actionsHeaderLabel" className="bo-srOnly" data-slot="invoiceTable-actionsHeaderLabel">Acciones</span>
+              </th>
             </tr>
           </thead>
           <tbody data-testid="invoice-tbody-2" data-slot="invoice-tbody">
@@ -700,8 +721,8 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
               const daysOverdue = isOverdue ? getDaysOverdue(effectiveDueDate) : 0;
 
               return (
-              <tr data-testid="InvoiceTable-tr" key={invoice.id} className={`bo-tableRow${selectedIds.has(invoice.id) ? " is-selected" : ""}${isOverdue ? " bo-tableRow--overdue" : ""}`} data-slot={`invoice-table-row-${invoice.id}`}>
-                <td data-testid="invoice-table-cell-12" className={`col-selection`} data-label="" data-slot="invoice-table-cell">
+              <tr data-testid="InvoiceTable-tr" key={invoice.id} className={`bo-tableRow bo-tableRow--clickable${selectedIds.has(invoice.id) ? " is-selected" : ""}${isOverdue ? " bo-tableRow--overdue" : ""}`} onClick={() => onPreview(invoice)} data-slot={`invoice-table-row-${invoice.id}`}>
+                <td data-testid="invoice-table-cell-12" className={`col-selection`} data-label="" onClick={(e) => e.stopPropagation()} data-slot="invoice-table-cell">
                   <label data-testid="invoiceTable-checkboxContainer" className="bo-checkboxContainer" data-slot="invoiceTable-checkboxContainer">
                     <input
                       type="checkbox"
@@ -713,15 +734,18 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <span data-testid="invoiceTable-checkboxMark-2" className="bo-checkboxMark" data-slot="invoiceTable-checkboxMark"></span>
                   </label>
                 </td>
+                {visibleSet.has("invoice_number") && (
                 <td data-testid="invoice-table-cell-13" className={`col-invoice_number`} data-label="N. Factura" data-slot="invoice-table-cell">
                   {invoice.invoice_number || "-"}
                 </td>
+                )}
+                {visibleSet.has("customer_name") && (
                 <td data-testid="invoice-table-cell-14" className={`col-customer_name`} data-label="Cliente" data-slot="invoice-table-cell">
                   <div data-testid="invoiceTable-tableCustomer-2" className="bo-tableCustomer" data-slot="invoiceTable-tableCustomer">
                     <button
                       type="button"
                       className="bo-tableCustomerName bo-tableCustomerName--link"
-                      onClick={() => onViewCustomerHistory(invoice.customer_name + (invoice.customer_surname ? ` ${invoice.customer_surname}` : ""), invoice.customer_email)}
+                      onClick={(e) => { e.stopPropagation(); onViewCustomerHistory(invoice.customer_name + (invoice.customer_surname ? ` ${invoice.customer_surname}` : ""), invoice.customer_email); }}
                       title="Ver historial del cliente"
                       data-testid={`invoice-view-customer-btn-${invoice.id}`}
                     >
@@ -732,15 +756,27 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     )}
                   </div>
                 </td>
+                )}
+                {visibleSet.has("customer_email") && (
                 <td data-testid="invoice-table-cell-15" className={`col-customer_email`} data-label="Email" data-slot="invoice-table-cell">{invoice.customer_email}</td>
+                )}
+                {visibleSet.has("amount") && (
                 <td data-testid="invoice-table-cell-16" className={`col-amount`} data-label="Importe" data-slot="invoice-table-cell">{formatPrice(invoice.amount, invoice.currency)}</td>
+                )}
+                {visibleSet.has("currency") && (
                 <td data-testid="invoice-table-cell-17" className={`col-currency`} data-label="Moneda" data-slot="invoice-table-cell">
                   <span data-testid="invoiceTable-badge-muted" className="bo-badge bo-badge--muted" data-slot="invoiceTable-badge--muted">{invoice.currency || "EUR"}</span>
                 </td>
+                )}
+                {visibleSet.has("payment_progress") && (
                 <td data-testid="invoice-table-cell-18" className={`col-payment_progress`} data-label="Pagado" data-slot="invoice-table-cell">
                   <PaymentProgressCell invoice={invoice} />
                 </td>
+                )}
+                {visibleSet.has("invoice_date") && (
                 <td data-testid="invoice-table-cell-19" className={`col-invoice_date`} data-label="Fecha" data-slot="invoice-table-cell">{formatDate(invoice.invoice_date)}</td>
+                )}
+                {visibleSet.has("due_date") && (
                 <td data-testid="invoice-table-cell-20" className={`col-due_date`} data-label="Vencimiento" data-slot="invoice-table-cell">
                   {invoice.due_date ? (
                     <span data-testid="invoice-table-due-date"
@@ -753,6 +789,8 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <span data-testid="invoiceTable-mutedText" className="bo-mutedText" data-slot="invoiceTable-mutedText">-</span>
                   )}
                 </td>
+                )}
+                {visibleSet.has("payment_date") && (
                 <td data-testid="invoice-table-cell-21" className={`col-payment_date`} data-label="F. Pago" data-slot="invoice-table-cell">
                   {invoice.payment_date ? (
                     <span data-testid="invoiceTable-paymentDate" className="bo-paymentDate" title="Fecha de pago" data-slot="invoiceTable-paymentDate">
@@ -768,6 +806,8 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <span data-testid="invoiceTable-mutedText-2" className="bo-mutedText" data-slot="invoiceTable-mutedText">-</span>
                   )}
                 </td>
+                )}
+                {visibleSet.has("payment_method") && (
                 <td data-testid="invoice-table-cell-22" className={`col-payment_method`} data-label="Metodo" data-slot="invoice-table-cell">
                   {invoice.payment_method ? (
                     <span data-testid="invoiceTable-paymentMethod" className="bo-paymentMethod" title={PAYMENT_METHOD_LABELS[invoice.payment_method]} data-slot="invoiceTable-paymentMethod">
@@ -778,26 +818,35 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     <span data-testid="invoiceTable-mutedText-3" className="bo-mutedText" data-slot="invoiceTable-mutedText">-</span>
                   )}
                 </td>
-                <td data-testid="invoice-table-cell-23" className={`col-status`} data-label="Estado" data-slot="invoice-table-cell">
+                )}
+                {visibleSet.has("status") && (
+                <td data-testid="invoice-table-cell-23" className={`col-status`} data-label="Estado" onClick={(e) => e.stopPropagation()} data-slot="invoice-table-cell">
                   <StatusCell
                     invoice={invoice}
                     onStatusChange={onStatusChange}
                     onStatusChangeConfirm={handleStatusChangeConfirm}
                   />
                 </td>
+                )}
+                {visibleSet.has("is_reservation") && (
                 <td data-testid="invoice-table-cell-24" className={`col-is_reservation`} data-label="Tipo" data-slot="invoice-table-cell">
                   <ReservationBadge isReservation={Boolean(invoice.is_reservation)} />
                   <SplitBadge isSplitChild={invoice.is_split_child} isSplitParent={invoice.is_split_parent} percentage={invoice.split_percentage} />
                 </td>
+                )}
+                {visibleSet.has("deposit") && (
                 <td data-testid="invoice-table-cell-25" className={`col-deposit`} data-label="Deposito" data-slot="invoice-table-cell">
                   <DepositBadge invoice={invoice} />
                 </td>
+                )}
+                {visibleSet.has("category") && (
                 <td data-testid="invoice-table-cell-26" className={`col-category`} data-label="Categoria" data-slot="invoice-table-cell">
                   <CreditNoteBadge invoice={invoice} />
                   <CategoryBadge category={invoice.category} />
                   <TagsList tags={invoice.tags} />
                 </td>
-                <td data-testid="invoice-table-cell-27" className={`col-attachment`} data-label="" data-slot="invoice-table-cell">
+                )}
+                <td data-testid="invoice-table-cell-27" className={`col-attachment`} data-label="" onClick={(e) => e.stopPropagation()} data-slot="invoice-table-cell">
                   {(invoice.attachments && invoice.attachments.length > 0) || invoice.account_image_url || invoice.internal_notes ? (
                     <div data-testid="invoiceTable-tableAttachmentCell" className="bo-tableAttachmentCell" data-slot="invoiceTable-tableAttachmentCell">
                       {invoice.attachments && invoice.attachments.length > 0 && (
@@ -828,7 +877,7 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
                     </div>
                   ) : null}
                 </td>
-                <td data-testid="invoice-table-cell-28" className={`col-actions`} data-label="Acciones" data-slot="invoice-table-cell">
+                <td data-testid="invoice-table-cell-28" className={`col-actions`} data-label="Acciones" onClick={(e) => e.stopPropagation()} data-slot="invoice-table-cell">
                   <div data-testid="invoiceTable-tableActions-2" className="bo-tableActions" data-slot="invoiceTable-tableActions">
                     <DropdownMenu
                       label={`Acciones de factura ${invoice.invoice_number || invoice.id}`}
@@ -880,26 +929,54 @@ export function InvoiceTable({ invoices, loading, page, totalPages, total, sortF
             <tr data-testid="invoice-table-row-4" data-slot="invoice-table-row">
               <td data-testid="invoice-table-cell-29" className="col-selection" data-label="" data-slot="invoice-table-cell">
               </td>
+              {visibleSet.has("invoice_number") && (
               <td data-testid="invoice-table-cell-30" className="col-invoice_number" data-label="N. Factura" data-slot="invoice-table-cell">
                 <strong data-testid="InvoiceTable-strong">Total</strong>
               </td>
+              )}
+              {visibleSet.has("customer_name") && (
               <td data-testid="invoice-table-cell-31" className="col-customer_name" data-label="Cliente" data-slot="invoice-table-cell">
                 {totals.displayedCount} de {total} facturas
               </td>
+              )}
+              {visibleSet.has("customer_email") && (
               <td data-testid="invoice-table-cell-32" className="col-customer_email" data-label="Email" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("amount") && (
               <td data-testid="invoice-table-cell-33" className="col-amount" data-label="Importe" data-slot="invoice-table-cell">
                 <strong data-testid="InvoiceTable-strong-2">{formatPrice(totals.totalAmount)}</strong>
               </td>
+              )}
+              {visibleSet.has("currency") && (
               <td data-testid="invoice-table-cell-34" className="col-currency" data-label="Moneda" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("payment_progress") && (
               <td data-testid="invoice-table-cell-35" className="col-payment_progress" data-label="Pagado" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("invoice_date") && (
               <td data-testid="invoice-table-cell-36" className="col-invoice_date" data-label="Fecha" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("due_date") && (
               <td data-testid="invoice-table-cell-37" className="col-due_date" data-label="Vencimiento" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("payment_date") && (
               <td data-testid="invoice-table-cell-38" className="col-payment_date" data-label="F. Pago" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("payment_method") && (
               <td data-testid="invoice-table-cell-39" className="col-payment_method" data-label="Metodo" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("status") && (
               <td data-testid="invoice-table-cell-40" className="col-status" data-label="Estado" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("is_reservation") && (
               <td data-testid="invoice-table-cell-41" className="col-is_reservation" data-label="Tipo" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("deposit") && (
               <td data-testid="invoice-table-cell-42" className="col-deposit" data-label="Deposito" data-slot="invoice-table-cell"></td>
+              )}
+              {visibleSet.has("category") && (
               <td data-testid="invoice-table-cell-43" className="col-category" data-label="Categoria" data-slot="invoice-table-cell"></td>
+              )}
               <td data-testid="invoice-table-cell-44" className="col-attachment" data-label="" data-slot="invoice-table-cell"></td>
               <td data-testid="invoice-table-cell-45" className="col-actions" data-label="" data-slot="invoice-table-cell"></td>
             </tr>

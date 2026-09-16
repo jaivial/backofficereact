@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from "react";
-import { Save, Send, Upload, X, Search, Loader2, Check, AlertCircle, FileText, Tag, Plus, XCircle, List, Eye } from "lucide-react";
+import { Save, Send, Upload, X, Search, Loader2, Check, AlertCircle, FileText, Tag, Plus, XCircle, List, Eye, ChevronDown, Clock } from "lucide-react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
 import { SearchableSelect } from "../../../../ui/inputs/SearchableSelect";
@@ -8,6 +8,7 @@ import { SPAIN_PROVINCES, SPAIN_MUNICIPIOS_BY_PROVINCE } from "../constants/spai
 import { PROVINCE_NAME_BY_CODE, PROVINCE_CODE_BY_NAME, allMunicipios, provinceCodeForMunicipio } from "../constants/spainLocations.helpers";
 import { Switch } from "../../../../ui/shadcn/Switch";
 import { SwitchField } from "../../../../ui/inputs/SwitchField";
+import { DropdownMenu } from "../../../../ui/inputs/DropdownMenu";
 import { FillFromReservationModal } from "./FillFromReservationModal";
 import { SelectTemplateModal } from "./SelectTemplateModal";
 import { InvoicePdfPreviewModal } from "./InvoicePdfPreviewModal";
@@ -25,7 +26,7 @@ type InvoiceFormProps = {
   invoice: Invoice | null;
   isDuplicate?: boolean;
   isSubmitting?: boolean;
-  onSave: (input: InvoiceInput, shouldSend: boolean) => void;
+  onSave: (input: InvoiceInput, shouldSend?: boolean, opts?: { keepOpen?: boolean }) => Promise<number | undefined>;
   onCancel: () => void;
   searchReservations: (params: {
     date_from?: string;
@@ -242,6 +243,11 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  // Invoice id obtained by the preview flow's implicit save (kept separate
+  // from the invoice prop because the parent owns that identity).
+  // Coordination id: invoices_preview_save_first_v1
+  const [previewInvoiceId, setPreviewInvoiceId] = useState<number | null>(null);
+  const [previewSaving, setPreviewSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [reservationSelectionMode, setReservationSelectionMode] = useState<"full" | "booking">("full");
   const [pendingReservationSelection, setPendingReservationSelection] = useState(false);
@@ -957,19 +963,25 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   }), [formData, onSave]);
 
   // Handle preview - first save as draft, then show preview
-  const handlePreview = useCallback(() => {
-    // First save as draft to get an ID for the PDF
+  const handlePreview = useCallback(async () => {
+    if (previewSaving || isSubmitting) return;
+    // First save as draft to get an ID for the PDF; the parent keeps the
+    // form open and adopts the created invoice (invoices_preview_save_first_v1).
     const input: InvoiceInput = {
       ...formData,
       status: "borrador",
     };
-    // Save without sending, then show preview
-    onSave(input, false);
-    // Show a toast to inform the user
-    pushToast({ kind: "info", title: "Guardando factura", message: "La factura se esta guardando para generar la vista previa" });
-    // Show preview modal - it will handle the case where the invoice hasn't been saved yet
-    setShowPreviewModal(true);
-  }, [formData, onSave, pushToast]);
+    setPreviewSaving(true);
+    setPreviewInvoiceId(null);
+    try {
+      const savedId = await onSave(input, false, { keepOpen: true });
+      if (!savedId) return; // failure toast already surfaced by the parent
+      setPreviewInvoiceId(savedId);
+      setShowPreviewModal(true);
+    } finally {
+      setPreviewSaving(false);
+    }
+  }, [formData, onSave, isSubmitting, previewSaving]);
 
   // Validate all required fields - form is valid only if all validation errors are null
   const isValid = useMemo(() => {
@@ -983,6 +995,16 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       (useLineItems ? hasLineItems : amount)
     );
   }, [errors, invoiceDate, amount, useLineItems, lineItems]);
+
+  // Shared IVA mode control, rendered just above the IVA inputs of the active mode.
+  const ivaModeToggle = (
+    <SwitchField
+      checked={ivaIncluded}
+      onChange={setIvaIncluded}
+      label={ivaIncluded ? "IVA incluido" : "IVA desglosado"}
+      data-testid="invoice-iva-mode-toggle"
+    />
+  );
 
   return (
     <div data-testid="invoiceForm-invoiceForm" className="bo-invoiceForm" style={{ position: "relative" }} data-slot="invoiceForm-invoiceForm">
@@ -1294,6 +1316,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
             {useLineItems ? (
               <div data-testid="invoiceForm-invoiceFormRow-lineItems" className="bo-invoiceFormRow bo-invoiceFormRow--lineItems" data-slot="invoiceForm-invoiceFormRow--lineItems">
+                {ivaModeToggle}
                 <LineItems
                   ref={lineItemsRef}
                   items={lineItems}
@@ -1345,22 +1368,25 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     />
                   </label>
 
-                  {!ivaIncluded && (
-                    <label data-testid="invoice-form-iva-rate-label" className="bo-field" data-slot="invoice-form-iva-rate-label">
-                      <span data-testid="invoiceForm-label-20" className="bo-label" data-slot="invoiceForm-label">IVA (%)</span>
-                      <input
-                        className="bo-input"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="100"
-                        value={ivaRate}
-                        onChange={(e) => setIvaRate(e.target.value)}
-                        aria-describedby="iva-help"
-                        data-testid="invoice-iva-rate-input"
-                      />
-                    </label>
-                  )}
+                  <div data-testid="invoice-form-iva-mode-field" className="bo-ivaModeField" data-slot="invoice-form-iva-mode-field">
+                    {ivaModeToggle}
+                    {!ivaIncluded && (
+                      <label data-testid="invoice-form-iva-rate-label" className="bo-field" data-slot="invoice-form-iva-rate-label">
+                        <span data-testid="invoiceForm-label-20" className="bo-label" data-slot="invoiceForm-label">IVA (%)</span>
+                        <input
+                          className="bo-input"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="100"
+                          value={ivaRate}
+                          onChange={(e) => setIvaRate(e.target.value)}
+                          aria-describedby="iva-help"
+                          data-testid="invoice-iva-rate-input"
+                        />
+                      </label>
+                    )}
+                  </div>
                 </div>
 
                 <div data-testid="invoiceForm-invoiceFormRow-5" className="bo-invoiceFormRow" data-slot="invoiceForm-invoiceFormRow">
@@ -1424,13 +1450,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             )}
 
             {/* IVA Summary */}
-            <div data-testid="invoiceForm-invoiceFormRow-iva" className="bo-invoiceFormRow bo-invoiceFormRow--iva bo-ivaModeRow" id="iva-help" data-slot="invoiceForm-invoiceFormRow--iva">
-              <SwitchField
-                checked={ivaIncluded}
-                onChange={setIvaIncluded}
-                label={ivaIncluded ? "IVA incluido" : "IVA desglosado"}
-                data-testid="invoice-iva-mode-toggle"
-              />
+            <div data-testid="invoiceForm-invoiceFormRow-iva" className="bo-invoiceFormRow bo-invoiceFormRow--iva" id="iva-help" data-slot="invoiceForm-invoiceFormRow--iva">
               <div data-testid="invoiceForm-ivaSummary" className="bo-ivaSummary" data-slot="invoiceForm-ivaSummary">
                 {discountAmount > 0 && (
                   <div data-testid="invoiceForm-ivaSummaryItem" className="bo-ivaSummaryItem" data-slot="invoiceForm-ivaSummaryItem">
@@ -1790,26 +1810,51 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
         </div>
       </div>
 
-      {/* Form actions */}
+      {/* Form actions — Guardar is one popover with both save destinations;
+          labels collapse to icons ≤899px (invoice_form_actions_icons_v1). */}
       <div data-testid="invoiceForm-invoiceFormActions" className="bo-invoiceFormActions" data-slot="invoiceForm-invoiceFormActions">
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)" data-testid="invoice-cancel-btn">
-          Cancelar
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={onCancel} disabled={isSubmitting} title="Cancelar (Esc)" aria-label="Cancelar" data-testid="invoice-cancel-btn">
+          <X size={16} />
+          <span className="bo-btnText" data-testid="invoice-cancel-btn-text">Cancelar</span>
         </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSaveDraft} disabled={!isValid || isSubmitting} title="Guardar borrador (Ctrl+S)" data-testid="invoice-save-draft-btn">
-          <Save size={16} />
-          Guardar borrador
-        </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handleSavePending} disabled={!isValid || isSubmitting} title="Guardar como pendiente (Ctrl+S)" data-testid="invoice-save-pending-btn">
-          <Save size={16} />
-          Guardar como pendiente
-        </button>
-        <button type="button" className="bo-btn bo-btn--secondary" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF" data-testid="invoice-preview-btn">
+        <DropdownMenu
+          label="Guardar factura"
+          disabled={!isValid || isSubmitting}
+          triggerContent={
+            <>
+              <Save size={16} />
+              <span className="bo-btnText" data-testid="invoice-save-btn-text">Guardar</span>
+              <ChevronDown size={14} />
+            </>
+          }
+          triggerClassName="bo-btn bo-btn--secondary"
+          triggerDataSlot="invoiceForm-saveTrigger"
+          triggerDataTestId="invoice-save-btn"
+          menuMinWidthPx={220}
+          items={[
+            {
+              id: "save-draft",
+              label: "Guardar borrador",
+              icon: <Save size={14} />,
+              testId: "invoice-save-draft-btn",
+              onSelect: handleSaveDraft,
+            },
+            {
+              id: "save-pending",
+              label: "Guardar como pendiente",
+              icon: <Clock size={14} />,
+              testId: "invoice-save-pending-btn",
+              onSelect: handleSavePending,
+            },
+          ]}
+        />
+        <button type="button" className="bo-btn bo-btn--secondary" onClick={handlePreview} disabled={!isValid || isSubmitting} title="Ver vista previa del PDF" aria-label="Vista previa" data-testid="invoice-preview-btn">
           <Eye size={16} />
-          Vista previa
+          <span className="bo-btnText" data-testid="invoice-preview-btn-text">Vista previa</span>
         </button>
-        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!customerEmail.trim() || !isValid || isSubmitting} title={!customerEmail.trim() ? "Se requiere email del cliente para enviar" : "Enviar factura (Ctrl+S)"} data-testid="invoice-submit-btn">
+        <button type="button" className="bo-btn bo-btn--primary" onClick={handleSend} disabled={!customerEmail.trim() || !isValid || isSubmitting} title={!customerEmail.trim() ? "Se requiere email del cliente para enviar" : "Enviar factura (Ctrl+S)"} aria-label="Enviar" data-testid="invoice-submit-btn">
           <Send size={16} />
-          Enviar
+          <span className="bo-btnText" data-testid="invoice-submit-btn-text">Enviar</span>
         </button>
       </div>
 
@@ -1835,7 +1880,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       {showPreviewModal && (
         <InvoicePdfPreviewModal
           invoiceData={{
-            id: invoice?.id,
+            id: invoice?.id ?? previewInvoiceId ?? undefined,
             invoice_number: invoice?.invoice_number,
             customer_name: customerName,
             customer_surname: customerSurname,
