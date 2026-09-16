@@ -305,8 +305,8 @@
   display: none;
 }
 
-.bo-facturasPane[data-visible="tabla"],
-.bo-facturasPane[data-visible="grid"] {
+.bo-facturasPane--tabla[data-visible="tabla"],
+.bo-facturasPane--grid[data-visible="grid"] {
   display: block;
 }
 
@@ -459,6 +459,25 @@
   font-size: 11px;
   color: var(--bo-faint, var(--bo-muted));
   font-variant-numeric: tabular-nums;
+}
+
+/* Card footer: quick actions (preview/send) + the shared 3-dots menu.
+   margin-top:auto pins it to the bottom on equal-height cards.
+   Coordination id: facturas_cards_actions_v1 */
+.bo-invoiceCardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--bo-border);
+}
+
+.bo-invoiceCardFootActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ── ≤900px: single-column card grid only ───────────────
