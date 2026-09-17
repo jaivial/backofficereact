@@ -44,6 +44,14 @@ export const AD_DEFAULT_COLOR = "#436754";
 export const WHATSAPP_DEFAULT_MESSAGE = "Hola, me gustaría más información";
 export const WHATSAPP_HOSTS = new Set(["wa.me", "api.whatsapp.com", "wa.link"]);
 
+/** Server payloads omit empty fields (`omitempty`), so any text coming from an
+ * ad can be undefined. Coerce once here instead of guarding every call site. */
+export function asText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value === null || value === undefined) return "";
+  return String(value);
+}
+
 export function createClientID(prefix: string): string {
   const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   return `${prefix}-${id}`;
@@ -64,8 +72,8 @@ export type ButtonAction = "route" | "url" | "whatsapp";
  * URL. Bare domains get https://, site-relative paths hang off the restaurant
  * website, and anything else is kept untouched.
  */
-export function normalizeButtonURL(value: string, website = ""): string {
-  const raw = value.trim();
+export function normalizeButtonURL(value: unknown, website = ""): string {
+  const raw = asText(value).trim();
   if (!raw) return "";
   if (/^(https?:|mailto:|tel:)/i.test(raw)) return raw;
   if (raw.startsWith("/")) {
@@ -75,16 +83,17 @@ export function normalizeButtonURL(value: string, website = ""): string {
   return `https://${raw.replace(/^\/+/, "")}`;
 }
 
-export function buildWhatsAppURL(phone: string, message = ""): string {
-  const digits = phone.replace(/[^\d]/g, "");
+export function buildWhatsAppURL(phone: unknown, message: unknown = ""): string {
+  const digits = asText(phone).replace(/[^\d]/g, "");
   if (!digits) return "";
-  const query = message.trim() ? `?text=${encodeURIComponent(message.trim())}` : "";
+  const text = asText(message).trim();
+  const query = text ? `?text=${encodeURIComponent(text)}` : "";
   return `https://wa.me/${digits}${query}`;
 }
 
 /** Reads a wa.me / api.whatsapp.com URL back into phone + message. */
-export function parseWhatsAppURL(value: string): { phone: string; message: string } | null {
-  const raw = value.trim();
+export function parseWhatsAppURL(value: unknown): { phone: string; message: string } | null {
+  const raw = asText(value).trim();
   if (!raw) return null;
   try {
     const parsed = new URL(raw);
@@ -98,8 +107,9 @@ export function parseWhatsAppURL(value: string): { phone: string; message: strin
 }
 
 export function buttonAction(cta: Pick<RestaurantAdCTA, "navigation_mode" | "custom_url">): ButtonAction {
-  if (cta.navigation_mode === "custom" && parseWhatsAppURL(cta.custom_url)) return "whatsapp";
-  return cta.navigation_mode === "custom" ? "url" : "route";
+  const mode = asText(cta.navigation_mode);
+  if (mode === "custom" && parseWhatsAppURL(cta.custom_url)) return "whatsapp";
+  return mode === "custom" ? "url" : "route";
 }
 
 /**
@@ -107,9 +117,10 @@ export function buttonAction(cta: Pick<RestaurantAdCTA, "navigation_mode" | "cus
  * routes) so both the editor preview and the public site can link it.
  */
 export function buildCTAURL(website: string, cta: Pick<RestaurantAdCTA, "navigation_mode" | "route" | "custom_url">): string {
-  if (cta.navigation_mode === "custom") return normalizeButtonURL(cta.custom_url, website);
-  const base = website.trim().replace(/\/+$/, "");
-  const route = (cta.route || "/").startsWith("/") ? cta.route || "/" : `/${cta.route}`;
+  if (asText(cta.navigation_mode) === "custom") return normalizeButtonURL(cta.custom_url, website);
+  const base = asText(website).trim().replace(/\/+$/, "");
+  const stored = asText(cta.route) || "/";
+  const route = stored.startsWith("/") ? stored : `/${stored}`;
   return base ? `${base}${route === "/" ? "" : route}` : route;
 }
 

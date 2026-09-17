@@ -917,7 +917,7 @@ function ButtonRowCard({
       <div className="bo-anunciosRowField bo-anunciosRowField-2col" data-slot={`ad-cta-${cta.id}-fields`}>
         <label className="grid gap-1 text-xs text-bo-muted" data-slot={`ad-cta-${cta.id}-text-wrap`}>
           <span>Texto del botón {index + 1}</span>
-          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" data-testid={`ad-cta-${cta.id}-text`} />
+          <input value={cta.text ?? ""} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" data-testid={`ad-cta-${cta.id}-text`} />
         </label>
         <label className="grid gap-1 text-xs text-bo-muted" data-slot={`ad-cta-${cta.id}-color-wrap`}>
           <span>Color</span>
@@ -948,7 +948,7 @@ function ButtonRowCard({
             <span>URL personalizada</span>
             <input
               type="url"
-              value={cta.custom_url}
+              value={cta.custom_url ?? ""}
               onChange={(event) => onChange({ custom_url: event.target.value, navigation_mode: "custom" })}
               onBlur={(event) => onChange({ custom_url: normalizeButtonURL(event.target.value, website) })}
               className="bo-input"
@@ -961,7 +961,7 @@ function ButtonRowCard({
           <div className="bo-anunciosWhatsappFields" data-slot={`ad-cta-${cta.id}-whatsapp`} data-testid={`ad-cta-${cta.id}-whatsapp`}>
             <label className="grid gap-1 text-xs text-bo-muted">
               <span>Teléfono del restaurante</span>
-              <input value={phone} readOnly className="bo-input" data-testid={`ad-cta-${cta.id}-phone-restaurant`} />
+              <input value={phone ?? ""} readOnly className="bo-input" data-testid={`ad-cta-${cta.id}-phone-restaurant`} />
             </label>
             <label className="grid gap-1 text-xs text-bo-muted">
               <span>Teléfono personalizado</span>
