@@ -8,7 +8,7 @@ import type {
   RestaurantAdCTA,
   RestaurantAdStep,
 } from "../../../../../api/types";
-import { buildCTAURL, stepBackground } from "./lib/adEditor";
+import { asText, buildCTAURL, stepBackground } from "./lib/adEditor";
 
 /* Coordination id: ads_canvas_v1 - one renderer draws the public ad template
  * three times: read-only preview, live editing canvas and wizard step. Keeping
@@ -49,19 +49,20 @@ export function EditableText({
 }) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [editing, setEditing] = useState(false);
+  const text = asText(value);
 
   useEffect(() => {
     const node = ref.current;
     if (!node || editing) return;
     const next = node.innerText.replace(/\n$/, "");
-    if (next !== value) node.innerText = value;
-  }, [value, editing]);
+    if (next !== text) node.innerText = text;
+  }, [text, editing]);
 
   const commit = useCallback(() => {
     setEditing(false);
     const next = (ref.current?.innerText ?? "").replace(/\n$/, "");
-    if (next !== value) onCommit(next);
-  }, [onCommit, value]);
+    if (next !== text) onCommit(next);
+  }, [onCommit, text]);
 
   return (
     <span
@@ -72,7 +73,7 @@ export function EditableText({
       aria-label={ariaLabel}
       aria-multiline={multiline ? "true" : undefined}
       suppressContentEditableWarning={readOnly ? undefined : true}
-      data-placeholder={value ? undefined : placeholder}
+      data-placeholder={text ? undefined : placeholder}
       data-testid={testId}
       data-editing={editing ? "true" : "false"}
       data-readonly={readOnly ? "true" : undefined}
@@ -81,7 +82,7 @@ export function EditableText({
       onBlur={readOnly ? undefined : commit}
       onKeyDown={readOnly ? undefined : (event) => {
         if (event.key === "Escape") {
-          if (ref.current) ref.current.innerText = value;
+          if (ref.current) ref.current.innerText = text;
           (event.currentTarget as HTMLSpanElement).blur();
         }
         if (!multiline && event.key === "Enter") {
@@ -90,13 +91,14 @@ export function EditableText({
         }
       }}
     >
-      {value}
+      {text}
     </span>
   );
 }
 
 function isEmpty(item: RestaurantAdContentElement): boolean {
-  return item.type === "image" ? !item.value : !item.value.trim();
+  const value = asText(item.value);
+  return item.type === "image" ? !value : !value.trim();
 }
 
 function ContentNode({
