@@ -34,6 +34,7 @@ export function EditableText({
   ariaLabel,
   multiline,
   testId,
+  readOnly = false,
 }: {
   value: string;
   onCommit: (next: string) => void;
@@ -43,6 +44,8 @@ export function EditableText({
   ariaLabel: string;
   multiline?: boolean;
   testId?: string;
+  /** Read-only twin used by the preview: same markup, not editable. */
+  readOnly?: boolean;
 }) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [editing, setEditing] = useState(false);
@@ -63,20 +66,20 @@ export function EditableText({
   return (
     <span
       ref={ref}
-      role="textbox"
-      tabIndex={0}
+      role={readOnly ? undefined : "textbox"}
+      tabIndex={readOnly ? undefined : 0}
+      contentEditable={readOnly ? undefined : true}
       aria-label={ariaLabel}
       aria-multiline={multiline ? "true" : undefined}
-      contentEditable
-      suppressContentEditableWarning
+      suppressContentEditableWarning={readOnly ? undefined : true}
       data-placeholder={value ? undefined : placeholder}
       data-testid={testId}
       data-editing={editing ? "true" : "false"}
+      data-readonly={readOnly ? "true" : undefined}
       className={`bo-adEditable ${className ?? ""}`}
       style={style}
-      onFocus={() => setEditing(true)}
-      onBlur={commit}
-      onKeyDown={(event) => {
+      onBlur={readOnly ? undefined : commit}
+      onKeyDown={readOnly ? undefined : (event) => {
         if (event.key === "Escape") {
           if (ref.current) ref.current.innerText = value;
           (event.currentTarget as HTMLSpanElement).blur();
@@ -231,6 +234,7 @@ function StaticContent({ item }: { item: RestaurantAdContentElement }) {
   const node = (
     <EditableText
       value={item.value}
+      readOnly
       ariaLabel={AD_CONTENT_LABEL[item.type]}
       onCommit={() => undefined}
       className={item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"}

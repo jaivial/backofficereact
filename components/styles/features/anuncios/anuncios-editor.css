@@ -913,6 +913,10 @@ button.bg-bo-accent { color: var(--bo-bg); }
   pointer-events: none;
 }
 
+.bo-adEditable[data-readonly="true"] {
+  cursor: inherit;
+}
+
 /* Floating per-node bar: grip on the edge, alignment and delete in the
    middle band. Sits above the text without covering its first line. */
 .bo-adNodeBar {
