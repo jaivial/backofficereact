@@ -2440,12 +2440,33 @@ export type RestaurantAdCTA = {
 };
 export type RestaurantAdImageGenerationStatus = "idle" | "pending" | "ready" | "failed";
 export type RestaurantAdScheduleRange = { id: number; name: string; starts_at: string; ends_at: string };
+
+// Anuncio layout (coord id ads_layout_v1): "unico" is the classic single
+// announcement; "multiple" renders a step wizard (cards column -> announcement).
+export type RestaurantAdLayoutMode = "unico" | "multiple";
+export type RestaurantAdStepBackground = "image" | "color" | "transparent";
+export type RestaurantAdStep = {
+  id: string;
+  title: string;
+  description: string;
+  background_mode: RestaurantAdStepBackground;
+  background_color?: string;
+  background_image?: string;
+  /** Renders the "Ver más" wizard-advance button (default true). */
+  see_more?: boolean;
+  buttons: RestaurantAdCTA[];
+  /** Announcement body shown when the wizard advances to this step. */
+  content: RestaurantAdContentElement[];
+};
+export type RestaurantAdLayout = { mode: RestaurantAdLayoutMode; steps: RestaurantAdStep[] };
+
 export type RestaurantAd = {
   id: number;
   name: string;
   active: boolean;
   content: RestaurantAdContentElement[];
   ctas: RestaurantAdCTA[];
+  layout?: RestaurantAdLayout;
   starts_at?: string | null;
   ends_at?: string | null;
   blocked_ranges?: RestaurantAdScheduleRange[];
@@ -2454,7 +2475,7 @@ export type RestaurantAd = {
   created_at?: string;
   updated_at?: string;
 };
-export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas" | "starts_at" | "ends_at">;
+export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas" | "starts_at" | "ends_at" | "layout">;
 
 // Campanas: one markdown body broadcast to email + WhatsApp (coord id camp-*).
 export type CampaignChannel = "email" | "whatsapp";

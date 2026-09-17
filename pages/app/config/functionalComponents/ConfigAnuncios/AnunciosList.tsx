@@ -16,7 +16,14 @@ type AnunciosListProps = {
 };
 
 function firstImage(ad: RestaurantAd): string {
-  return ad.content.find((entry) => entry.type === "image")?.value ?? "";
+  const direct = ad.content.find((entry) => entry.type === "image")?.value ?? "";
+  if (direct) return direct;
+  // Multiple ads carry their imagery per wizard step.
+  return ad.layout?.steps.find((step) => step.background_image)?.background_image ?? "";
+}
+
+function layoutLabel(ad: RestaurantAd): string {
+  return ad.layout?.mode === "multiple" ? "M\u00faltiple \u00b7 wizard" : "\u00danico";
 }
 
 const NEW_HREF = "/app/anuncios/nuevo";
@@ -54,6 +61,7 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
       active: next,
       content: ad.content,
       ctas: ad.ctas,
+      layout: ad.layout ?? { mode: "unico", steps: [] },
       starts_at: ad.starts_at ?? null,
       ends_at: ad.ends_at ?? null,
     };
@@ -122,13 +130,16 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
         <span className="bo-anunciosListCount" data-slot="anuncios-list-count">{sorted.length}</span>
       </div>
 
-      <div className="bo-foodGrid" role="list" data-ui="anuncios-grid" data-testid="anuncios-grid">
+      <div className="bo-anunciosGrid" role="list" data-ui="anuncios-grid" data-testid="anuncios-grid">
         {sorted.map((ad) => (
           <FoodDishCard
             key={ad.id}
             title={ad.name}
             imageUrl={firstImage(ad) || null}
             inactive={!ad.active}
+            primaryMeta={layoutLabel(ad)}
+            secondaryMeta={ad.content.length ? `${ad.content.length} elementos` : undefined}
+            className="bo-anunciosCard"
             onOpen={() => { void navigate(`/app/anuncios/${ad.id}`); }}
             openAriaLabel={`Abrir detalle de ${ad.name}`}
             testId={`ad-card-${ad.id}`}
