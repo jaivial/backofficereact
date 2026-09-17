@@ -7,4 +7,6 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export { Input } from "./input";
 export { Label } from "./label";
 export { Progress } from "./progress";
+export { Toggle, toggleVariants } from "./toggle";
+export type { ToggleProps } from "./toggle";
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tooltip";

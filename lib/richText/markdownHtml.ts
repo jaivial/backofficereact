@@ -211,18 +211,3 @@ export function htmlToMarkdown(html: string): string {
   if (!doc.body) return source;
   return blocksToMarkdown(doc.body).replace(/\n{3,}/g, "\n\n").trim();
 }
-
-/**
- * Rewrites the width attribute of one `<img>` of an HTML fragment, addressed either by
- * its position or by its `src`. Used by the editor to persist the width the operator
- * chose: the markdown bridge turns that attribute back into the `=W` hint.
- */
-export function setHtmlImageWidth(html: string, target: number | ((src: string) => boolean), width: number): string {
-  let index = -1;
-  return (html || "").replace(/<img\b[^>]*>/gi, (tag) => {
-    index += 1;
-    const matches = typeof target === "function" ? target(/\ssrc="([^"]*)"/i.exec(tag)?.[1] ?? "") : index === target;
-    if (!matches) return tag;
-    return tag.replace(/\s+width="[^"]*"/i, "").replace(/<img/i, `<img width="${width}"`);
-  });
-}
