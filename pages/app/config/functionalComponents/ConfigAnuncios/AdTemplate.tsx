@@ -535,7 +535,7 @@ function WizardCard({
   const card = (
     <div
       className="bo-adWizardCard"
-      style={{ background: stepBackground(step) }}
+      style={stepBackground(step) ? { background: stepBackground(step) } : undefined}
       role={editable ? undefined : "button"}
       tabIndex={editable ? undefined : 0}
       onClick={editable ? undefined : onOpen}
@@ -665,7 +665,7 @@ export function AdWizard({
   if (stepIndex > 0) {
     const step = steps[stepIndex - 1];
     if (!step) return null;
-    const style = { background: stepBackground(step) } as React.CSSProperties;
+    const style = stepBackground(step) ? ({ background: stepBackground(step) } as React.CSSProperties) : undefined;
     return (
       <div className="bo-adWizardDetail" data-testid="ad-wizard-detail" data-step={stepIndex}>
         <button
