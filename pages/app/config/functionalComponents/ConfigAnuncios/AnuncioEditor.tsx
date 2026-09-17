@@ -728,8 +728,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             {scheduleError ? <p className="bo-anunciosScheduleError" role="alert">{scheduleError}</p> : null}
           </div>
 
-          {true ? (
-            <div className="bo-anunciosCtasSection" data-slot="ads-cta-section">
+          <div className="bo-anunciosCtasSection" data-slot="ads-cta-section" data-testid="ads-buttons-section">
               <div className="bo-anunciosCtasHead">
                 <div>
                   <div className="bo-anunciosCtasTitle" data-testid="ads-buttons-title">Botones</div>
@@ -764,8 +763,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   />
                 ))}
               </Reorder.Group>
-            </div>
-          ) : null}
+          </div>
         </Panel>
       </div>
 

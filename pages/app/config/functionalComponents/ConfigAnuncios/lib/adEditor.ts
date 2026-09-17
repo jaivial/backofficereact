@@ -285,11 +285,17 @@ export function reorderSteps(ad: RestaurantAd, orderedIDs: string[]): Restaurant
   return withLayout(ad, { ...layout, steps: ordered });
 }
 
-/** A step card background resolves to a CSS background value. */
-export function stepBackground(step: Pick<RestaurantAdStep, "background_mode" | "background_color" | "background_image">): string {
+/**
+ * A step card background as a CSS value (coord id ads_public_replica_v1).
+ * Transparent returns undefined so the card keeps the public pine surface and
+ * its scrim instead of turning into a hole in the page.
+ */
+export function stepBackground(step: Pick<RestaurantAdStep, "background_mode" | "background_color" | "background_image">): string | undefined {
   if (step.background_mode === "color") return step.background_color?.trim() || AD_DEFAULT_COLOR;
-  if (step.background_mode === "image") return step.background_image ? `url("${step.background_image}") center / cover no-repeat` : "transparent";
-  return "transparent";
+  if (step.background_mode === "image" && step.background_image) {
+    return `url("${step.background_image}") center / cover no-repeat`;
+  }
+  return undefined;
 }
 
 export function buttonLimit(): number {
