@@ -1,6 +1,8 @@
+import type { CSSProperties } from "react";
 import type {
   RestaurantAd,
   RestaurantAdContentElement,
+  RestaurantAdElementSize,
   RestaurantAdContentType,
   RestaurantAdCTA,
   RestaurantAdLayout,
@@ -154,6 +156,54 @@ export function setButtonAction(cta: RestaurantAdCTA, action: ButtonAction, rest
 export function patchWhatsAppButton(cta: RestaurantAdCTA, patch: { phone?: string; message?: string }): RestaurantAdCTA {
   const current = parseWhatsAppURL(cta.custom_url) ?? { phone: "", message: WHATSAPP_DEFAULT_MESSAGE };
   return { ...cta, custom_url: buildWhatsAppURL(patch.phone ?? current.phone, patch.message ?? current.message) };
+}
+
+// ---------------------------------------------------------------------------
+// Element sizing (coord id ads_element_size_v1) - the same bounds the backend
+// enforces in normalizeBOAdElementSize, so the canvas never shows a value the
+// API would silently clamp away.
+// ---------------------------------------------------------------------------
+
+export const ELEMENT_MIN_WIDTH_PCT = 10;
+export const ELEMENT_MAX_WIDTH_PCT = 100;
+export const ELEMENT_MIN_HEIGHT_PX = 40;
+export const ELEMENT_MAX_HEIGHT_PX = 1200;
+
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(Math.round(value), min), max);
+}
+
+/** Server payloads omit empty fields, so a stored size may be partial. */
+export function elementSize(item: Pick<RestaurantAdContentElement, "size">): RestaurantAdElementSize {
+  return { width: item.size?.width, height: item.size?.height };
+}
+
+/** Inline style that applies the operator box to the replica element. */
+export function elementSizeStyle(item: Pick<RestaurantAdContentElement, "type" | "size">): CSSProperties | undefined {
+  const size = elementSize(item);
+  const style: CSSProperties = {};
+  if (typeof size.width === "number") style.width = `${size.width}%`;
+  if (item.type === "image" && typeof size.height === "number") style.height = `${size.height}px`;
+  return Object.keys(style).length ? style : undefined;
+}
+
+/** Applies a drag delta as a size patch, clamped to the contract bounds. */
+export function resizeElement(
+  item: Pick<RestaurantAdContentElement, "type" | "size">,
+  patch: { width: number; height?: number },
+): RestaurantAdElementSize {
+  const next: RestaurantAdElementSize = {
+    width: clamp(patch.width, ELEMENT_MIN_WIDTH_PCT, ELEMENT_MAX_WIDTH_PCT),
+  };
+  if (item.type === "image" && typeof patch.height === "number") {
+    next.height = clamp(patch.height, ELEMENT_MIN_HEIGHT_PX, ELEMENT_MAX_HEIGHT_PX);
+  }
+  return next;
+}
+
+/** Drops the operator box so the element renders at the template size again. */
+export function resetElementSize(content: RestaurantAdContentElement[], id: string): RestaurantAdContentElement[] {
+  return content.map((item) => (item.id === id ? { ...item, size: undefined } : item));
 }
 
 // ---------------------------------------------------------------------------

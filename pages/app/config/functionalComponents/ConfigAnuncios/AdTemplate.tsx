@@ -8,7 +8,19 @@ import type {
   RestaurantAdCTA,
   RestaurantAdStep,
 } from "../../../../../api/types";
-import { asText, buildCTAURL, stepBackground } from "./lib/adEditor";
+import {
+  asText,
+  buildCTAURL,
+  clamp,
+  ELEMENT_MAX_HEIGHT_PX,
+  ELEMENT_MAX_WIDTH_PCT,
+  ELEMENT_MIN_HEIGHT_PX,
+  ELEMENT_MIN_WIDTH_PCT,
+  elementSize,
+  elementSizeStyle,
+  resizeElement,
+  stepBackground,
+} from "./lib/adEditor";
 
 /* Coordination id: ads_canvas_v1 - one renderer draws the public ad template
  * three times: read-only preview, live editing canvas and wizard step. Keeping
@@ -22,6 +34,81 @@ export const AD_CONTENT_LABEL: Record<RestaurantAdContentType, string> = {
 };
 
 type Align = "left" | "center" | "right";
+
+/**
+ * Figma-style corner handle (coord id ads_element_size_v1): dragging writes a
+ * percentage width and, for images, a pixel height straight into the element
+ * payload, so the box survives the save and comes back from the REST fetch.
+ */
+function ResizeHandle({
+  hasHeight,
+  onResize,
+  onCommit,
+}: {
+  hasHeight: boolean;
+  onResize: (patch: { width: number; height?: number }) => void;
+  onCommit: () => void;
+}) {
+  const start = useRef<{ x: number; y: number; width: number; height: number; container: number } | null>(null);
+  const [resizing, setResizing] = useState(false);
+
+  const pointerDown = useCallback((event: React.PointerEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const node = (event.currentTarget as HTMLElement).closest(".bo-adNode");
+    const target = node?.querySelector<HTMLElement>(".bo-adResizable") ?? null;
+    start.current = {
+      x: event.clientX,
+      y: event.clientY,
+      width: target?.offsetWidth ?? 0,
+      height: target?.offsetHeight ?? 0,
+      container: node?.parentElement?.clientWidth ?? 0,
+    };
+    setResizing(true);
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  }, []);
+
+  const pointerMove = useCallback(
+    (event: React.PointerEvent) => {
+      const first = start.current;
+      if (!first) return;
+      const dx = event.clientX - first.x;
+      const patch: { width: number; height?: number } = {
+        width: clamp(((first.width + dx) / (first.container || 1)) * 100, ELEMENT_MIN_WIDTH_PCT, ELEMENT_MAX_WIDTH_PCT),
+      };
+      if (hasHeight) patch.height = clamp(first.height + (event.clientY - first.y), ELEMENT_MIN_HEIGHT_PX, ELEMENT_MAX_HEIGHT_PX);
+      onResize(patch);
+    },
+    [hasHeight, onResize],
+  );
+
+  const pointerUp = useCallback(
+    (event: React.PointerEvent) => {
+      if (!start.current) return;
+      start.current = null;
+      setResizing(false);
+      (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+      onCommit();
+    },
+    [onCommit],
+  );
+
+  return (
+    <span
+      role="separator"
+      aria-label="Redimensionar elemento"
+      aria-orientation="vertical"
+      className={`bo-adNodeResize ${resizing ? "is-resizing" : ""}`}
+      data-resizing={resizing ? "true" : "false"}
+      data-testid="ad-node-resize"
+      title="Arrastra para redimensionar"
+      onPointerDown={pointerDown}
+      onPointerMove={pointerMove}
+      onPointerUp={pointerUp}
+      onPointerCancel={pointerUp}
+    />
+  );
+}
 
 /** Inline text editing: the DOM keeps the caret while typing, props win only
  * when the field is not being edited. */
@@ -121,6 +208,13 @@ function ContentNode({
   const controls = useDragControls();
   const startDrag = useCallback((event: React.PointerEvent) => controls.start(event), [controls]);
   const align = item.align || "left";
+  const sizeStyle = elementSizeStyle(item);
+  const resizable = item.type === "image" ? { width: true, height: true } : { width: true, height: false };
+  const sizeLabel = [elementSize(item).width ? `${Math.round(elementSize(item).width as number)}%` : "", elementSize(item).height ? `${Math.round(elementSize(item).height as number)}px` : ""].filter(Boolean).join(" · ");
+  const applyResize = useCallback(
+    (patch: { width: number; height?: number }) => onChange({ size: resizeElement(item, patch) }),
+    [item, onChange],
+  );
   const wrap = (node: React.ReactNode) => (
     <Reorder.Item
       value={item}
@@ -170,6 +264,21 @@ function ContentNode({
               ))}
             </span>
           ) : null}
+          {sizeLabel ? (
+            <span className="bo-adNodeSize" data-slot={`ad-node-${item.id}-size`} data-testid={`ad-node-${item.id}-size`}>
+              {sizeLabel}
+              <button
+                type="button"
+                className="bo-adNodeSizeReset"
+                aria-label={`Restablecer tamano de ${AD_CONTENT_LABEL[item.type]}`}
+                data-testid={`ad-node-${item.id}-size-reset`}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => onChange({ size: undefined })}
+              >
+                Auto
+              </button>
+            </span>
+          ) : null}
           <button
             type="button"
             className="bo-anunciosIconBtn bo-adNodeTrash"
@@ -190,8 +299,15 @@ function ContentNode({
     return wrap(
       <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
         {item.value ? (
-          <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
+          <img
+            src={item.value}
+            alt="Imagen del anuncio"
+            className="bo-adModalImage bo-adResizable"
+            style={sizeStyle}
+            data-slot={`ad-preview-${item.id}`}
+          />
         ) : null}
+        {editable && selected ? <ResizeHandle hasHeight={resizable.height} onResize={applyResize} onCommit={() => undefined} /> : null}
         {editable ? (
           <button
             type="button"
@@ -214,22 +330,35 @@ function ContentNode({
       placeholder={`${AD_CONTENT_LABEL[item.type]}...`}
       testId={`ad-node-${item.id}-edit`}
       onCommit={(next) => onChange({ value: next })}
-      className={
+      className={`bo-adResizable ${
         item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"
-      }
-      style={{ textAlign: align, display: "block" }}
+      }`}
+      style={{ textAlign: align, display: "block", ...sizeStyle }}
     />
   );
-  return wrap(item.type === "title" ? <h2>{text}</h2> : item.type === "subtitle" ? <p className="bo-adModalSupertitleWrap">{text}</p> : text);
+  return wrap(
+    <>
+      {item.type === "title" ? <h2>{text}</h2> : item.type === "subtitle" ? <p>{text}</p> : text}
+      {editable && selected ? <ResizeHandle hasHeight={false} onResize={applyResize} onCommit={() => undefined} /> : null}
+    </>,
+  );
 }
 
-/** Read-only twin of ContentNode: same markup, no drag machinery. */
+/** Read-only twin of ContentNode: same markup, same operator box, no drag
+ * machinery - this is what proves a saved size survives the REST fetch. */
 function StaticContent({ item }: { item: RestaurantAdContentElement }) {
   const align = item.align || "left";
+  const sizeStyle = elementSizeStyle(item);
   if (item.type === "image") {
     return item.value ? (
       <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
-        <img src={item.value} alt="Imagen del anuncio" className="bo-adModalImage" data-slot={`ad-preview-${item.id}`} />
+        <img
+          src={item.value}
+          alt="Imagen del anuncio"
+          className="bo-adModalImage"
+          style={sizeStyle}
+          data-slot={`ad-preview-${item.id}`}
+        />
       </div>
     ) : null;
   }
@@ -240,7 +369,7 @@ function StaticContent({ item }: { item: RestaurantAdContentElement }) {
       ariaLabel={AD_CONTENT_LABEL[item.type]}
       onCommit={() => undefined}
       className={item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"}
-      style={{ textAlign: align, display: "block" }}
+      style={{ textAlign: align, display: "block", ...sizeStyle }}
     />
   );
   return <div data-slot={`ad-preview-${item.id}`}>{item.type === "title" ? <h2>{node}</h2> : node}</div>;
@@ -517,6 +646,7 @@ function WizardCard({
   editable,
   onOpen,
   onStepChange,
+  onCardButtonsChange,
 }: {
   step: RestaurantAdStep;
   index: number;
@@ -525,6 +655,8 @@ function WizardCard({
   editable: boolean;
   onOpen: () => void;
   onStepChange?: (stepId: string, patch: Partial<RestaurantAdStep>) => void;
+  /** Reorders the buttons inside this card (coord id ads_card_buttons_order_v1). */
+  onCardButtonsChange?: (stepId: string, buttons: RestaurantAdCTA[]) => void;
 }) {
   const controls = useDragControls();
   const startDrag = useCallback((event: React.PointerEvent) => {
@@ -539,6 +671,7 @@ function WizardCard({
       role={editable ? undefined : "button"}
       tabIndex={editable ? undefined : 0}
       onClick={editable ? undefined : onOpen}
+      onDoubleClick={editable ? onOpen : undefined}
       onKeyDown={(event) => {
         if (!editable && (event.key === "Enter" || event.key === " ")) {
           event.preventDefault();
@@ -576,25 +709,60 @@ function WizardCard({
           <span className="bo-adWizardCardDesc">{step.description}</span>
         ) : null}
         <span className="bo-adWizardCardActions" data-slot={`ad-wizard-card-${step.id}-actions`}>
+          {editable ? (
+            <Reorder.Group
+              axis="y"
+              values={step.buttons}
+              onReorder={(buttons) => onCardButtonsChange?.(step.id, buttons)}
+              className="bo-adModalActions bo-adWizardCardButtons"
+              data-testid={`ad-wizard-card-${step.id}-buttons`}
+            >
+              {step.buttons.map((cta) => (
+                <ButtonNode
+                  key={cta.id}
+                  cta={cta}
+                  website={website}
+                  editable
+                  selected={false}
+                  onChange={(patch) =>
+                    onCardButtonsChange?.(step.id, step.buttons.map((entry) => (entry.id === cta.id ? { ...entry, ...patch } : entry)))
+                  }
+                  onDelete={() => onCardButtonsChange?.(step.id, step.buttons.filter((entry) => entry.id !== cta.id))}
+                />
+              ))}
+            </Reorder.Group>
+          ) : (
+            step.buttons.map((cta) => (
+              <a
+                key={cta.id}
+                href={buildCTAURL(website, cta)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bo-adModalCta bo-adWizardAction"
+                style={{ ["--ad-primary" as string]: cta.color || "#436754" }}
+                onClick={(event) => event.stopPropagation()}
+                data-testid={`ad-wizard-card-${step.id}-${cta.id}`}
+              >
+                {cta.text || "Mas informacion"}
+              </a>
+            ))
+          )}
           {step.see_more !== false ? (
             <button type="button" className="bo-adModalCta bo-adWizardMore" onClick={(event) => { event.stopPropagation(); onOpen(); }} data-testid={`ad-wizard-card-${step.id}-more`}>
               Ver mas
             </button>
           ) : null}
-          {step.buttons.map((cta) => (
-            <a
-              key={cta.id}
-              href={buildCTAURL(website, cta)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bo-adModalCta bo-adWizardAction"
-              style={{ ["--ad-primary" as string]: cta.color || "#436754" }}
-              onClick={(event) => event.stopPropagation()}
-              data-testid={`ad-wizard-card-${step.id}-${cta.id}`}
+          {editable ? (
+            <button
+              type="button"
+              className="bo-adModalCta bo-adWizardEdit"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => { event.stopPropagation(); onOpen(); }}
+              data-testid={`ad-wizard-card-${step.id}-edit`}
             >
-              {cta.text || "Mas informacion"}
-            </a>
-          ))}
+              Editar anuncio
+            </button>
+          ) : null}
         </span>
       </span>
       {editable ? (
@@ -641,6 +809,7 @@ export function AdWizard({
   onSelect,
   onStepChange,
   onStepsChange,
+  onCardButtonsChange,
   onButtonsChange,
   onImagePick,
   testId = "ad-wizard",
@@ -655,6 +824,8 @@ export function AdWizard({
   onSelect?: (id: string) => void;
   onStepChange?: (stepId: string, patch: Partial<RestaurantAdStep>) => void;
   onStepsChange?: (steps: RestaurantAdStep[]) => void;
+  /** Card-level buttons of one step, edited inline on the card itself. */
+  onCardButtonsChange?: (stepId: string, buttons: RestaurantAdCTA[]) => void;
   /** Wizard-wide buttons: the same set under every announcement. */
   onButtonsChange?: (buttons: RestaurantAdCTA[]) => void;
   onImagePick?: (item: RestaurantAdContentElement) => void;
@@ -713,6 +884,7 @@ export function AdWizard({
             editable={editable}
             onOpen={() => go(index + 1)}
             onStepChange={onStepChange}
+            onCardButtonsChange={onCardButtonsChange}
           />
         ))}
       </Reorder.Group>

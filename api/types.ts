@@ -2424,11 +2424,16 @@ export type POSCashDayCurrent = {
 
 export type RestaurantAdTextAlign = "left" | "center" | "right";
 export type RestaurantAdContentType = "title" | "subtitle" | "text" | "image";
+// Operator-sized box of an element (coord id ads_element_size_v1): width as a
+// percentage of the card content width and, for images, a height in pixels.
+// Absent = the public template default, so legacy content is untouched.
+export type RestaurantAdElementSize = { width?: number; height?: number };
 export type RestaurantAdContentElement = {
   id: string;
   type: RestaurantAdContentType;
   value: string;
   align?: RestaurantAdTextAlign;
+  size?: RestaurantAdElementSize;
 };
 export type RestaurantAdCTA = {
   id: string;
