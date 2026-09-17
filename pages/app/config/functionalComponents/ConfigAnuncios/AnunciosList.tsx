@@ -23,7 +23,7 @@ function firstImage(ad: RestaurantAd): string {
 }
 
 function layoutLabel(ad: RestaurantAd): string {
-  return ad.layout?.mode === "multiple" ? "Multiple \u00b7 wizard" : "\u00danico";
+  return ad.layout?.mode === "multiple" ? "M\u00faltiple \u00b7 wizard" : "\u00danico";
 }
 
 const NEW_HREF = "/app/anuncios/nuevo";
