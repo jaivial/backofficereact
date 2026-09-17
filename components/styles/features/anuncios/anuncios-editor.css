@@ -832,3 +832,528 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-anunciosActiveToggle .bo-sc-switch {
   flex: 0 0 auto;
 }
+
+/* =====================================================================
+ * Live canvas (coord id ads_canvas_v1) - the public template rendered
+ * editable. Selection, inline fields and the drag affordances are the
+ * only additions over the read-only template.
+ * ===================================================================== */
+.bo-anunciosEditorLayout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.bo-anunciosCanvasCol {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  order: -1;
+}
+
+@media (min-width: 1024px) {
+  .bo-anunciosEditorLayout {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+  .bo-anunciosCanvasCol {
+    order: 1;
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 16px);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+.bo-adCanvas {
+  outline: 1px dashed color-mix(in srgb, var(--bo-accent) 45%, transparent);
+  outline-offset: 4px;
+}
+
+.bo-adCanvas .bo-adModalBody {
+  padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+.bo-adCanvasFlow {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Every editable block: the template look plus a hover outline that only
+   appears on devices with a pointer, so touch never fights the caret. */
+.bo-adNode {
+  position: relative;
+  border-radius: 8px;
+  transition: outline-color 150ms ease, background-color 150ms ease;
+  outline: 1px solid transparent;
+  touch-action: manipulation;
+}
+.bo-adNode:hover {
+  outline-color: color-mix(in srgb, var(--bo-accent) 40%, transparent);
+}
+.bo-adNode:focus-within,
+.bo-adNode.is-selected {
+  outline-color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 6%, transparent);
+}
+
+.bo-adEditable {
+  cursor: text;
+  min-height: 1em;
+  outline: none;
+  caret-color: var(--bo-accent, #436754);
+}
+.bo-adEditable:empty::before,
+.bo-adEditable[data-placeholder]::before {
+  content: attr(data-placeholder);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Floating per-node bar: grip on the edge, alignment and delete in the
+   middle band. Sits above the text without covering its first line. */
+.bo-adNodeBar {
+  position: absolute;
+  top: -14px;
+  inset-inline-end: 0;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  z-index: 4;
+  padding: 2px;
+  border-radius: 10px;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  box-shadow: var(--bo-shadow-soft, 0 6px 18px rgba(0, 0, 0, 0.18));
+}
+.bo-adNode:hover .bo-adNodeBar,
+.bo-adNode:focus-within .bo-adNodeBar,
+.bo-adNode.is-selected .bo-adNodeBar {
+  display: inline-flex;
+}
+@media (hover: none) {
+  /* Touch: keep the bar reachable while the node is selected only. */
+  .bo-adNode:hover .bo-adNodeBar {
+    display: none;
+  }
+}
+
+.bo-adNodeGrip,
+.bo-adButtonGrip {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+.bo-adNodeGrip .bo-anunciosDragHandleIcon {
+  width: 14px;
+  height: 14px;
+}
+.bo-adNodeTrash,
+.bo-adButtonTrash {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+.bo-adNodeAlign {
+  transform: scale(0.92);
+}
+.bo-adNodeImagePick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px auto 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface) 82%, transparent);
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+.bo-adNodeImagePick:hover {
+  color: var(--bo-text);
+  border-color: var(--bo-accent);
+}
+.bo-adNodeImagePick:active {
+  transform: scale(0.96);
+}
+
+.bo-adButton {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+  outline: 1px solid transparent;
+  transition: outline-color 150ms ease;
+}
+.bo-adButton:hover,
+.bo-adButton.is-selected {
+  outline-color: var(--bo-accent);
+}
+.bo-adButtonGrip {
+  visibility: hidden;
+  grid-row: 1;
+}
+.bo-adButton:hover .bo-adButtonGrip,
+.bo-adButton.is-selected .bo-adButtonGrip {
+  visibility: visible;
+}
+.bo-adButton .bo-adModalCta {
+  width: 100%;
+}
+
+.bo-adCanvasHintRow {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.bo-adCanvasHint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bo-faint);
+}
+
+/* Insert bar: the "add header / subtitle / text / image / button" palette. */
+.bo-anunciosAddList--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  min-width: 0;
+}
+.bo-anunciosAddItem--inline {
+  width: auto;
+  padding: 7px 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: 999px;
+  background: var(--bo-surface-2);
+  font-size: 12px;
+  gap: 6px;
+}
+.bo-anunciosAddItem--inline:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bo-accent) 14%, var(--bo-surface-2));
+}
+.bo-anunciosAddItem--inline:active {
+  transform: scale(0.96);
+}
+
+/* =====================================================================
+ * Multiple layout (coord id ads_layout_v1): step list, card inspector
+ * and the wizard itself.
+ * ===================================================================== */
+.bo-anunciosStepsSection,
+.bo-anunciosStepInspector {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 14px;
+}
+.bo-anunciosStepsList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+.bo-anunciosStepRow {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  background: var(--bo-surface-2);
+  cursor: grab;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.bo-anunciosStepRow.is-active {
+  border-color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 10%, var(--bo-surface-2));
+}
+.bo-anunciosStepIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--bo-bg);
+  color: var(--bo-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.bo-anunciosStepName {
+  border: 0;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 4px 2px;
+}
+.bo-anunciosStepMeta {
+  font-size: 11px;
+  color: var(--bo-faint);
+  white-space: nowrap;
+}
+
+.bo-anunciosStepGrid {
+  display: grid;
+  gap: 10px;
+}
+.bo-anunciosStepImage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bo-anunciosStepSeeMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.bo-anunciosStepButtons {
+  display: grid;
+  gap: 8px;
+  border-top: 1px dashed var(--bo-border);
+  padding-top: 10px;
+}
+.bo-anunciosWhatsappFields {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, #25d366 35%, var(--bo-border));
+  border-radius: 10px;
+  background: color-mix(in srgb, #25d366 8%, transparent);
+}
+.bo-anunciosRowCard.is-selected {
+  border-color: var(--bo-accent);
+}
+
+/* Wizard: cards column first, then the announcement of the chosen card. */
+.bo-adWizardCards {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+}
+.bo-adWizardCard {
+  position: relative;
+  display: grid;
+  min-height: 148px;
+  padding: 18px 16px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--ad-primary, #436754) 30%, transparent);
+  color: #ffffff;
+  text-align: left;
+  overflow: hidden;
+  isolation: isolate;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+}
+.bo-adWizardCard:hover {
+  transform: translateY(-2px);
+}
+.bo-adWizardCard:active {
+  transform: scale(0.96);
+}
+.bo-adWizardCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.32));
+}
+.bo-adWizardCardBody {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+.bo-adWizardCardTitle {
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  font-family: Georgia, serif;
+  line-height: 1.2;
+}
+.bo-adWizardCardDesc {
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.9;
+  white-space: pre-wrap;
+}
+.bo-adWizardCardActions {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.bo-adWizardMore,
+.bo-adWizardAction {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 14px;
+  border-radius: 999px;
+  text-align: center;
+  text-decoration: none;
+}
+.bo-adWizardMore {
+  background: rgba(255, 255, 255, 0.92);
+  color: #1d2a22;
+  border: 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+.bo-adWizardDetail {
+  display: grid;
+  gap: 10px;
+}
+.bo-adWizardBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+.bo-adWizardBack:hover {
+  color: var(--bo-text);
+  border-color: var(--bo-accent);
+}
+
+/* Mobile: the canvas is the primary surface, the inspector stacks under it. */
+@media (max-width: 1023px) {
+  .bo-anunciosPreview,
+  .bo-adModalPreview {
+    max-width: 100%;
+    height: auto;
+    min-height: 320px;
+  }
+  .bo-anunciosCanvasCol {
+    position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-adWizardCard,
+  .bo-adNode,
+  .bo-adNodeImagePick,
+  .bo-adWizardBack {
+    transition: none;
+  }
+}
+
+/* =====================================================================
+ * Anuncios page shell + list (coord id ads_list_responsive_v1):
+ * one fluid page width and a card grid that never forces horizontal
+ * scroll on phones.
+ * ===================================================================== */
+.bo-anunciosPage {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: clamp(12px, 3vw, 24px);
+  padding-block-end: 96px;
+}
+@media (max-width: 640px) {
+  .bo-anunciosPage {
+    padding-block-end: 84px;
+  }
+}
+
+.bo-anunciosGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 420px) {
+  .bo-anunciosGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+@media (min-width: 900px) {
+  .bo-anunciosGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+@media (min-width: 1280px) {
+  .bo-anunciosGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.bo-anunciosGrid > * {
+  min-width: 0;
+}
+
+/* Card media keeps a consistent ratio and a hairline outline so images of
+   any size sit level inside the grid. */
+.bo-anunciosCard img {
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  outline: 1px solid oklch(0 0 0 / 0.1);
+  outline-offset: -1px;
+}
+:root[data-theme="dark"] .bo-anunciosCard img {
+  outline-color: oklch(1 0 0 / 0.1);
+}
+.bo-anunciosCard {
+  min-width: 0;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.bo-anunciosCard:active {
+  transform: scale(0.96);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bo-anunciosCard {
+    transition: none;
+  }
+}
+
+/* List head scales down on phones instead of wrapping into two rows. */
+@media (max-width: 480px) {
+  .bo-anunciosListTitle {
+    font-size: 16px;
+  }
+  .bo-anunciosListHead {
+    gap: 6px;
+  }
+}
+
+/* Grip of a draggable wizard card: pinned to the card corner so the card body
+   stays click-through (open step) while the handle moves it. */
+.bo-adWizardGrip {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1d2a22;
+  border-color: rgba(255, 255, 255, 0.9);
+  touch-action: none;
+}
+.bo-adWizardGrip .bo-anunciosDragHandleIcon {
+  color: #1d2a22;
+}
