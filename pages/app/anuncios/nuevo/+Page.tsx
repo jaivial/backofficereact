@@ -7,7 +7,7 @@ import { useAdsController } from "../../config/functionalComponents/ConfigAnunci
 const LIST_HREF = "/app/anuncios";
 
 export default function AnuncioNewPage() {
-  const { api, website, notify, wsFailureAtRef, wsStatusRef, sendAdSave, sendAdScheduleCheck, subscribeAdEvents } = useAdsController();
+  const { api, website, contactPhone, notify, wsFailureAtRef, wsStatusRef, sendAdSave, sendAdScheduleCheck, subscribeAdEvents } = useAdsController();
 
   const onSaved = useCallback((ad: { id: number }) => {
     if (ad.id > 0) void navigate(`/app/anuncios/${ad.id}`);
@@ -22,6 +22,7 @@ export default function AnuncioNewPage() {
       <AnuncioEditor
         api={api}
         website={website}
+        phone={contactPhone}
         notify={notify}
         mode="create"
         wsFailureAtRef={wsFailureAtRef}
