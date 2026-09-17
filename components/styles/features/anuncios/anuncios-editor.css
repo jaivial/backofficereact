@@ -1327,3 +1327,89 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-adWizardGrip .bo-anunciosDragHandleIcon {
   color: #1d2a22;
 }
+
+/* =====================================================================
+ * Element sizing (coord id ads_element_size_v1) - a corner handle that
+ * writes width/height into the element payload. The handle is editor
+ * chrome only: the replica element itself keeps the public metrics.
+ * ===================================================================== */
+.bo-adNodeResize {
+  position: absolute;
+  inset-block-end: -6px;
+  inset-inline-end: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--bo-accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: nwse-resize;
+  touch-action: none;
+  z-index: 5;
+  transition-property: transform, filter;
+  transition-duration: 120ms, 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adNodeResize:hover {
+  filter: brightness(1.08);
+}
+.bo-adNodeResize:active {
+  transform: scale(0.96);
+}
+.bo-adNodeResize.is-resizing {
+  transform: scale(1.12);
+}
+.bo-adNodeResize::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-right: 2px solid var(--bo-bg);
+  border-bottom: 2px solid var(--bo-bg);
+  border-radius: 0 0 3px 0;
+}
+
+.bo-adNodeSize {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bo-accent) 14%, var(--bo-surface-2));
+  color: var(--bo-text);
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.bo-adNodeSizeReset {
+  border: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bo-surface);
+  color: var(--bo-muted);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition-property: color, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adNodeSizeReset:hover {
+  color: var(--bo-text);
+}
+
+/* Card-level buttons of a step keep the pill metrics while being reorderable. */
+.bo-adWizardCardButtons {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.bo-adWizardEdit {
+  background: color-mix(in srgb, #fffdf8 18%, transparent);
+  color: #fffdf8;
+  border: 1px solid color-mix(in srgb, #fffdf8 55%, transparent);
+  font-weight: 600;
+  cursor: pointer;
+}
+.bo-adWizardEdit:hover {
+  background: color-mix(in srgb, #fffdf8 30%, transparent);
+}

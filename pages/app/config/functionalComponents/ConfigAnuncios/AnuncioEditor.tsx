@@ -59,6 +59,7 @@ import {
   type ButtonAction,
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
+import { resetElementSize } from "./lib/adEditor";
 import { compressAdImage } from "./lib/image";
 import { InlineDateRangeCalendar } from "../../../../../ui/inputs/InlineDateRangeCalendar";
 import { formatISODate, parseISODate } from "../../../../../ui/lib/format";
@@ -607,6 +608,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               selectedId={selectedId}
               onSelect={setSelectedId}
               onStepsChange={(steps) => setAd(reorderSteps(ad, steps.map((step) => step.id)))}
+              onCardButtonsChange={(stepId, buttons) => setAd(updateStep(ad, stepId, { buttons }))}
               onStepChange={(stepId, patch) => setAd(updateStep(ad, stepId, patch))}
               onButtonsChange={(buttons) => setAd({ ...ad, ctas: buttons })}
               onImagePick={() => {
