@@ -147,6 +147,9 @@
 /* ── Features: Anuncios editor (backoffice tab) ─── */
 @import "./styles/features/anuncios/anuncios-editor.css";
 
+/* ── Features: Campañas — email body editor ─── */
+@import "./styles/features/campanas/campaign-editor.css";
+
 /* ── Features: Platform (superadmin) ──────────────────── */
 @import "./styles/features/plataforma/plataforma.css";
 

@@ -169,7 +169,9 @@
   border: 1px solid var(--bo-border);
   cursor: grab;
   touch-action: none; /* prevent iOS scroll-cancel while dragging */
-  transition: background 160ms ease, transform 120ms ease;
+  transition-property: background-color, transform;
+  transition-duration: 160ms, 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 .bo-anunciosDragHandle:hover {
@@ -218,7 +220,9 @@
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
-  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+  transition-property: color, border-color, background-color;
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 .bo-anunciosSaveStatus[data-state="saving"] {
   color: var(--bo-accent-2);
@@ -264,6 +268,9 @@
   width: 36px;
   height: 36px;
   border-radius: 12px;
+  transition-property: background-color, color, transform;
+  transition-duration: 150ms, 150ms, 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -271,7 +278,9 @@
   color: var(--bo-text);
   border: 1px solid var(--bo-border);
   cursor: pointer;
-  transition: background 160ms ease, color 160ms ease, transform 120ms ease;
+  transition-property: background-color, color, transform;
+  transition-duration: 160ms, 160ms, 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 .bo-anunciosIconBtn:hover {
@@ -354,7 +363,9 @@
   border: 1px solid var(--bo-border);
   color: var(--bo-text);
   cursor: pointer;
-  transition: background 160ms ease;
+  transition-property: background-color;
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 .bo-anunciosMoreTrigger:hover,
@@ -438,7 +449,9 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 650;
-  transition: background 160ms ease, color 160ms ease;
+  transition-property: background-color, color;
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 .bo-anunciosPreviewSwitchBtn.is-active {
@@ -474,130 +487,140 @@
   background: var(--bo-border);
 }
 
-/* ── Live ad preview: ONE mobile template at every viewport width ───────────
-   Mirrors the public site ad card (publicAdModal): single column, image on
-   top, text under it and CTAs stacked full width. The desktop split and the
-   mobile/desktop device switcher are gone so the editor preview always shows
-   exactly what the public site renders. */
+/* 1:1 replica of the public ad card (coord id ads_public_replica_v1).
+   Source of truth: preactvillacarmen/frontend/src/index.css (.publicAdModal,
+   .publicAdContent, .publicAdImage, .publicAdActions, .publicAdAction) as
+   rendered by PublicAdPopover.tsx. Values are copied, not approximated: same
+   surface, radius, type scale, gaps and button metrics, so the backoffice
+   editor and its preview are the announcement the visitor sees.
+   Public markup -> backoffice class:
+     .publicAdModal   -> .bo-adModalPreview
+     .publicAdContent -> .bo-adModalBody
+     h2 / h3 / p      -> .bo-adModalTitle / .bo-adModalSupertitle / .bo-adModalDesc
+     .publicAdImage   -> .bo-adModalImage (inside .bo-adModalImageCol)
+     .publicAdActions -> .bo-adModalActions
+     .publicAdAction  -> .bo-adModalCta (background = cta.color, no gradient)
+*/
 .bo-adModalPreview,
 .bo-adModalPreview * {
   box-sizing: border-box;
 }
 
+/* .publicAdModal (minus position:fixed: the editor hosts it inline) */
 .bo-adModalPreview {
-  width: 100%;
-  max-width: 560px;
+  position: relative;
+  width: min(100%, 560px);
+  max-height: 80vh;
   margin-inline: auto;
-  height: 80dvh;
-  height: 80vh;
-  overflow: hidden;
-  background: #ffffff;
-  color: #333333;
+  overflow: auto;
+  border-radius: 24px;
+  padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: #fffdf8;
+  color: #24342b;
+  font-family: var(--vc-ad-font-sans, "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
 }
 
 .bo-anunciosPreview.bo-adModalPreview {
-  border-radius: 16px;
+  outline: 1px solid oklch(0 0 0 / 0.1);
 }
 
+/* .publicAdContent */
 .bo-adModalBody {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
+  display: grid;
+  gap: 12px;
+  align-content: start;
   min-width: 0;
-  max-width: 100%;
-  overflow-y: auto;
-  padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
-.bo-adModalImageCol {
-  margin-inline: auto;
-  margin-block: 1rem;
-  width: 95%;
-  max-width: none;
-  flex: 0 0 auto;
-  min-width: 0;
-  overflow: hidden;
-  border-radius: 1rem;
+/* .publicAdContent h2, h3, p share margin: 0 */
+.bo-adModalTitle,
+.bo-adModalSupertitle,
+.bo-adModalDesc {
+  margin: 0;
 }
 
-.bo-adModalImage {
-  width: 100%;
-  height: auto;
-  max-height: 46vh;
-  object-fit: cover;
-  display: block;
-  border-radius: 1rem;
+/* .publicAdContent h2 - the public sheet never defines --font-display, so the
+   title inherits the site sans stack; replicated on purpose. */
+.bo-adModalTitle {
+  font-family: inherit;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 500;
+  color: inherit;
+  text-align: inherit;
 }
 
+/* .publicAdContent h3 */
 .bo-adModalSupertitle {
   font-size: 12px;
-  color: color-mix(in srgb, var(--ad-primary, #436754) 68%, #333333 32%);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 6px;
   font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: inherit;
+  text-align: inherit;
 }
 
-.bo-adModalTitle {
-  font-size: 26px;
-  font-weight: 300;
-  color: var(--ad-primary, #436754);
-  margin-bottom: 12px;
-  letter-spacing: 1px;
-  font-family: 'Georgia', serif;
-  line-height: 1.2;
-}
-
+/* .publicAdContent p */
 .bo-adModalDesc {
   font-size: 15px;
   line-height: 1.55;
-  color: #333333;
-  margin-bottom: 22px;
-  font-weight: 300;
+  color: inherit;
   opacity: 0.85;
-  white-space: pre-wrap;
+  text-align: inherit;
 }
 
+/* .publicAdImage (wrapped so the editor can hang its "change image" control
+   off the same box without shifting the replica) */
+.bo-adModalImageCol {
+  min-width: 0;
+}
+
+.bo-adModalImage {
+  display: block;
+  width: 95%;
+  margin-inline: auto;
+  margin-block: 1rem;
+  max-height: 46vh;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
+/* .publicAdActions */
 .bo-adModalActions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  margin-top: 22px;
   align-items: stretch;
 }
 
+/* .publicAdAction - solid cta.color pill, no gradient, no shadow */
 .bo-adModalCta {
   display: block;
+  flex: 1 1 100%;
   width: 100%;
-  align-self: stretch;
   padding: 16px 24px;
-  background: linear-gradient(
-    135deg,
-    var(--ad-primary, #436754),
-    color-mix(in srgb, var(--ad-primary, #436754) 70%, white 30%)
-  );
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-size: 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ad-primary, #436754);
+  color: white;
+  font: inherit;
+  font-size: 15px;
   font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  text-decoration: none;
+  line-height: 1.2;
   text-align: center;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), filter 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.bo-adModalCta:active {
+  transform: scale(0.96);
 }
 
 .bo-adModalCta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-@media (max-width: 360px) {
-  .bo-adModalImage { max-height: 34vh; }
-  .bo-adModalBody { padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); }
+  filter: brightness(1.04);
 }
 
 .bo-anunciosContentControl { display: grid; gap: 6px; width: 100%; }
@@ -831,4 +854,562 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-anunciosCardToggle .bo-sc-switch,
 .bo-anunciosActiveToggle .bo-sc-switch {
   flex: 0 0 auto;
+}
+
+/* =====================================================================
+ * Live canvas (coord id ads_canvas_v1) - the public template rendered
+ * editable. Selection, inline fields and the drag affordances are the
+ * only additions over the read-only template.
+ * ===================================================================== */
+.bo-anunciosEditorLayout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.bo-anunciosCanvasCol {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  order: -1;
+}
+
+@media (min-width: 1024px) {
+  .bo-anunciosEditorLayout {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+  .bo-anunciosCanvasCol {
+    order: 1;
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 16px);
+    /* The card scrolls inside itself, exactly like .publicAdModal on the site,
+       so the editor never shows a second scrollbar around the replica. */
+    overscroll-behavior: contain;
+  }
+}
+
+.bo-adCanvas {
+  outline: 1px dashed color-mix(in srgb, var(--bo-accent) 45%, transparent);
+  outline-offset: 6px;
+}
+
+.bo-adCanvasFlow {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Every editable block: the template look plus a hover outline that only
+   appears on devices with a pointer, so touch never fights the caret. */
+.bo-adNode {
+  position: relative;
+  border-radius: 8px;
+  transition-property: outline-color, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  outline: 1px solid transparent;
+  touch-action: manipulation;
+  transition-property: outline-color, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adNode:hover {
+  outline-color: color-mix(in srgb, var(--bo-accent) 40%, transparent);
+}
+.bo-adNode:focus-within,
+.bo-adNode.is-selected {
+  outline-color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 6%, transparent);
+}
+
+.bo-adEditable {
+  cursor: text;
+  min-height: 1em;
+  outline: none;
+  caret-color: var(--bo-accent, #436754);
+}
+.bo-adEditable:empty::before,
+.bo-adEditable[data-placeholder]::before {
+  content: attr(data-placeholder);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.bo-adEditable[data-readonly="true"] {
+  cursor: inherit;
+}
+.bo-adEditable:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Floating per-node bar: grip on the edge, alignment and delete in the
+   middle band. Sits above the text without covering its first line. */
+.bo-adNodeBar {
+  position: absolute;
+  top: -16px;
+  inset-inline-end: 0;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  z-index: 4;
+  padding: 2px;
+  border-radius: 14px;
+  background: var(--bo-surface);
+  border: 1px solid var(--bo-border);
+  box-shadow: var(--bo-shadow-soft, 0 6px 18px rgba(0, 0, 0, 0.18));
+}
+.bo-adNode:hover .bo-adNodeBar,
+.bo-adNode:focus-within .bo-adNodeBar,
+.bo-adNode.is-selected .bo-adNodeBar {
+  display: inline-flex;
+}
+@media (hover: none) {
+  /* Touch: keep the bar reachable while the node is selected only. */
+  .bo-adNode:hover .bo-adNodeBar {
+    display: none;
+  }
+}
+
+.bo-adNodeGrip,
+.bo-adButtonGrip {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+.bo-adNodeGrip .bo-anunciosDragHandleIcon {
+  width: 14px;
+  height: 14px;
+}
+.bo-adNodeTrash,
+.bo-adButtonTrash {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+.bo-adNodeAlign {
+  transform: scale(0.92);
+}
+.bo-adNodeImagePick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px auto 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface) 82%, transparent);
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition-property: color, border-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adNodeImagePick:hover {
+  color: var(--bo-text);
+  border-color: var(--bo-accent);
+}
+.bo-adNodeImagePick:active {
+  transform: scale(0.96);
+}
+
+.bo-adButton {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+  outline: 1px solid transparent;
+  transition-property: outline-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adButton:hover,
+.bo-adButton.is-selected {
+  outline-color: var(--bo-accent);
+}
+.bo-adButtonGrip {
+  visibility: hidden;
+  grid-row: 1;
+}
+.bo-adButton:hover .bo-adButtonGrip,
+.bo-adButton.is-selected .bo-adButtonGrip {
+  visibility: visible;
+}
+.bo-adButton .bo-adModalCta {
+  width: 100%;
+}
+
+.bo-adCanvasHintRow {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.bo-adCanvasHint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bo-faint);
+}
+
+/* Insert bar: the "add header / subtitle / text / image / button" palette. */
+.bo-anunciosAddList--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  min-width: 0;
+}
+.bo-anunciosAddItem--inline {
+  width: auto;
+  min-height: 36px;
+  padding: 7px 14px;
+  border: 1px solid var(--bo-border);
+  border-radius: 999px;
+  background: var(--bo-surface-2);
+  font-size: 12px;
+  gap: 6px;
+  transition-property: background-color, border-color, transform;
+  transition-duration: 150ms, 150ms, 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-anunciosAddItem--inline:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bo-accent) 14%, var(--bo-surface-2));
+}
+.bo-anunciosAddItem--inline:active {
+  transform: scale(0.96);
+}
+
+/* =====================================================================
+ * Multiple layout (coord id ads_layout_v1): step list, card inspector
+ * and the wizard itself.
+ * ===================================================================== */
+.bo-anunciosStepsSection,
+.bo-anunciosStepInspector {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 14px;
+}
+.bo-anunciosStepsList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+.bo-anunciosStepRow {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+  background: var(--bo-surface-2);
+  cursor: grab;
+  transition-property: border-color, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-anunciosStepRow.is-active {
+  border-color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 10%, var(--bo-surface-2));
+}
+.bo-anunciosStepIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--bo-bg);
+  color: var(--bo-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.bo-anunciosStepName {
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 4px 2px;
+}
+.bo-anunciosStepMeta {
+  font-size: 11px;
+  color: var(--bo-faint);
+  white-space: nowrap;
+}
+
+.bo-anunciosStepGrid {
+  display: grid;
+  gap: 10px;
+}
+.bo-anunciosStepImage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bo-anunciosStepSeeMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.bo-anunciosStepButtons {
+  display: grid;
+  gap: 8px;
+  border-top: 1px dashed var(--bo-border);
+  padding-top: 10px;
+}
+.bo-anunciosWhatsappFields {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, #25d366 35%, var(--bo-border));
+  border-radius: 10px;
+  background: color-mix(in srgb, #25d366 8%, transparent);
+}
+.bo-anunciosRowCard.is-selected {
+  border-color: var(--bo-accent);
+}
+
+/* Wizard (coord id ads_layout_v1): built from the same tokens as the public
+   card - #fffdf8 surface on #142520 pine, 24px radius, 24/22 padding, 12px
+   content gap, 26px title over 15px body and 999px pills - so the preview is
+   the announcement the visitor will step through. */
+.bo-adWizardCards {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+.bo-adWizardCard {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  width: min(100%, 560px);
+  min-height: 148px;
+  margin-inline: auto;
+  padding: 24px 22px;
+  border-radius: 24px;
+  color: #fffdf8;
+  text-align: left;
+  overflow: hidden;
+  isolation: isolate;
+  cursor: pointer;
+  background-color: #142520;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  transition-property: transform, box-shadow;
+  transition-duration: 120ms, 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adWizardCard:hover {
+  box-shadow: 0 26px 84px rgba(0, 0, 0, 0.32);
+}
+.bo-adWizardCard:active {
+  transform: scale(0.96);
+}
+.bo-adWizardCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(20, 37, 32, 0.05), rgba(20, 37, 32, 0.45));
+}
+.bo-adWizardCardBody {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.bo-adWizardCardTitle {
+  font-family: inherit;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 500;
+  display: block;
+}
+.bo-adWizardCardDesc {
+  font-size: 15px;
+  line-height: 1.55;
+  opacity: 0.85;
+  display: block;
+}
+.bo-adWizardCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+.bo-adWizardMore,
+.bo-adWizardAction {
+  display: block;
+  flex: 1 1 100%;
+  width: 100%;
+  padding: 16px 24px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adWizardMore {
+  background: #fffdf8;
+  color: #24342b;
+}
+.bo-adWizardAction {
+  background: var(--ad-primary, #436754);
+  color: #ffffff;
+}
+.bo-adWizardMore:active,
+.bo-adWizardAction:active {
+  transform: scale(0.96);
+}
+.bo-adWizardDetail {
+  display: grid;
+  gap: 12px;
+}
+.bo-adWizardBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--bo-border) 80%, transparent);
+  border-radius: 999px;
+  background: var(--bo-surface-2);
+  color: var(--bo-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition-property: color, border-color, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adWizardBack:hover {
+  color: var(--bo-text);
+  border-color: var(--bo-accent);
+}
+.bo-adWizardBack:active {
+  transform: scale(0.96);
+}
+
+/* Grip of a draggable wizard card: pinned to the card corner so the card body
+   stays click-through (open step) while the handle moves it. */
+.bo-adWizardGrip {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1d2a22;
+  border-color: rgba(255, 255, 255, 0.9);
+  touch-action: none;
+}
+.bo-adWizardGrip .bo-anunciosDragHandleIcon {
+  color: #1d2a22;
+}
+
+/* =====================================================================
+ * Element sizing (coord id ads_element_size_v1) - a corner handle that
+ * writes width/height into the element payload. The handle is editor
+ * chrome only: the replica element itself keeps the public metrics.
+ * ===================================================================== */
+.bo-adNodeResize {
+  position: absolute;
+  inset-block-end: -6px;
+  inset-inline-end: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--bo-accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: nwse-resize;
+  touch-action: none;
+  z-index: 5;
+  transition-property: transform, filter;
+  transition-duration: 120ms, 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adNodeResize:hover {
+  filter: brightness(1.08);
+}
+.bo-adNodeResize:active {
+  transform: scale(0.96);
+}
+.bo-adNodeResize.is-resizing {
+  transform: scale(1.12);
+}
+.bo-adNodeResize::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-right: 2px solid var(--bo-bg);
+  border-bottom: 2px solid var(--bo-bg);
+  border-radius: 0 0 3px 0;
+}
+
+.bo-adNodeSize {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bo-accent) 14%, var(--bo-surface-2));
+  color: var(--bo-text);
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.bo-adNodeSizeReset {
+  border: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bo-surface);
+  color: var(--bo-muted);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition-property: color, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adNodeSizeReset:hover {
+  color: var(--bo-text);
+}
+
+/* Card-level buttons of a step keep the pill metrics while being reorderable. */
+.bo-adWizardCardButtons {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.bo-adWizardEdit {
+  background: color-mix(in srgb, #fffdf8 18%, transparent);
+  color: #fffdf8;
+  border: 1px solid color-mix(in srgb, #fffdf8 55%, transparent);
+  font-weight: 600;
+  cursor: pointer;
+}
+.bo-adWizardEdit:hover {
+  background: color-mix(in srgb, #fffdf8 30%, transparent);
 }

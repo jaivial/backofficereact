@@ -3,7 +3,7 @@ import { createClient } from "../../../../../../api/client";
 import { useToasts } from "../../../../../../ui/feedback/useToasts";
 import type { AdsAPI, Notify } from "../AnuncioEditor";
 
-type RestaurantInfoLike = { website?: string };
+type RestaurantInfoLike = { website?: string; telefono?: string };
 
 type AdsAPIWithRestaurant = AdsAPI & {
   getRestaurantInfo: () => Promise<{ restaurantInfo?: RestaurantInfoLike } | { message?: string }>;
@@ -46,6 +46,9 @@ function buildAdsAPI(): AdsAPIWithRestaurant {
 export type AdsController = {
   api: AdsAPIWithRestaurant;
   website: string;
+  /** Contact phone of the active restaurant (coord id ads_whatsapp_v1): the
+   * default number for WhatsApp buttons. */
+  contactPhone: string;
   notify: Notify;
   /** Newest ad_image_failed event seen over WS for any ad (adId -> timestamp ms). */
   wsFailureAtRef: React.MutableRefObject<Map<number, number>>;
@@ -69,6 +72,7 @@ export function useAdsController(): AdsController {
   const { pushToast } = useToasts();
   const notify = useCallback<Notify>((kind, title, message) => pushToast({ kind, title, message }), [pushToast]);
   const [website, setWebsite] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const wsFailureAtRef = useRef<Map<number, number>>(new Map());
   const wsStatusRef = useRef<"open" | "connecting" | "closed">("connecting");
   const wsRef = useRef<WebSocket | null>(null);
@@ -114,6 +118,7 @@ export function useAdsController(): AdsController {
         if (cancelled) return;
         const ri = (res as { restaurantInfo?: RestaurantInfoLike }).restaurantInfo;
         if (ri?.website) setWebsite(ri.website);
+        if (ri?.telefono) setContactPhone(ri.telefono);
       })
       .catch(() => undefined);
     return () => { cancelled = true; };
@@ -174,5 +179,5 @@ export function useAdsController(): AdsController {
     };
   }, [dispatch, flushOutbox, notify]);
 
-  return { api, website, notify, wsFailureAtRef, wsStatusRef, sendAdSave, sendAdScheduleCheck, subscribeAdEvents };
+  return { api, website, contactPhone, notify, wsFailureAtRef, wsStatusRef, sendAdSave, sendAdScheduleCheck, subscribeAdEvents };
 }

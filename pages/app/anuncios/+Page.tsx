@@ -9,7 +9,12 @@ import { useAdsController } from "../config/functionalComponents/ConfigAnuncios/
 export default function AnunciosPage() {
   const { api, notify } = useAdsController();
   return (
-    <section aria-label="Anuncios" className="grid gap-4" data-testid="anuncios-page" data-slot="anuncios-page">
+    <section
+      aria-label="Anuncios"
+      className="bo-anunciosPage grid gap-4"
+      data-testid="anuncios-page"
+      data-slot="anuncios-page"
+    >
       <AnunciosList api={api} notify={notify} />
     </section>
   );
