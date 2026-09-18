@@ -2456,6 +2456,8 @@ export type RestaurantAdCTA = {
   navigation_mode: "route" | "custom";
   route: string;
   custom_url: string;
+  /** Operator-sized pill width as a percentage of the card (ads_button_width_v1). */
+  width?: number;
 };
 export type RestaurantAdImageGenerationStatus = "idle" | "pending" | "ready" | "failed";
 export type RestaurantAdScheduleRange = { id: number; name: string; starts_at: string; ends_at: string };

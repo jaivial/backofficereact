@@ -61,7 +61,7 @@ import {
   type ButtonAction,
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
-import { AdMoveableBox, AdStudioShell } from "./AdEditorChrome";
+import { AdMoveableBox, AdSelectionToolbar, AdStudioShell } from "./AdEditorChrome";
 import {
   ELEMENT_MAX_HEIGHT_PX,
   ELEMENT_MAX_WIDTH_PCT,
@@ -517,6 +517,32 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   }, [activeStep, ad, editingCard]);
 
 
+  const moveContentTo = useCallback(
+    (id: string, toIndex: number) => {
+      if (!ad) return;
+      const from = targetContent.findIndex((item) => item.id === id);
+      if (from < 0) return;
+      const next = [...targetContent];
+      const [moved] = next.splice(from, 1);
+      next.splice(Math.min(Math.max(toIndex, 0), next.length), 0, moved);
+      patchTargetContent(next);
+    },
+    [ad, patchTargetContent, targetContent],
+  );
+
+  const moveButtonTo = useCallback(
+    (id: string, toIndex: number) => {
+      if (!ad) return;
+      const from = targetButtons.findIndex((item) => item.id === id);
+      if (from < 0) return;
+      const next = [...targetButtons];
+      const [moved] = next.splice(from, 1);
+      next.splice(Math.min(Math.max(toIndex, 0), next.length), 0, moved);
+      patchTargetButtons(next);
+    },
+    [ad, patchTargetButtons, targetButtons],
+  );
+
   const addContent = useCallback((type: RestaurantAdContentType) => {
     insertContent(type);
     setAddContentOpen(false);
@@ -811,12 +837,52 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 />
               )}
               {!previewOpen && selectedElement ? (
-                <AdMoveableBox
-                  containerRef={canvasRef}
-                  nodeId={selectedElement.id}
-                  hasHeight={selectedElement.type === "image"}
-                  onResize={(patch) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, size: resizeElement(item, patch) } : item)))}
-                />
+                <>
+                  <AdMoveableBox
+                    containerRef={canvasRef}
+                    nodeId={selectedElement.id}
+                    hasHeight={selectedElement.type === "image"}
+                    onResize={(patch) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, size: resizeElement(item, patch) } : item)))}
+                  />
+                  <AdSelectionToolbar
+                    containerRef={canvasRef}
+                    nodeId={selectedElement.id}
+                    label={TYPE_LABEL[selectedElement.type]}
+                    onDelete={() => {
+                      patchTargetContent(targetContent.filter((item) => item.id !== selectedElement.id));
+                      setSelectedId(null);
+                    }}
+                    onMoveTo={(toIndex) => moveContentTo(selectedElement.id, toIndex)}
+                  >
+                    <span className="bo-adToolValue" data-testid={`ad-node-${selectedElement.id}-size`}>
+                      {selectedElement.size?.width ? `${Math.round(selectedElement.size.width)}%` : "Auto"}
+                    </span>
+                  </AdSelectionToolbar>
+                </>
+              ) : null}
+              {!previewOpen && selectedButton ? (
+                <>
+                  <AdMoveableBox
+                    containerRef={canvasRef}
+                    nodeId={selectedButton.id}
+                    hasHeight={false}
+                    onResize={({ width }) => patchTargetButtons(targetButtons.map((item) => (item.id === selectedButton.id ? { ...item, width } : item)))}
+                  />
+                  <AdSelectionToolbar
+                    containerRef={canvasRef}
+                    nodeId={selectedButton.id}
+                    label="Boton"
+                    onDelete={() => {
+                      patchTargetButtons(targetButtons.filter((item) => item.id !== selectedButton.id));
+                      setSelectedId(null);
+                    }}
+                    onMoveTo={(toIndex) => moveButtonTo(selectedButton.id, toIndex)}
+                  >
+                    <span className="bo-adToolValue" data-testid={`ad-cta-${selectedButton.id}-size`}>
+                      {selectedButton.width ? `${Math.round(selectedButton.width)}%` : "Auto"}
+                    </span>
+                  </AdSelectionToolbar>
+                </>
               ) : null}
             </div>
           </>
@@ -1466,6 +1532,7 @@ export function ButtonInspector({
           <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" placeholder="Texto del boton" />
         </Field>
         <ColorField label="Color" value={cta.color} onChange={(color) => onChange({ color: color || AD_DEFAULT_COLOR })} testId={`ad-cta-${cta.id}-color`} />
+        <NumberField label="Ancho (%)" value={cta.width} min={ELEMENT_MIN_WIDTH_PCT} max={ELEMENT_MAX_WIDTH_PCT} onChange={(width) => onChange({ width })} testId={`ad-cta-${cta.id}-width`} />
       </div>
 
       <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-action`}>

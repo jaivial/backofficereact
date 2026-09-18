@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Moveable from "react-moveable";
-import { Layers, Menu, SlidersHorizontal, X } from "lucide-react";
+import { GripVertical, Layers, Menu, SlidersHorizontal, Trash2, X } from "lucide-react";
 
 /* Coordination id: ads_studio_v1 - the anuncios editor becomes a design tool:
  * a canvas in the middle, layers + insert on the left, properties on the
@@ -103,6 +103,137 @@ export function AdStudioScrim({ open, onClose }: { open: boolean; onClose: () =>
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
   return open ? <div className="bo-adStudioScrim" onClick={onClose} data-testid="ad-studio-scrim" /> : null;
+}
+
+/**
+ * Floating toolbar over the selection (coord id ads_selection_tools_v1):
+ * drag to reorder, duplicate-free delete and a size readout, positioned from
+ * the measured node so it never enters the editable text.
+ */
+/** Pure geometry so the position can be verified without a browser. */
+export function measureToolbarBox(node: Element, root: Element): { top: number; left: number } {
+  const rect = node.getBoundingClientRect();
+  const rootRect = root.getBoundingClientRect();
+  return { top: rect.top - rootRect.top, left: rect.left - rootRect.left };
+}
+
+export function AdSelectionToolbar({
+  containerRef,
+  nodeId,
+  label,
+  onDelete,
+  onMoveTo,
+  children,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  nodeId: string;
+  label: string;
+  onDelete: () => void;
+  /** Moves the node to the given index of its list (drag and drop). */
+  onMoveTo: (toIndex: number) => void;
+  children?: React.ReactNode;
+}) {
+  const [box, setBox] = useState<{ top: number; left: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const measure = useCallback(() => {
+    const root = containerRef.current;
+    if (!root) return;
+    const node = root.querySelector<HTMLElement>(`[data-node-id="${nodeId}"]`);
+    if (!node) {
+      setBox(null);
+      return;
+    }
+    setBox(measureToolbarBox(node, root));
+  }, [containerRef, nodeId]);
+
+  useEffect(() => {
+    measure();
+    const root = containerRef.current;
+    if (!root) return;
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(root);
+    root.addEventListener("scroll", measure, true);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      root.removeEventListener("scroll", measure, true);
+      window.removeEventListener("resize", measure);
+    };
+  }, [containerRef, measure]);
+
+  const startDrag = useCallback(
+    (event: React.PointerEvent) => {
+      const root = containerRef.current;
+      if (!root) return;
+      const node = root.querySelector<HTMLElement>(`[data-node-id="${nodeId}"]`);
+      if (!node) return;
+      event.preventDefault();
+      const nodes = Array.from(root.querySelectorAll<HTMLElement>("[data-node-id]"));
+      let from = nodes.indexOf(node);
+      const startY = event.clientY;
+      node.classList.add("is-dragging");
+      setDragging(true);
+
+      const move = (moveEvent: PointerEvent) => {
+        const dy = moveEvent.clientY - startY;
+        if (Math.abs(dy) < 6) return;
+        let to = from;
+        nodes.forEach((other, index) => {
+          if (index === from) return;
+          const rect = other.getBoundingClientRect();
+          if (moveEvent.clientY > rect.top && moveEvent.clientY < rect.bottom) to = index;
+        });
+        if (to !== from) {
+          onMoveTo(to);
+          from = to;
+          window.requestAnimationFrame(() => measure());
+        }
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        node.classList.remove("is-dragging");
+        setDragging(false);
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    },
+    [containerRef, nodeId, onMoveTo, measure],
+  );
+
+  if (!box) return null;
+
+  return (
+    <div
+      className={`bo-adToolbar ${dragging ? "is-dragging" : ""}`}
+      style={{ top: Math.max(box.top - 20, 0), left: Math.max(box.left, 0) }}
+      data-testid="ad-selection-toolbar"
+      onPointerDown={(event) => event.stopPropagation()}
+    >
+      <button
+        type="button"
+        className="bo-adToolBtn"
+        aria-label={`Mover ${label}`}
+        title="Arrastra para reordenar"
+        data-testid={`ad-node-${nodeId}-drag`}
+        onPointerDown={startDrag}
+      >
+        <GripVertical size={14} aria-hidden="true" />
+      </button>
+      {children}
+      <button
+        type="button"
+        className="bo-adToolBtn"
+        data-tone="danger"
+        aria-label={`Eliminar ${label}`}
+        data-testid={`ad-node-${nodeId}-delete`}
+        onClick={onDelete}
+      >
+        <Trash2 size={14} aria-hidden="true" />
+      </button>
+    </div>
+  );
 }
 
 /**
