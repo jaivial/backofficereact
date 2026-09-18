@@ -2428,12 +2428,26 @@ export type RestaurantAdContentType = "title" | "subtitle" | "text" | "image";
 // percentage of the card content width and, for images, a height in pixels.
 // Absent = the public template default, so legacy content is untouched.
 export type RestaurantAdElementSize = { width?: number; height?: number };
+// Customisable look of an element (coord id ads_element_style_v1): typography
+// for texts, radius for images, opacity, colour and the drag offset.
+export type RestaurantAdElementStyle = {
+  font_size?: number;
+  font_weight?: number;
+  letter_spacing?: number;
+  line_height?: number;
+  color?: string;
+  opacity?: number;
+  radius?: number;
+  offset_x?: number;
+  offset_y?: number;
+};
 export type RestaurantAdContentElement = {
   id: string;
   type: RestaurantAdContentType;
   value: string;
   align?: RestaurantAdTextAlign;
   size?: RestaurantAdElementSize;
+  style?: RestaurantAdElementStyle;
 };
 export type RestaurantAdCTA = {
   id: string;

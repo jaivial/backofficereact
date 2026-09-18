@@ -6,6 +6,7 @@ import type {
   RestaurantAdContentElement,
   RestaurantAdContentType,
   RestaurantAdCTA,
+  RestaurantAdElementStyle,
   RestaurantAdStep,
 } from "../../../../../api/types";
 import {
@@ -18,6 +19,8 @@ import {
   ELEMENT_MIN_WIDTH_PCT,
   elementSize,
   elementSizeStyle,
+  elementStyleCSS,
+  normalizeElementStyle,
   resizeElement,
   stepBackground,
 } from "./lib/adEditor";
@@ -35,84 +38,8 @@ export const AD_CONTENT_LABEL: Record<RestaurantAdContentType, string> = {
 
 type Align = "left" | "center" | "right";
 
-/**
- * Figma-style corner handle (coord id ads_element_size_v1): dragging writes a
- * percentage width and, for images, a pixel height straight into the element
- * payload, so the box survives the save and comes back from the REST fetch.
- */
-function ResizeHandle({
-  hasHeight,
-  onResize,
-  onCommit,
-}: {
-  hasHeight: boolean;
-  onResize: (patch: { width: number; height?: number }) => void;
-  onCommit: () => void;
-}) {
-  const start = useRef<{ x: number; y: number; width: number; height: number; container: number } | null>(null);
-  const [resizing, setResizing] = useState(false);
-
-  const pointerDown = useCallback((event: React.PointerEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const node = (event.currentTarget as HTMLElement).closest(".bo-adNode");
-    const target = node?.querySelector<HTMLElement>(".bo-adResizable") ?? null;
-    start.current = {
-      x: event.clientX,
-      y: event.clientY,
-      width: target?.offsetWidth ?? 0,
-      height: target?.offsetHeight ?? 0,
-      container: node?.parentElement?.clientWidth ?? 0,
-    };
-    setResizing(true);
-    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-  }, []);
-
-  const pointerMove = useCallback(
-    (event: React.PointerEvent) => {
-      const first = start.current;
-      if (!first) return;
-      const dx = event.clientX - first.x;
-      const patch: { width: number; height?: number } = {
-        width: clamp(((first.width + dx) / (first.container || 1)) * 100, ELEMENT_MIN_WIDTH_PCT, ELEMENT_MAX_WIDTH_PCT),
-      };
-      if (hasHeight) patch.height = clamp(first.height + (event.clientY - first.y), ELEMENT_MIN_HEIGHT_PX, ELEMENT_MAX_HEIGHT_PX);
-      onResize(patch);
-    },
-    [hasHeight, onResize],
-  );
-
-  const pointerUp = useCallback(
-    (event: React.PointerEvent) => {
-      if (!start.current) return;
-      start.current = null;
-      setResizing(false);
-      (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
-      onCommit();
-    },
-    [onCommit],
-  );
-
-  return (
-    <span
-      role="separator"
-      aria-label="Redimensionar elemento"
-      aria-orientation="vertical"
-      className={`bo-adNodeResize ${resizing ? "is-resizing" : ""}`}
-      data-resizing={resizing ? "true" : "false"}
-      data-testid="ad-node-resize"
-      title="Arrastra para redimensionar"
-      onPointerDown={pointerDown}
-      onPointerMove={pointerMove}
-      onPointerUp={pointerUp}
-      onPointerCancel={pointerUp}
-    />
-  );
-}
-
-/** Inline text editing: the DOM keeps the caret while typing, props win only
- * when the field is not being edited. */
 export function EditableText({
+  as = "span",
   value,
   onCommit,
   className,
@@ -122,7 +49,12 @@ export function EditableText({
   multiline,
   testId,
   readOnly = false,
+  draggableX = false,
+  onDragOffset,
 }: {
+  /** Renders the semantic element itself: the editable text is ONE container,
+   * matching the public markup instead of wrapping an inner span. */
+  as?: "span" | "h2" | "h3" | "p";
   value: string;
   onCommit: (next: string) => void;
   className?: string;
@@ -133,8 +65,13 @@ export function EditableText({
   testId?: string;
   /** Read-only twin used by the preview: same markup, not editable. */
   readOnly?: boolean;
+  /** Editable canvas: drag along the X axis (coord id ads_element_style_v1). */
+  draggableX?: boolean;
+  onDragOffset?: (offsetX: number) => void;
 }) {
-  const ref = useRef<HTMLSpanElement | null>(null);
+  const Tag = as;
+  const ref = useRef<HTMLElement | null>(null);
+  const drag = useRef<{ x: number; offset: number } | null>(null);
   const [editing, setEditing] = useState(false);
   const text = asText(value);
 
@@ -151,9 +88,30 @@ export function EditableText({
     if (next !== text) onCommit(next);
   }, [onCommit, text]);
 
+  const startDragX = useCallback((event: React.PointerEvent) => {
+    if (!draggableX || readOnly) return;
+    if (!event.shiftKey) return; // the caret keeps priority; shift starts a drag
+    event.preventDefault();
+    const current = Number(String(style?.marginInlineStart ?? "").replace("px", "")) || 0;
+    drag.current = { x: event.clientX, offset: current };
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  }, [draggableX, readOnly, style]);
+
+  const moveDragX = useCallback((event: React.PointerEvent) => {
+    const state = drag.current;
+    if (!state) return;
+    onDragOffset?.(state.offset + (event.clientX - state.x));
+  }, [onDragOffset]);
+
+  const endDragX = useCallback((event: React.PointerEvent) => {
+    if (!drag.current) return;
+    drag.current = null;
+    (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+  }, []);
+
   return (
-    <span
-      ref={ref}
+    <Tag
+      ref={ref as never}
       role={readOnly ? undefined : "textbox"}
       tabIndex={readOnly ? undefined : 0}
       contentEditable={readOnly ? undefined : true}
@@ -164,8 +122,13 @@ export function EditableText({
       data-testid={testId}
       data-editing={editing ? "true" : "false"}
       data-readonly={readOnly ? "true" : undefined}
-      className={`bo-adEditable ${className ?? ""}`}
+      data-draggable-x={draggableX && !readOnly ? "true" : undefined}
+      className={`bo-adEditable ${draggableX && !readOnly ? "bo-adDraggable" : ""} ${className ?? ""}`}
       style={style}
+      onPointerDown={startDragX}
+      onPointerMove={moveDragX}
+      onPointerUp={endDragX}
+      onPointerCancel={endDragX}
       onBlur={readOnly ? undefined : commit}
       onKeyDown={readOnly ? undefined : (event) => {
         if (event.key === "Escape") {
@@ -179,7 +142,7 @@ export function EditableText({
       }}
     >
       {text}
-    </span>
+    </Tag>
   );
 }
 
@@ -209,10 +172,8 @@ function ContentNode({
   const startDrag = useCallback((event: React.PointerEvent) => controls.start(event), [controls]);
   const align = item.align || "left";
   const sizeStyle = elementSizeStyle(item);
-  const resizable = item.type === "image" ? { width: true, height: true } : { width: true, height: false };
-  const sizeLabel = [elementSize(item).width ? `${Math.round(elementSize(item).width as number)}%` : "", elementSize(item).height ? `${Math.round(elementSize(item).height as number)}px` : ""].filter(Boolean).join(" · ");
-  const applyResize = useCallback(
-    (patch: { width: number; height?: number }) => onChange({ size: resizeElement(item, patch) }),
+  const applyStyle = useCallback(
+    (patch: Partial<RestaurantAdElementStyle>) => onChange({ style: normalizeElementStyle(item, patch) }),
     [item, onChange],
   );
   const wrap = (node: React.ReactNode) => (
@@ -226,6 +187,7 @@ function ContentNode({
       dragElastic={0.04}
       whileDrag={{ zIndex: 3 }}
       className={`bo-adNode ${selected ? "is-selected" : ""}`}
+      data-node-id={item.id}
       data-slot={`ad-node-${item.id}`}
       data-testid={`ad-node-${item.type}`}
       onPointerDown={() => onSelect?.(item.id)}
@@ -247,38 +209,6 @@ function ContentNode({
           >
             <GripVertical size={15} aria-hidden="true" />
           </button>
-          {item.type !== "image" ? (
-            <span className="bo-anunciosAlignmentTabs bo-adNodeAlign" role="group" aria-label="Alineacion del texto">
-              {(["left", "center", "right"] as Align[]).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  className={align === option ? "is-active" : ""}
-                  aria-pressed={align === option}
-                  data-testid={`ad-node-${item.id}-align-${option}`}
-                  onPointerDown={(event) => event.stopPropagation()}
-                  onClick={() => onChange({ align: option })}
-                >
-                  {option === "left" ? "Izq" : option === "center" ? "Cen" : "Der"}
-                </button>
-              ))}
-            </span>
-          ) : null}
-          {sizeLabel ? (
-            <span className="bo-adNodeSize" data-slot={`ad-node-${item.id}-size`} data-testid={`ad-node-${item.id}-size`}>
-              {sizeLabel}
-              <button
-                type="button"
-                className="bo-adNodeSizeReset"
-                aria-label={`Restablecer tamano de ${AD_CONTENT_LABEL[item.type]}`}
-                data-testid={`ad-node-${item.id}-size-reset`}
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={() => onChange({ size: undefined })}
-              >
-                Auto
-              </button>
-            </span>
-          ) : null}
           <button
             type="button"
             className="bo-anunciosIconBtn bo-adNodeTrash"
@@ -302,12 +232,11 @@ function ContentNode({
           <img
             src={item.value}
             alt="Imagen del anuncio"
-            className="bo-adModalImage bo-adResizable"
-            style={sizeStyle}
+            className="bo-adModalImage bo-adResizable bo-adDragTarget"
+            style={{ ...sizeStyle, ...elementStyleCSS(item) }}
             data-slot={`ad-preview-${item.id}`}
           />
         ) : null}
-        {editable && selected ? <ResizeHandle hasHeight={resizable.height} onResize={applyResize} onCommit={() => undefined} /> : null}
         {editable ? (
           <button
             type="button"
@@ -322,26 +251,26 @@ function ContentNode({
       </div>,
     );
   }
+  // ONE container per text element: the semantic tag itself is editable, so the
+  // studio selection matches what the public site renders.
   const text = (
     <EditableText
+      as={item.type === "title" ? "h2" : item.type === "subtitle" ? "h3" : "p"}
       value={item.value}
       multiline={item.type === "text"}
       ariaLabel={AD_CONTENT_LABEL[item.type]}
       placeholder={`${AD_CONTENT_LABEL[item.type]}...`}
       testId={`ad-node-${item.id}-edit`}
       onCommit={(next) => onChange({ value: next })}
-      className={`bo-adResizable ${
+      className={`bo-adResizable bo-adDragTarget ${
         item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"
       }`}
-      style={{ textAlign: align, display: "block", ...sizeStyle }}
+      style={{ textAlign: align, display: "block", ...sizeStyle, ...elementStyleCSS(item) }}
+      draggableX={editable && selected}
+      onDragOffset={(offset_x) => applyStyle({ offset_x })}
     />
   );
-  return wrap(
-    <>
-      {item.type === "title" ? <h2>{text}</h2> : item.type === "subtitle" ? <p>{text}</p> : text}
-      {editable && selected ? <ResizeHandle hasHeight={false} onResize={applyResize} onCommit={() => undefined} /> : null}
-    </>,
-  );
+  return wrap(text);
 }
 
 /** Read-only twin of ContentNode: same markup, same operator box, no drag
@@ -356,23 +285,25 @@ function StaticContent({ item }: { item: RestaurantAdContentElement }) {
           src={item.value}
           alt="Imagen del anuncio"
           className="bo-adModalImage"
-          style={sizeStyle}
+          style={{ ...sizeStyle, ...elementStyleCSS(item) }}
           data-slot={`ad-preview-${item.id}`}
         />
       </div>
     ) : null;
   }
-  const node = (
+  return (
     <EditableText
+      as={item.type === "title" ? "h2" : item.type === "subtitle" ? "h3" : "p"}
       value={item.value}
       readOnly
       ariaLabel={AD_CONTENT_LABEL[item.type]}
       onCommit={() => undefined}
-      className={item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"}
-      style={{ textAlign: align, display: "block", ...sizeStyle }}
+      className={`bo-adResizable ${
+        item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"
+      }`}
+      style={{ textAlign: align, display: "block", ...sizeStyle, ...elementStyleCSS(item) }}
     />
   );
-  return <div data-slot={`ad-preview-${item.id}`}>{item.type === "title" ? <h2>{node}</h2> : node}</div>;
 }
 
 export function AdContentFlow({
