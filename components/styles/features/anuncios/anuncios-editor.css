@@ -1877,3 +1877,61 @@ button.bg-bo-accent { color: var(--bo-bg); }
   min-width: 0;
   width: 100%;
 }
+
+/* =====================================================================
+ * Selection toolbar (coord id ads_selection_tools_v1): drag, size and
+ * delete float over the selected node without entering the editable text.
+ * ===================================================================== */
+.bo-adToolbar {
+  position: absolute;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  background: var(--bo-surface);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+}
+.bo-adToolbar.is-dragging {
+  border-color: var(--bo-accent);
+}
+.bo-adToolBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bo-muted);
+  cursor: grab;
+  transition-property: background-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adToolBtn:active {
+  cursor: grabbing;
+}
+.bo-adToolBtn:hover {
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+}
+.bo-adToolBtn[data-tone="danger"] {
+  color: var(--bo-text-danger);
+}
+.bo-adToolValue {
+  padding: 0 6px;
+  color: var(--bo-text);
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The node being dragged leans and dims, matching the design-tool feel. */
+.bo-adNode.is-dragging {
+  opacity: 0.5;
+  outline-color: var(--bo-accent);
+}
