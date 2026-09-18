@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Reorder, useDragControls } from "motion/react";
-import { ChevronLeft, GripVertical, ImagePlus, Trash2 } from "lucide-react";
+import { ChevronLeft, GripVertical, ImagePlus } from "lucide-react";
 import type {
   RestaurantAd,
   RestaurantAdContentElement,
@@ -10,19 +10,15 @@ import type {
   RestaurantAdStep,
 } from "../../../../../api/types";
 import {
+  AD_DEFAULT_COLOR,
   asText,
+  BLOCK_LABEL,
   buildCTAURL,
-  clamp,
-  ELEMENT_MAX_HEIGHT_PX,
-  ELEMENT_MAX_WIDTH_PCT,
-  ELEMENT_MIN_HEIGHT_PX,
-  ELEMENT_MIN_WIDTH_PCT,
-  elementSize,
   elementSizeStyle,
   elementStyleCSS,
   normalizeElementStyle,
-  resizeElement,
   stepBackground,
+  type AdBlockKind,
 } from "./lib/adEditor";
 
 /* Coordination id: ads_canvas_v1 - one renderer draws the public ad template
@@ -36,7 +32,29 @@ export const AD_CONTENT_LABEL: Record<RestaurantAdContentType, string> = {
   image: "Imagen",
 };
 
-type Align = "left" | "center" | "right";
+/** Which list of the current target a block belongs to (coord id ads_block_studio_v1). */
+export type AdBlockList = "content" | "buttons";
+
+/**
+ * The one set of attributes every block of the editable area carries, whatever
+ * its kind: the studio chrome (hover label, selection, action bar, resize)
+ * reads these and nothing else, so text, image and button are equal.
+ */
+export function blockNodeProps(id: string, kind: AdBlockKind, list: AdBlockList, selected: boolean) {
+  return {
+    "data-node-id": id,
+    "data-block-kind": kind,
+    "data-block-list": list,
+    "data-block-label": BLOCK_LABEL[kind],
+    "data-slot": `ad-node-${id}`,
+    className: `bo-adNode ${selected ? "is-selected" : ""}`,
+  };
+}
+
+/** Inline look of a button pill; `flex: 0 0 auto` lets the operator width win over the public 100%. */
+export function buttonStyle(cta: Pick<RestaurantAdCTA, "color" | "width">): React.CSSProperties {
+  return { ["--ad-primary" as string]: cta.color || AD_DEFAULT_COLOR, ...(cta.width ? { width: `${cta.width}%`, flex: "0 0 auto" } : {}) };
+}
 
 export function EditableText({
   as = "span",
@@ -51,6 +69,7 @@ export function EditableText({
   readOnly = false,
   draggableX = false,
   onDragOffset,
+  onSelect,
   nodeProps,
 }: {
   /** Renders the semantic element itself: the editable text is ONE container,
@@ -69,6 +88,8 @@ export function EditableText({
   /** Editable canvas: drag along the X axis (coord id ads_element_style_v1). */
   draggableX?: boolean;
   onDragOffset?: (offsetX: number) => void;
+  /** Studio selection: fired on pointer down, before the caret is placed. */
+  onSelect?: () => void;
   /** Studio node attributes (selection, ids) spread on the same container. */
   nodeProps?: Record<string, unknown>;
 }) {
@@ -92,13 +113,14 @@ export function EditableText({
   }, [onCommit, text]);
 
   const startDragX = useCallback((event: React.PointerEvent) => {
+    onSelect?.();
     if (!draggableX || readOnly) return;
     if (!event.shiftKey) return; // the caret keeps priority; shift starts a drag
     event.preventDefault();
     const current = Number(String(style?.marginInlineStart ?? "").replace("px", "")) || 0;
     drag.current = { x: event.clientX, offset: current };
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-  }, [draggableX, readOnly, style]);
+  }, [draggableX, onSelect, readOnly, style]);
 
   const moveDragX = useCallback((event: React.PointerEvent) => {
     const state = drag.current;
@@ -130,6 +152,7 @@ export function EditableText({
       className={[nodeProps?.className, "bo-adEditable", draggableX && !readOnly ? "bo-adDraggable" : "", className].filter(Boolean).join(" ")}
       style={style}
       onPointerDown={startDragX}
+      onFocus={readOnly ? undefined : onSelect}
       onPointerMove={moveDragX}
       onPointerUp={endDragX}
       onPointerCancel={endDragX}
@@ -161,7 +184,6 @@ function ContentNode({
   selected,
   onSelect,
   onChange,
-  onDelete,
   onImagePick,
 }: {
   item: RestaurantAdContentElement;
@@ -169,7 +191,6 @@ function ContentNode({
   selected: boolean;
   onSelect?: (id: string) => void;
   onChange: (patch: Partial<RestaurantAdContentElement>) => void;
-  onDelete: () => void;
   onImagePick?: () => void;
 }) {
   const align = item.align || "left";
@@ -178,19 +199,14 @@ function ContentNode({
     (patch: Partial<RestaurantAdElementStyle>) => onChange({ style: normalizeElementStyle(item, patch) }),
     [item, onChange],
   );
-  // The element IS the node: one single container carries the public class,
+  // The element IS the block: one single container carries the public class,
   // the studio selection and the editable text, so what is selected is what
   // the visitor sees.
-  const nodeProps = {
-    "data-node-id": item.id,
-    "data-slot": `ad-node-${item.id}`,
-    "data-testid": `ad-node-${item.type}`,
-    onPointerDown: () => onSelect?.(item.id),
-  };
+  const nodeProps = blockNodeProps(item.id, item.type, "content", selected);
 
   if (item.type === "image") {
     return (
-      <div {...nodeProps}>
+      <div {...nodeProps} className={`${nodeProps.className} bo-adImageNode`} data-testid={`ad-node-${item.id}`} onPointerDown={() => onSelect?.(item.id)}>
         {item.value ? (
           <img
             src={item.value}
@@ -224,13 +240,14 @@ function ContentNode({
       placeholder={`${AD_CONTENT_LABEL[item.type]}...`}
       testId={`ad-node-${item.id}-edit`}
       onCommit={(next) => onChange({ value: next })}
-      className={`bo-adNode ${selected ? "is-selected" : ""} bo-adResizable bo-adDragTarget ${
+      onSelect={() => onSelect?.(item.id)}
+      className={`bo-adResizable ${
         item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"
       }`}
       style={{ textAlign: align, display: "block", ...sizeStyle, ...elementStyleCSS(item) }}
       draggableX={editable && selected}
       onDragOffset={(offset_x) => applyStyle({ offset_x })}
-      {...nodeProps}
+      nodeProps={nodeProps}
     />
   );
 }
@@ -297,7 +314,6 @@ export function AdContentFlow({
             selected={selectedId === item.id}
             onSelect={onSelect}
             onChange={(patch) => onChange(content.map((entry) => (entry.id === item.id ? { ...entry, ...patch } : entry)))}
-            onDelete={() => onChange(content.filter((entry) => entry.id !== item.id))}
             onImagePick={() => onImagePick?.(item)}
           />
         ))}
@@ -317,6 +333,11 @@ export function AdContentFlow({
   );
 }
 
+/**
+ * A button is a block like any other (coord id ads_block_studio_v1): the pill
+ * itself is the node, its label is edited in place and the studio chrome
+ * (selection, action bar, resize) is the same one text and image get.
+ */
 function ButtonNode({
   cta,
   website,
@@ -324,7 +345,6 @@ function ButtonNode({
   selected,
   onSelect,
   onChange,
-  onDelete,
 }: {
   cta: RestaurantAdCTA;
   website: string;
@@ -332,10 +352,7 @@ function ButtonNode({
   selected: boolean;
   onSelect?: (id: string) => void;
   onChange: (patch: Partial<RestaurantAdCTA>) => void;
-  onDelete: () => void;
 }) {
-  const controls = useDragControls();
-  const startDrag = useCallback((event: React.PointerEvent) => controls.start(event), [controls]);
   const href = buildCTAURL(website, cta);
   if (!editable) {
     return (
@@ -344,7 +361,7 @@ function ButtonNode({
         target="_blank"
         rel="noopener noreferrer"
         className="bo-adModalCta"
-        style={{ ["--ad-primary" as string]: cta.color || "#436754" }}
+        style={buttonStyle(cta)}
         data-slot={`ad-preview-cta-${cta.id}`}
         data-testid={`ad-preview-cta-${cta.id}`}
       >
@@ -353,75 +370,17 @@ function ButtonNode({
     );
   }
   return (
-    <Reorder.Item
-      value={cta}
-      as="div"
-      layout="position"
-      dragListener={false}
-      dragControls={controls}
-      dragMomentum={false}
-      dragElastic={0.04}
-      whileDrag={{ zIndex: 3 }}
-      className={`bo-adButton ${selected ? "is-selected" : ""}`}
-      data-slot={`ad-button-${cta.id}`}
-      data-testid={`ad-button-${cta.id}`}
-      onPointerDown={() => onSelect?.(cta.id)}
-    >
-      {editable ? (
-        <button
-          type="button"
-          className="bo-anunciosDragHandle bo-adNodeGrip bo-adButtonGrip"
-          aria-label="Mover boton"
-          data-testid={`ad-button-${cta.id}-grip`}
-          onPointerDown={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            startDrag(event);
-          }}
-        >
-          <GripVertical size={14} aria-hidden="true" />
-        </button>
-      ) : null}
-      {editable ? (
-        <span
-          className="bo-adModalCta bo-adResizable"
-          style={{ ["--ad-primary" as string]: cta.color || "#436754", ...(cta.width ? { width: `${cta.width}%`, flex: "0 0 auto" } : {}) }}
-        >
-          <EditableText
-            value={cta.text}
-            ariaLabel="Texto del boton"
-            placeholder="Texto del boton"
-            testId={`ad-button-${cta.id}-edit`}
-            onCommit={(text) => onChange({ text })}
-          />
-        </span>
-      ) : (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bo-adModalCta"
-          style={{ ["--ad-primary" as string]: cta.color || "#436754", ...(cta.width ? { width: `${cta.width}%`, flex: "0 0 auto" } : {}) }}
-          data-slot={`ad-preview-cta-${cta.id}`}
-          data-testid={`ad-preview-cta-${cta.id}`}
-        >
-          {cta.text || "Mas informacion"}
-        </a>
-      )}
-      {editable ? (
-        <button
-          type="button"
-          className="bo-anunciosIconBtn bo-adNodeTrash bo-adButtonTrash"
-          data-tone="danger"
-          aria-label="Eliminar boton"
-          data-testid={`ad-button-${cta.id}-delete`}
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={onDelete}
-        >
-          <Trash2 size={14} aria-hidden="true" />
-        </button>
-      ) : null}
-    </Reorder.Item>
+    <EditableText
+      value={cta.text}
+      ariaLabel="Texto del boton"
+      placeholder="Texto del boton"
+      testId={`ad-button-${cta.id}-edit`}
+      onCommit={(text) => onChange({ text })}
+      onSelect={() => onSelect?.(cta.id)}
+      className="bo-adModalCta bo-adResizable"
+      style={buttonStyle(cta)}
+      nodeProps={blockNodeProps(cta.id, "button", "buttons", selected)}
+    />
   );
 }
 
@@ -433,6 +392,8 @@ export function AdButtons({
   onSelect,
   onChange,
   emptyHint,
+  className = "bo-adModalActions",
+  testId = "ad-preview-ctas",
 }: {
   buttons: RestaurantAdCTA[];
   website: string;
@@ -441,18 +402,14 @@ export function AdButtons({
   onSelect?: (id: string) => void;
   onChange: (buttons: RestaurantAdCTA[]) => void;
   emptyHint?: string;
+  className?: string;
+  testId?: string;
 }) {
   if (!buttons.length) {
     return editable && emptyHint ? <p className="bo-adCanvasHint" data-testid="ad-canvas-buttons-empty">{emptyHint}</p> : null;
   }
   return (
-    <Reorder.Group
-      axis="y"
-      values={buttons}
-      onReorder={onChange}
-      className="bo-adModalActions"
-      data-testid="ad-preview-ctas"
-    >
+    <div className={className} data-testid={testId}>
       {buttons.map((cta) => (
         <ButtonNode
           key={cta.id}
@@ -462,10 +419,9 @@ export function AdButtons({
           selected={selectedId === cta.id}
           onSelect={onSelect}
           onChange={(patch) => onChange(buttons.map((entry) => (entry.id === cta.id ? { ...entry, ...patch } : entry)))}
-          onDelete={() => onChange(buttons.filter((entry) => entry.id !== cta.id))}
         />
       ))}
-    </Reorder.Group>
+    </div>
   );
 }
 
@@ -535,6 +491,8 @@ function WizardCard({
   total,
   website,
   editable,
+  selectedId,
+  onSelect,
   onOpen,
   onStepChange,
   onCardButtonsChange,
@@ -544,6 +502,8 @@ function WizardCard({
   total: number;
   website: string;
   editable: boolean;
+  selectedId?: string | null;
+  onSelect?: (id: string) => void;
   onOpen: () => void;
   onStepChange?: (stepId: string, patch: Partial<RestaurantAdStep>) => void;
   /** Reorders the buttons inside this card (coord id ads_card_buttons_order_v1). */
@@ -601,27 +561,16 @@ function WizardCard({
         ) : null}
         <span className="bo-adWizardCardActions" data-slot={`ad-wizard-card-${step.id}-actions`}>
           {editable ? (
-            <Reorder.Group
-              axis="y"
-              values={step.buttons}
-              onReorder={(buttons) => onCardButtonsChange?.(step.id, buttons)}
+            <AdButtons
+              buttons={step.buttons}
+              website={website}
+              editable
+              selectedId={selectedId}
+              onSelect={onSelect}
+              onChange={(buttons) => onCardButtonsChange?.(step.id, buttons)}
               className="bo-adModalActions bo-adWizardCardButtons"
-              data-testid={`ad-wizard-card-${step.id}-buttons`}
-            >
-              {step.buttons.map((cta) => (
-                <ButtonNode
-                  key={cta.id}
-                  cta={cta}
-                  website={website}
-                  editable
-                  selected={false}
-                  onChange={(patch) =>
-                    onCardButtonsChange?.(step.id, step.buttons.map((entry) => (entry.id === cta.id ? { ...entry, ...patch } : entry)))
-                  }
-                  onDelete={() => onCardButtonsChange?.(step.id, step.buttons.filter((entry) => entry.id !== cta.id))}
-                />
-              ))}
-            </Reorder.Group>
+              testId={`ad-wizard-card-${step.id}-buttons`}
+            />
           ) : (
             step.buttons.map((cta) => (
               <a
@@ -630,7 +579,7 @@ function WizardCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bo-adModalCta bo-adWizardAction"
-                style={{ ["--ad-primary" as string]: cta.color || "#436754" }}
+                style={{ ["--ad-primary" as string]: cta.color || AD_DEFAULT_COLOR }}
                 onClick={(event) => event.stopPropagation()}
                 data-testid={`ad-wizard-card-${step.id}-${cta.id}`}
               >
@@ -773,6 +722,8 @@ export function AdWizard({
             total={steps.length}
             website={website}
             editable={editable}
+            selectedId={selectedId}
+            onSelect={onSelect}
             onOpen={() => go(index + 1)}
             onStepChange={onStepChange}
             onCardButtonsChange={onCardButtonsChange}

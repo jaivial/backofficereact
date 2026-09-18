@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Moveable from "react-moveable";
-import { GripVertical, Layers, Menu, SlidersHorizontal, Trash2, X } from "lucide-react";
+import { Copy, GripVertical, Layers, Menu, SlidersHorizontal, Trash2, X } from "lucide-react";
 
 /* Coordination id: ads_studio_v1 - the anuncios editor becomes a design tool:
  * a canvas in the middle, layers + insert on the left, properties on the
@@ -105,46 +105,39 @@ export function AdStudioScrim({ open, onClose }: { open: boolean; onClose: () =>
   return open ? <div className="bo-adStudioScrim" onClick={onClose} data-testid="ad-studio-scrim" /> : null;
 }
 
-/**
- * Floating toolbar over the selection (coord id ads_selection_tools_v1):
- * drag to reorder, duplicate-free delete and a size readout, positioned from
- * the measured node so it never enters the editable text.
- */
+/* Coordination id: ads_block_studio_v1 - every block of the editable area
+ * (text, image, button) gets the same chrome: a hover label, a selection
+ * action bar (drag, duplicate, delete) and a resize box. The chrome reads only
+ * the block attributes written by `blockNodeProps`, so kinds are equal. */
+
+export type BlockGeometry = { top: number; left: number; width: number; height: number; label: string; kind: string };
+
 /** Pure geometry so the position can be verified without a browser. */
-export function measureToolbarBox(node: Element, root: Element): { top: number; left: number } {
+export function measureBlock(node: Element, root: Element): BlockGeometry {
   const rect = node.getBoundingClientRect();
   const rootRect = root.getBoundingClientRect();
-  return { top: rect.top - rootRect.top, left: rect.left - rootRect.left };
+  return {
+    top: rect.top - rootRect.top + root.scrollTop,
+    left: rect.left - rootRect.left + root.scrollLeft,
+    width: rect.width,
+    height: rect.height,
+    label: node.getAttribute("data-block-label") ?? "",
+    kind: node.getAttribute("data-block-kind") ?? "",
+  };
 }
 
-export function AdSelectionToolbar({
-  containerRef,
-  nodeId,
-  label,
-  onDelete,
-  onMoveTo,
-  children,
-}: {
-  containerRef: React.RefObject<HTMLDivElement | null>;
-  nodeId: string;
-  label: string;
-  onDelete: () => void;
-  /** Moves the node to the given index of its list (drag and drop). */
-  onMoveTo: (toIndex: number) => void;
-  children?: React.ReactNode;
-}) {
-  const [box, setBox] = useState<{ top: number; left: number } | null>(null);
-  const [dragging, setDragging] = useState(false);
+function blockNode(root: HTMLElement | null, nodeId: string | null): HTMLElement | null {
+  if (!root || !nodeId) return null;
+  return root.querySelector<HTMLElement>(`[data-node-id="${nodeId}"]`);
+}
 
+/** Tracks a block box inside the canvas and re-measures on any layout change. */
+function useBlockGeometry(containerRef: React.RefObject<HTMLDivElement | null>, nodeId: string | null): BlockGeometry | null {
+  const [box, setBox] = useState<BlockGeometry | null>(null);
   const measure = useCallback(() => {
     const root = containerRef.current;
-    if (!root) return;
-    const node = root.querySelector<HTMLElement>(`[data-node-id="${nodeId}"]`);
-    if (!node) {
-      setBox(null);
-      return;
-    }
-    setBox(measureToolbarBox(node, root));
+    const node = blockNode(root, nodeId);
+    setBox(root && node ? measureBlock(node, root) : null);
   }, [containerRef, nodeId]);
 
   useEffect(() => {
@@ -153,41 +146,99 @@ export function AdSelectionToolbar({
     if (!root) return;
     const observer = new ResizeObserver(() => measure());
     observer.observe(root);
+    const mutations = new MutationObserver(() => measure());
+    mutations.observe(root, { attributes: true, childList: true, subtree: true, characterData: true });
     root.addEventListener("scroll", measure, true);
+    root.addEventListener("transitionend", measure, true);
     window.addEventListener("resize", measure);
+    // Selection happens on pointer down; the block settles (caret, :active) by pointer up.
+    window.addEventListener("pointerup", measure);
     return () => {
+      window.removeEventListener("pointerup", measure);
       observer.disconnect();
+      mutations.disconnect();
       root.removeEventListener("scroll", measure, true);
+      root.removeEventListener("transitionend", measure, true);
       window.removeEventListener("resize", measure);
     };
   }, [containerRef, measure]);
 
+  return box;
+}
+
+/** Hover outline + kind label over the block under the pointer (never the selected one). */
+export function AdBlockHover({ containerRef, selectedId }: { containerRef: React.RefObject<HTMLDivElement | null>; selectedId: string | null }) {
+  const [hoverId, setHoverId] = useState<string | null>(null);
+  useEffect(() => {
+    const root = containerRef.current;
+    if (!root) return;
+    const onMove = (event: PointerEvent) => {
+      const node = (event.target as Element | null)?.closest?.("[data-node-id]");
+      setHoverId(node?.getAttribute("data-node-id") ?? null);
+    };
+    const onLeave = () => setHoverId(null);
+    root.addEventListener("pointermove", onMove);
+    root.addEventListener("pointerleave", onLeave);
+    return () => {
+      root.removeEventListener("pointermove", onMove);
+      root.removeEventListener("pointerleave", onLeave);
+    };
+  }, [containerRef]);
+  const box = useBlockGeometry(containerRef, hoverId && hoverId !== selectedId ? hoverId : null);
+  if (!box) return null;
+  return (
+    <div className="bo-adBlockHover" style={{ top: box.top, left: box.left, width: box.width, height: box.height }} data-testid="ad-block-hover" data-kind={box.kind} aria-hidden="true">
+      <span className="bo-adBlockTag">{box.label}</span>
+    </div>
+  );
+}
+
+/**
+ * Action bar pinned above the selected block: kind label, drag to reorder
+ * within its list, duplicate and delete. It measures the block, so it never
+ * enters the editable text.
+ */
+export function AdBlockBar({
+  containerRef,
+  nodeId,
+  onDelete,
+  onDuplicate,
+  onMoveTo,
+  children,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  nodeId: string;
+  onDelete: () => void;
+  onDuplicate: () => void;
+  /** Moves the block to the given index of its own list (drag and drop). */
+  onMoveTo: (toIndex: number) => void;
+  children?: React.ReactNode;
+}) {
+  const box = useBlockGeometry(containerRef, nodeId);
+  const [dragging, setDragging] = useState(false);
+
   const startDrag = useCallback(
     (event: React.PointerEvent) => {
       const root = containerRef.current;
-      if (!root) return;
-      const node = root.querySelector<HTMLElement>(`[data-node-id="${nodeId}"]`);
-      if (!node) return;
+      const node = blockNode(root, nodeId);
+      if (!root || !node) return;
       event.preventDefault();
-      const nodes = Array.from(root.querySelectorAll<HTMLElement>("[data-node-id]"));
+      // Blocks only trade places inside their own list (content or buttons).
+      const list = node.getAttribute("data-block-list");
+      const nodes = Array.from(root.querySelectorAll<HTMLElement>(`[data-node-id][data-block-list="${list}"]`));
       let from = nodes.indexOf(node);
-      const startY = event.clientY;
       node.classList.add("is-dragging");
       setDragging(true);
-
       const move = (moveEvent: PointerEvent) => {
-        const dy = moveEvent.clientY - startY;
-        if (Math.abs(dy) < 6) return;
         let to = from;
         nodes.forEach((other, index) => {
           if (index === from) return;
           const rect = other.getBoundingClientRect();
-          if (moveEvent.clientY > rect.top && moveEvent.clientY < rect.bottom) to = index;
+          if (moveEvent.clientY > rect.top && moveEvent.clientY < rect.bottom && moveEvent.clientX > rect.left && moveEvent.clientX < rect.right) to = index;
         });
         if (to !== from) {
           onMoveTo(to);
           from = to;
-          window.requestAnimationFrame(() => measure());
         }
       };
       const up = () => {
@@ -199,46 +250,64 @@ export function AdSelectionToolbar({
       window.addEventListener("pointermove", move);
       window.addEventListener("pointerup", up);
     },
-    [containerRef, nodeId, onMoveTo, measure],
+    [containerRef, nodeId, onMoveTo],
   );
 
   if (!box) return null;
-
+  // The bar sits above the block; the canvas column has the stage padding
+  // above it, so only a block glued to the very top pushes the bar inside.
+  const above = box.top >= 8;
   return (
-    <div
-      className={`bo-adToolbar ${dragging ? "is-dragging" : ""}`}
-      style={{ top: Math.max(box.top - 20, 0), left: Math.max(box.left, 0) }}
-      data-testid="ad-selection-toolbar"
-      onPointerDown={(event) => event.stopPropagation()}
-    >
-      <button
-        type="button"
-        className="bo-adToolBtn"
-        aria-label={`Mover ${label}`}
-        title="Arrastra para reordenar"
-        data-testid={`ad-node-${nodeId}-drag`}
-        onPointerDown={startDrag}
+    <>
+      <div className="bo-adBlockRing" style={{ top: box.top, left: box.left, width: box.width, height: box.height }} data-testid="ad-block-ring" aria-hidden="true" />
+      <div
+        className={`bo-adBlockBar ${dragging ? "is-dragging" : ""}`}
+        style={{ top: above ? box.top - 34 : box.top + box.height + 6, left: box.left }}
+        data-testid="ad-block-bar"
+        data-kind={box.kind}
+        onPointerDown={(event) => event.stopPropagation()}
       >
-        <GripVertical size={14} aria-hidden="true" />
-      </button>
-      {children}
-      <button
-        type="button"
-        className="bo-adToolBtn"
-        data-tone="danger"
-        aria-label={`Eliminar ${label}`}
-        data-testid={`ad-node-${nodeId}-delete`}
-        onClick={onDelete}
-      >
-        <Trash2 size={14} aria-hidden="true" />
-      </button>
-    </div>
+        <button
+          type="button"
+          className="bo-adBlockBtn bo-adBlockBtn--drag"
+          aria-label={`Mover ${box.label}`}
+          title="Arrastra para reordenar"
+          data-testid={`ad-node-${nodeId}-drag`}
+          onPointerDown={startDrag}
+        >
+          <GripVertical size={14} aria-hidden="true" />
+        </button>
+        <span className="bo-adBlockBarLabel">{box.label}</span>
+        {children}
+        <button
+          type="button"
+          className="bo-adBlockBtn"
+          aria-label={`Duplicar ${box.label}`}
+          title="Duplicar"
+          data-testid={`ad-node-${nodeId}-duplicate`}
+          onClick={onDuplicate}
+        >
+          <Copy size={14} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="bo-adBlockBtn"
+          data-tone="danger"
+          aria-label={`Eliminar ${box.label}`}
+          title="Eliminar"
+          data-testid={`ad-node-${nodeId}-delete`}
+          onClick={onDelete}
+        >
+          <Trash2 size={14} aria-hidden="true" />
+        </button>
+      </div>
+    </>
   );
 }
 
 /**
- * Figma-style transform box over the selected element (coord id
- * ads_element_size_v1). It only resizes: ordering stays with the layers list
+ * Figma-style transform box over the selected block (coord id
+ * ads_element_size_v1). It only resizes: ordering stays with the action bar
  * and the card keeps its public metrics, because Moveable writes the same
  * percentage width / pixel height that the backend stores.
  */
@@ -264,7 +333,9 @@ export function AdMoveableBox({
       setTarget(null);
       return;
     }
-    setTarget(containerRef.current.querySelector<HTMLElement>(`[data-node-id="${nodeId}"] .bo-adResizable`) ?? null);
+    const node = blockNode(containerRef.current, nodeId);
+    // The resizable box is the block itself, or the media it wraps (image).
+    setTarget(node ? (node.matches(".bo-adResizable") ? node : node.querySelector<HTMLElement>(".bo-adResizable")) : null);
   }, [containerRef, mounted, nodeId]);
 
   if (!mounted || !target) return null;
@@ -277,22 +348,21 @@ export function AdMoveableBox({
       keepRatio={false}
       origin={false}
       throttleResize={1}
-      renderDirections={["e", "w", "se", "sw", "n", "s"]}
+      renderDirections={hasHeight ? ["e", "w", "se", "sw", "n", "s"] : ["e", "w"]}
       className="bo-adMoveable"
-      hideDefaultLines={false}
+      hideDefaultLines
       onResizeStart={(event) => {
-        const body = target.closest<HTMLElement>(".bo-adModalBody");
+        const body = target.closest<HTMLElement>(".bo-adModalBody, .bo-adWizardCardBody");
         frame.current = { width: target.offsetWidth, container: body?.clientWidth ?? target.parentElement?.clientWidth ?? 1 };
         event.setMin([40, hasHeight ? 40 : 0]);
       }}
       onResize={(event) => {
-        const { width, height, drag } = event;
+        const { width, height } = event;
         target.style.width = `${width}px`;
         if (hasHeight) target.style.height = `${height}px`;
         // Flow layout: ignore the translate the control box adds, the element
         // keeps its document position.
         target.style.transform = "";
-        void drag;
         const nextWidth = Math.round((width / (frame.current.container || 1)) * 100);
         const patch: { width: number; height?: number } = { width: Math.min(Math.max(nextWidth, 10), 100) };
         if (hasHeight) patch.height = Math.round(height);
