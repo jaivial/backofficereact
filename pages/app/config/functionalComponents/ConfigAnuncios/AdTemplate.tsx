@@ -13,11 +13,13 @@ import {
   AD_DEFAULT_COLOR,
   asText,
   BLOCK_LABEL,
+  blockFlow,
   buildCTAURL,
   elementSizeStyle,
   elementStyleCSS,
   normalizeElementStyle,
   stepBackground,
+  stepDetailBackground,
   type AdBlockKind,
 } from "./lib/adEditor";
 
@@ -288,47 +290,65 @@ function StaticContent({ item }: { item: RestaurantAdContentElement }) {
 
 export function AdContentFlow({
   content,
+  buttons = [],
+  website = "",
   editable,
   selectedId,
   onSelect,
   onChange,
+  onButtonsChange,
   onImagePick,
   emptyHint,
 }: {
   content: RestaurantAdContentElement[];
+  /** Slotted buttons render inside the flow (coord id ads_button_slot_v1). */
+  buttons?: RestaurantAdCTA[];
+  website?: string;
   editable: boolean;
   selectedId?: string | null;
   onSelect?: (id: string) => void;
   onChange: (content: RestaurantAdContentElement[]) => void;
+  onButtonsChange?: (buttons: RestaurantAdCTA[]) => void;
   onImagePick?: (item: RestaurantAdContentElement) => void;
   emptyHint?: string;
 }) {
+  const slotted = buttons.filter((cta) => typeof cta.slot === "number");
+  const flow = blockFlow(content, slotted);
+  const patchButton = (cta: RestaurantAdCTA, patch: Partial<RestaurantAdCTA>) =>
+    onButtonsChange?.(buttons.map((entry) => (entry.id === cta.id ? { ...entry, ...patch } : entry)));
   if (editable) {
     return (
       <div className="bo-adCanvasFlow" data-testid="ad-canvas-content">
-        {content.map((item) => (
-          <ContentNode
-            key={item.id}
-            item={item}
-            editable
-            selected={selectedId === item.id}
-            onSelect={onSelect}
-            onChange={(patch) => onChange(content.map((entry) => (entry.id === item.id ? { ...entry, ...patch } : entry)))}
-            onImagePick={() => onImagePick?.(item)}
-          />
-        ))}
-        {!content.length ? <p className="bo-adModalDesc" data-testid="ad-canvas-empty">{emptyHint}</p> : null}
+        {flow.map((block) =>
+          block.kind === "button" ? (
+            <ButtonNode key={block.item.id} cta={block.item} website={website} editable selected={selectedId === block.item.id} onSelect={onSelect} onChange={(patch) => patchButton(block.item, patch)} />
+          ) : (
+            <ContentNode
+              key={block.item.id}
+              item={block.item}
+              editable
+              selected={selectedId === block.item.id}
+              onSelect={onSelect}
+              onChange={(patch) => onChange(content.map((entry) => (entry.id === block.item.id ? { ...entry, ...patch } : entry)))}
+              onImagePick={() => onImagePick?.(block.item)}
+            />
+          ),
+        )}
+        {!flow.length ? <p className="bo-adModalDesc" data-testid="ad-canvas-empty">{emptyHint}</p> : null}
       </div>
     );
   }
+  const visible = flow.filter((block) => block.kind === "button" || !isEmpty(block.item));
   return (
     <>
-      {content
-        .filter((item) => !isEmpty(item))
-        .map((item) => (
-          <StaticContent key={item.id} item={item} />
-        ))}
-      {!content.some((item) => !isEmpty(item)) ? <p className="bo-adModalDesc" data-testid="ad-preview-empty">{emptyHint}</p> : null}
+      {visible.map((block) =>
+        block.kind === "button" ? (
+          <ButtonNode key={block.item.id} cta={block.item} website={website} editable={false} selected={false} onChange={() => undefined} />
+        ) : (
+          <StaticContent key={block.item.id} item={block.item} />
+        ),
+      )}
+      {!visible.length ? <p className="bo-adModalDesc" data-testid="ad-preview-empty">{emptyHint}</p> : null}
     </>
   );
 }
@@ -405,12 +425,14 @@ export function AdButtons({
   className?: string;
   testId?: string;
 }) {
-  if (!buttons.length) {
-    return editable && emptyHint ? <p className="bo-adCanvasHint" data-testid="ad-canvas-buttons-empty">{emptyHint}</p> : null;
+  // Slotted buttons already rendered inside the content flow.
+  const trailing = buttons.filter((cta) => typeof cta.slot !== "number");
+  if (!trailing.length) {
+    return editable && emptyHint && !buttons.length ? <p className="bo-adCanvasHint" data-testid="ad-canvas-buttons-empty">{emptyHint}</p> : null;
   }
   return (
     <div className={className} data-testid={testId}>
-      {buttons.map((cta) => (
+      {trailing.map((cta) => (
         <ButtonNode
           key={cta.id}
           cta={cta}
@@ -465,10 +487,13 @@ export function AdSurface({
       <div className="bo-adModalBody" data-slot={editable ? "ad-canvas-body" : "ad-preview-body"}>
         <AdContentFlow
           content={content}
+          buttons={buttons}
+          website={website}
           editable={editable}
           selectedId={selectedId}
           onSelect={onSelect}
           onChange={(next) => onContentChange?.(next)}
+          onButtonsChange={(next) => onButtonsChange?.(next)}
           onImagePick={onImagePick}
           emptyHint={emptyHint}
         />
@@ -676,7 +701,9 @@ export function AdWizard({
   if (stepIndex > 0) {
     const step = steps[stepIndex - 1];
     if (!step) return null;
-    const style = stepBackground(step) ? ({ background: stepBackground(step) } as React.CSSProperties) : undefined;
+    // The opened announcement has its own background, not the card's.
+    const detail = stepDetailBackground(step);
+    const style = detail ? ({ background: detail } as React.CSSProperties) : undefined;
     return (
       <div className="bo-adWizardDetail" data-testid="ad-wizard-detail" data-step={stepIndex}>
         <button
