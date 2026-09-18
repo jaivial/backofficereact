@@ -969,9 +969,7 @@ button.bg-bo-accent { color: var(--bo-bg); }
 }
 .bo-anunciosStepRow {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-height: 40px;
   padding: 6px 8px;
   border: 1px solid var(--bo-border);
@@ -2082,4 +2080,50 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-adLayerGrip {
   display: inline-flex;
   color: var(--bo-faint);
+}
+
+/* =====================================================================
+ * Step layers (coord id ads_step_layers_v1): each wizard step row expands
+ * into the layers of its card and of the announcement it opens.
+ * ===================================================================== */
+.bo-anunciosStepRowHead {
+  display: grid;
+  grid-template-columns: auto 24px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+}
+.bo-adStepToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--bo-muted);
+  cursor: pointer;
+  transition-property: background-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adStepToggle:hover {
+  background: var(--bo-surface);
+  color: var(--bo-text);
+}
+.bo-adStepToggle svg {
+  transition-property: rotate;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adStepToggle.is-open svg {
+  rotate: 90deg;
+}
+.bo-adStepLayers {
+  display: grid;
+  gap: 8px;
+  margin-inline-start: 12px;
+  padding: 6px 0 4px 10px;
+  border-inline-start: 1px dashed var(--bo-border);
+  cursor: default;
 }

@@ -379,6 +379,9 @@ export function normalizeLayout(layout: RestaurantAd["layout"]): RestaurantAdLay
     background_mode: (["image", "color", "transparent"] as RestaurantAdStepBackground[]).includes(step.background_mode) ? step.background_mode : "transparent",
     background_color: step.background_color ?? "",
     background_image: step.background_image ?? "",
+    detail_background_mode: step.detail_background_mode,
+    detail_background_color: step.detail_background_color,
+    detail_background_image: step.detail_background_image,
     see_more: step.see_more ?? true,
     buttons: step.buttons ?? [],
     content: step.content ?? [],
@@ -473,6 +476,56 @@ export function stepBackground(step: Pick<RestaurantAdStep, "background_mode" | 
     return `url("${step.background_image}") center / cover no-repeat`;
   }
   return undefined;
+}
+
+/**
+ * Background of the opened announcement (coord id ads_step_detail_background_v1).
+ * Independent from the card: an unset mode keeps the public cream sheet.
+ */
+export function stepDetailBackground(step: Pick<RestaurantAdStep, "detail_background_mode" | "detail_background_color" | "detail_background_image">): string | undefined {
+  if (!step.detail_background_mode) return undefined;
+  return stepBackground({ background_mode: step.detail_background_mode, background_color: step.detail_background_color, background_image: step.detail_background_image });
+}
+
+// ---------------------------------------------------------------------------
+// Block flow (coord id ads_button_slot_v1): buttons are no longer pinned to
+// the actions row; a button with a `slot` renders before that content index,
+// so the canvas shows one mixed order of content and buttons.
+// ---------------------------------------------------------------------------
+
+export type AdFlowBlock =
+  | { kind: "content"; item: RestaurantAdContentElement }
+  | { kind: "button"; item: RestaurantAdCTA };
+
+/** Mixed render order: slotted buttons interleave with content, the rest trail. */
+export function blockFlow(content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[]): AdFlowBlock[] {
+  const out: AdFlowBlock[] = [];
+  const slotted = buttons.filter((cta) => typeof cta.slot === "number");
+  const trailing = buttons.filter((cta) => typeof cta.slot !== "number");
+  content.forEach((item, index) => {
+    slotted.filter((cta) => (cta.slot as number) === index).forEach((cta) => out.push({ kind: "button", item: cta }));
+    out.push({ kind: "content", item });
+  });
+  slotted.filter((cta) => (cta.slot as number) >= content.length).forEach((cta) => out.push({ kind: "button", item: cta }));
+  trailing.forEach((cta) => out.push({ kind: "button", item: cta }));
+  return out;
+}
+
+/** Splits a mixed order back into the stored lists, writing button slots. */
+export function fromBlockFlow(flow: AdFlowBlock[]): { content: RestaurantAdContentElement[]; buttons: RestaurantAdCTA[] } {
+  const content: RestaurantAdContentElement[] = [];
+  const buttons: RestaurantAdCTA[] = [];
+  flow.forEach((block) => {
+    if (block.kind === "content") content.push(block.item);
+    else buttons.push({ ...block.item, slot: content.length });
+  });
+  // Buttons after the last content element stay in the actions row (no slot).
+  return { content, buttons: buttons.map((cta) => (cta.slot === content.length ? { ...cta, slot: undefined } : cta)) };
+}
+
+/** Moves any block (content or button) to `toIndex` of the mixed order. */
+export function moveBlock(content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[], id: string, toIndex: number) {
+  return fromBlockFlow(moveItem(blockFlow(content, buttons).map((block) => ({ ...block, id: block.item.id })), id, toIndex));
 }
 
 export function buttonLimit(): number {

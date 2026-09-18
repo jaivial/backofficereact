@@ -2458,6 +2458,8 @@ export type RestaurantAdCTA = {
   custom_url: string;
   /** Operator-sized pill width as a percentage of the card (ads_button_width_v1). */
   width?: number;
+  /** Content index the button renders before (ads_button_slot_v1); absent = actions row. */
+  slot?: number;
 };
 export type RestaurantAdImageGenerationStatus = "idle" | "pending" | "ready" | "failed";
 export type RestaurantAdScheduleRange = { id: number; name: string; starts_at: string; ends_at: string };
@@ -2473,6 +2475,10 @@ export type RestaurantAdStep = {
   background_mode: RestaurantAdStepBackground;
   background_color?: string;
   background_image?: string;
+  /** Background of the opened announcement, independent from the card (ads_step_detail_background_v1). */
+  detail_background_mode?: RestaurantAdStepBackground;
+  detail_background_color?: string;
+  detail_background_image?: string;
   /** Renders the "Ver más" wizard-advance button (default true). */
   see_more?: boolean;
   buttons: RestaurantAdCTA[];
