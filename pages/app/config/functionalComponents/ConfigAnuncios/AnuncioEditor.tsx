@@ -1426,7 +1426,7 @@ function ElementInspector({
 }
 
 /** Button properties, shown only while a button is selected. */
-function ButtonInspector({
+export function ButtonInspector({
   cta,
   website,
   phone,
@@ -1443,40 +1443,61 @@ function ButtonInspector({
 }) {
   const action = buttonAction(cta);
   const whatsapp = parseWhatsAppURL(cta.custom_url);
+  const destination = buildCTAURL(website, cta);
+  const whatsappStyle = action === "whatsapp";
+
   return (
-    <div className="bo-adInspector" data-testid="ad-inspector-selection">
-      <div className="bo-adStudioSectionTitle">Boton</div>
+    <div className="bo-adInspector bo-adInspectorButton" data-testid="ad-inspector-selection">
+      <div className="bo-adInspectorHead">
+        <span className="bo-adStudioSectionTitle">Boton</span>
+        <button type="button" className="bo-anunciosIconBtn" data-tone="danger" aria-label="Eliminar boton" data-testid={`ad-cta-${cta.id}-delete`} onClick={onDelete}>
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
+      </div>
+
+      {/* Live pill: the button as it renders, so colour and text are judged in place. */}
+      <span className="bo-adModalCta bo-adInspectorPreview" style={{ ["--ad-primary" as string]: cta.color || AD_DEFAULT_COLOR }} data-testid={`ad-cta-${cta.id}-preview`}>
+        {cta.text || "Mas informacion"}
+      </span>
 
       <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-content`}>
         <div className="bo-adGroupTitle">Contenido</div>
         <Field label="Texto" testId={`ad-cta-${cta.id}-text`}>
-          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" />
+          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" placeholder="Texto del boton" />
         </Field>
         <ColorField label="Color" value={cta.color} onChange={(color) => onChange({ color: color || AD_DEFAULT_COLOR })} testId={`ad-cta-${cta.id}-color`} />
       </div>
 
       <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-action`}>
         <div className="bo-adGroupTitle">Accion</div>
-        <Field label="Destino" testId={`ad-cta-${cta.id}-action-select`}>
-          <Select
-            value={action}
-            onChange={(value) => onChange(setButtonAction(cta, value as ButtonAction, phone))}
-            options={[
-              { value: "route", label: "Pagina de la web" },
-              { value: "url", label: "URL propia" },
-              { value: "whatsapp", label: "WhatsApp" },
-            ]}
-            size="sm"
-            ariaLabel="Accion del boton"
-          />
-        </Field>
+        <div className="bo-adSeg" role="group" aria-label="Accion del boton" data-testid={`ad-cta-${cta.id}-action-select`}>
+          {([
+            { value: "route", label: "Web", title: "Pagina de la web" },
+            { value: "url", label: "URL", title: "URL propia" },
+            { value: "whatsapp", label: "WhatsApp", title: "Abrir una conversacion" },
+          ] as Array<{ value: ButtonAction; label: string; title: string }>).map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={action === option.value ? "is-active" : ""}
+              title={option.title}
+              aria-pressed={action === option.value}
+              onClick={() => onChange(setButtonAction(cta, option.value, phone))}
+              data-testid={`ad-cta-${cta.id}-action-${option.value}`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
         {action === "route" ? (
           <Field label="Pagina" testId={`ad-cta-${cta.id}-route`}>
-            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} size="sm" ariaLabel="Pagina del boton" />
+            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} size="sm" ariaLabel="Pagina del boton" listMaxHeightPx={260} />
           </Field>
         ) : null}
+
         {action === "url" ? (
-          <Field label="URL" hint="Se completa con https:// si falta" testId={`ad-cta-${cta.id}-url`}>
+          <Field label="URL" hint="Anade https:// si falta" testId={`ad-cta-${cta.id}-url`}>
             <input
               type="url"
               value={cta.custom_url ?? ""}
@@ -1484,41 +1505,51 @@ function ButtonInspector({
               onBlur={(event) => onChange({ custom_url: normalizeButtonURL(event.target.value, website) })}
               className="bo-input"
               placeholder="ejemplo.com/promo"
+              spellCheck={false}
             />
           </Field>
         ) : null}
-        {action === "whatsapp" ? (
-          <div className="bo-anunciosWhatsappFields" data-testid={`ad-cta-${cta.id}-whatsapp`}>
-            <Field label="Telefono del restaurante">
-              <input value={phone} readOnly className="bo-input" data-testid={`ad-cta-${cta.id}-phone-restaurant`} />
+
+        {whatsappStyle ? (
+          <div className="bo-adGroup bo-adWhatsapp" data-testid={`ad-cta-${cta.id}-whatsapp`}>
+            <div className="bo-adGroupTitle">WhatsApp</div>
+            <Field label="Telefono del restaurante" testId={`ad-cta-${cta.id}-phone-restaurant`}>
+              <input value={phone || "Sin telefono"} readOnly className="bo-input bo-inputReadonly" />
             </Field>
-            <Field label="Telefono personalizado">
+            <Field label="Telefono personalizado" testId={`ad-cta-${cta.id}-phone-custom`}>
               <input
                 value={whatsapp?.phone ?? ""}
                 onChange={(event) => onChange(patchWhatsAppButton(cta, { phone: event.target.value }))}
                 placeholder={phone || "34600000000"}
                 inputMode="tel"
                 className="bo-input"
-                data-testid={`ad-cta-${cta.id}-phone-custom`}
               />
             </Field>
-            <Field label="Mensaje inicial">
-              <input
+            <Field label="Mensaje inicial" testId={`ad-cta-${cta.id}-phone-message`}>
+              <textarea
                 value={whatsapp?.message ?? WHATSAPP_DEFAULT_MESSAGE}
                 onChange={(event) => onChange(patchWhatsAppButton(cta, { message: event.target.value }))}
-                className="bo-input"
-                data-testid={`ad-cta-${cta.id}-phone-message`}
+                rows={2}
+                className="bo-textarea"
               />
             </Field>
           </div>
         ) : null}
-        <p className="bo-adFieldHint" data-testid={`ad-cta-${cta.id}-resolved`}>Destino: {buildCTAURL(website, cta) || "Sin configurar"}</p>
+
+        <div className="bo-adDestination" data-testid={`ad-cta-${cta.id}-resolved`}>
+          <span className="bo-adDestinationLabel">Destino</span>
+          <span className="bo-adDestinationValue" title={destination || "Sin configurar"}>
+            {destination || "Sin configurar"}
+          </span>
+          {destination ? (
+            <a href={destination} target="_blank" rel="noopener noreferrer" className="bo-adDestinationOpen" aria-label="Abrir destino" data-testid={`ad-cta-${cta.id}-open`}>
+              Abrir
+            </a>
+          ) : null}
+        </div>
       </div>
 
       <div className="bo-adInspectorActions">
-        <button type="button" className="bo-anunciosIconBtn" data-tone="danger" aria-label="Eliminar boton" data-testid={`ad-cta-${cta.id}-delete`} onClick={onDelete}>
-          <Trash2 size={15} aria-hidden="true" />
-        </button>
         <button type="button" className="bo-adFieldReset" onClick={onClose} data-testid="ad-inspector-close">
           Cerrar
         </button>

@@ -1431,10 +1431,22 @@ button.bg-bo-accent { color: var(--bo-bg); }
   align-content: start;
   gap: 10px;
   min-width: 0;
+  max-width: 100%;
   padding: 10px;
   border: 1px solid var(--bo-border);
   border-radius: 14px;
   background: var(--bo-surface);
+  overflow: hidden;
+}
+.bo-adStudioSide--props {
+  max-height: calc(100dvh - 160px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 1279px) {
+  .bo-adStudioSide--props {
+    max-height: none;
+  }
 }
 
 .bo-adStudioSideHead {
@@ -1539,6 +1551,44 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-adInspector {
   display: grid;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+.bo-adInspector *,
+.bo-adInspector *::before,
+.bo-adInspector *::after {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+.bo-adInspector input.bo-input,
+.bo-adInspector textarea.bo-textarea,
+.bo-adInspector .bo-selectBtn {
+  width: 100%;
+}
+.bo-adInspectorHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.bo-adInspectorPreview {
+  width: 100%;
+  padding: 12px 18px;
+  font-size: 14px;
+}
+.bo-adGroup > .bo-input,
+.bo-adGroup > .bo-textarea,
+.bo-adGroup .bo-select {
+  width: 100%;
+}
+.bo-adGroup {
+  min-width: 0;
+}
+.bo-adFieldHint,
+.bo-adDestinationValue {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .bo-adField {
   display: grid;
@@ -1838,4 +1888,102 @@ button.bg-bo-accent { color: var(--bo-bg); }
 }
 .bo-adDraggable:active {
   cursor: grabbing;
+}
+
+/* =====================================================================
+ * Button inspector (coord id ads_inspector_button_v1): segmented action
+ * control, live pill preview, WhatsApp group and a truncating destination
+ * row - all sized for a narrow sidebar.
+ * ===================================================================== */
+.bo-adSeg {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  background: var(--bo-surface-2);
+}
+.bo-adSeg button {
+  min-width: 0;
+  min-height: 30px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bo-muted);
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition-property: background-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adSeg button:hover {
+  color: var(--bo-text);
+}
+.bo-adSeg button.is-active {
+  background: color-mix(in srgb, var(--bo-accent) 22%, var(--bo-surface));
+  color: var(--bo-text);
+}
+
+.bo-adWhatsapp {
+  background: color-mix(in srgb, #25d366 10%, transparent);
+  border-color: color-mix(in srgb, #25d366 40%, var(--bo-border));
+}
+
+.bo-inputReadonly {
+  color: var(--bo-faint);
+  background: var(--bo-surface-2);
+}
+
+.bo-adDestination {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  background: var(--bo-surface-2);
+}
+.bo-adDestinationLabel {
+  color: var(--bo-faint);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.bo-adDestinationValue {
+  color: var(--bo-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bo-adDestinationOpen {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border);
+  color: var(--bo-muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  transition-property: color, border-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adDestinationOpen:hover {
+  color: var(--bo-text);
+  border-color: var(--bo-accent);
+}
+
+/* Select menus inside a narrow column: the trigger shrinks, the menu escapes. */
+.bo-adInspector .bo-select {
+  min-width: 0;
+  width: 100%;
 }
