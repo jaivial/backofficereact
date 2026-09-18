@@ -685,7 +685,8 @@
     gap: 6px;
   }
   .bo-anunciosEditorBar-right {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    min-width: 0;
   }
 }
 
@@ -902,29 +903,6 @@ button.bg-bo-accent { color: var(--bo-bg); }
   min-width: 0;
 }
 
-/* Every editable block: the template look plus a hover outline that only
-   appears on devices with a pointer, so touch never fights the caret. */
-.bo-adNode {
-  position: relative;
-  border-radius: 8px;
-  transition-property: outline-color, background-color;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-  outline: 1px solid transparent;
-  touch-action: manipulation;
-  transition-property: outline-color, background-color;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-}
-.bo-adNode:hover {
-  outline-color: color-mix(in srgb, var(--bo-accent) 40%, transparent);
-}
-.bo-adNode:focus-within,
-.bo-adNode.is-selected {
-  outline-color: var(--bo-accent);
-  background: color-mix(in srgb, var(--bo-accent) 6%, transparent);
-}
-
 .bo-adEditable {
   cursor: text;
   min-height: 1em;
@@ -942,9 +920,7 @@ button.bg-bo-accent { color: var(--bo-bg); }
   cursor: inherit;
 }
 .bo-adEditable:focus-visible {
-  outline: 2px solid var(--bo-accent);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: none;
 }
 
 /* Insert bar: the "add header / subtitle / text / image / button" palette. */
@@ -1288,7 +1264,8 @@ button.bg-bo-accent { color: var(--bo-bg); }
 
 /* Card-level buttons of a step keep the pill metrics while being reorderable. */
 .bo-adWizardCardButtons {
-  margin-top: 22px;
+  flex: 1 1 100%;
+  margin-top: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -1879,59 +1856,230 @@ button.bg-bo-accent { color: var(--bo-bg); }
 }
 
 /* =====================================================================
- * Selection toolbar (coord id ads_selection_tools_v1): drag, size and
- * delete float over the selected node without entering the editable text.
+ * Block studio (coord id ads_block_studio_v1): every block of the editable
+ * area - text, image, button - gets the same chrome. A hover outline with a
+ * kind tag, a selection ring, an action bar pinned above the block (drag,
+ * duplicate, delete, width) and the resize handles. Chrome is absolutely
+ * positioned over the canvas column so the card stays the public replica.
  * ===================================================================== */
-.bo-adToolbar {
-  position: absolute;
-  z-index: 6;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--bo-border);
-  border-radius: 10px;
-  background: var(--bo-surface);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+.bo-anunciosCanvasCol {
+  position: relative;
 }
-.bo-adToolbar.is-dragging {
-  border-color: var(--bo-accent);
-}
-.bo-adToolBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 0;
+
+/* Blocks: the public element plus a quiet outline and a pointer cursor. The
+   editable text keeps its caret; a button block reads as a pill, not a field. */
+.bo-adNode {
+  position: relative;
   border-radius: 8px;
-  background: transparent;
-  color: var(--bo-muted);
-  cursor: grab;
-  transition-property: background-color, color;
+  outline: 1px solid transparent;
+  touch-action: manipulation;
+  transition-property: outline-color, background-color;
   transition-duration: 150ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
-.bo-adToolBtn:active {
-  cursor: grabbing;
+.bo-adNode.bo-adModalCta {
+  border-radius: 999px;
+  cursor: text;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
-.bo-adToolBtn:hover {
-  background: var(--bo-surface-2);
-  color: var(--bo-text);
+/* In the studio a pill is a block being edited, not a pressed button. */
+.bo-adNode.bo-adModalCta:active {
+  transform: none;
 }
-.bo-adToolBtn[data-tone="danger"] {
-  color: var(--bo-text-danger);
+.bo-adNode.bo-adModalCta:hover {
+  filter: none;
 }
-.bo-adToolValue {
+.bo-adNode.is-selected {
+  outline-color: transparent;
+  background: color-mix(in srgb, var(--bo-accent) 6%, transparent);
+}
+.bo-adNode.bo-adModalCta.is-selected {
+  background: var(--ad-primary, #436754);
+}
+.bo-adNode.is-dragging {
+  opacity: 0.5;
+}
+.bo-adImageNode {
+  min-height: 40px;
+}
+.bo-adNodeImagePick {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 72px;
+  justify-content: center;
+  border: 1px dashed color-mix(in srgb, #24342b 30%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, #24342b 5%, transparent);
+  color: #24342b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition-property: background-color, border-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adNodeImagePick:hover {
+  background: color-mix(in srgb, #24342b 9%, transparent);
+  border-color: color-mix(in srgb, #24342b 45%, transparent);
+}
+.bo-adNodeImagePick.is-over {
+  position: absolute;
+  inset-block-end: 12px;
+  inset-inline-end: 12px;
+  width: auto;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-style: solid;
+  border-color: transparent;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  font-size: 12px;
+  opacity: 0;
+  transition-property: opacity, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adImageNode:hover .bo-adNodeImagePick.is-over,
+.bo-adImageNode.is-selected .bo-adNodeImagePick.is-over,
+.bo-adNodeImagePick.is-over:focus-visible {
+  opacity: 1;
+}
+.bo-adCanvasHint {
+  margin: 0;
+  color: color-mix(in srgb, #24342b 55%, transparent);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Hover outline + tag: appears under the pointer, never over the selection. */
+.bo-adBlockHover {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 8px;
+  outline: 1px dashed color-mix(in srgb, var(--bo-accent) 70%, transparent);
+  outline-offset: 2px;
+}
+.bo-adBlockHover[data-kind="button"] {
+  border-radius: 999px;
+}
+.bo-adBlockTag {
+  position: absolute;
+  top: -20px;
+  left: -2px;
+  padding: 2px 7px;
+  border-radius: 6px 6px 6px 0;
+  background: var(--bo-accent);
+  color: #14161f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Selection ring: solid accent, sits under the resize handles. */
+.bo-adBlockRing {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 8px;
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+/* Action bar: label, drag, size, duplicate, delete. */
+.bo-adBlockBar {
+  position: absolute;
+  z-index: 7;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--bo-accent);
+  color: #14161f;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  transition-property: top, left;
+  transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adBlockBar.is-dragging {
+  transition: none;
+}
+.bo-adBlockBarLabel {
+  padding: 0 6px 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.bo-adBlockBarValue {
   padding: 0 6px;
-  color: var(--bo-text);
+  border-inline-start: 1px solid rgba(20, 22, 31, 0.18);
   font-size: 11px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.bo-adBlockBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition-property: background-color, transform;
+  transition-duration: 150ms, 120ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adBlockBtn:hover {
+  background: rgba(20, 22, 31, 0.14);
+}
+.bo-adBlockBtn:active {
+  transform: scale(0.96);
+}
+.bo-adBlockBtn:focus-visible {
+  outline: 2px solid #14161f;
+  outline-offset: 1px;
+}
+.bo-adBlockBtn--drag {
+  cursor: grab;
+  touch-action: none;
+}
+.bo-adBlockBtn--drag:active {
+  cursor: grabbing;
+}
+.bo-adBlockBtn[data-tone="danger"]:hover {
+  background: color-mix(in srgb, var(--bo-text-danger) 80%, #14161f);
+  color: #fff;
 }
 
-/* The node being dragged leans and dims, matching the design-tool feel. */
-.bo-adNode.is-dragging {
-  opacity: 0.5;
-  outline-color: var(--bo-accent);
+/* Layers: a grip column joins the icon, label and preview. */
+.bo-adLayerGroup {
+  display: grid;
+  gap: 6px;
+}
+.bo-adLayerRow {
+  grid-template-columns: 12px 18px 62px minmax(0, 1fr);
+  gap: 6px;
+  cursor: grab;
+}
+.bo-adLayerRow:active {
+  cursor: grabbing;
+}
+.bo-adLayerGrip {
+  display: inline-flex;
+  color: var(--bo-faint);
 }
