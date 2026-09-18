@@ -1413,3 +1413,334 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-adWizardEdit:hover {
   background: color-mix(in srgb, #fffdf8 30%, transparent);
 }
+
+/* =====================================================================
+ * Studio shell (coord id ads_studio_v1) - a design tool layout: layers on
+ * the left, canvas in the middle, properties on the right; below `lg` both
+ * sidebars collapse into one hamburger drawer. The card stays the public
+ * replica, so all chrome lives on the shell, never on the card.
+ * ===================================================================== */
+.bo-adStudio {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.bo-adStudioSide {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: 14px;
+  background: var(--bo-surface);
+}
+
+.bo-adStudioSideHead {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bo-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bo-adStudioSectionTitle {
+  color: var(--bo-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Layers list: compact rows, tabular icons, selected row accented. */
+.bo-adLayers {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+.bo-adLayerRow {
+  display: grid;
+  grid-template-columns: 20px 62px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 12px;
+  text-align: start;
+  cursor: pointer;
+  transition-property: background-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adLayerRow:hover {
+  background: var(--bo-surface-2);
+}
+.bo-adLayerRow.is-selected {
+  background: color-mix(in srgb, var(--bo-accent) 18%, var(--bo-surface-2));
+}
+.bo-adLayerIcon {
+  display: inline-flex;
+  color: var(--bo-muted);
+}
+.bo-adLayerLabel {
+  font-weight: 600;
+}
+.bo-adLayerValue {
+  overflow: hidden;
+  color: var(--bo-faint);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bo-adLayersEmpty {
+  margin: 0;
+  color: var(--bo-faint);
+  font-size: 12px;
+}
+
+.bo-adInsertPalette {
+  display: grid;
+  gap: 8px;
+  border-top: 1px dashed var(--bo-border);
+  padding-top: 10px;
+}
+
+/* Stage: the canvas sits on a dotted surface like a design tool. */
+.bo-adStudioStage {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+  padding: 16px;
+  border-radius: 14px;
+  background-image: radial-gradient(color-mix(in srgb, var(--bo-border) 70%, transparent) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.bo-adStudioStageLabel {
+  margin: 0;
+  color: var(--bo-faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Inspector fields. */
+.bo-adInspector {
+  display: grid;
+  gap: 10px;
+}
+.bo-adField {
+  display: grid;
+  gap: 4px;
+  color: var(--bo-muted);
+  font-size: 11px;
+}
+.bo-adFieldReset,
+.bo-adInspectorHint {
+  margin: 0;
+  color: var(--bo-faint);
+  font-size: 11px;
+}
+.bo-adFieldReset {
+  width: fit-content;
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: 999px;
+  background: var(--bo-surface-2);
+  color: var(--bo-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition-property: color, border-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adFieldReset:hover {
+  color: var(--bo-text);
+  border-color: var(--bo-accent);
+}
+
+/* Hamburger + drawer (mobile). */
+.bo-adStudioMenu {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  cursor: pointer;
+}
+.bo-adStudioDrawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(88vw, 340px);
+  background: var(--bo-surface);
+  border-inline-end: 1px solid var(--bo-border);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  animation: bo-adStudio-drawer-in 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes bo-adStudio-drawer-in {
+  from { transform: translateX(-16px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.bo-adStudioDrawerTabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px;
+  border-block-end: 1px solid var(--bo-border);
+}
+.bo-adStudioDrawerTabs [role="tab"] {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bo-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.bo-adStudioDrawerTabs [role="tab"].is-active {
+  background: color-mix(in srgb, var(--bo-accent) 18%, var(--bo-surface-2));
+  color: var(--bo-text);
+}
+.bo-adStudioDrawerClose {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bo-muted);
+  cursor: pointer;
+}
+.bo-adStudioDrawerBody {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 12px;
+  overflow-y: auto;
+}
+.bo-adStudioScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* Moveable control box: Figma-like handles over the selected element. */
+.bo-adMoveable .moveable-control {
+  width: 12px !important;
+  height: 12px !important;
+  margin-top: -6px !important;
+  margin-left: -6px !important;
+  border: 1px solid var(--bo-accent) !important;
+  border-radius: 3px !important;
+  background: var(--bo-surface) !important;
+}
+.bo-adMoveable .moveable-line {
+  background: var(--bo-accent) !important;
+}
+
+/* Desktop: three columns. */
+@media (min-width: 1024px) {
+  .bo-adStudio {
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  }
+  .bo-adStudioSide--props {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 1280px) {
+  .bo-adStudio {
+    grid-template-columns: minmax(230px, 270px) minmax(0, 1fr) minmax(240px, 300px);
+  }
+  .bo-adStudioSide--props {
+    grid-column: auto;
+  }
+  .bo-adStudioStage {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 16px);
+  }
+}
+
+/* Mobile: canvas only, sidebars behind the hamburger. */
+@media (max-width: 1279px) {
+  .bo-adStudioSide {
+    display: none;
+  }
+  .bo-adStudioMenu {
+    display: inline-flex;
+    justify-self: start;
+  }
+  .bo-adStudioDrawer {
+    display: grid;
+  }
+}
+@media (min-width: 1280px) {
+  .bo-adStudioDrawer,
+  .bo-adStudioScrim,
+  .bo-adStudioMenu {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-adStudioDrawer {
+    animation: none;
+  }
+}
+
+/* Studio toolbar: file name + insert/delete, one compact row above the shell. */
+.bo-adStudioBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.bo-adStudioBarIcon {
+  flex: 0 0 auto;
+  color: var(--bo-accent);
+}
+.bo-adStudioName {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: 10px;
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-size: 14px;
+  font-weight: 600;
+  transition-property: border-color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adStudioName:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 1px;
+}
