@@ -1,0 +1,1 @@
+{"extends":"./tsconfig.json","include":["api/types.ts","pages/app/anuncios","pages/app/config/functionalComponents/ConfigAnuncios"]}
