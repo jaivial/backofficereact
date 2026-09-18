@@ -9,6 +9,7 @@ import type { BookingExtra, ConfigFloor, GroupMenu, GroupMenuSummary } from "../
 import { MonthCalendarDatePicker } from "../../../../../ui/widgets/MonthCalendarDatePicker";
 import { useMonthCalendar } from "../../../../../ui/hooks/useMonthCalendar";
 import { TimePicker } from "../../../../../ui/inputs/TimePicker";
+import { AutoGrowTextarea } from "../../../../../ui/inputs/AutoGrowTextarea";
 import { Select } from "../../../../../ui/inputs/Select";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { InlineCounter } from "../../../../../ui/widgets/InlineCounter";
@@ -890,7 +891,7 @@ export function BookingEditor({
                 {groupMenuLivePreview || "Selecciona principales y extras para ver el comentario automático."}
               </div>
             ) : null}
-            <textarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} placeholder={draft.special_menu ? "Nota libre (opcional, se añade al comentario automático)" : undefined} data-slot="booking-editor-commentary" data-testid="booking-editor-commentary-input" aria-label="Comentario" />
+            <AutoGrowTextarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} placeholder={draft.special_menu ? "Nota libre (opcional, se añade al comentario automático)" : undefined} data-slot="booking-editor-commentary" data-testid="booking-editor-commentary-input" aria-label="Comentario" />
         </Panel>
       </div>
       </ScrollArea>
