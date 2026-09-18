@@ -128,8 +128,8 @@
   position: fixed;
   z-index: 9999;
   /* Coordination id: booking_selector_autowidth_v1 - the list shrink-wraps
-     its content (width auto from the component) and never exceeds 95vw. */
-  max-width: 95vw;
+     its content (width auto from the component) and never exceeds 80vw. */
+  max-width: 80vw;
   border-radius: 14px;
   border: 1px solid var(--bo-border);
   background:
