@@ -383,7 +383,10 @@ function ButtonNode({
         </button>
       ) : null}
       {editable ? (
-        <span className="bo-adModalCta" style={{ ["--ad-primary" as string]: cta.color || "#436754" }}>
+        <span
+          className="bo-adModalCta bo-adResizable"
+          style={{ ["--ad-primary" as string]: cta.color || "#436754", ...(cta.width ? { width: `${cta.width}%`, flex: "0 0 auto" } : {}) }}
+        >
           <EditableText
             value={cta.text}
             ariaLabel="Texto del boton"
@@ -398,7 +401,7 @@ function ButtonNode({
           target="_blank"
           rel="noopener noreferrer"
           className="bo-adModalCta"
-          style={{ ["--ad-primary" as string]: cta.color || "#436754" }}
+          style={{ ["--ad-primary" as string]: cta.color || "#436754", ...(cta.width ? { width: `${cta.width}%`, flex: "0 0 auto" } : {}) }}
           data-slot={`ad-preview-cta-${cta.id}`}
           data-testid={`ad-preview-cta-${cta.id}`}
         >
