@@ -287,6 +287,15 @@
   padding-bottom: 0;
 }
 
+/* Edit booking modal owns no chrome padding; the body carries the gutter. */
+.bo-modal.bo-modal--glass.bo-reservasModal.bo-reservasModal--edit {
+  padding: 0;
+}
+
+.bo-reservasModal--edit .bo-modalHead {
+  padding: 16px 16px 0;
+}
+
 .bo-reservasModal .bo-modalHead {
   flex: 0 0 auto;
 }
@@ -302,6 +311,11 @@
 
 .bo-reservasModal--edit .bo-modalActions--reservas {
   padding-bottom: 1rem;
+  /* Modal chrome padding is 0 here, so the full-bleed negative margins used
+     with the default 14px modal padding must be neutralized. */
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 0;
 }
 
 /* On small screens the modal padding shrinks to 12px; keep the footer spanning
@@ -410,6 +424,7 @@
 .bo-bookingEditorBody {
   flex: 1 1 auto;
   min-height: 0;
+  margin: 16px;
 }
 
 .bo-bookingEditorBody--inline {
