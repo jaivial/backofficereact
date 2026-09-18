@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, Reorder, useDragControls } from "motion/react";
 import {
   Check,
+  ChevronRight,
   CircleAlert,
   Eye,
   GripVertical,
@@ -47,9 +48,9 @@ import {
   createCTA,
   createClientID,
   createDraftAd,
-  duplicateButton,
-  duplicateContentItem,
-  moveItem,
+  duplicateBlock,
+  moveBlock,
+  removeBlock,
   normalizeButtonURL,
   parseWhatsAppURL,
   patchWhatsAppButton,
@@ -108,6 +109,7 @@ export type AdSaveRequest = { type: "ad_save"; reqId: string; adId: number; payl
 export type AdEventListener = (event: { type: string; reqId?: string; adId?: number; code?: string; message?: string; ad?: unknown; conflict?: boolean; name?: string; starts_at?: string; ends_at?: string }) => void;
 
 type ImageStep = "choose" | "preparing" | "advisor" | "working";
+type ImageTarget = { kind: "ad" } | { kind: "step-content" | "step-card" | "step-detail"; stepId: string };
 
 const NOOP_NOTIFY: Notify = () => undefined;
 
@@ -174,6 +176,14 @@ function mergeAdEcho(base: RestaurantAd, local: RestaurantAd, server: Restaurant
   };
 }
 
+/** Fills the (single) image element with the uploaded URL, adding one if missing. */
+function withImageContent(ad: RestaurantAd, url: string): RestaurantAd {
+  const existing = ad.content.find((item) => item.type === "image");
+  if (existing) return { ...ad, content: ad.content.map((item) => (item.id === existing.id ? { ...item, value: url } : item)) };
+  const next = addContentItem(ad, "image");
+  return { ...next, content: next.content.map((item) => (item.type === "image" && !item.value ? { ...item, value: url } : item)) };
+}
+
 export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs, sendAdScheduleCheck }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
@@ -184,8 +194,10 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   const scheduleCheckReqRef = useRef<string | null>(null);
 
   const [wizardStep, setWizardStep] = useState(0);
-  /** "" targets the announcement body, a step id targets that step background. */
-  const [imageTarget, setImageTarget] = useState("");
+  /** Where the shared upload flow writes (coord id ads_image_target_v2):
+   * the announcement image, a step content image, the card background or the
+   * detail background of a step. */
+  const [imageTarget, setImageTarget] = useState<ImageTarget>({ kind: "ad" });
   const [imageOpen, setImageOpen] = useState(false);
   const [imageStep, setImageStep] = useState<ImageStep>("choose");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -306,7 +318,9 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
 
   useEffect(() => {
     if (!ad || !sendAdSave) return;
-    const json = JSON.stringify({ name: ad.name, active: ad.active, content: ad.content, ctas: ad.ctas, starts_at: ad.starts_at ?? null, ends_at: ad.ends_at ?? null });
+    // The fingerprint covers every persisted field, layout included, so a
+    // wizard-only edit (step backgrounds, step content) autosaves too.
+    const json = JSON.stringify({ name: ad.name, active: ad.active, content: ad.content, ctas: ad.ctas, layout: adLayout(ad), starts_at: ad.starts_at ?? null, ends_at: ad.ends_at ?? null });
     if (baselineRef.current === null) { baselineRef.current = json; return; }
     if (json === baselineRef.current) return;
     const timer = setTimeout(() => {
@@ -369,22 +383,20 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
 
   const setImageURL = useCallback(async (url: string) => {
     if (!ad || !url) return;
-    // The shared upload flow feeds either the announcement image or, in the
-    // multiple layout, the background of the step that requested it.
-    if (imageTarget) {
-      const layout = adLayout(ad);
-      const step = layout.steps.find((entry) => entry.id === imageTarget);
+    // The shared upload flow feeds the target that requested it: the
+    // announcement image, a step body image, or one of the two step backgrounds.
+    let next: RestaurantAd;
+    if (imageTarget.kind === "ad") {
+      next = withImageContent(ad, url);
+    } else {
+      const step = adLayout(ad).steps.find((entry) => entry.id === imageTarget.stepId);
       if (!step) return;
-      const next = updateStep(ad, step.id, { background_image: url, background_mode: "image" });
-      setAd(next);
-      await persistAd(next);
-      return;
+      if (imageTarget.kind === "step-card") next = updateStep(ad, step.id, { background_image: url, background_mode: "image" });
+      else if (imageTarget.kind === "step-detail") next = updateStep(ad, step.id, { detail_background_image: url, detail_background_mode: "image" });
+      else next = updateStep(ad, step.id, { content: withImageContent({ ...ad, content: step.content }, url).content });
     }
-    const existing = ad.content.find((item) => item.type === "image");
-    const next = existing ? { ...ad, content: ad.content.map((item) => item.id === existing.id ? { ...item, value: url } : item) } : addContentItem(ad, "image");
-    const withURL = existing ? next : { ...next, content: next.content.map((item) => item.type === "image" && !item.value ? { ...item, value: url } : item) };
-    setAd(withURL);
-    await persistAd(withURL);
+    setAd(next);
+    await persistAd(next);
   }, [ad, imageTarget, persistAd]);
 
   const closeImage = useCallback(() => { setImageOpen(false); setImageStep("choose"); setImageFile(null); setImagePreviewURL(""); }, []);
@@ -464,12 +476,15 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  // In the multiple layout the cards column edits the card buttons of the
+  // active step, while the opened announcement edits the step content plus
+  // the wizard-wide buttons (ad.ctas) it renders.
   const target = useMemo(
-    () => (layout.mode === "multiple" && activeStep ? { kind: "step" as const, step: activeStep } : { kind: "ad" as const, step: null }),
-    [activeStep, layout.mode],
+    () => (layout.mode === "multiple" && activeStep ? { kind: "step" as const, step: activeStep, view: wizardStep === 0 ? ("card" as const) : ("detail" as const) } : { kind: "ad" as const, step: null, view: "detail" as const }),
+    [activeStep, layout.mode, wizardStep],
   );
   const targetContent = target.kind === "step" ? target.step.content : ad?.content ?? [];
-  const targetButtons = target.kind === "step" ? target.step.buttons : ad?.ctas ?? [];
+  const targetButtons = target.kind === "step" && target.view === "card" ? target.step.buttons : ad?.ctas ?? [];
   const selectedElement = useMemo(
     () => (selectedId ? targetContent.find((item) => item.id === selectedId) ?? null : null),
     [selectedId, targetContent],
@@ -488,8 +503,15 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
 
   const patchTargetButtons = useCallback((buttons: RestaurantAdCTA[]) => {
     if (!ad) return;
-    if (target.kind === "step") setAd(updateStep(ad, target.step.id, { buttons }));
+    if (target.kind === "step" && target.view === "card") setAd(updateStep(ad, target.step.id, { buttons }));
     else setAd({ ...ad, ctas: buttons });
+  }, [ad, target]);
+
+  /** Writes both lists at once so a mixed-order move is one state update. */
+  const patchTargetFlow = useCallback((next: { content: RestaurantAdContentElement[]; buttons: RestaurantAdCTA[] }) => {
+    if (!ad) return;
+    if (target.kind === "step") setAd({ ...updateStep(ad, target.step.id, { content: next.content }), ctas: next.buttons });
+    else setAd({ ...ad, content: next.content, ctas: next.buttons });
   }, [ad, target]);
 
   // Card context (the wizard cards column) collects card buttons; a step detail
@@ -524,28 +546,30 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   // Coordination id: ads_block_studio_v1 - one set of block operations for
   // the selection, whatever list (content or buttons) the block lives in.
   const selectedList = selectedButton ? "buttons" : selectedElement ? "content" : null;
+  // Coordination id: ads_button_slot_v1 - the drag index is a position in the
+  // mixed canvas order (content, slotted buttons, then the actions row), the
+  // same order the DOM shows, so any block can land anywhere.
   const moveSelectedTo = useCallback((toIndex: number) => {
     if (!selectedId) return;
-    if (selectedList === "buttons") patchTargetButtons(moveItem(targetButtons, selectedId, toIndex));
-    else patchTargetContent(moveItem(targetContent, selectedId, toIndex));
-  }, [patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
+    patchTargetFlow(moveBlock(targetContent, targetButtons, selectedId, toIndex));
+  }, [patchTargetFlow, selectedId, targetButtons, targetContent]);
 
+  // Delete and duplicate go through the mixed flow so slotted buttons keep
+  // pointing at the same neighbours when content shifts.
   const deleteSelected = useCallback(() => {
     if (!selectedId) return;
-    if (selectedList === "buttons") patchTargetButtons(targetButtons.filter((item) => item.id !== selectedId));
-    else patchTargetContent(targetContent.filter((item) => item.id !== selectedId));
+    patchTargetFlow(removeBlock(targetContent, targetButtons, selectedId));
     setSelectedId(null);
-  }, [patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
+  }, [patchTargetFlow, selectedId, targetButtons, targetContent]);
 
   const duplicateSelected = useCallback(() => {
     if (!selectedId) return;
     try {
-      if (selectedList === "buttons") patchTargetButtons(duplicateButton(targetButtons, selectedId));
-      else patchTargetContent(duplicateContentItem(targetContent, selectedId));
+      patchTargetFlow(duplicateBlock(targetContent, targetButtons, selectedId));
     } catch (error) {
       notify("info", "Limite", error instanceof Error ? error.message : "No se puede duplicar el bloque");
     }
-  }, [notify, patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
+  }, [notify, patchTargetFlow, selectedId, targetButtons, targetContent]);
 
   const resizeSelected = useCallback((patch: { width: number; height?: number }) => {
     if (!selectedId) return;
@@ -612,6 +636,8 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
     { type: "text", icon: <Sparkles size={16} aria-hidden="true" />, label: "Texto", meta: TYPE_HINT.text, disabled: (textCounts.text || 0) >= 5 },
     { type: "image", icon: <ImagePlus size={16} aria-hidden="true" />, label: "Imagen", meta: TYPE_HINT.image, disabled: (textCounts.image || 0) >= 1 },
   ];
+
+  const layerIcon = (item: RestaurantAdContentElement) => (addContentItems.find((entry) => entry.type === item.type) ?? { icon: <Sparkles size={14} aria-hidden="true" /> }).icon;
 
   return (
     <section className="grid gap-4" aria-label="Anuncios" data-testid="config-anuncios">
@@ -752,35 +778,47 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 onAdd={() => { try { setAd(addStep(ad)); } catch (error) { notify("info", "Limite", error instanceof Error ? error.message : "No se puede anadir otro anuncio"); } }}
                 onRemove={(stepId) => setAd(removeStep(ad, stepId))}
                 onReorder={(ordered) => setAd(reorderSteps(ad, ordered.map((step) => step.id)))}
-              />
-            ) : null}
-
-            {/* Layers (coord id ads_block_studio_v1): content and buttons are
-                two equal lists of blocks, same row, same drag, same selection. */}
-            <LayerList
-              title="Contenido"
-              values={targetContent}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              onReorder={patchTargetContent}
-              icon={(item) => (addContentItems.find((entry) => entry.type === item.type) ?? { icon: <Sparkles size={14} aria-hidden="true" /> }).icon}
-              label={(item) => TYPE_LABEL[item.type]}
-              preview={(item) => asLayerPreview(item.value)}
-              empty="Sin elementos: anade uno desde la paleta."
-              testId="ad-layers-list"
-            />
-            <LayerList
-              title="Botones"
-              values={targetButtons}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              onReorder={patchTargetButtons}
-              icon={() => <MousePointerClick size={14} aria-hidden="true" />}
-              label={() => "Boton"}
-              preview={(cta) => asLayerPreview(cta.text)}
-              empty="Sin botones."
-              testId="ad-layers-buttons"
-            />
+              >
+                {(step) => (
+                  <StepLayers
+                    step={step}
+                    selectedId={selectedId}
+                    onSelect={(id, view) => { setActiveStepId(step.id); setWizardStep(view === "card" ? 0 : layout.steps.findIndex((entry) => entry.id === step.id) + 1); setSelectedId(id); }}
+                    onChange={(patch) => setAd(updateStep(ad, step.id, patch))}
+                    icon={layerIcon}
+                  />
+                )}
+              </StepListPanel>
+            ) : (
+              <>
+                {/* Layers (coord id ads_block_studio_v1): content and buttons are
+                    two equal lists of blocks, same row, same drag, same selection. */}
+                <LayerList
+                  title="Contenido"
+                  values={targetContent}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  onReorder={patchTargetContent}
+                  icon={layerIcon}
+                  label={(item) => TYPE_LABEL[item.type]}
+                  preview={(item) => asLayerPreview(item.value)}
+                  empty="Sin elementos: anade uno desde la paleta."
+                  testId="ad-layers-list"
+                />
+                <LayerList
+                  title="Botones"
+                  values={targetButtons}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  onReorder={patchTargetButtons}
+                  icon={() => <MousePointerClick size={14} aria-hidden="true" />}
+                  label={() => "Boton"}
+                  preview={(cta) => asLayerPreview(cta.text)}
+                  empty="Sin botones."
+                  testId="ad-layers-buttons"
+                />
+              </>
+            )}
 
         <div className="bo-adInsertPalette" data-testid="ad-insert-palette">
           <div className="bo-adStudioSectionTitle">Anadir</div>
@@ -834,7 +872,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   onStepChange={(stepId, patch) => setAd(updateStep(ad, stepId, patch))}
                   onButtonsChange={(buttons) => setAd({ ...ad, ctas: buttons })}
                   onImagePick={() => {
-                    setImageTarget(activeStep?.id ?? "");
+                    setImageTarget(activeStep ? { kind: "step-content", stepId: activeStep.id } : { kind: "ad" });
                     setImageOpen(true);
                     setImageStep("choose");
                   }}
@@ -850,7 +888,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   onContentChange={(content) => setAd({ ...ad, content })}
                   onButtonsChange={(buttons) => setAd({ ...ad, ctas: buttons })}
                   onImagePick={() => {
-                    setImageTarget("");
+                    setImageTarget({ kind: "ad" });
                     setImageOpen(true);
                     setImageStep("choose");
                   }}
@@ -889,10 +927,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               website={website}
               phone={restaurantPhone}
               onChange={(patch) => patchTargetButtons(targetButtons.map((item) => (item.id === selectedButton.id ? { ...item, ...patch } : item)))}
-              onDelete={() => {
-                patchTargetButtons(targetButtons.filter((item) => item.id !== selectedButton.id));
-                setSelectedId(null);
-              }}
+              onDelete={deleteSelected}
               onClose={() => setSelectedId(null)}
             />
           ) : selectedElement ? (
@@ -901,17 +936,18 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               onChange={(patch) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, ...patch } : item)))}
               onStyle={(patch) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, style: normalizeElementStyle(item, patch) } : item)))}
               onImagePick={() => {
-                setImageTarget(target.kind === "step" ? activeStep?.id ?? "" : "");
+                setImageTarget(target.kind === "step" ? { kind: "step-content", stepId: target.step.id } : { kind: "ad" });
                 setImageOpen(true);
                 setImageStep("choose");
               }}
               onResetSize={() => patchTargetContent(resetElementSize(targetContent, selectedElement.id))}
               onResetStyle={() => patchTargetContent(resetElementStyle(targetContent, selectedElement.id))}
+              onDelete={deleteSelected}
               onClose={() => setSelectedId(null)}
             />
           ) : (
             <>
-              {isMultiple && activeStep ? <StepInspector step={activeStep} onChange={(patch) => setAd(updateStep(ad, activeStep.id, patch))} onBackgroundImage={() => { setImageTarget(activeStep.id); setImageOpen(true); setImageStep("choose"); }} imageBusy={imageEnhancing} onSelectButton={(buttonId) => setSelectedId(buttonId)} /> : null}
+              {isMultiple && activeStep ? <StepInspector step={activeStep} onChange={(patch) => setAd(updateStep(ad, activeStep.id, patch))} onBackgroundImage={(which) => { setImageTarget({ kind: which, stepId: activeStep.id }); setImageOpen(true); setImageStep("choose"); }} imageBusy={imageEnhancing} onSelectButton={(buttonId) => setSelectedId(buttonId)} /> : null}
               <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
                 <div className="bo-anunciosCtasTitle">Duracion</div>
                 <div className="bo-anunciosCtasHint">El anuncio solo se muestra dentro de este periodo.</div>
@@ -1029,6 +1065,54 @@ function LayerList<T extends { id: string }>({
   );
 }
 
+/**
+ * Layers of one wizard step (coord id ads_step_layers_v1): the card buttons,
+ * then the opened announcement's content and buttons, selectable from the
+ * sidebar so the canvas jumps to the right view.
+ */
+function StepLayers({
+  step,
+  selectedId,
+  onSelect,
+  onChange,
+  icon,
+}: {
+  step: RestaurantAdStep;
+  selectedId: string | null;
+  onSelect: (id: string | null, view: "card" | "detail") => void;
+  onChange: (patch: Partial<RestaurantAdStep>) => void;
+  icon: (item: RestaurantAdContentElement) => React.ReactNode;
+}) {
+  return (
+    <>
+      <LayerList
+        title="Tarjeta: botones"
+        values={step.buttons}
+        selectedId={selectedId}
+        onSelect={(id) => onSelect(id, "card")}
+        onReorder={(buttons) => onChange({ buttons })}
+        icon={() => <MousePointerClick size={14} aria-hidden="true" />}
+        label={() => "Boton"}
+        preview={(cta) => asLayerPreview(cta.text)}
+        empty="La tarjeta avanza con Ver más."
+        testId={`ad-step-${step.id}-card-buttons`}
+      />
+      <LayerList
+        title="Anuncio: contenido"
+        values={step.content}
+        selectedId={selectedId}
+        onSelect={(id) => onSelect(id, "detail")}
+        onReorder={(content) => onChange({ content })}
+        icon={icon}
+        label={(item) => TYPE_LABEL[item.type]}
+        preview={(item) => asLayerPreview(item.value)}
+        empty="Sin contenido: abre el anuncio y anade bloques."
+        testId={`ad-step-${step.id}-content`}
+      />
+    </>
+  );
+}
+
 function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "error" }) {
   if (state === "idle") {
     return (
@@ -1099,6 +1183,7 @@ function StepListPanel({
   onAdd,
   onRemove,
   onReorder,
+  children,
 }: {
   steps: RestaurantAdStep[];
   activeStepId: string;
@@ -1106,7 +1191,12 @@ function StepListPanel({
   onAdd: () => void;
   onRemove: (stepId: string) => void;
   onReorder: (ordered: RestaurantAdStep[]) => void;
+  /** Layers of one step, rendered under its row while expanded (coord id ads_step_layers_v1). */
+  children?: (step: RestaurantAdStep) => React.ReactNode;
 }) {
+  // The active step starts expanded; any row can be toggled independently.
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const isOpen = (step: RestaurantAdStep) => expanded[step.id] ?? step.id === activeStepId;
   return (
     <div className="bo-anunciosStepsSection" data-slot="ads-steps-section" data-testid="ads-steps-section">
       <div className="bo-anunciosCtasHead">
@@ -1129,20 +1219,91 @@ function StepListPanel({
             data-slot={`ad-step-${step.id}`}
             data-testid={`ad-step-${step.id}`}
           >
-            <span className="bo-anunciosStepIndex" data-slot={`ad-step-${step.id}-index`}>{index + 1}</span>
-            <button type="button" className="bo-anunciosStepName" onClick={() => onSelect(step.id)} data-testid={`ad-step-${step.id}-select`}>
-              {step.title || `Anuncio ${index + 1}`}
-            </button>
-            <span className="bo-anunciosStepMeta" data-slot={`ad-step-${step.id}-meta`}>
-              {step.background_mode === "image" ? "Imagen" : step.background_mode === "color" ? "Color" : "Transparente"}
-            </span>
-            <button type="button" onClick={() => onRemove(step.id)} className="bo-anunciosIconBtn" data-tone="danger" aria-label={`Eliminar ${step.title || `anuncio ${index + 1}`}`} data-testid={`ad-step-${step.id}-delete`}>
-              <Trash2 size={14} aria-hidden="true" />
-            </button>
+            <div className="bo-anunciosStepRowHead" data-slot={`ad-step-${step.id}-head`}>
+              {children ? (
+                <button
+                  type="button"
+                  className={`bo-adStepToggle ${isOpen(step) ? "is-open" : ""}`}
+                  onClick={() => setExpanded((current) => ({ ...current, [step.id]: !isOpen(step) }))}
+                  aria-expanded={isOpen(step)}
+                  aria-label={`${isOpen(step) ? "Contraer" : "Desplegar"} capas de ${step.title || `anuncio ${index + 1}`}`}
+                  data-testid={`ad-step-${step.id}-toggle`}
+                >
+                  <ChevronRight size={14} aria-hidden="true" />
+                </button>
+              ) : null}
+              <span className="bo-anunciosStepIndex" data-slot={`ad-step-${step.id}-index`}>{index + 1}</span>
+              <button type="button" className="bo-anunciosStepName" onClick={() => onSelect(step.id)} data-testid={`ad-step-${step.id}-select`}>
+                {step.title || `Anuncio ${index + 1}`}
+              </button>
+              <span className="bo-anunciosStepMeta" data-slot={`ad-step-${step.id}-meta`}>
+                {step.background_mode === "image" ? "Imagen" : step.background_mode === "color" ? "Color" : "Transparente"}
+              </span>
+              <button type="button" onClick={() => onRemove(step.id)} className="bo-anunciosIconBtn" data-tone="danger" aria-label={`Eliminar ${step.title || `anuncio ${index + 1}`}`} data-testid={`ad-step-${step.id}-delete`}>
+                <Trash2 size={14} aria-hidden="true" />
+              </button>
+            </div>
+            {children && isOpen(step) ? (
+              <div className="bo-adStepLayers" data-testid={`ad-step-${step.id}-layers`}>
+                {children(step)}
+              </div>
+            ) : null}
           </Reorder.Item>
         ))}
       </Reorder.Group>
       {!steps.length ? <p className="bo-anunciosCtasHint" data-testid="ad-step-empty">Añade el primer anuncio del wizard.</p> : null}
+    </div>
+  );
+}
+
+/** One background triple (mode, colour, image) reused by card and detail. */
+function BackgroundFields({
+  title,
+  hint,
+  mode,
+  color,
+  image,
+  onChange,
+  onPickImage,
+  imageBusy,
+  testId,
+}: {
+  title: string;
+  hint?: string;
+  mode: RestaurantAdStep["background_mode"];
+  color?: string;
+  image?: string;
+  onChange: (bg: { mode: RestaurantAdStep["background_mode"]; color?: string; image?: string }) => void;
+  onPickImage: () => void;
+  imageBusy: boolean;
+  testId: string;
+}) {
+  return (
+    <div className="bo-adGroup" data-testid={`${testId}-group`}>
+      <div className="bo-adGroupTitle">{title}</div>
+      {hint ? <p className="bo-adFieldHint">{hint}</p> : null}
+      <Select
+        value={mode}
+        onChange={(value) => onChange({ mode: value as RestaurantAdStep["background_mode"], color, image })}
+        options={[...STEP_BACKGROUND_OPTIONS]}
+        ariaLabel={title}
+        size="sm"
+        data-testid={`${testId}-mode`}
+      />
+      {mode === "color" ? (
+        <label className="grid gap-1 text-xs text-bo-muted" data-testid={`${testId}-color-wrap`}>
+          <span>Color de fondo</span>
+          <input type="color" value={color || AD_DEFAULT_COLOR} onChange={(event) => onChange({ mode, color: event.target.value, image })} className="h-10 w-full max-w-[75px] rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-testid={`${testId}-color`} />
+        </label>
+      ) : null}
+      {mode === "image" ? (
+        <div className="bo-anunciosStepImage" data-testid={`${testId}-image`}>
+          {image ? <img src={image} alt={title} className="h-16 w-24 rounded-bo-sm object-cover" data-testid={`${testId}-thumb`} /> : null}
+          <button type="button" onClick={onPickImage} disabled={imageBusy} className="bo-adFieldReset" data-testid={`${testId}-pick`}>
+            {image ? "Cambiar imagen" : "Seleccionar imagen"}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1157,7 +1318,8 @@ function StepInspector({
 }: {
   step: RestaurantAdStep;
   onChange: (patch: Partial<RestaurantAdStep>) => void;
-  onBackgroundImage: () => void;
+  /** Which of the two step backgrounds asked for an upload. */
+  onBackgroundImage: (which: "step-card" | "step-detail") => void;
   imageBusy: boolean;
   /** Selects a card button so its properties open in this sidebar. */
   onSelectButton: (buttonId: string) => void;
@@ -1167,7 +1329,7 @@ function StepInspector({
       <div className="bo-anunciosCtasHead" data-testid="ads-step-inspector-head">
         <div data-testid="ads-step-inspector-head-copy">
           <div className="bo-anunciosCtasTitle" data-testid="ads-step-inspector-title">Tarjeta del anuncio</div>
-          <div className="bo-anunciosCtasHint" data-testid="ads-step-inspector-hint">Texto y fondo de la tarjeta que abre este anuncio en el wizard.</div>
+          <div className="bo-anunciosCtasHint" data-testid="ads-step-inspector-hint">Texto y fondos: la tarjeta del wizard y el anuncio que abre tienen fondo propio.</div>
         </div>
       </div>
       <div className="bo-anunciosStepGrid" data-testid="ads-step-inspector-fields">
@@ -1179,30 +1341,29 @@ function StepInspector({
           <span data-testid="ad-step-description-label">Descripción</span>
           <textarea value={step.description} onChange={(event) => onChange({ description: event.target.value })} rows={3} className="bo-textarea" data-testid="ad-step-description" />
         </label>
-        <label className="grid gap-1 text-xs text-bo-muted" data-testid="ad-step-background-wrap">
-          <span data-testid="ad-step-background-label">Fondo</span>
-          <Select
-            value={step.background_mode}
-            onChange={(value) => onChange({ background_mode: value as RestaurantAdStep["background_mode"] })}
-            options={[...STEP_BACKGROUND_OPTIONS]}
-            ariaLabel="Fondo de la tarjeta"
-            data-testid="ad-step-background-mode"
-          />
-        </label>
-        {step.background_mode === "color" ? (
-          <label className="grid gap-1 text-xs text-bo-muted" data-testid="ad-step-background-color-wrap">
-            <span data-testid="ad-step-background-color-label">Color de fondo</span>
-            <input type="color" value={step.background_color || AD_DEFAULT_COLOR} onChange={(event) => onChange({ background_color: event.target.value })} className="h-10 w-full max-w-[75px] rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-testid="ad-step-background-color" />
-          </label>
-        ) : null}
-        {step.background_mode === "image" ? (
-          <div className="bo-anunciosStepImage" data-testid="ad-step-background-image">
-            {step.background_image ? <img src={step.background_image} alt="Fondo de la tarjeta" className="h-16 w-24 rounded-bo-sm object-cover" data-testid="ad-step-background-thumb" /> : null}
-            <button type="button" onClick={onBackgroundImage} disabled={imageBusy} className="rounded-bo-sm border border-dashed border-bo-border bg-bo-surface px-3 py-2 text-xs text-bo-muted" data-testid="ad-step-background-pick">
-              {step.background_image ? "Cambiar imagen" : "Seleccionar imagen"}
-            </button>
-          </div>
-        ) : null}
+        <BackgroundFields
+          title="Fondo de la tarjeta"
+          mode={step.background_mode}
+          color={step.background_color}
+          image={step.background_image}
+          onChange={(bg) => onChange({ background_mode: bg.mode, background_color: bg.color, background_image: bg.image })}
+          onPickImage={() => onBackgroundImage("step-card")}
+          imageBusy={imageBusy}
+          testId="ad-step-background"
+        />
+        {/* Coordination id: ads_step_detail_background_v1 - the opened
+            announcement gets its own background, independent from the card. */}
+        <BackgroundFields
+          title="Fondo del anuncio abierto"
+          hint="Independiente de la tarjeta. Sin fondo mantiene la hoja clara."
+          mode={step.detail_background_mode ?? "transparent"}
+          color={step.detail_background_color}
+          image={step.detail_background_image}
+          onChange={(bg) => onChange({ detail_background_mode: bg.mode, detail_background_color: bg.color, detail_background_image: bg.image })}
+          onPickImage={() => onBackgroundImage("step-detail")}
+          imageBusy={imageBusy}
+          testId="ad-step-detail-background"
+        />
         <label className="bo-anunciosStepSeeMore" data-testid="ad-step-see-more-wrap">
           <Switch
             checked={step.see_more !== false}
@@ -1400,6 +1561,7 @@ function ElementInspector({
   onImagePick,
   onResetSize,
   onResetStyle,
+  onDelete,
   onClose,
 }: {
   item: RestaurantAdContentElement;
@@ -1408,6 +1570,7 @@ function ElementInspector({
   onImagePick: () => void;
   onResetSize: () => void;
   onResetStyle: () => void;
+  onDelete: () => void;
   onClose: () => void;
 }) {
   const isText = item.type !== "image";
@@ -1524,8 +1687,8 @@ function ElementInspector({
           className="bo-anunciosIconBtn"
           data-tone="danger"
           aria-label={`Eliminar ${TYPE_LABEL[item.type]}`}
-          data-testid={`ad-node-${item.id}-delete`}
-          onClick={() => { onChange({}); onClose(); }}
+          data-testid={`ad-inspector-${item.id}-delete`}
+          onClick={onDelete}
         >
           <Trash2 size={15} aria-hidden="true" />
         </button>

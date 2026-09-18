@@ -233,11 +233,10 @@ export function AdBlockBar({
       const node = blockNode(root, nodeId);
       if (!root || !node) return;
       event.preventDefault();
-      // Blocks only trade places inside their own list (content or buttons).
-      // The list is re-read on every move: React reorders the DOM after each
-      // onMoveTo, so cached indexes would go stale.
-      const list = node.getAttribute("data-block-list");
-      const siblings = () => Array.from(root.querySelectorAll<HTMLElement>(`[data-node-id][data-block-list="${list}"]`));
+      // Every block of the card is a drop target (coord id ads_button_slot_v1):
+      // buttons move among content and content among buttons. The list is
+      // re-read on every move: React reorders the DOM after each onMoveTo.
+      const siblings = () => Array.from(root.querySelectorAll<HTMLElement>("[data-node-id]"));
       node.classList.add("is-dragging");
       setDragging(true);
       const move = (moveEvent: PointerEvent) => {
