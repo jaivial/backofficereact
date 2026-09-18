@@ -329,11 +329,17 @@ export function BookingEditor({
   // backend buildGroupMenuCommentary format without the free-text note).
   const groupMenuLivePreview = useMemo(() => {
     const bits: string[] = [];
-    const summary = (draft.principales || [])
-      .map((r) => ({ name: String(r.name || "").trim(), servings: clampInt(Number(r.servings || 0), 0, 10_000) }))
-      .filter((r) => r.name && r.servings > 0)
-      .map((r) => `${r.name} x ${r.servings}`)
-      .join(", ");
+    // Mirror the backend summary: skip empty rows and collapse repeats.
+    const seen = new Set<string>();
+    const parts: string[] = [];
+    for (const row of draft.principales || []) {
+      const name = String(row.name || "").trim();
+      const servings = clampInt(Number(row.servings || 0), 0, 10_000);
+      if (!name || servings <= 0 || seen.has(name)) continue;
+      seen.add(name);
+      parts.push(`${name} x ${servings}`);
+    }
+    const summary = parts.join(", ");
     if (summary) bits.push(summary);
     const extraNames = (draft.extras || []).map((e) => String(e.name || "").trim()).filter(Boolean);
     if (extraNames.length > 0) bits.push(`Extras: ${extraNames.join(", ")}`);
