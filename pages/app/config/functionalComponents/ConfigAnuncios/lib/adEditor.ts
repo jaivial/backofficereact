@@ -3,6 +3,7 @@ import type {
   RestaurantAd,
   RestaurantAdContentElement,
   RestaurantAdElementSize,
+  RestaurantAdElementStyle,
   RestaurantAdContentType,
   RestaurantAdCTA,
   RestaurantAdLayout,
@@ -199,6 +200,82 @@ export function resizeElement(
     next.height = clamp(patch.height, ELEMENT_MIN_HEIGHT_PX, ELEMENT_MAX_HEIGHT_PX);
   }
   return next;
+}
+
+// Style bounds: identical to normalizeBOAdElementStyle on the backend, so the
+// canvas never offers a value the API would clamp.
+export const STYLE_FONT_SIZE_MIN = 8;
+export const STYLE_FONT_SIZE_MAX = 120;
+export const STYLE_FONT_WEIGHTS = [300, 400, 500, 600, 700] as const;
+export const STYLE_LETTER_SPACING_MIN = -5;
+export const STYLE_LETTER_SPACING_MAX = 20;
+export const STYLE_LINE_HEIGHT_MIN = 0.8;
+export const STYLE_LINE_HEIGHT_MAX = 3;
+export const STYLE_OPACITY_MIN = 0.2;
+export const STYLE_OPACITY_MAX = 1;
+export const STYLE_RADIUS_MAX = 200;
+export const STYLE_OFFSET_MIN = -2000;
+export const STYLE_OFFSET_MAX = 2000;
+
+export function elementStyle(item: Pick<RestaurantAdContentElement, "style">): RestaurantAdElementStyle {
+  return {
+    font_size: item.style?.font_size,
+    font_weight: item.style?.font_weight,
+    letter_spacing: item.style?.letter_spacing,
+    line_height: item.style?.line_height,
+    color: item.style?.color,
+    opacity: item.style?.opacity,
+    radius: item.style?.radius,
+    offset_x: item.style?.offset_x,
+    offset_y: item.style?.offset_y,
+  };
+}
+
+/** Inline look of an element: only the properties the operator customised. */
+export function elementStyleCSS(item: Pick<RestaurantAdContentElement, "type" | "style">): CSSProperties | undefined {
+  const style = elementStyle(item);
+  const css: CSSProperties = {};
+  const isText = item.type !== "image";
+  if (isText && typeof style.font_size === "number") css.fontSize = `${style.font_size}px`;
+  if (isText && typeof style.font_weight === "number") css.fontWeight = style.font_weight;
+  if (isText && typeof style.letter_spacing === "number") css.letterSpacing = `${style.letter_spacing}px`;
+  if (isText && typeof style.line_height === "number") css.lineHeight = style.line_height;
+  if (style.color) css.color = style.color;
+  if (typeof style.opacity === "number") css.opacity = style.opacity;
+  if (item.type === "image" && typeof style.radius === "number") css.borderRadius = `${style.radius}px`;
+  // Drag on the X axis: the margin keeps the element in the document flow, so
+  // the transform box of the design tool never fights the layout.
+  if (typeof style.offset_x === "number") css.marginInlineStart = `${style.offset_x}px`;
+  if (typeof style.offset_y === "number") css.marginBlockStart = `${style.offset_y}px`;
+  return Object.keys(css).length ? css : undefined;
+}
+
+/** Clamps a style patch to the contract, keeping only what the type supports. */
+export function normalizeElementStyle(item: Pick<RestaurantAdContentElement, "type" | "style">, patch: RestaurantAdElementStyle): RestaurantAdElementStyle {
+  const current = elementStyle(item);
+  const next: RestaurantAdElementStyle = { ...current, ...patch };
+  const isText = item.type !== "image";
+  if (next.font_size !== undefined) next.font_size = clamp(next.font_size, STYLE_FONT_SIZE_MIN, STYLE_FONT_SIZE_MAX);
+  if (next.font_weight !== undefined) next.font_weight = clamp(next.font_weight, 100, 900);
+  if (next.letter_spacing !== undefined) next.letter_spacing = clamp(next.letter_spacing, STYLE_LETTER_SPACING_MIN, STYLE_LETTER_SPACING_MAX);
+  if (next.line_height !== undefined) next.line_height = Math.min(Math.max(Math.round(next.line_height * 100) / 100, STYLE_LINE_HEIGHT_MIN), STYLE_LINE_HEIGHT_MAX);
+  if (next.opacity !== undefined) next.opacity = Math.min(Math.max(Math.round(next.opacity * 100) / 100, STYLE_OPACITY_MIN), STYLE_OPACITY_MAX);
+  if (next.radius !== undefined) next.radius = clamp(next.radius, 0, STYLE_RADIUS_MAX);
+  if (next.offset_x !== undefined) next.offset_x = clamp(next.offset_x, STYLE_OFFSET_MIN, STYLE_OFFSET_MAX);
+  if (next.offset_y !== undefined) next.offset_y = clamp(next.offset_y, STYLE_OFFSET_MIN, STYLE_OFFSET_MAX);
+  if (!isText) {
+    delete next.font_size;
+    delete next.font_weight;
+    delete next.letter_spacing;
+    delete next.line_height;
+  }
+  if (item.type !== "image") delete next.radius;
+  return next;
+}
+
+/** Clears every customised look so the element returns to the public template. */
+export function resetElementStyle(content: RestaurantAdContentElement[], id: string): RestaurantAdContentElement[] {
+  return content.map((item) => (item.id === id ? { ...item, style: undefined } : item));
 }
 
 /** Drops the operator box so the element renders at the template size again. */

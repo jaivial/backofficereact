@@ -1744,3 +1744,98 @@ button.bg-bo-accent { color: var(--bo-bg); }
   outline: 2px solid var(--bo-accent);
   outline-offset: 1px;
 }
+
+/* =====================================================================
+ * Inspector v2 (coord id ads_inspector_v2): grouped sections, sliders with
+ * the live value on the label, colour rows and a compact action bar.
+ * ===================================================================== */
+.bo-adGroup {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bo-surface-2) 55%, transparent);
+}
+.bo-adGroupTitle {
+  color: var(--bo-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bo-adField {
+  display: grid;
+  gap: 4px;
+}
+.bo-adFieldLabel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--bo-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.bo-adFieldValue {
+  font-variant-numeric: tabular-nums;
+  color: var(--bo-text);
+}
+.bo-adFieldHint {
+  color: var(--bo-faint);
+  font-size: 10px;
+}
+.bo-adSlider {
+  width: 100%;
+  height: 18px;
+  accent-color: var(--bo-accent);
+  cursor: pointer;
+}
+.bo-adNumber {
+  height: 32px;
+}
+.bo-adColorRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.bo-adColor {
+  width: 40px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--bo-border);
+  border-radius: 8px;
+  background: var(--bo-surface);
+  cursor: pointer;
+}
+.bo-adColorClear {
+  border: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--bo-surface-2);
+  color: var(--bo-muted);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bo-adColorClear:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.bo-adInspectorActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px dashed var(--bo-border);
+  padding-top: 10px;
+}
+
+/* X-axis dragging inside the canvas: the element leans while it is dragged. */
+.bo-adDraggable {
+  cursor: grab;
+  touch-action: none;
+}
+.bo-adDraggable:active {
+  cursor: grabbing;
+}
