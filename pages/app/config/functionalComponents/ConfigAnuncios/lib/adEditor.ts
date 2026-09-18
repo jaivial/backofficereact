@@ -511,7 +511,12 @@ export function blockFlow(content: RestaurantAdContentElement[], buttons: Restau
   return out;
 }
 
-/** Splits a mixed order back into the stored lists, writing button slots. */
+/**
+ * Splits a mixed order back into the stored lists, writing button slots.
+ * Rule: a button's slot is the number of content blocks before it; any button
+ * with no content after it (the tail of the flow) belongs to the actions row
+ * and loses its slot, even if it came before other tail buttons.
+ */
 export function fromBlockFlow(flow: AdFlowBlock[]): { content: RestaurantAdContentElement[]; buttons: RestaurantAdCTA[] } {
   const content: RestaurantAdContentElement[] = [];
   const buttons: RestaurantAdCTA[] = [];
@@ -519,13 +524,38 @@ export function fromBlockFlow(flow: AdFlowBlock[]): { content: RestaurantAdConte
     if (block.kind === "content") content.push(block.item);
     else buttons.push({ ...block.item, slot: content.length });
   });
-  // Buttons after the last content element stay in the actions row (no slot).
   return { content, buttons: buttons.map((cta) => (cta.slot === content.length ? { ...cta, slot: undefined } : cta)) };
 }
 
+type Flow = { content: RestaurantAdContentElement[]; buttons: RestaurantAdCTA[] };
+
+/** Applies a list edit to the mixed order so button slots follow the content. */
+function editFlow(content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[], edit: (flow: Array<AdFlowBlock & { id: string }>) => Array<AdFlowBlock & { id: string }>): Flow {
+  return fromBlockFlow(edit(blockFlow(content, buttons).map((block) => ({ ...block, id: block.item.id }))));
+}
+
 /** Moves any block (content or button) to `toIndex` of the mixed order. */
-export function moveBlock(content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[], id: string, toIndex: number) {
-  return fromBlockFlow(moveItem(blockFlow(content, buttons).map((block) => ({ ...block, id: block.item.id })), id, toIndex));
+export function moveBlock(content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[], id: string, toIndex: number): Flow {
+  return editFlow(content, buttons, (flow) => moveItem(flow, id, toIndex));
+}
+
+/** Removes a block; slots of the buttons after it shift with the content. */
+export function removeBlock(content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[], id: string): Flow {
+  return editFlow(content, buttons, (flow) => flow.filter((block) => block.id !== id));
+}
+
+/** Duplicates a block right after itself (same limits as add), slots follow. */
+export function duplicateBlock(content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[], id: string): Flow {
+  const source = content.find((item) => item.id === id);
+  const nextContent = source ? duplicateContentItem(content, id) : content;
+  const nextButtons = source ? buttons : duplicateButton(buttons, id);
+  const copy = source ? nextContent.find((item, index) => index > 0 && nextContent[index - 1].id === id) : nextButtons.find((cta, index) => index > 0 && nextButtons[index - 1].id === id);
+  if (!copy) return { content, buttons };
+  return editFlow(content, buttons, (flow) => {
+    const index = flow.findIndex((block) => block.id === id);
+    const block = source ? ({ kind: "content", item: copy as RestaurantAdContentElement, id: copy.id } as const) : ({ kind: "button", item: copy as RestaurantAdCTA, id: copy.id } as const);
+    return [...flow.slice(0, index + 1), block, ...flow.slice(index + 1)];
+  });
 }
 
 export function buttonLimit(): number {

@@ -48,9 +48,9 @@ import {
   createCTA,
   createClientID,
   createDraftAd,
-  duplicateButton,
-  duplicateContentItem,
+  duplicateBlock,
   moveBlock,
+  removeBlock,
   normalizeButtonURL,
   parseWhatsAppURL,
   patchWhatsAppButton,
@@ -554,22 +554,22 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
     patchTargetFlow(moveBlock(targetContent, targetButtons, selectedId, toIndex));
   }, [patchTargetFlow, selectedId, targetButtons, targetContent]);
 
+  // Delete and duplicate go through the mixed flow so slotted buttons keep
+  // pointing at the same neighbours when content shifts.
   const deleteSelected = useCallback(() => {
     if (!selectedId) return;
-    if (selectedList === "buttons") patchTargetButtons(targetButtons.filter((item) => item.id !== selectedId));
-    else patchTargetContent(targetContent.filter((item) => item.id !== selectedId));
+    patchTargetFlow(removeBlock(targetContent, targetButtons, selectedId));
     setSelectedId(null);
-  }, [patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
+  }, [patchTargetFlow, selectedId, targetButtons, targetContent]);
 
   const duplicateSelected = useCallback(() => {
     if (!selectedId) return;
     try {
-      if (selectedList === "buttons") patchTargetButtons(duplicateButton(targetButtons, selectedId));
-      else patchTargetContent(duplicateContentItem(targetContent, selectedId));
+      patchTargetFlow(duplicateBlock(targetContent, targetButtons, selectedId));
     } catch (error) {
       notify("info", "Limite", error instanceof Error ? error.message : "No se puede duplicar el bloque");
     }
-  }, [notify, patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
+  }, [notify, patchTargetFlow, selectedId, targetButtons, targetContent]);
 
   const resizeSelected = useCallback((patch: { width: number; height?: number }) => {
     if (!selectedId) return;
@@ -927,10 +927,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               website={website}
               phone={restaurantPhone}
               onChange={(patch) => patchTargetButtons(targetButtons.map((item) => (item.id === selectedButton.id ? { ...item, ...patch } : item)))}
-              onDelete={() => {
-                patchTargetButtons(targetButtons.filter((item) => item.id !== selectedButton.id));
-                setSelectedId(null);
-              }}
+              onDelete={deleteSelected}
               onClose={() => setSelectedId(null)}
             />
           ) : selectedElement ? (
@@ -945,6 +942,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               }}
               onResetSize={() => patchTargetContent(resetElementSize(targetContent, selectedElement.id))}
               onResetStyle={() => patchTargetContent(resetElementStyle(targetContent, selectedElement.id))}
+              onDelete={deleteSelected}
               onClose={() => setSelectedId(null)}
             />
           ) : (
@@ -1096,7 +1094,7 @@ function StepLayers({
         icon={() => <MousePointerClick size={14} aria-hidden="true" />}
         label={() => "Boton"}
         preview={(cta) => asLayerPreview(cta.text)}
-        empty="La tarjeta avanza con Ver mas."
+        empty="La tarjeta avanza con Ver más."
         testId={`ad-step-${step.id}-card-buttons`}
       />
       <LayerList
@@ -1563,6 +1561,7 @@ function ElementInspector({
   onImagePick,
   onResetSize,
   onResetStyle,
+  onDelete,
   onClose,
 }: {
   item: RestaurantAdContentElement;
@@ -1571,6 +1570,7 @@ function ElementInspector({
   onImagePick: () => void;
   onResetSize: () => void;
   onResetStyle: () => void;
+  onDelete: () => void;
   onClose: () => void;
 }) {
   const isText = item.type !== "image";
@@ -1687,8 +1687,8 @@ function ElementInspector({
           className="bo-anunciosIconBtn"
           data-tone="danger"
           aria-label={`Eliminar ${TYPE_LABEL[item.type]}`}
-          data-testid={`ad-node-${item.id}-delete`}
-          onClick={() => { onChange({}); onClose(); }}
+          data-testid={`ad-inspector-${item.id}-delete`}
+          onClick={onDelete}
         >
           <Trash2 size={15} aria-hidden="true" />
         </button>
