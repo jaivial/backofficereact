@@ -1042,9 +1042,11 @@ async function start() {
   // to the SSR catch-all, which returns an HTML error page with Content-Type:
   // text/html — causing browser MIME errors on .js modules. Rewrite any such
   // stale host-root @fs URLs to the container root before Vite handles them.
+  // Only when the app really runs from /app: a host run (worktree dev server)
+  // legitimately serves /@fs/var/www/... and must not be rewritten.
   app.use((req, _res, next) => {
     const staleFsPrefix = "/@fs/var/www/";
-    if (req.url.startsWith(staleFsPrefix)) {
+    if (appRoot === "/app" && req.url.startsWith(staleFsPrefix)) {
       // Map /@fs/var/www/.../newvillacarmen/backoffice/... -> /@fs/app/...
       // Preserve any query string (e.g. ?v=abc123) that follows the path.
       const [pathPart, queryPart] = req.url.split("?", 2);
