@@ -303,6 +303,56 @@ export function removeContentItem(ad: RestaurantAd, id: string): RestaurantAd {
   return { ...ad, content: ad.content.filter((item) => item.id !== id) };
 }
 
+// ---------------------------------------------------------------------------
+// Studio blocks (coord id ads_block_studio_v1) - every node of the editable
+// area (text, image and button) is one block with the same chrome and the
+// same list operations, so the canvas treats them all alike.
+// ---------------------------------------------------------------------------
+
+export type AdBlockKind = RestaurantAdContentType | "button";
+
+export const BLOCK_LABEL: Record<AdBlockKind, string> = {
+  title: "Titulo",
+  subtitle: "Subtitulo",
+  text: "Texto",
+  image: "Imagen",
+  button: "Boton",
+};
+
+/** Moves the item with `id` to `toIndex`, clamped to the list bounds. */
+export function moveItem<T extends { id: string }>(items: T[], id: string, toIndex: number): T[] {
+  const from = items.findIndex((item) => item.id === id);
+  if (from < 0) return items;
+  const next = [...items];
+  const [moved] = next.splice(from, 1);
+  next.splice(Math.min(Math.max(toIndex, 0), next.length), 0, moved);
+  return next;
+}
+
+/** Inserts a copy right after the source, with a fresh id for the new block. */
+export function duplicateItem<T extends { id: string }>(items: T[], id: string, prefix: string): T[] {
+  const index = items.findIndex((item) => item.id === id);
+  if (index < 0) return items;
+  const copy = { ...items[index], id: createClientID(prefix) };
+  return [...items.slice(0, index + 1), copy, ...items.slice(index + 1)];
+}
+
+/** Same bounds as normalizeBOAdContent on the backend: 1 image, 5 per text type. */
+export function duplicateContentItem(content: RestaurantAdContentElement[], id: string): RestaurantAdContentElement[] {
+  const source = content.find((item) => item.id === id);
+  if (!source) return content;
+  const count = content.filter((item) => item.type === source.type).length;
+  if (source.type === "image" && count >= 1) throw new Error("Solo se permite una imagen por anuncio");
+  if (source.type !== "image" && count >= MAX_TEXT_ITEMS) throw new Error(`Máximo ${MAX_TEXT_ITEMS} elementos de tipo ${source.type}`);
+  return duplicateItem(content, id, source.type);
+}
+
+/** Same bound as normalizeBOAdCTAs on the backend: 5 buttons. */
+export function duplicateButton(buttons: RestaurantAdCTA[], id: string): RestaurantAdCTA[] {
+  if (buttons.length >= MAX_BUTTONS) throw new Error(`Máximo ${MAX_BUTTONS} botones`);
+  return duplicateItem(buttons, id, "cta");
+}
+
 export function reorderContent(ad: RestaurantAd, orderedIDs: string[]): RestaurantAd {
   const byID = new Map(ad.content.map((item) => [item.id, item]));
   const ordered = orderedIDs.map((id) => byID.get(id)).filter((item): item is RestaurantAdContentElement => Boolean(item));

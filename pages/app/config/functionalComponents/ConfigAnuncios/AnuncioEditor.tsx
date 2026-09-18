@@ -8,6 +8,7 @@ import {
   Layers,
   ImagePlus,
   Megaphone,
+  MousePointerClick,
   Plus,
   Settings2,
   Sparkles,
@@ -46,6 +47,9 @@ import {
   createCTA,
   createClientID,
   createDraftAd,
+  duplicateButton,
+  duplicateContentItem,
+  moveItem,
   normalizeButtonURL,
   parseWhatsAppURL,
   patchWhatsAppButton,
@@ -61,7 +65,7 @@ import {
   type ButtonAction,
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
-import { AdMoveableBox, AdSelectionToolbar, AdStudioShell } from "./AdEditorChrome";
+import { AdBlockBar, AdBlockHover, AdMoveableBox, AdStudioShell } from "./AdEditorChrome";
 import {
   ELEMENT_MAX_HEIGHT_PX,
   ELEMENT_MAX_WIDTH_PCT,
@@ -517,31 +521,60 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   }, [activeStep, ad, editingCard]);
 
 
-  const moveContentTo = useCallback(
-    (id: string, toIndex: number) => {
-      if (!ad) return;
-      const from = targetContent.findIndex((item) => item.id === id);
-      if (from < 0) return;
-      const next = [...targetContent];
-      const [moved] = next.splice(from, 1);
-      next.splice(Math.min(Math.max(toIndex, 0), next.length), 0, moved);
-      patchTargetContent(next);
-    },
-    [ad, patchTargetContent, targetContent],
-  );
+  // Coordination id: ads_block_studio_v1 - one set of block operations for
+  // the selection, whatever list (content or buttons) the block lives in.
+  const selectedList = selectedButton ? "buttons" : selectedElement ? "content" : null;
+  const moveSelectedTo = useCallback((toIndex: number) => {
+    if (!selectedId) return;
+    if (selectedList === "buttons") patchTargetButtons(moveItem(targetButtons, selectedId, toIndex));
+    else patchTargetContent(moveItem(targetContent, selectedId, toIndex));
+  }, [patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
 
-  const moveButtonTo = useCallback(
-    (id: string, toIndex: number) => {
-      if (!ad) return;
-      const from = targetButtons.findIndex((item) => item.id === id);
-      if (from < 0) return;
-      const next = [...targetButtons];
-      const [moved] = next.splice(from, 1);
-      next.splice(Math.min(Math.max(toIndex, 0), next.length), 0, moved);
-      patchTargetButtons(next);
-    },
-    [ad, patchTargetButtons, targetButtons],
-  );
+  const deleteSelected = useCallback(() => {
+    if (!selectedId) return;
+    if (selectedList === "buttons") patchTargetButtons(targetButtons.filter((item) => item.id !== selectedId));
+    else patchTargetContent(targetContent.filter((item) => item.id !== selectedId));
+    setSelectedId(null);
+  }, [patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
+
+  const duplicateSelected = useCallback(() => {
+    if (!selectedId) return;
+    try {
+      if (selectedList === "buttons") patchTargetButtons(duplicateButton(targetButtons, selectedId));
+      else patchTargetContent(duplicateContentItem(targetContent, selectedId));
+    } catch (error) {
+      notify("info", "Limite", error instanceof Error ? error.message : "No se puede duplicar el bloque");
+    }
+  }, [notify, patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
+
+  const resizeSelected = useCallback((patch: { width: number; height?: number }) => {
+    if (!selectedId) return;
+    if (selectedList === "buttons") patchTargetButtons(targetButtons.map((item) => (item.id === selectedId ? { ...item, width: patch.width } : item)));
+    else patchTargetContent(targetContent.map((item) => (item.id === selectedId ? { ...item, size: resizeElement(item, patch) } : item)));
+  }, [patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
+
+  const selectedWidth = selectedButton?.width ?? selectedElement?.size?.width;
+
+  // Keyboard: Delete / Backspace removes the selected block when the caret is
+  // not inside its text; Escape clears the selection.
+  useEffect(() => {
+    if (!selectedId || previewOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const typing = Boolean(target?.isContentEditable || target?.closest("input, textarea, select"));
+      if (event.key === "Escape") {
+        setSelectedId(null);
+        return;
+      }
+      if (typing) return;
+      if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        deleteSelected();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [deleteSelected, previewOpen, selectedId]);
 
   const addContent = useCallback((type: RestaurantAdContentType) => {
     insertContent(type);
@@ -722,52 +755,32 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               />
             ) : null}
 
-            {/* Layers: every element and button of the current target, drag to reorder. */}
-        <Reorder.Group
-          axis="y"
-          values={targetContent}
-          onReorder={(content) => patchTargetContent(content)}
-          className="bo-adLayers"
-          data-testid="ad-layers-list"
-        >
-          {targetContent.map((item) => (
-            <Reorder.Item key={item.id} value={item} as="div" className="bo-adLayer" data-node-id={item.id}>
-              <button
-                type="button"
-                className={`bo-adLayerRow ${selectedId === item.id ? "is-selected" : ""}`}
-                onClick={() => setSelectedId(selectedId === item.id ? null : item.id)}
-                data-testid={`ad-layer-${item.id}`}
-              >
-                <span className="bo-adLayerIcon">{(addContentItems.find((entry) => entry.type === item.type) ?? { icon: <Sparkles size={14} aria-hidden="true" /> }).icon}</span>
-                <span className="bo-adLayerLabel">{TYPE_LABEL[item.type]}</span>
-                <span className="bo-adLayerValue">{asLayerPreview(item.value)}</span>
-              </button>
-            </Reorder.Item>
-          ))}
-          {!targetContent.length ? <p className="bo-adLayersEmpty">Sin elementos: anade uno desde la paleta.</p> : null}
-        </Reorder.Group>
-        <Reorder.Group
-          axis="y"
-          values={targetButtons}
-          onReorder={(buttons) => patchTargetButtons(buttons)}
-          className="bo-adLayers"
-          data-testid="ad-layers-buttons"
-        >
-          {targetButtons.map((cta) => (
-            <Reorder.Item key={cta.id} value={cta} as="div" className="bo-adLayer">
-              <button
-                type="button"
-                className={`bo-adLayerRow ${selectedId === cta.id ? "is-selected" : ""}`}
-                onClick={() => setSelectedId(selectedId === cta.id ? null : cta.id)}
-                data-testid={`ad-layer-${cta.id}`}
-              >
-                <span className="bo-adLayerIcon"><Megaphone size={14} aria-hidden="true" /></span>
-                <span className="bo-adLayerLabel">Boton</span>
-                <span className="bo-adLayerValue">{cta.text}</span>
-              </button>
-            </Reorder.Item>
-          ))}
-        </Reorder.Group>
+            {/* Layers (coord id ads_block_studio_v1): content and buttons are
+                two equal lists of blocks, same row, same drag, same selection. */}
+            <LayerList
+              title="Contenido"
+              values={targetContent}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onReorder={patchTargetContent}
+              icon={(item) => (addContentItems.find((entry) => entry.type === item.type) ?? { icon: <Sparkles size={14} aria-hidden="true" /> }).icon}
+              label={(item) => TYPE_LABEL[item.type]}
+              preview={(item) => asLayerPreview(item.value)}
+              empty="Sin elementos: anade uno desde la paleta."
+              testId="ad-layers-list"
+            />
+            <LayerList
+              title="Botones"
+              values={targetButtons}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onReorder={patchTargetButtons}
+              icon={() => <MousePointerClick size={14} aria-hidden="true" />}
+              label={() => "Boton"}
+              preview={(cta) => asLayerPreview(cta.text)}
+              empty="Sin botones."
+              testId="ad-layers-buttons"
+            />
 
         <div className="bo-adInsertPalette" data-testid="ad-insert-palette">
           <div className="bo-adStudioSectionTitle">Anadir</div>
@@ -797,7 +810,15 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
         canvas={
           <>
             {/* Live template: the same markup as the public ad, editable in place. */}
-            <div className="bo-anunciosCanvasCol" data-slot="ads-canvas-column" ref={canvasRef}>
+            <div
+              className="bo-anunciosCanvasCol"
+              data-slot="ads-canvas-column"
+              ref={canvasRef}
+              onPointerDown={(event) => {
+                // Clicking the card outside any block clears the selection.
+                if (!(event.target as Element).closest("[data-node-id], .bo-adBlockBar, .moveable-control-box, .bo-adNodeImagePick")) setSelectedId(null);
+              }}
+            >
               {isMultiple ? (
                 <AdWizard
                   ad={ad}
@@ -836,52 +857,26 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   emptyHint="Anade contenido para ver el anuncio en tiempo real."
                 />
               )}
-              {!previewOpen && selectedElement ? (
+              {!previewOpen ? <AdBlockHover containerRef={canvasRef} selectedId={selectedId} /> : null}
+              {!previewOpen && selectedId && selectedList ? (
                 <>
                   <AdMoveableBox
                     containerRef={canvasRef}
-                    nodeId={selectedElement.id}
-                    hasHeight={selectedElement.type === "image"}
-                    onResize={(patch) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, size: resizeElement(item, patch) } : item)))}
+                    nodeId={selectedId}
+                    hasHeight={selectedElement?.type === "image"}
+                    onResize={resizeSelected}
                   />
-                  <AdSelectionToolbar
+                  <AdBlockBar
                     containerRef={canvasRef}
-                    nodeId={selectedElement.id}
-                    label={TYPE_LABEL[selectedElement.type]}
-                    onDelete={() => {
-                      patchTargetContent(targetContent.filter((item) => item.id !== selectedElement.id));
-                      setSelectedId(null);
-                    }}
-                    onMoveTo={(toIndex) => moveContentTo(selectedElement.id, toIndex)}
+                    nodeId={selectedId}
+                    onDelete={deleteSelected}
+                    onDuplicate={duplicateSelected}
+                    onMoveTo={moveSelectedTo}
                   >
-                    <span className="bo-adToolValue" data-testid={`ad-node-${selectedElement.id}-size`}>
-                      {selectedElement.size?.width ? `${Math.round(selectedElement.size.width)}%` : "Auto"}
+                    <span className="bo-adBlockBarValue" data-testid="ad-block-bar-size">
+                      {selectedWidth ? `${Math.round(selectedWidth)}%` : "Auto"}
                     </span>
-                  </AdSelectionToolbar>
-                </>
-              ) : null}
-              {!previewOpen && selectedButton ? (
-                <>
-                  <AdMoveableBox
-                    containerRef={canvasRef}
-                    nodeId={selectedButton.id}
-                    hasHeight={false}
-                    onResize={({ width }) => patchTargetButtons(targetButtons.map((item) => (item.id === selectedButton.id ? { ...item, width } : item)))}
-                  />
-                  <AdSelectionToolbar
-                    containerRef={canvasRef}
-                    nodeId={selectedButton.id}
-                    label="Boton"
-                    onDelete={() => {
-                      patchTargetButtons(targetButtons.filter((item) => item.id !== selectedButton.id));
-                      setSelectedId(null);
-                    }}
-                    onMoveTo={(toIndex) => moveButtonTo(selectedButton.id, toIndex)}
-                  >
-                    <span className="bo-adToolValue" data-testid={`ad-cta-${selectedButton.id}-size`}>
-                      {selectedButton.width ? `${Math.round(selectedButton.width)}%` : "Auto"}
-                    </span>
-                  </AdSelectionToolbar>
+                  </AdBlockBar>
                 </>
               ) : null}
             </div>
@@ -982,6 +977,55 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
       <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(event) => { const file = event.target.files?.[0]; console.log("[AD-DEBUG] raw file from picker", { name: file?.name, type: file?.type, size: file?.size }); event.target.value = ""; if (file) void chooseImage(file); }} data-testid="ad-image-file" />
       <ImageFlowModal open={imageOpen} step={imageStep} previewURL={imagePreviewURL} file={imageFile} onClose={closeImage} onGenerate={() => void generateImage()} onPick={() => fileRef.current?.click()} onRaw={() => void handleUploadedImage(false)} onEnhance={() => void handleUploadedImage(true)} />
     </section>
+  );
+}
+
+/** One generic layers list: the same row for every block kind. */
+function LayerList<T extends { id: string }>({
+  title,
+  values,
+  selectedId,
+  onSelect,
+  onReorder,
+  icon,
+  label,
+  preview,
+  empty,
+  testId,
+}: {
+  title: string;
+  values: T[];
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  onReorder: (values: T[]) => void;
+  icon: (item: T) => React.ReactNode;
+  label: (item: T) => string;
+  preview: (item: T) => string;
+  empty: string;
+  testId: string;
+}) {
+  return (
+    <div className="bo-adLayerGroup" data-testid={`${testId}-group`}>
+      <div className="bo-adStudioSectionTitle">{title}</div>
+      <Reorder.Group axis="y" values={values} onReorder={onReorder} className="bo-adLayers" data-testid={testId}>
+        {values.map((item) => (
+          <Reorder.Item key={item.id} value={item} as="div" className="bo-adLayer" data-layer-id={item.id}>
+            <button
+              type="button"
+              className={`bo-adLayerRow ${selectedId === item.id ? "is-selected" : ""}`}
+              onClick={() => onSelect(selectedId === item.id ? null : item.id)}
+              data-testid={`ad-layer-${item.id}`}
+            >
+              <span className="bo-adLayerGrip" aria-hidden="true"><GripVertical size={12} /></span>
+              <span className="bo-adLayerIcon">{icon(item)}</span>
+              <span className="bo-adLayerLabel">{label(item)}</span>
+              <span className="bo-adLayerValue">{preview(item)}</span>
+            </button>
+          </Reorder.Item>
+        ))}
+        {!values.length ? <p className="bo-adLayersEmpty">{empty}</p> : null}
+      </Reorder.Group>
+    </div>
   );
 }
 
@@ -1288,6 +1332,7 @@ function Slider({
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value === "" ? undefined : Number(event.target.value))}
         className="bo-adSlider"
+        aria-label={label}
         data-testid={`${testId}-range`}
       />
     </div>
@@ -1315,6 +1360,7 @@ function NumberField({
         placeholder={placeholder ?? "Auto"}
         onChange={(event) => onChange(event.target.value === "" ? undefined : Number(event.target.value))}
         className="bo-input bo-adNumber"
+        aria-label={label}
       />
     </Field>
   );
