@@ -1,3 +1,4 @@
+export { AutoGrowTextarea } from "./AutoGrowTextarea";
 export { DateDropdown } from "./DateDropdown";
 export { DatePicker } from "./DatePicker";
 export { DateRangePicker } from "./DateRangePicker";
