@@ -127,6 +127,9 @@
   overflow: hidden;
   position: fixed;
   z-index: 9999;
+  /* Coordination id: booking_selector_autowidth_v1 - the list shrink-wraps
+     its content (width auto from the component) and never exceeds 95vw. */
+  max-width: 95vw;
   border-radius: 14px;
   border: 1px solid var(--bo-border);
   background:
@@ -170,6 +173,19 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Coordination id: booking_selector_autowidth_v1 - one-line items so the
+   auto-width list measures real label widths; over-cap labels ellipsis.
+   Scoped to the Select listbox so the search list keeps its wrap. */
+[data-ui="select-listbox"] .bo-selectItem {
+  white-space: nowrap;
+}
+
+[data-ui="select-listbox"] .bo-selectItem > [data-ui="select-item-label"] {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bo-selectItemIcon {
