@@ -281,7 +281,9 @@ export function BookingEditor({
       setFormError(null);
       setDraft((p) => {
         if (v) {
-          return { ...p, special_menu: true, arroz_enabled: false, arroz: [], commentary: "" };
+          // Coordination id: booking_groupmenu_live_commentary_v1 - keep the
+          // free-text note so it merges with the auto summary on submit.
+          return { ...p, special_menu: true, arroz_enabled: false, arroz: [] };
         }
         return { ...p, special_menu: false, menu_de_grupo_id: null, principales: [] };
       });
@@ -320,6 +322,23 @@ export function BookingEditor({
 
   // --- Coordination id: booking_extras_v1 ---
   const extrasSelectedIds = useMemo(() => (draft.extras || []).map((extra) => extra.id), [draft.extras]);
+
+  // Coordination id: booking_groupmenu_live_commentary_v1 - live preview of the
+  // stored commentary while a group menu is selected: auto principales summary
+  // + selected extras. Updates in real time as rows/extras change (mirrors the
+  // backend buildGroupMenuCommentary format without the free-text note).
+  const groupMenuLivePreview = useMemo(() => {
+    const bits: string[] = [];
+    const summary = (draft.principales || [])
+      .map((r) => ({ name: String(r.name || "").trim(), servings: clampInt(Number(r.servings || 0), 0, 10_000) }))
+      .filter((r) => r.name && r.servings > 0)
+      .map((r) => `${r.name} x ${r.servings}`)
+      .join(", ");
+    if (summary) bits.push(summary);
+    const extraNames = (draft.extras || []).map((e) => String(e.name || "").trim()).filter(Boolean);
+    if (extraNames.length > 0) bits.push(`Extras: ${extraNames.join(", ")}`);
+    return bits.join(" · ");
+  }, [draft.principales, draft.extras]);
 
   // Stored extras may no longer be in the catalog (custom extra deleted). Show
   // the union so they stay visible and can be removed instead of silently
@@ -429,9 +448,14 @@ export function BookingEditor({
       const total = sumServings(rows);
       if (total > partySize) return setFormError("Las raciones de principales superan el número de comensales");
       payload.principales_json = rows;
+      // Coordination id: booking_extras_v1 + booking_groupmenu_live_commentary_v1 -
+      // extras and the free-text note also apply with a group menu; the backend
+      // merges them with the auto summary into the stored commentary.
+      payload.extras = (draft.extras || []).map((extra) => extra.id);
+      payload.commentary = String(draft.commentary || "").trim();
     } else {
       payload.commentary = String(draft.commentary || "").trim();
-      // Coordination id: booking_extras_v1 - extras only apply without a group menu.
+      // Coordination id: booking_extras_v1 - extras apply in both modes.
       payload.extras = (draft.extras || []).map((extra) => extra.id);
       if (draft.arroz_enabled) {
         const rows = draft.arroz
@@ -827,8 +851,7 @@ export function BookingEditor({
         </Panel>
       ) : null}
 
-      {!draft.special_menu ? (
-        <Panel className="bo-bookingPanel--extras" data-slot="bookingEditor-panel" title="Extras" meta={extrasSelectedIds.length > 0 ? `${extrasSelectedIds.length} seleccionados` : "Ninguno"}>
+      <Panel className="bo-bookingPanel--extras" data-slot="bookingEditor-panel" data-testid="booking-editor-extras-panel" title="Extras" meta={extrasSelectedIds.length > 0 ? `${extrasSelectedIds.length} seleccionados` : "Ninguno"}>
           <OptionsSwitchList
             options={extrasDisplayCatalog}
             selectedIds={extrasSelectedIds}
@@ -836,7 +859,7 @@ export function BookingEditor({
             disabled={busy}
             inline
             ariaLabel="Extras de la reserva"
-            hint="Activa los extras que apliquen. Solo están disponibles cuando no hay menú de grupo."
+            hint={draft.special_menu ? "Activa los extras que apliquen. También se guardan con menú de grupo." : "Activa los extras que apliquen."}
             testIdPrefix="booking-editor-extra"
             slotPrefix="bookingEditorExtra"
             emptyHint={'No hay extras configurados. Usa "Gestionar extras" para crear uno.'}
@@ -854,13 +877,15 @@ export function BookingEditor({
             </button>
           </div>
         </Panel>
-      ) : null}
 
-      {!draft.special_menu ? (
-        <Panel data-slot="bookingEditor-panel" title="Comentario" meta="Opcional">
-            <textarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} data-slot="booking-editor-commentary" />
+      <Panel data-slot="bookingEditor-panel" data-testid="booking-editor-commentary-panel" title="Comentario" meta={draft.special_menu ? "Auto + opcional" : "Opcional"}>
+            {draft.special_menu ? (
+              <div className="bo-mutedText" data-slot="booking-editor-groupmenu-live-preview" data-testid="booking-editor-groupmenu-live-preview" aria-live="polite">
+                {groupMenuLivePreview || "Selecciona principales y extras para ver el comentario automático."}
+              </div>
+            ) : null}
+            <textarea className="bo-input bo-textarea" value={draft.commentary} onChange={(e) => setField("commentary", e.target.value)} placeholder={draft.special_menu ? "Nota libre (opcional, se añade al comentario automático)" : undefined} data-slot="booking-editor-commentary" data-testid="booking-editor-commentary-input" aria-label="Comentario" />
         </Panel>
-      ) : null}
       </div>
       </ScrollArea>
 
@@ -873,7 +898,7 @@ export function BookingEditor({
         open={extrasModalOpen}
         title="Extras"
         headerTitle="Selecciona extras"
-        hint="Activa los extras que apliquen a esta reserva. Los extras solo se aplican a reservas sin menú de grupo."
+        hint="Activa los extras que apliquen a esta reserva."
         options={extrasDisplayCatalog}
         selectedIds={extrasSelectedIds}
         onToggle={(id, selected) => setExtraSelected(id, selected)}
