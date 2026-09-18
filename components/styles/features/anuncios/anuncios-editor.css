@@ -896,9 +896,10 @@ button.bg-bo-accent { color: var(--bo-bg); }
 
 .bo-adCanvasFlow {
   display: grid;
-  gap: 2px;
+  gap: 12px;
   margin: 0;
   padding: 0;
+  min-width: 0;
 }
 
 /* Every editable block: the template look plus a hover outline that only
@@ -944,117 +945,6 @@ button.bg-bo-accent { color: var(--bo-bg); }
   outline: 2px solid var(--bo-accent);
   outline-offset: 2px;
   border-radius: 4px;
-}
-
-/* Floating per-node bar: grip on the edge, alignment and delete in the
-   middle band. Sits above the text without covering its first line. */
-.bo-adNodeBar {
-  position: absolute;
-  top: -16px;
-  inset-inline-end: 0;
-  display: none;
-  align-items: center;
-  gap: 2px;
-  z-index: 4;
-  padding: 2px;
-  border-radius: 14px;
-  background: var(--bo-surface);
-  border: 1px solid var(--bo-border);
-  box-shadow: var(--bo-shadow-soft, 0 6px 18px rgba(0, 0, 0, 0.18));
-}
-.bo-adNode:hover .bo-adNodeBar,
-.bo-adNode:focus-within .bo-adNodeBar,
-.bo-adNode.is-selected .bo-adNodeBar {
-  display: inline-flex;
-}
-@media (hover: none) {
-  /* Touch: keep the bar reachable while the node is selected only. */
-  .bo-adNode:hover .bo-adNodeBar {
-    display: none;
-  }
-}
-
-.bo-adNodeGrip,
-.bo-adButtonGrip {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-}
-.bo-adNodeGrip .bo-anunciosDragHandleIcon {
-  width: 14px;
-  height: 14px;
-}
-.bo-adNodeTrash,
-.bo-adButtonTrash {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-}
-.bo-adNodeAlign {
-  transform: scale(0.92);
-}
-.bo-adNodeImagePick {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 6px auto 0;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px dashed var(--bo-border);
-  background: color-mix(in srgb, var(--bo-surface) 82%, transparent);
-  color: var(--bo-muted);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition-property: color, border-color;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-}
-.bo-adNodeImagePick:hover {
-  color: var(--bo-text);
-  border-color: var(--bo-accent);
-}
-.bo-adNodeImagePick:active {
-  transform: scale(0.96);
-}
-
-.bo-adButton {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 4px;
-  border-radius: 12px;
-  outline: 1px solid transparent;
-  transition-property: outline-color;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-}
-.bo-adButton:hover,
-.bo-adButton.is-selected {
-  outline-color: var(--bo-accent);
-}
-.bo-adButtonGrip {
-  visibility: hidden;
-  grid-row: 1;
-}
-.bo-adButton:hover .bo-adButtonGrip,
-.bo-adButton.is-selected .bo-adButtonGrip {
-  visibility: visible;
-}
-.bo-adButton .bo-adModalCta {
-  width: 100%;
-}
-
-.bo-adCanvasHintRow {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-}
-.bo-adCanvasHint {
-  margin: 0;
-  font-size: 12px;
-  color: var(--bo-faint);
 }
 
 /* Insert bar: the "add header / subtitle / text / image / button" palette. */
