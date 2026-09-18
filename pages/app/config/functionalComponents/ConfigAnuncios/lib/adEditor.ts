@@ -337,6 +337,22 @@ export function duplicateItem<T extends { id: string }>(items: T[], id: string, 
   return [...items.slice(0, index + 1), copy, ...items.slice(index + 1)];
 }
 
+/** Same bounds as normalizeBOAdContent on the backend: 1 image, 5 per text type. */
+export function duplicateContentItem(content: RestaurantAdContentElement[], id: string): RestaurantAdContentElement[] {
+  const source = content.find((item) => item.id === id);
+  if (!source) return content;
+  const count = content.filter((item) => item.type === source.type).length;
+  if (source.type === "image" && count >= 1) throw new Error("Solo se permite una imagen por anuncio");
+  if (source.type !== "image" && count >= MAX_TEXT_ITEMS) throw new Error(`Máximo ${MAX_TEXT_ITEMS} elementos de tipo ${source.type}`);
+  return duplicateItem(content, id, source.type);
+}
+
+/** Same bound as normalizeBOAdCTAs on the backend: 5 buttons. */
+export function duplicateButton(buttons: RestaurantAdCTA[], id: string): RestaurantAdCTA[] {
+  if (buttons.length >= MAX_BUTTONS) throw new Error(`Máximo ${MAX_BUTTONS} botones`);
+  return duplicateItem(buttons, id, "cta");
+}
+
 export function reorderContent(ad: RestaurantAd, orderedIDs: string[]): RestaurantAd {
   const byID = new Map(ad.content.map((item) => [item.id, item]));
   const ordered = orderedIDs.map((id) => byID.get(id)).filter((item): item is RestaurantAdContentElement => Boolean(item));

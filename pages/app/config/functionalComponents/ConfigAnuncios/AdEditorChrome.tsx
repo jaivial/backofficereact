@@ -134,10 +134,17 @@ function blockNode(root: HTMLElement | null, nodeId: string | null): HTMLElement
 /** Tracks a block box inside the canvas and re-measures on any layout change. */
 function useBlockGeometry(containerRef: React.RefObject<HTMLDivElement | null>, nodeId: string | null): BlockGeometry | null {
   const [box, setBox] = useState<BlockGeometry | null>(null);
+  const frame = useRef(0);
+  // Coalesce the many triggers (keystrokes, scroll, observers) into one
+  // measure per animation frame.
   const measure = useCallback(() => {
-    const root = containerRef.current;
-    const node = blockNode(root, nodeId);
-    setBox(root && node ? measureBlock(node, root) : null);
+    if (frame.current) return;
+    frame.current = window.requestAnimationFrame(() => {
+      frame.current = 0;
+      const root = containerRef.current;
+      const node = blockNode(root, nodeId);
+      setBox(root && node ? measureBlock(node, root) : null);
+    });
   }, [containerRef, nodeId]);
 
   useEffect(() => {
@@ -154,6 +161,8 @@ function useBlockGeometry(containerRef: React.RefObject<HTMLDivElement | null>, 
     // Selection happens on pointer down; the block settles (caret, :active) by pointer up.
     window.addEventListener("pointerup", measure);
     return () => {
+      window.cancelAnimationFrame(frame.current);
+      frame.current = 0;
       window.removeEventListener("pointerup", measure);
       observer.disconnect();
       mutations.disconnect();
@@ -174,7 +183,8 @@ export function AdBlockHover({ containerRef, selectedId }: { containerRef: React
     if (!root) return;
     const onMove = (event: PointerEvent) => {
       const node = (event.target as Element | null)?.closest?.("[data-node-id]");
-      setHoverId(node?.getAttribute("data-node-id") ?? null);
+      const next = node?.getAttribute("data-node-id") ?? null;
+      setHoverId((current) => (current === next ? current : next));
     };
     const onLeave = () => setHoverId(null);
     root.addEventListener("pointermove", onMove);
