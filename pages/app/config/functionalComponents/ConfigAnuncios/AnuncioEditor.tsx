@@ -47,7 +47,8 @@ import {
   createCTA,
   createClientID,
   createDraftAd,
-  duplicateItem,
+  duplicateButton,
+  duplicateContentItem,
   moveItem,
   normalizeButtonURL,
   parseWhatsAppURL,
@@ -538,9 +539,13 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
 
   const duplicateSelected = useCallback(() => {
     if (!selectedId) return;
-    if (selectedList === "buttons") patchTargetButtons(duplicateItem(targetButtons, selectedId, "cta"));
-    else if (selectedElement) patchTargetContent(duplicateItem(targetContent, selectedId, selectedElement.type));
-  }, [patchTargetButtons, patchTargetContent, selectedElement, selectedId, selectedList, targetButtons, targetContent]);
+    try {
+      if (selectedList === "buttons") patchTargetButtons(duplicateButton(targetButtons, selectedId));
+      else patchTargetContent(duplicateContentItem(targetContent, selectedId));
+    } catch (error) {
+      notify("info", "Limite", error instanceof Error ? error.message : "No se puede duplicar el bloque");
+    }
+  }, [notify, patchTargetButtons, patchTargetContent, selectedId, selectedList, targetButtons, targetContent]);
 
   const resizeSelected = useCallback((patch: { width: number; height?: number }) => {
     if (!selectedId) return;
