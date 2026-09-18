@@ -151,7 +151,11 @@ export function Select({
     const desiredHeight = maxHeight;
     const opensUp = spaceBelow < desiredHeight && spaceAbove > spaceBelow;
 
-    const width = Math.min(Math.max(rect.width, minWidth), Math.max(160, window.innerWidth - 16));
+    // Coordination id: booking_selector_autowidth_v1 - the floor is the
+    // trigger width (min 180); the list itself shrink-wraps its content
+    // (width auto in the style below) capped at 95vw, everywhere used.
+    const cap = Math.max(160, Math.floor(window.innerWidth * 0.95));
+    const width = Math.min(Math.max(rect.width, minWidth), cap);
     const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - width - 8));
     setListPosition({
       top: opensUp ? rect.top - desiredHeight - 6 : rect.bottom + 6,
@@ -224,7 +228,9 @@ export function Select({
                   position: "fixed",
                   top: `${listPosition.top}px`,
                   left: `${listPosition.left}px`,
-                  width: `${listPosition.width}px`,
+                  width: "auto",
+                  minWidth: `${listPosition.width}px`,
+                  maxWidth: "95vw",
                   maxHeight: `${maxHeight}px`,
                   height: `${listHeight}px`,
                 }}

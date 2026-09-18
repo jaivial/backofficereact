@@ -1015,3 +1015,39 @@
 .bo-btn--advisorSecondary:hover:not(:disabled) {
   color: var(--bo-muted);
 }
+
+/* Booking choice rows (principales + arroz, create page and edit modal):
+   the selector takes the full row width with the trash inline, so it can
+   never squeeze the servings counter; the counter sits below, centered.
+   Placed last so it wins the earlier viewport-specific row rules. */
+.bo-bookingPanel--menu .bo-bookingChoiceRow,
+.bo-bookingPanel--arroz .bo-bookingChoiceRow {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+.bo-bookingPanel--menu .bo-bookingChoiceSelectorRow,
+.bo-bookingPanel--arroz .bo-bookingChoiceSelectorRow {
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+.bo-bookingPanel--menu .bo-bookingChoiceSelectorRow .bo-selectWrapper,
+.bo-bookingPanel--arroz .bo-bookingChoiceSelectorRow .bo-selectWrapper {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+.bo-bookingPanel--menu .bo-bookingChoiceSelect,
+.bo-bookingPanel--arroz .bo-bookingChoiceSelect {
+  width: 100%;
+}
+
+.bo-bookingPanel--menu .bo-bookingChoiceActions,
+.bo-bookingPanel--arroz .bo-bookingChoiceActions {
+  width: 100%;
+  justify-content: center;
+}
