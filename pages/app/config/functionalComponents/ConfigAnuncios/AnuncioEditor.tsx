@@ -19,6 +19,7 @@ import {
 import type {
   RestaurantAd,
   RestaurantAdContentElement,
+  RestaurantAdElementStyle,
   RestaurantAdContentType,
   RestaurantAdCTA,
   RestaurantAdInput,
@@ -61,7 +62,28 @@ import {
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
 import { AdMoveableBox, AdStudioShell } from "./AdEditorChrome";
-import { ELEMENT_MAX_HEIGHT_PX, ELEMENT_MAX_WIDTH_PCT, ELEMENT_MIN_HEIGHT_PX, ELEMENT_MIN_WIDTH_PCT, resetElementSize, resizeElement } from "./lib/adEditor";
+import {
+  ELEMENT_MAX_HEIGHT_PX,
+  ELEMENT_MAX_WIDTH_PCT,
+  ELEMENT_MIN_HEIGHT_PX,
+  ELEMENT_MIN_WIDTH_PCT,
+  normalizeElementStyle,
+  resetElementSize,
+  resetElementStyle,
+  resizeElement,
+  STYLE_FONT_SIZE_MAX,
+  STYLE_FONT_SIZE_MIN,
+  STYLE_FONT_WEIGHTS,
+  STYLE_LETTER_SPACING_MAX,
+  STYLE_LETTER_SPACING_MIN,
+  STYLE_LINE_HEIGHT_MAX,
+  STYLE_LINE_HEIGHT_MIN,
+  STYLE_OFFSET_MAX,
+  STYLE_OFFSET_MIN,
+  STYLE_OPACITY_MAX,
+  STYLE_OPACITY_MIN,
+  STYLE_RADIUS_MAX,
+} from "./lib/adEditor";
 import { compressAdImage } from "./lib/image";
 import { InlineDateRangeCalendar } from "../../../../../ui/inputs/InlineDateRangeCalendar";
 import { formatISODate, parseISODate } from "../../../../../ui/lib/format";
@@ -799,137 +821,56 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             </div>
           </>
         }
-        properties={(
-        selectedElement || selectedButton ? (
-          <div className="bo-adInspector" data-testid="ad-inspector-selection">
-            {selectedElement ? (
-              <>
-                <div className="bo-adStudioSectionTitle">{TYPE_LABEL[selectedElement.type]}</div>
-                {selectedElement.type !== "image" ? (
-                  <label className="bo-adField">
-                    <span>Texto</span>
-                    <textarea
-                      value={selectedElement.value}
-                      onChange={(event) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, value: event.target.value } : item)))}
-                      rows={3}
-                      className="bo-textarea"
-                      data-testid={`ad-node-${selectedElement.id}-text`}
-                    />
-                  </label>
-                ) : null}
-                {selectedElement.type !== "image" ? (
-                  <div className="bo-adField">
-                    <span>Alineacion</span>
-                    <AlignmentTabs
-                      value={selectedElement.align || "left"}
-                      onChange={(align) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, align } : item)))}
-                    />
-                  </div>
-                ) : null}
-                <div className="bo-adField">
-                  <span>Ancho (%)</span>
-                  <input
-                    type="number"
-                    min={ELEMENT_MIN_WIDTH_PCT}
-                    max={ELEMENT_MAX_WIDTH_PCT}
-                    value={selectedElement.size?.width ?? ""}
-                    placeholder="Auto"
-                    onChange={(event) => {
-                      const width = Number(event.target.value);
-                      patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, size: width ? { ...(item.size ?? {}), width } : undefined } : item)));
-                    }}
-                    className="bo-input"
-                    data-testid={`ad-node-${selectedElement.id}-width`}
-                  />
-                </div>
-                {selectedElement.type === "image" ? (
-                  <div className="bo-adField">
-                    <span>Alto (px)</span>
-                    <input
-                      type="number"
-                      min={ELEMENT_MIN_HEIGHT_PX}
-                      max={ELEMENT_MAX_HEIGHT_PX}
-                      value={selectedElement.size?.height ?? ""}
-                      placeholder="Auto"
-                      onChange={(event) => {
-                        const height = Number(event.target.value);
-                        patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, size: { ...(item.size ?? {}), width: item.size?.width ?? 95, height } } : item)));
-                      }}
-                      className="bo-input"
-                      data-testid={`ad-node-${selectedElement.id}-height`}
-                    />
-                  </div>
-                ) : null}
-                {selectedElement.type === "image" ? (
-                  <button type="button" className="bo-adFieldReset" onClick={() => { setImageTarget(""); setImageOpen(true); setImageStep("choose"); }} data-testid={`ad-node-${selectedElement.id}-image-change`}>
-                    Cambiar imagen
-                  </button>
-                ) : null}
-                <button type="button" className="bo-adFieldReset" onClick={() => patchTargetContent(resetElementSize(targetContent, selectedElement.id))} data-testid={`ad-node-${selectedElement.id}-size-reset`}>
-                  Tamano automatico
-                </button>
-              </>
-            ) : null}
-            {selectedButton ? (
-              <>
-                <div className="bo-adStudioSectionTitle">Boton</div>
-                <p className="bo-adInspectorHint">Configura el destino, el color y el tamano del boton seleccionado.</p>
-              </>
-            ) : null}
-            <button type="button" className="bo-adFieldReset" onClick={() => setSelectedId(null)} data-testid="ad-inspector-close">
-              Cerrar propiedades
-            </button>
-          </div>
-        ) : (
-          <>
-            {isMultiple && activeStep ? <StepInspector step={activeStep} phone={restaurantPhone} onChange={(patch) => setAd(updateStep(ad, activeStep.id, patch))} onBackgroundImage={() => { setImageTarget(activeStep.id); setImageOpen(true); setImageStep("choose"); }} imageBusy={imageEnhancing} /> : null}
-            <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
-              <div className="bo-anunciosCtasTitle">Duracion</div>
-              <div className="bo-anunciosCtasHint">El anuncio solo se muestra dentro de este periodo. Si borras las fechas, no se mostrara aunque este activo.</div>
-              <InlineDateRangeCalendar from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
-                if (range.from && range.to && sendAdScheduleCheck) {
-                  const reqId = `ad-schedule-${Date.now()}-${++reqCounter.current}`;
-                  scheduleCheckReqRef.current = reqId;
-                  sendAdScheduleCheck({ type: "ad_schedule_check", reqId, adId: ad.id, payload: { starts_at: range.from, ends_at: range.to } });
-                }
-                setScheduleError("");
-                setAd({ ...ad, starts_at: range.from || null, ends_at: range.to || null });
-              }} />
-              {scheduleError ? <p className="bo-anunciosScheduleError" role="alert">{scheduleError}</p> : null}
-            </div>
-            <div className="bo-anunciosCtasSection" data-slot="ads-cta-section" data-testid="ads-buttons-section">
-              <div className="bo-anunciosCtasHead">
-                <div>
-                  <div className="bo-anunciosCtasTitle" data-testid="ads-buttons-title">Botones</div>
-                  <div className="bo-anunciosCtasHint" data-testid="ads-buttons-hint">
-                    {isMultiple
-                      ? "Se muestran al final de cada anuncio del wizard. Elige pagina de la web, URL propia o WhatsApp."
-                      : "Se muestran al final del anuncio. Elige pagina de la web, URL propia o WhatsApp."}
-                  </div>
-                </div>
-                <button type="button" onClick={addCta} className="bo-anunciosIconBtn" data-tone="primary" aria-label="Anadir boton" data-testid="ad-add-button">
-                  <Plus size={15} aria-hidden="true" />
-                </button>
+        properties={
+          selectedButton ? (
+            <ButtonInspector
+              cta={selectedButton}
+              website={website}
+              phone={restaurantPhone}
+              onChange={(patch) => patchTargetButtons(targetButtons.map((item) => (item.id === selectedButton.id ? { ...item, ...patch } : item)))}
+              onDelete={() => {
+                patchTargetButtons(targetButtons.filter((item) => item.id !== selectedButton.id));
+                setSelectedId(null);
+              }}
+              onClose={() => setSelectedId(null)}
+            />
+          ) : selectedElement ? (
+            <ElementInspector
+              item={selectedElement}
+              onChange={(patch) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, ...patch } : item)))}
+              onStyle={(patch) => patchTargetContent(targetContent.map((item) => (item.id === selectedElement.id ? { ...item, style: normalizeElementStyle(item, patch) } : item)))}
+              onImagePick={() => {
+                setImageTarget(target.kind === "step" ? activeStep?.id ?? "" : "");
+                setImageOpen(true);
+                setImageStep("choose");
+              }}
+              onResetSize={() => patchTargetContent(resetElementSize(targetContent, selectedElement.id))}
+              onResetStyle={() => patchTargetContent(resetElementStyle(targetContent, selectedElement.id))}
+              onClose={() => setSelectedId(null)}
+            />
+          ) : (
+            <>
+              {isMultiple && activeStep ? <StepInspector step={activeStep} onChange={(patch) => setAd(updateStep(ad, activeStep.id, patch))} onBackgroundImage={() => { setImageTarget(activeStep.id); setImageOpen(true); setImageStep("choose"); }} imageBusy={imageEnhancing} onSelectButton={(buttonId) => setSelectedId(buttonId)} /> : null}
+              <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
+                <div className="bo-anunciosCtasTitle">Duracion</div>
+                <div className="bo-anunciosCtasHint">El anuncio solo se muestra dentro de este periodo.</div>
+                <InlineDateRangeCalendar from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
+                  if (range.from && range.to && sendAdScheduleCheck) {
+                    const reqId = `ad-schedule-${Date.now()}-${++reqCounter.current}`;
+                    scheduleCheckReqRef.current = reqId;
+                    sendAdScheduleCheck({ type: "ad_schedule_check", reqId, adId: ad.id, payload: { starts_at: range.from, ends_at: range.to } });
+                  }
+                  setScheduleError("");
+                  setAd({ ...ad, starts_at: range.from || null, ends_at: range.to || null });
+                }} />
+                {scheduleError ? <p className="bo-anunciosScheduleError" role="alert">{scheduleError}</p> : null}
               </div>
-              <Reorder.Group axis="y" values={ad.ctas} onReorder={(buttons) => setAd({ ...ad, ctas: buttons })} className="bo-anunciosCtasList" data-slot="ad-cta-list">
-                {ad.ctas.map((cta, index) => (
-                  <ButtonRowCard
-                    key={cta.id}
-                    cta={cta}
-                    index={index}
-                    website={website}
-                    phone={restaurantPhone}
-                    selected={selectedId === cta.id}
-                    onSelect={() => setSelectedId(selectedId === cta.id ? null : cta.id)}
-                    onChange={(patch) => setAd({ ...ad, ctas: ad.ctas.map((item) => (item.id === cta.id ? { ...item, ...patch } : item)) })}
-                    onDelete={() => setAd({ ...ad, ctas: ad.ctas.filter((item) => item.id !== cta.id) })}
-                  />
-                ))}
-              </Reorder.Group>
-            </div>
-          </>
-        )
-      )}
+              <button type="button" onClick={addCta} className="bo-adFieldReset" data-testid="ad-add-button">
+                Anadir boton
+              </button>
+            </>
+          )
+        }
       />
 
       <Popover
@@ -1041,142 +982,6 @@ function AlignmentTabs({ value, onChange }: { value: RestaurantAdTextAlign; onCh
   );
 }
 
-function ButtonRowCard({
-  cta,
-  index,
-  website,
-  phone,
-  selected,
-  onSelect,
-  onChange,
-  onDelete,
-}: {
-  cta: RestaurantAd["ctas"][number];
-  index: number;
-  website: string;
-  phone: string;
-  selected: boolean;
-  onSelect: () => void;
-  onChange: (patch: Partial<RestaurantAd["ctas"][number]>) => void;
-  onDelete: () => void;
-}) {
-  const label = `Botón ${index + 1}`;
-  const action = buttonAction(cta);
-  const whatsapp = parseWhatsAppURL(cta.custom_url);
-  const dragControls = useDragControls();
-  const startDrag = useCallback((event: React.PointerEvent<Element>) => dragControls.start(event), [dragControls]);
-  const setAction = (next: ButtonAction) => onChange(setButtonAction(cta, next, phone));
-  return (
-    <Reorder.Item
-      value={cta}
-      as="div"
-      layout="position"
-      dragListener={false}
-      dragControls={dragControls}
-      dragMomentum={false}
-      dragElastic={0.04}
-      whileDrag={{ zIndex: 2 }}
-      className={`bo-anunciosRowCard ${selected ? "is-selected" : ""}`}
-      data-slot={`ad-cta-${cta.id}`}
-      data-testid={`ad-cta-${cta.id}`}
-    >
-      <button
-        type="button"
-        className="bo-anunciosDragHandle"
-        aria-label={`Mover ${label}`}
-        data-slot={`ad-cta-${cta.id}-grip`}
-        onPointerDown={(event) => { event.preventDefault(); startDrag(event); }}
-      >
-        <GripVertical size={17} aria-hidden="true" className="bo-anunciosDragHandleIcon" />
-      </button>
-      <div className="bo-anunciosRowField bo-anunciosRowField-2col" data-slot={`ad-cta-${cta.id}-fields`}>
-        <label className="grid gap-1 text-xs text-bo-muted" data-slot={`ad-cta-${cta.id}-text-wrap`}>
-          <span>Texto del botón {index + 1}</span>
-          <input value={cta.text ?? ""} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" data-testid={`ad-cta-${cta.id}-text`} />
-        </label>
-        <label className="grid gap-1 text-xs text-bo-muted" data-slot={`ad-cta-${cta.id}-color-wrap`}>
-          <span>Color</span>
-          <input type="color" value={cta.color || AD_DEFAULT_COLOR} onChange={(event) => onChange({ color: event.target.value })} className="h-10 w-full max-w-[75px] rounded-bo-sm border border-bo-border bg-bo-surface p-1" data-testid={`ad-cta-${cta.id}-color`} />
-        </label>
-        <label className="grid gap-1 text-xs text-bo-muted" data-slot={`ad-cta-${cta.id}-action-wrap`}>
-          <span>Acción</span>
-          <Select
-            value={action}
-            onChange={(value) => setAction(value as ButtonAction)}
-            options={[
-              { value: "route", label: "Página de la web" },
-              { value: "url", label: "URL personalizada" },
-              { value: "whatsapp", label: "WhatsApp" },
-            ]}
-            ariaLabel={`Acción del botón ${index + 1}`}
-            data-testid={`ad-cta-${cta.id}-action`}
-          />
-        </label>
-        {action === "route" ? (
-          <label className="grid gap-1 text-xs text-bo-muted" data-slot={`ad-cta-${cta.id}-route-wrap`}>
-            <span>Página</span>
-            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} ariaLabel={`Ruta del botón ${index + 1}`} data-testid={`ad-cta-${cta.id}-route`} />
-          </label>
-        ) : null}
-        {action === "url" ? (
-          <label className="grid gap-1 text-xs text-bo-muted" data-slot={`ad-cta-${cta.id}-url-wrap`}>
-            <span>URL personalizada</span>
-            <input
-              type="url"
-              value={cta.custom_url ?? ""}
-              onChange={(event) => onChange({ custom_url: event.target.value, navigation_mode: "custom" })}
-              onBlur={(event) => onChange({ custom_url: normalizeButtonURL(event.target.value, website) })}
-              className="bo-input"
-              placeholder="ejemplo.com/promo"
-              data-testid={`ad-cta-${cta.id}-custom-url`}
-            />
-          </label>
-        ) : null}
-        {action === "whatsapp" ? (
-          <div className="bo-anunciosWhatsappFields" data-slot={`ad-cta-${cta.id}-whatsapp`} data-testid={`ad-cta-${cta.id}-whatsapp`}>
-            <label className="grid gap-1 text-xs text-bo-muted">
-              <span>Teléfono del restaurante</span>
-              <input value={phone ?? ""} readOnly className="bo-input" data-testid={`ad-cta-${cta.id}-phone-restaurant`} />
-            </label>
-            <label className="grid gap-1 text-xs text-bo-muted">
-              <span>Teléfono personalizado</span>
-              <input
-                value={whatsapp?.phone ?? ""}
-                onChange={(event) => onChange(patchWhatsAppButton(cta, { phone: event.target.value }))}
-                placeholder={phone || "34600000000"}
-                className="bo-input"
-                inputMode="tel"
-                data-testid={`ad-cta-${cta.id}-phone-custom`}
-              />
-            </label>
-            <label className="grid gap-1 text-xs text-bo-muted">
-              <span>Mensaje inicial</span>
-              <input
-                value={whatsapp?.message ?? WHATSAPP_DEFAULT_MESSAGE}
-                onChange={(event) => onChange(patchWhatsAppButton(cta, { message: event.target.value }))}
-                className="bo-input"
-                data-testid={`ad-cta-${cta.id}-phone-message`}
-              />
-            </label>
-          </div>
-        ) : null}
-        <p className="bo-mutedText md:col-span-2" data-slot={`ad-cta-${cta.id}-resolved`} data-testid={`ad-cta-${cta.id}-resolved`}>
-          Destino: {buildCTAURL(website, cta) || "Sin configurar"}
-        </p>
-      </div>
-      <div className="bo-anunciosRowAction" data-slot={`ad-cta-${cta.id}-action`}>
-        <button type="button" onClick={onSelect} className="bo-anunciosIconBtn" aria-label={`Seleccionar ${label}`} data-testid={`ad-cta-${cta.id}-select`}>
-          <Settings2 size={15} aria-hidden="true" />
-        </button>
-        <button type="button" onClick={onDelete} className="bo-anunciosIconBtn" data-tone="danger" aria-label={`Eliminar ${label}`} data-testid={`ad-cta-${cta.id}-delete`}>
-          <Trash2 size={15} aria-hidden="true" />
-        </button>
-      </div>
-    </Reorder.Item>
-  );
-}
-
-/** Wizard steps of a multiple anuncio: reorder, select, add, remove. */
 function StepListPanel({
   steps,
   activeStepId,
@@ -1235,16 +1040,17 @@ function StepListPanel({
 /** Card settings of the active wizard step. */
 function StepInspector({
   step,
-  phone,
   onChange,
   onBackgroundImage,
   imageBusy,
+  onSelectButton,
 }: {
   step: RestaurantAdStep;
-  phone: string;
   onChange: (patch: Partial<RestaurantAdStep>) => void;
   onBackgroundImage: () => void;
   imageBusy: boolean;
+  /** Selects a card button so its properties open in this sidebar. */
+  onSelectButton: (buttonId: string) => void;
 }) {
   return (
     <div className="bo-anunciosStepInspector" data-slot="ads-step-inspector" data-testid="ads-step-inspector">
@@ -1311,17 +1117,16 @@ function StepInspector({
             </button>
           </div>
           {step.buttons.map((cta, index) => (
-            <ButtonRowCard
+            <button
               key={cta.id}
-              cta={cta}
-              index={index}
-              website=""
-              phone={phone}
-              selected={false}
-              onSelect={() => undefined}
-              onChange={(patch) => onChange({ buttons: step.buttons.map((item) => (item.id === cta.id ? { ...item, ...patch } : item)) })}
-              onDelete={() => onChange({ buttons: step.buttons.filter((item) => item.id !== cta.id) })}
-            />
+              type="button"
+              className="bo-adLayerRow"
+              onClick={() => onSelectButton(cta.id)}
+              data-testid={`ad-step-${step.id}-button-${cta.id}`}
+            >
+              <span className="bo-adLayerLabel">Boton {index + 1}</span>
+              <span className="bo-adLayerValue">{cta.text}</span>
+            </button>
           ))}
           {!step.buttons.length ? <p className="bo-anunciosCtasHint">Sin botones propios: la tarjeta avanza con “Ver más” o al hacer clic.</p> : null}
         </div>
@@ -1373,5 +1178,351 @@ function ImageFlowModal({ open, step, previewURL, file, onClose, onGenerate, onP
         </AnimatePresence>
       </div>
     </Modal>
+  );
+}
+
+/* Coordination id: ads_inspector_v2 - the properties sidebar is a design-tool
+ * inspector: grouped sections, sliders for continuous values, swatches for
+ * colour, and one component per selected kind. Ordering never lives here. */
+
+function Field({ label, hint, children, testId }: { label: string; hint?: string; children: React.ReactNode; testId?: string }) {
+  return (
+    <label className="bo-adField" data-testid={testId}>
+      <span className="bo-adFieldLabel">{label}</span>
+      {children}
+      {hint ? <span className="bo-adFieldHint">{hint}</span> : null}
+    </label>
+  );
+}
+
+function Slider({
+  label, value, min, max, step = 1, suffix = "", placeholder, onChange, testId,
+}: {
+  label: string;
+  value: number | undefined;
+  min: number;
+  max: number;
+  step?: number;
+  suffix?: string;
+  placeholder?: string;
+  onChange: (value: number | undefined) => void;
+  testId?: string;
+}) {
+  return (
+    <div className="bo-adField" data-testid={testId}>
+      <span className="bo-adFieldLabel">
+        {label}
+        <span className="bo-adFieldValue">{value === undefined ? placeholder ?? "Auto" : `${value}${suffix}`}</span>
+      </span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value ?? ""}
+        onChange={(event) => onChange(event.target.value === "" ? undefined : Number(event.target.value))}
+        className="bo-adSlider"
+        data-testid={`${testId}-range`}
+      />
+    </div>
+  );
+}
+
+function NumberField({
+  label, value, min, max, placeholder, onChange, testId,
+}: {
+  label: string;
+  value: number | undefined;
+  min: number;
+  max: number;
+  placeholder?: string;
+  onChange: (value: number | undefined) => void;
+  testId?: string;
+}) {
+  return (
+    <Field label={label} testId={testId}>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        value={value ?? ""}
+        placeholder={placeholder ?? "Auto"}
+        onChange={(event) => onChange(event.target.value === "" ? undefined : Number(event.target.value))}
+        className="bo-input bo-adNumber"
+      />
+    </Field>
+  );
+}
+
+function ColorField({ label, value, onChange, testId }: { label: string; value: string | undefined; onChange: (value: string | undefined) => void; testId?: string }) {
+  return (
+    <div className="bo-adField" data-testid={testId}>
+      <span className="bo-adFieldLabel">{label}</span>
+      <span className="bo-adColorRow">
+        <input
+          type="color"
+          value={value || "#24342b"}
+          onChange={(event) => onChange(event.target.value)}
+          className="bo-adColor"
+          data-testid={`${testId}-picker`}
+        />
+        <button
+          type="button"
+          className="bo-adColorClear"
+          onClick={() => onChange(undefined)}
+          disabled={!value}
+          data-testid={`${testId}-clear`}
+        >
+          Auto
+        </button>
+      </span>
+    </div>
+  );
+}
+
+/** Text and image properties: typography, appearance, box and position. */
+function ElementInspector({
+  item,
+  onChange,
+  onStyle,
+  onImagePick,
+  onResetSize,
+  onResetStyle,
+  onClose,
+}: {
+  item: RestaurantAdContentElement;
+  onChange: (patch: Partial<RestaurantAdContentElement>) => void;
+  onStyle: (patch: Partial<RestaurantAdElementStyle>) => void;
+  onImagePick: () => void;
+  onResetSize: () => void;
+  onResetStyle: () => void;
+  onClose: () => void;
+}) {
+  const isText = item.type !== "image";
+  const style = item.style ?? {};
+  return (
+    <div className="bo-adInspector" data-testid="ad-inspector-selection">
+      <div className="bo-adStudioSectionTitle">{TYPE_LABEL[item.type]}</div>
+
+      {isText ? (
+        <Field label="Texto" testId={`ad-node-${item.id}-text`}>
+          <textarea
+            value={item.value}
+            onChange={(event) => onChange({ value: event.target.value })}
+            rows={3}
+            className="bo-textarea"
+          />
+        </Field>
+      ) : null}
+
+      {isText ? (
+        <div className="bo-adGroup" data-testid={`ad-node-${item.id}-typography`}>
+          <div className="bo-adGroupTitle">Tipografia</div>
+          <Slider
+            label="Tamano"
+            value={style.font_size}
+            min={STYLE_FONT_SIZE_MIN}
+            max={STYLE_FONT_SIZE_MAX}
+            suffix="px"
+            onChange={(font_size) => onStyle({ font_size })}
+            testId={`ad-node-${item.id}-font-size`}
+          />
+          <Field label="Peso" testId={`ad-node-${item.id}-weight`}>
+            <Select
+              value={String(style.font_weight ?? "")}
+              onChange={(value) => onStyle({ font_weight: value ? Number(value) : undefined })}
+              options={[{ value: "", label: "Auto" }, ...STYLE_FONT_WEIGHTS.map((weight) => ({ value: String(weight), label: String(weight) }))]}
+              size="sm"
+              ariaLabel="Peso de la fuente"
+            />
+          </Field>
+          <Slider
+            label="Espaciado"
+            value={style.letter_spacing}
+            min={STYLE_LETTER_SPACING_MIN}
+            max={STYLE_LETTER_SPACING_MAX}
+            step={0.5}
+            suffix="px"
+            onChange={(letter_spacing) => onStyle({ letter_spacing })}
+            testId={`ad-node-${item.id}-letter-spacing`}
+          />
+          <Slider
+            label="Interlineado"
+            value={style.line_height}
+            min={STYLE_LINE_HEIGHT_MIN}
+            max={STYLE_LINE_HEIGHT_MAX}
+            step={0.05}
+            onChange={(line_height) => onStyle({ line_height })}
+            testId={`ad-node-${item.id}-line-height`}
+          />
+          <ColorField label="Color" value={style.color} onChange={(color) => onStyle({ color })} testId={`ad-node-${item.id}-color`} />
+          <div className="bo-adField">
+            <span className="bo-adFieldLabel">Alineacion</span>
+            <AlignmentTabs value={item.align || "left"} onChange={(align) => onChange({ align })} />
+          </div>
+        </div>
+      ) : null}
+
+      <div className="bo-adGroup" data-testid={`ad-node-${item.id}-box`}>
+        <div className="bo-adGroupTitle">Tamano y posicion</div>
+        <NumberField label="Ancho (%)" value={item.size?.width} min={ELEMENT_MIN_WIDTH_PCT} max={ELEMENT_MAX_WIDTH_PCT} onChange={(width) => onChange({ size: width ? { ...(item.size ?? {}), width } : undefined })} testId={`ad-node-${item.id}-width`} />
+        {item.type === "image" ? (
+          <NumberField label="Alto (px)" value={item.size?.height} min={ELEMENT_MIN_HEIGHT_PX} max={ELEMENT_MAX_HEIGHT_PX} onChange={(height) => onChange({ size: { ...(item.size ?? {}), width: item.size?.width ?? 95, height } })} testId={`ad-node-${item.id}-height`} />
+        ) : null}
+        {item.type === "image" ? (
+          <Slider label="Esquinas" value={style.radius} min={0} max={STYLE_RADIUS_MAX} suffix="px" onChange={(radius) => onStyle({ radius })} testId={`ad-node-${item.id}-radius`} />
+        ) : null}
+        <Slider
+          label="Desplazamiento X"
+          value={style.offset_x}
+          min={STYLE_OFFSET_MIN}
+          max={STYLE_OFFSET_MAX}
+          suffix="px"
+          placeholder="0"
+          onChange={(offset_x) => onStyle({ offset_x })}
+          testId={`ad-node-${item.id}-offset-x`}
+        />
+        <Slider
+          label="Opacidad"
+          value={style.opacity}
+          min={STYLE_OPACITY_MIN}
+          max={STYLE_OPACITY_MAX}
+          step={0.05}
+          onChange={(opacity) => onStyle({ opacity })}
+          testId={`ad-node-${item.id}-opacity`}
+        />
+        <p className="bo-adFieldHint">Arrastra con Shift dentro del lienzo para mover en horizontal.</p>
+      </div>
+
+      {item.type === "image" ? (
+        <button type="button" className="bo-adFieldReset" onClick={onImagePick} data-testid={`ad-node-${item.id}-image-change`}>
+          Cambiar imagen
+        </button>
+      ) : null}
+
+      <div className="bo-adInspectorActions">
+        <button type="button" className="bo-adFieldReset" onClick={onResetSize} data-testid={`ad-node-${item.id}-size-reset`}>
+          Tamano auto
+        </button>
+        <button type="button" className="bo-adFieldReset" onClick={onResetStyle} data-testid={`ad-node-${item.id}-style-reset`}>
+          Estilo auto
+        </button>
+        <button
+          type="button"
+          className="bo-anunciosIconBtn"
+          data-tone="danger"
+          aria-label={`Eliminar ${TYPE_LABEL[item.type]}`}
+          data-testid={`ad-node-${item.id}-delete`}
+          onClick={() => { onChange({}); onClose(); }}
+        >
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
+      </div>
+      <button type="button" className="bo-adFieldReset" onClick={onClose} data-testid="ad-inspector-close">
+        Cerrar
+      </button>
+    </div>
+  );
+}
+
+/** Button properties, shown only while a button is selected. */
+function ButtonInspector({
+  cta,
+  website,
+  phone,
+  onChange,
+  onDelete,
+  onClose,
+}: {
+  cta: RestaurantAd["ctas"][number];
+  website: string;
+  phone: string;
+  onChange: (patch: Partial<RestaurantAd["ctas"][number]>) => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) {
+  const action = buttonAction(cta);
+  const whatsapp = parseWhatsAppURL(cta.custom_url);
+  return (
+    <div className="bo-adInspector" data-testid="ad-inspector-selection">
+      <div className="bo-adStudioSectionTitle">Boton</div>
+
+      <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-content`}>
+        <div className="bo-adGroupTitle">Contenido</div>
+        <Field label="Texto" testId={`ad-cta-${cta.id}-text`}>
+          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" />
+        </Field>
+        <ColorField label="Color" value={cta.color} onChange={(color) => onChange({ color: color || AD_DEFAULT_COLOR })} testId={`ad-cta-${cta.id}-color`} />
+      </div>
+
+      <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-action`}>
+        <div className="bo-adGroupTitle">Accion</div>
+        <Field label="Destino" testId={`ad-cta-${cta.id}-action-select`}>
+          <Select
+            value={action}
+            onChange={(value) => onChange(setButtonAction(cta, value as ButtonAction, phone))}
+            options={[
+              { value: "route", label: "Pagina de la web" },
+              { value: "url", label: "URL propia" },
+              { value: "whatsapp", label: "WhatsApp" },
+            ]}
+            size="sm"
+            ariaLabel="Accion del boton"
+          />
+        </Field>
+        {action === "route" ? (
+          <Field label="Pagina" testId={`ad-cta-${cta.id}-route`}>
+            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} size="sm" ariaLabel="Pagina del boton" />
+          </Field>
+        ) : null}
+        {action === "url" ? (
+          <Field label="URL" hint="Se completa con https:// si falta" testId={`ad-cta-${cta.id}-url`}>
+            <input
+              type="url"
+              value={cta.custom_url ?? ""}
+              onChange={(event) => onChange({ custom_url: event.target.value, navigation_mode: "custom" })}
+              onBlur={(event) => onChange({ custom_url: normalizeButtonURL(event.target.value, website) })}
+              className="bo-input"
+              placeholder="ejemplo.com/promo"
+            />
+          </Field>
+        ) : null}
+        {action === "whatsapp" ? (
+          <div className="bo-anunciosWhatsappFields" data-testid={`ad-cta-${cta.id}-whatsapp`}>
+            <Field label="Telefono del restaurante">
+              <input value={phone} readOnly className="bo-input" data-testid={`ad-cta-${cta.id}-phone-restaurant`} />
+            </Field>
+            <Field label="Telefono personalizado">
+              <input
+                value={whatsapp?.phone ?? ""}
+                onChange={(event) => onChange(patchWhatsAppButton(cta, { phone: event.target.value }))}
+                placeholder={phone || "34600000000"}
+                inputMode="tel"
+                className="bo-input"
+                data-testid={`ad-cta-${cta.id}-phone-custom`}
+              />
+            </Field>
+            <Field label="Mensaje inicial">
+              <input
+                value={whatsapp?.message ?? WHATSAPP_DEFAULT_MESSAGE}
+                onChange={(event) => onChange(patchWhatsAppButton(cta, { message: event.target.value }))}
+                className="bo-input"
+                data-testid={`ad-cta-${cta.id}-phone-message`}
+              />
+            </Field>
+          </div>
+        ) : null}
+        <p className="bo-adFieldHint" data-testid={`ad-cta-${cta.id}-resolved`}>Destino: {buildCTAURL(website, cta) || "Sin configurar"}</p>
+      </div>
+
+      <div className="bo-adInspectorActions">
+        <button type="button" className="bo-anunciosIconBtn" data-tone="danger" aria-label="Eliminar boton" data-testid={`ad-cta-${cta.id}-delete`} onClick={onDelete}>
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
+        <button type="button" className="bo-adFieldReset" onClick={onClose} data-testid="ad-inspector-close">
+          Cerrar
+        </button>
+      </div>
+    </div>
   );
 }
