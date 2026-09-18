@@ -153,8 +153,8 @@ export function Select({
 
     // Coordination id: booking_selector_autowidth_v1 - the floor is the
     // trigger width (min 180); the list itself shrink-wraps its content
-    // (width auto in the style below) capped at 95vw, everywhere used.
-    const cap = Math.max(160, Math.floor(window.innerWidth * 0.95));
+    // (width auto in the style below) capped at 80vw, everywhere used.
+    const cap = Math.max(160, Math.floor(window.innerWidth * 0.8));
     const width = Math.min(Math.max(rect.width, minWidth), cap);
     const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - width - 8));
     setListPosition({
@@ -230,7 +230,7 @@ export function Select({
                   left: `${listPosition.left}px`,
                   width: "auto",
                   minWidth: `${listPosition.width}px`,
-                  maxWidth: "95vw",
+                  maxWidth: "80vw",
                   maxHeight: `${maxHeight}px`,
                   height: `${listHeight}px`,
                 }}
