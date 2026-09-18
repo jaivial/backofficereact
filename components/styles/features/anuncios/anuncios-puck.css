@@ -1,0 +1,30 @@
+/* coord id puck_alt_v1: read-only Puck alt preview shell. */
+.bo-puckAlt {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-lg, 12px);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+}
+.bo-puckAltBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.bo-puckAltNote {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bo-muted);
+}
+.bo-puckAlt img {
+  max-width: 100%;
+  border-radius: var(--bo-radius-md, 8px);
+}
+.bo-puckAlt a {
+  color: var(--bo-text);
+}
