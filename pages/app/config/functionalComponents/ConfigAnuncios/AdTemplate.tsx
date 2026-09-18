@@ -51,6 +51,7 @@ export function EditableText({
   readOnly = false,
   draggableX = false,
   onDragOffset,
+  nodeProps,
 }: {
   /** Renders the semantic element itself: the editable text is ONE container,
    * matching the public markup instead of wrapping an inner span. */
@@ -68,6 +69,8 @@ export function EditableText({
   /** Editable canvas: drag along the X axis (coord id ads_element_style_v1). */
   draggableX?: boolean;
   onDragOffset?: (offsetX: number) => void;
+  /** Studio node attributes (selection, ids) spread on the same container. */
+  nodeProps?: Record<string, unknown>;
 }) {
   const Tag = as;
   const ref = useRef<HTMLElement | null>(null);
@@ -123,7 +126,8 @@ export function EditableText({
       data-editing={editing ? "true" : "false"}
       data-readonly={readOnly ? "true" : undefined}
       data-draggable-x={draggableX && !readOnly ? "true" : undefined}
-      className={`bo-adEditable ${draggableX && !readOnly ? "bo-adDraggable" : ""} ${className ?? ""}`}
+      {...nodeProps}
+      className={[nodeProps?.className, "bo-adEditable", draggableX && !readOnly ? "bo-adDraggable" : "", className].filter(Boolean).join(" ")}
       style={style}
       onPointerDown={startDragX}
       onPointerMove={moveDragX}
@@ -168,71 +172,30 @@ function ContentNode({
   onDelete: () => void;
   onImagePick?: () => void;
 }) {
-  const controls = useDragControls();
-  const startDrag = useCallback((event: React.PointerEvent) => controls.start(event), [controls]);
   const align = item.align || "left";
   const sizeStyle = elementSizeStyle(item);
   const applyStyle = useCallback(
     (patch: Partial<RestaurantAdElementStyle>) => onChange({ style: normalizeElementStyle(item, patch) }),
     [item, onChange],
   );
-  const wrap = (node: React.ReactNode) => (
-    <Reorder.Item
-      value={item}
-      as="div"
-      layout="position"
-      dragListener={false}
-      dragControls={controls}
-      dragMomentum={false}
-      dragElastic={0.04}
-      whileDrag={{ zIndex: 3 }}
-      className={`bo-adNode ${selected ? "is-selected" : ""}`}
-      data-node-id={item.id}
-      data-slot={`ad-node-${item.id}`}
-      data-testid={`ad-node-${item.type}`}
-      onPointerDown={() => onSelect?.(item.id)}
-    >
-      {node}
-      {editable ? (
-        <span className="bo-adNodeBar" data-slot={`ad-node-${item.id}-bar`}>
-          <button
-            type="button"
-            className="bo-anunciosDragHandle bo-adNodeGrip"
-            aria-label={`Mover ${AD_CONTENT_LABEL[item.type]}`}
-            data-slot={`ad-node-${item.id}-grip`}
-            data-testid={`ad-node-${item.id}-grip`}
-            onPointerDown={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              startDrag(event);
-            }}
-          >
-            <GripVertical size={15} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="bo-anunciosIconBtn bo-adNodeTrash"
-            data-tone="danger"
-            aria-label={`Eliminar ${AD_CONTENT_LABEL[item.type]}`}
-            data-testid={`ad-node-${item.id}-delete`}
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={onDelete}
-          >
-            <Trash2 size={14} aria-hidden="true" />
-          </button>
-        </span>
-      ) : null}
-    </Reorder.Item>
-  );
+  // The element IS the node: one single container carries the public class,
+  // the studio selection and the editable text, so what is selected is what
+  // the visitor sees.
+  const nodeProps = {
+    "data-node-id": item.id,
+    "data-slot": `ad-node-${item.id}`,
+    "data-testid": `ad-node-${item.type}`,
+    onPointerDown: () => onSelect?.(item.id),
+  };
 
   if (item.type === "image") {
-    return wrap(
-      <div className="bo-adModalImageCol" data-slot="ad-preview-image-col">
+    return (
+      <div {...nodeProps}>
         {item.value ? (
           <img
             src={item.value}
             alt="Imagen del anuncio"
-            className="bo-adModalImage bo-adResizable bo-adDragTarget"
+            className="bo-adModalImage bo-adResizable"
             style={{ ...sizeStyle, ...elementStyleCSS(item) }}
             data-slot={`ad-preview-${item.id}`}
           />
@@ -248,12 +211,11 @@ function ContentNode({
             <span>{item.value ? "Cambiar imagen" : "Anadir imagen"}</span>
           </button>
         ) : null}
-      </div>,
+      </div>
     );
   }
-  // ONE container per text element: the semantic tag itself is editable, so the
-  // studio selection matches what the public site renders.
-  const text = (
+
+  return (
     <EditableText
       as={item.type === "title" ? "h2" : item.type === "subtitle" ? "h3" : "p"}
       value={item.value}
@@ -262,15 +224,15 @@ function ContentNode({
       placeholder={`${AD_CONTENT_LABEL[item.type]}...`}
       testId={`ad-node-${item.id}-edit`}
       onCommit={(next) => onChange({ value: next })}
-      className={`bo-adResizable bo-adDragTarget ${
+      className={`bo-adNode ${selected ? "is-selected" : ""} bo-adResizable bo-adDragTarget ${
         item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"
       }`}
       style={{ textAlign: align, display: "block", ...sizeStyle, ...elementStyleCSS(item) }}
       draggableX={editable && selected}
       onDragOffset={(offset_x) => applyStyle({ offset_x })}
+      {...nodeProps}
     />
   );
-  return wrap(text);
 }
 
 /** Read-only twin of ContentNode: same markup, same operator box, no drag
@@ -298,9 +260,10 @@ function StaticContent({ item }: { item: RestaurantAdContentElement }) {
       readOnly
       ariaLabel={AD_CONTENT_LABEL[item.type]}
       onCommit={() => undefined}
-      className={`bo-adResizable ${
+      className={`bo-adNode ${
         item.type === "title" ? "bo-adModalTitle" : item.type === "subtitle" ? "bo-adModalSupertitle" : "bo-adModalDesc"
       }`}
+      nodeProps={{ "data-slot": `ad-preview-${item.id}` }}
       style={{ textAlign: align, display: "block", ...sizeStyle, ...elementStyleCSS(item) }}
     />
   );
@@ -325,13 +288,7 @@ export function AdContentFlow({
 }) {
   if (editable) {
     return (
-      <Reorder.Group
-        axis="y"
-        values={content}
-        onReorder={onChange}
-        className="bo-adCanvasFlow"
-        data-testid="ad-canvas-content"
-      >
+      <div className="bo-adCanvasFlow" data-testid="ad-canvas-content">
         {content.map((item) => (
           <ContentNode
             key={item.id}
@@ -345,7 +302,7 @@ export function AdContentFlow({
           />
         ))}
         {!content.length ? <p className="bo-adModalDesc" data-testid="ad-canvas-empty">{emptyHint}</p> : null}
-      </Reorder.Group>
+      </div>
     );
   }
   return (
