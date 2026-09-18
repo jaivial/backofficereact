@@ -234,22 +234,21 @@ export function AdBlockBar({
       if (!root || !node) return;
       event.preventDefault();
       // Blocks only trade places inside their own list (content or buttons).
+      // The list is re-read on every move: React reorders the DOM after each
+      // onMoveTo, so cached indexes would go stale.
       const list = node.getAttribute("data-block-list");
-      const nodes = Array.from(root.querySelectorAll<HTMLElement>(`[data-node-id][data-block-list="${list}"]`));
-      let from = nodes.indexOf(node);
+      const siblings = () => Array.from(root.querySelectorAll<HTMLElement>(`[data-node-id][data-block-list="${list}"]`));
       node.classList.add("is-dragging");
       setDragging(true);
       const move = (moveEvent: PointerEvent) => {
-        let to = from;
-        nodes.forEach((other, index) => {
-          if (index === from) return;
+        const nodes = siblings();
+        const from = nodes.indexOf(node);
+        const to = nodes.findIndex((other, index) => {
+          if (index === from) return false;
           const rect = other.getBoundingClientRect();
-          if (moveEvent.clientY > rect.top && moveEvent.clientY < rect.bottom && moveEvent.clientX > rect.left && moveEvent.clientX < rect.right) to = index;
+          return moveEvent.clientY > rect.top && moveEvent.clientY < rect.bottom && moveEvent.clientX > rect.left && moveEvent.clientX < rect.right;
         });
-        if (to !== from) {
-          onMoveTo(to);
-          from = to;
-        }
+        if (to >= 0 && to !== from) onMoveTo(to);
       };
       const up = () => {
         window.removeEventListener("pointermove", move);
