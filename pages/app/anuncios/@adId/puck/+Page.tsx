@@ -26,7 +26,7 @@ export default function AnuncioPuckPage() {
   const rawId = String((ctx as { routeParams?: { adId?: string } }).routeParams?.adId ?? "");
   const adId = Number(rawId);
   const valid = Number.isFinite(adId) && adId > 0;
-  const { api, website } = useAdsController();
+  const { api, website, notify } = useAdsController();
   const data = (ctx.data ?? { adId: null, initialAd: null }) as Data;
   const [ad, setAd] = useState<RestaurantAd | null>(data.initialAd ?? null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,7 +41,14 @@ export default function AnuncioPuckPage() {
   const onChange = (next: RestaurantAd) => {
     setAd(next);
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => { void api.updateAd(adId, toInput(next)); }, 1000);
+    timer.current = setTimeout(() => {
+      void api
+        .updateAd(adId, toInput(next))
+        .then((res) => {
+          if (!res.success) notify("error", "Anuncios", res.message || "No se pudo guardar el anuncio");
+        })
+        .catch((error) => notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio"));
+    }, 1000);
   };
   return (
     <section aria-label="Anuncio Puck" data-testid="anuncio-puck-page" data-slot="anuncio-puck-page" data-coord="puck_alt_v1">

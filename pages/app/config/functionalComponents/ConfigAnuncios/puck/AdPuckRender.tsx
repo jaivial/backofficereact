@@ -1,5 +1,7 @@
-import { Suspense, useEffect, useState } from "react";
+import React, { Suspense } from "react";
 import type { RestaurantAd } from "../../../../../../api/types";
+import { adToPuck } from "./adPuckMapper";
+import { buildAdPuckConfig } from "./adPuckConfig";
 
 // coord id puck_alt_v1: read-only Puck preview, plain-markup fallback.
 function PlainAd({ ad }: { ad: RestaurantAd }) {
@@ -23,33 +25,30 @@ function PlainAd({ ad }: { ad: RestaurantAd }) {
   );
 }
 
-const PUCK_SPEC = "@puckeditor/core";
-const MAPPER_SPEC = "./adPuckMapper";
-const CONFIG_SPEC = "./adPuckConfig";
+// Literal specifier so Vite can pre-bundle it; boundary falls back to PlainAd.
+const RenderLazy: any = React.lazy(() =>
+  import("@puckeditor/core").then((mod: any) => ({ default: mod.Render })),
+);
+
+class PuckBoundary extends React.Component<{ fallback: React.ReactNode; children: React.ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? this.props.fallback : this.props.children; }
+}
 
 export function AdPuckRender({ ad }: { ad: RestaurantAd }) {
-  const [view, setView] = useState<{ Render: any; config: any; data: any } | null>(null);
-  useEffect(() => {
-    let live = true;
-    (async () => {
-      try {
-        const [core, mapper, cfg] = await Promise.all([import(/* @vite-ignore */ PUCK_SPEC), import(/* @vite-ignore */ MAPPER_SPEC), import(/* @vite-ignore */ CONFIG_SPEC)]);
-        if (!live) return;
-        setView({ Render: core.Render, config: cfg.buildAdPuckConfig(), data: mapper.adToPuck(ad) });
-      } catch { if (live) setView(null); }
-    })();
-    return () => { live = false; };
-  }, [ad]);
+  const data = React.useMemo(() => adToPuck(ad), [ad]);
+  const config = React.useMemo(() => buildAdPuckConfig({}), []);
   return (
     <article data-testid="ad-puck-render" data-slot="ad-puck-render" data-coord="puck_alt_v1" className="bo-puckAlt">
       <div data-testid="ad-puck-bar" data-slot="ad-puck-bar" className="bo-puckAltBar">
-        <span data-testid="ad-puck-note" className="bo-puckAltNote">Vista previa</span>
+        <span data-testid="ad-puck-render-note" className="bo-puckAltNote">Vista previa</span>
       </div>
-      {!view ? <PlainAd ad={ad} /> : (
+      <PuckBoundary fallback={<PlainAd ad={ad} />}>
         <Suspense fallback={<PlainAd ad={ad} />}>
-          <view.Render data-testid="ad-puck-canvas" config={view.config} data={view.data} />
+          <RenderLazy data-testid="ad-puck-canvas" config={config} data={data} />
         </Suspense>
-      )}
+      </PuckBoundary>
     </article>
   );
 }
