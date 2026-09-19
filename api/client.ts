@@ -34,6 +34,7 @@ import type {
   GroupMenuV2Dish,
   GroupMenuV2Section,
   GroupMenuV2Summary,
+  SpecialMenuSection,
   GroupMenuSummary,
   HorarioMonthPoint,
   FichajeActiveEntry,
@@ -1908,6 +1909,80 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           return json(`/api/admin/group-menus-v2/${menuId}/special-image`, {
             method: "POST",
             body: form,
+          });
+        },
+        // Coordination id: special_menu_sections_v1
+        // One menu can hold several image sections, each with an optional title.
+        // The editor lists/creates/patches/deletes/reorders through this API.
+        async listSpecialSections(menuId: number): Promise<APISuccess<{ sections: SpecialMenuSection[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections`, { method: "GET" });
+        },
+        async createSpecialSection(
+          menuId: number,
+          input: { title: string },
+        ): Promise<APISuccess<{ section: SpecialMenuSection }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+        async patchSpecialSection(
+          menuId: number,
+          sectionId: number,
+          input: { title: string },
+        ): Promise<APISuccess<Record<string, never>> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
+        async deleteSpecialSection(
+          menuId: number,
+          sectionId: number,
+        ): Promise<APISuccess<Record<string, never>> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}`, { method: "DELETE" });
+        },
+        async reorderSpecialSections(
+          menuId: number,
+          ids: number[],
+        ): Promise<APISuccess<Record<string, never>> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/order`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ ids }),
+          });
+        },
+        async uploadSpecialSectionImage(
+          menuId: number,
+          sectionId: number,
+          file: File,
+        ): Promise<APISuccess<{ image_url: string }> | APIError> {
+          const form = new FormData();
+          form.append("image", file, file.name || `section-${sectionId}.webp`);
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}/image`, {
+            method: "POST",
+            body: form,
+          });
+        },
+        async deleteSpecialSectionImage(
+          menuId: number,
+          sectionId: number,
+        ): Promise<APISuccess<Record<string, never>> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}/image`, { method: "DELETE" });
+        },
+        // Coordination id: special_menu_visibility_v1
+        // Same shape as the food-type settings, so the editor can reuse the
+        // dropdown the FoodPageSettings component already uses.
+        async setSpecialMenuVisibility(
+          menuId: number,
+          patch: { web_placement?: string; menu_public_active?: boolean },
+        ): Promise<APISuccess<{ web_placement: string; menu_public_active?: boolean }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/visibility`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(patch),
           });
         },
         async getSameDayBooking(menuId: number): Promise<APISuccess<{ dish_ids: number[] }> | APIError> {

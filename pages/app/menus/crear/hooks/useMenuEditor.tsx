@@ -9,10 +9,12 @@ import type {
   GroupMenuV2,
   GroupMenuV2Section,
   MenuSlider,
+  SpecialMenuSection,
 } from "../../../../../api/types";
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../../lib/dishImageCrop";
 import { processSpecialMenuFile } from "../../../../../lib/specialMenuUpload";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
+import { normalizeWebPlacement } from "../../../../../ui/widgets/menus/webPlacement";
 import { WEEKDAYS, type WeekdayKey } from "../../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 
 import {
@@ -242,6 +244,25 @@ export type UseMenuEditorReturn = {
   setComments: (comments: string[]) => void;
   setImportantInfo: React.Dispatch<React.SetStateAction<string[]>>;
   setSpecialMenuImage: (img: string | null) => void;
+  // Coordination id: special_menu_sections_v1 - one special menu can hold
+  // several image sections. The editor mirrors the persisted list in state
+  // and exposes the CRUD/reorder actions the UI needs.
+  specialMenuSections: SpecialMenuSection[];
+  specialMenuSectionBusy: Record<number, boolean>;
+  addSpecialMenuSection: () => Promise<void>;
+  updateSpecialMenuSectionTitle: (sectionId: number, title: string) => Promise<void>;
+  deleteSpecialMenuSection: (sectionId: number) => Promise<void>;
+  reorderSpecialMenuSections: (ids: number[]) => Promise<void>;
+  uploadSpecialMenuSectionImage: (sectionId: number, file: File) => Promise<void>;
+  clearSpecialMenuSectionImage: (sectionId: number) => Promise<void>;
+  // Coordination id: special_menu_visibility_v1 - same dropdown the
+  // food-type settings use, but scoped per menu so a single special menu
+  // can be hidden or pushed into a standalone nav entry.
+  menuWebPlacement: string;
+  menuPublicActive: boolean;
+  menuVisibilityBusy: boolean;
+  setMenuWebPlacement: (value: string) => Promise<void>;
+  setMenuPublicActive: (value: boolean) => Promise<void>;
   setSaveState: React.Dispatch<React.SetStateAction<SaveState>>;
   setBusy: (v: boolean) => void;
   setHydrated: (v: boolean) => void;
@@ -363,6 +384,13 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [comments, setComments] = useState<string[]>([""]);
   const [importantInfo, setImportantInfo] = useState<string[]>([""]);
   const [specialMenuImage, setSpecialMenuImage] = useState<string | null>(data.menu?.special_menu_image_url || null);
+  // Coordination id: special_menu_sections_v1
+  const [specialMenuSections, setSpecialMenuSections] = useState<SpecialMenuSection[]>(() => data.menu?.special_menu_sections ? [...data.menu.special_menu_sections].sort((a, b) => a.position - b.position) : []);
+  const [specialMenuSectionBusy, setSpecialMenuSectionBusy] = useState<Record<number, boolean>>({});
+  // Coordination id: special_menu_visibility_v1
+  const [menuWebPlacement, setMenuWebPlacementState] = useState<string>(normalizeWebPlacement(data.menu?.web_placement));
+  const [menuPublicActive, setMenuPublicActiveState] = useState<boolean>(data.menu?.menu_public_active ?? true);
+  const [menuVisibilityBusy, setMenuVisibilityBusy] = useState<boolean>(false);
   const [menuPreviewImageUrl, setMenuPreviewImageUrl] = useState<string>(initialMenuPreviewState.menuPreviewImageUrl);
   const [menuPreviewAIRequested, setMenuPreviewAIRequested] = useState<boolean>(initialMenuPreviewState.menuPreviewAIRequested);
   const [menuPreviewAIGenerating, setMenuPreviewAIGenerating] = useState<boolean>(initialMenuPreviewState.menuPreviewAIGenerating);
@@ -1911,6 +1939,158 @@ export function useMenuEditor(): UseMenuEditorReturn {
     [api, menuId, pushToast],
   );
 
+  // --- special menu sections (CRUD + reorder + image upload) ---
+  // Coordination id: special_menu_sections_v1
+  const setSectionBusy = useCallback((sectionId: number, busy: boolean) => {
+    setSpecialMenuSectionBusy((prev) => {
+      const next = { ...prev };
+      if (busy) next[sectionId] = true;
+      else delete next[sectionId];
+      return next;
+    });
+  }, []);
+
+  const addSpecialMenuSection = useCallback(async () => {
+    if (!menuId) {
+      pushToast({ kind: "error", title: "Error", message: "Guarda primero el menu para anadir secciones." });
+      return;
+    }
+    setSaveState("saving");
+    try {
+      const res = await api.menus.gruposV2.createSpecialSection(menuId, { title: "" });
+      if (!res.success) throw new Error(res.message || "No se pudo crear la seccion");
+      const created = res.section;
+      setSpecialMenuSections((prev) => [...prev, created].sort((a, b) => a.position - b.position));
+      setSaveState("saved");
+      console.log("[checkpoint] special_menu_section_added", `section=${created.id}`);
+    } catch (e) {
+      setSaveState("error");
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo crear la seccion" });
+    }
+  }, [api, menuId, pushToast]);
+
+  const updateSpecialMenuSectionTitle = useCallback(async (sectionId: number, title: string) => {
+    setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, title } : sec)));
+    if (!menuId) return;
+    setSectionBusy(sectionId, true);
+    try {
+      const res = await api.menus.gruposV2.patchSpecialSection(menuId, sectionId, { title });
+      if (!res.success) throw new Error(res.message || "No se pudo actualizar el titulo");
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo actualizar el titulo" });
+    } finally {
+      setSectionBusy(sectionId, false);
+    }
+  }, [api, menuId, pushToast, setSectionBusy]);
+
+  const deleteSpecialMenuSection = useCallback(async (sectionId: number) => {
+    if (!menuId) return;
+    setSectionBusy(sectionId, true);
+    try {
+      const res = await api.menus.gruposV2.deleteSpecialSection(menuId, sectionId);
+      if (!res.success) throw new Error(res.message || "No se pudo eliminar la seccion");
+      setSpecialMenuSections((prev) => prev.filter((sec) => sec.id !== sectionId));
+      console.log("[checkpoint] special_menu_section_removed", `section=${sectionId}`);
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo eliminar la seccion" });
+    } finally {
+      setSectionBusy(sectionId, false);
+    }
+  }, [api, menuId, pushToast, setSectionBusy]);
+
+  const reorderSpecialMenuSections = useCallback(async (ids: number[]) => {
+    setSpecialMenuSections((prev) => {
+      const byId = new Map(prev.map((sec) => [sec.id, sec]));
+      return ids.map((id, idx) => {
+        const existing = byId.get(id);
+        if (!existing) return null;
+        return { ...existing, position: idx };
+      }).filter((sec): sec is SpecialMenuSection => sec != null);
+    });
+    if (!menuId) return;
+    try {
+      const res = await api.menus.gruposV2.reorderSpecialSections(menuId, ids);
+      if (!res.success) throw new Error(res.message || "No se pudo reordenar");
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo reordenar" });
+    }
+  }, [api, menuId, pushToast]);
+
+  const uploadSpecialMenuSectionImage = useCallback(async (sectionId: number, file: File) => {
+    if (!menuId) return;
+    if (!isSupportedDishImageFile(file)) {
+      pushToast({ kind: "error", title: "Error", message: "Formato no soportado. Usa JPG, PNG, WEBP o GIF." });
+      return;
+    }
+    if (file.size > MAX_DISH_IMAGE_INPUT_BYTES) {
+      pushToast({ kind: "error", title: "Error", message: "La imagen excede 15MB." });
+      return;
+    }
+    setSectionBusy(sectionId, true);
+    setSaveState("saving");
+    try {
+      const { file: prepared } = await processSpecialMenuFile(file);
+      const res = await api.menus.gruposV2.uploadSpecialSectionImage(menuId, sectionId, prepared);
+      if (!res.success) throw new Error(res.message || "No se pudo subir la imagen");
+      const url = String(res.image_url || "").trim();
+      if (!url) throw new Error("No se recibio la URL de la imagen subida");
+      setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_url: url } : sec)));
+      setSaveState("saved");
+    } catch (e) {
+      setSaveState("error");
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo subir la imagen" });
+    } finally {
+      setSectionBusy(sectionId, false);
+    }
+  }, [api, menuId, pushToast, setSectionBusy]);
+
+  const clearSpecialMenuSectionImage = useCallback(async (sectionId: number) => {
+    if (!menuId) return;
+    setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_url: "" } : sec)));
+    setSectionBusy(sectionId, true);
+    try {
+      const res = await api.menus.gruposV2.deleteSpecialSectionImage(menuId, sectionId);
+      if (!res.success) throw new Error(res.message || "No se pudo quitar la imagen");
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo quitar la imagen" });
+    } finally {
+      setSectionBusy(sectionId, false);
+    }
+  }, [api, menuId, pushToast, setSectionBusy]);
+
+  // --- special menu visibility (placement + active) ---
+  // Coordination id: special_menu_visibility_v1
+  const setMenuWebPlacement = useCallback(async (value: string) => {
+    const next = normalizeWebPlacement(value);
+    setMenuWebPlacementState(next);
+    if (!menuId) return;
+    setMenuVisibilityBusy(true);
+    try {
+      const res = await api.menus.gruposV2.setSpecialMenuVisibility(menuId, { web_placement: next });
+      if (!res.success) throw new Error(res.message || "No se pudo guardar el posicionamiento");
+      console.log("[checkpoint] special_menu_placement_persisted", `placement=${next}`);
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar el posicionamiento" });
+    } finally {
+      setMenuVisibilityBusy(false);
+    }
+  }, [api, menuId, pushToast]);
+
+  const setMenuPublicActive = useCallback(async (value: boolean) => {
+    setMenuPublicActiveState(value);
+    if (!menuId) return;
+    setMenuVisibilityBusy(true);
+    try {
+      const res = await api.menus.gruposV2.setSpecialMenuVisibility(menuId, { menu_public_active: value });
+      if (!res.success) throw new Error(res.message || "No se pudo guardar la visibilidad");
+      console.log("[checkpoint] special_menu_active_persisted", `active=${value}`);
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar la visibilidad" });
+    } finally {
+      setMenuVisibilityBusy(false);
+    }
+  }, [api, menuId, pushToast]);
+
   // --- openMenuPreviewImagePicker ---
   const openMenuPreviewImagePicker = useCallback(() => {
     const input = menuPreviewImageInputRef.current;
@@ -2229,6 +2409,8 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
     setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
     setSpecialMenuImage(mapped.specialMenuImageUrl || null);
+    setSpecialMenuSections(data.menu?.special_menu_sections ? [...data.menu.special_menu_sections].sort((a, b) => a.position - b.position) : []);
+    setSpecialMenuSectionBusy({});
     setSections(mapped.sections);
     setMenuAITracker(buildMenuAITracker(data.menu, mapped.sections));
     setIncludedCoffee(mapped.settings.included_coffee);
@@ -2430,6 +2612,13 @@ export function useMenuEditor(): UseMenuEditorReturn {
     closeDishImageCropper, closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper,
     toggleSameDayBooking,
     dessertSyncConfirm, confirmDessertSync, cancelDessertSync,
+    // Coordination id: special_menu_sections_v1
+    specialMenuSections, specialMenuSectionBusy,
+    addSpecialMenuSection, updateSpecialMenuSectionTitle, deleteSpecialMenuSection,
+    reorderSpecialMenuSections, uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
+    // Coordination id: special_menu_visibility_v1
+    menuWebPlacement, menuPublicActive, menuVisibilityBusy,
+    setMenuWebPlacement, setMenuPublicActive,
     // Render helpers
     renderMenuPreviewUploadArea,
     renderSpecialMenuImageUploadArea,

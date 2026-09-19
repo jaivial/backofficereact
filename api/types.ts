@@ -544,8 +544,28 @@ export type GroupMenuV2 = {
   ai_generated_img?: string | null;
   menu_preview?: GroupMenuV2MenuPreview | null;
   special_menu_image_url?: string;
+  // Coordination id: special_menu_sections_v1 - ordered list of image sections
+  // (title + image) editable from /app/comida/menus/crear?menuId= step 4.
+  special_menu_sections?: SpecialMenuSection[];
+  // Coordination id: special_menu_visibility_v1 - same dropdown the food-type
+  // settings already use (inside_menus | independent_section) plus an on/off
+  // toggle scoped per menu.
+  web_placement?: string;
+  menu_public_active?: boolean;
   settings: GroupMenuV2Settings;
   sections: GroupMenuV2Section[];
+};
+
+// Coordination id: special_menu_sections_v1
+// One section = one optional title + one image, persisted to the
+// special_menu_sections table and surfaced to the public site in display
+// order. The editor mirrors this shape in its in-memory state.
+export type SpecialMenuSection = {
+  id: number;
+  title: string;
+  image_url: string;
+  position: number;
+  created_at?: string;
 };
 
 export type DishCatalogItem = {
