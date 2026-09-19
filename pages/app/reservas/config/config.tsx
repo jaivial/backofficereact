@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
-import type { ConfigDayStatus, ConfigDailyLimit, ConfigFloor, ConfigMesasDeDos, ConfigMesasDeTres, ConfigOpeningHours, HourSplitConfig, LocationBookingConfig, MandatoryMenuConfig, MenuSelectorItem, OpeningMode } from "../../../../api/types";
+import type { ConfigDayStatus, ConfigDailyLimit, ConfigFloor, ConfigMesasDeDos, ConfigMesasDeTres, ConfigOpeningHours, HourSplitConfig, LocationBookingConfig, MandatoryMenuConfig, MenuSelectorItem, OpeningMode, SpecialDateSettings } from "../../../../api/types";
 import { useMonthCalendar } from "../../../../ui/hooks/useMonthCalendar";
 import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDatePicker";
 import { withDateParam } from "../tables/helpers/tables";
@@ -25,6 +25,7 @@ import type { PageData } from "./types/config.types";
 import { useConfigDay } from "./hooks/useConfigDay";
 import { SalonesDelDiaPanel } from "./functionalComponents/SalonesDelDiaPanel";
 import { MandatoryMenuConfig as MandatoryMenuConfigPanel } from "./functionalComponents/MandatoryMenuConfig/MandatoryMenuConfig";
+import { SpecialDateActivationPanel } from "./functionalComponents/SpecialDateActivationPanel";
 
 export default function Page() {
   const pageContext = usePageContext();
@@ -80,6 +81,9 @@ export default function Page() {
   const [mandatoryMenuBusy, setMandatoryMenuBusy] = useState(false);
 
   const [draftLimit, setDraftLimit] = useState(() => String(data.dailyLimit?.limit ?? 45));
+
+  // Special date (reservas especiales) — coordination id special_dates_v1
+  const [specialDate, setSpecialDate] = useState<SpecialDateSettings | null>(null);
   const [rangeModalOpen, setRangeModalOpen] = useState(false);
 
   const {
@@ -101,6 +105,8 @@ export default function Page() {
     handleNightHour,
     toggleHourSplit,
     commitHourSplitPercentages,
+    loadSpecialDate,
+    handleSpecialDateActivationToggle,
   } = useConfigDay({
     api,
     date,
@@ -133,6 +139,8 @@ export default function Page() {
     setDraftLimit,
     setBusy,
     setError,
+    specialDate,
+    setSpecialDate,
   });
 
   const morningSlots = useMemo(() => buildHalfHourSlots(8 * 60, 17 * 60, "m"), []);
@@ -168,11 +176,7 @@ export default function Page() {
     setOpeningModeDraft(openingHours.openingMode);
   }, [openingHours?.openingMode]);
 
-  // Load mandatory menu config on mount
-  useEffect(() => {
-    void loadMandatoryMenuConfigFromApi(date);
-  }, []);
-
+  // Load mandatory menu config on mount — real useEffect lives below once all callbacks are declared
   const loadMandatoryMenuConfigFromApi = useCallback(
     async (d: string) => {
       setMandatoryMenuBusy(true);
@@ -221,6 +225,12 @@ export default function Page() {
     [api],
   );
 
+  // Load mandatory menu + special date config on mount and whenever date changes
+  useEffect(() => {
+    void loadMandatoryMenuConfigFromApi(date);
+    void loadSpecialDate(date);
+  }, [date, loadMandatoryMenuConfigFromApi, loadSpecialDate]);
+
   const setLocationBookingOverride = useCallback(
     async (patch: { allowFloorReservation?: boolean; allowSalonReservation?: boolean }) => {
       if (!locationBooking) return;
@@ -255,11 +265,12 @@ export default function Page() {
       void loadAll(d);
       void loadMandatoryMenuConfigFromApi(d);
       void loadLocationBooking(d);
+      void loadSpecialDate(d);
       if (typeof window !== "undefined") {
         window.history.replaceState(null, "", withDateParam(window.location.href, d));
       }
     },
-    [loadAll, loadMandatoryMenuConfigFromApi, loadLocationBooking],
+    [loadAll, loadMandatoryMenuConfigFromApi, loadLocationBooking, loadSpecialDate],
   );
 
   const dayVisibilityTransition = reduceMotion ? { duration: 0 } : { duration: 0.3, ease: "easeInOut" as const };
@@ -397,6 +408,16 @@ export default function Page() {
               onInfoClose={() => setShowMandatoryInfo(false)}
               onInfoToggle={() => setShowMandatoryInfo(true)}
               onSave={saveMandatoryMenus}
+            />
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence initial={false}>
+          {day.isOpen ? (
+            <SpecialDateActivationPanel
+              specialDate={specialDate}
+              busy={busy}
+              onToggle={handleSpecialDateActivationToggle}
             />
           ) : null}
         </AnimatePresence>
