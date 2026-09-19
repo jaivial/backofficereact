@@ -1309,11 +1309,12 @@ function SpecialBookingSection({
                 ? "Indica por menú el método de pago del adelanto. Las cantidades ya abonadas pueden ajustarse abajo."
                 : "Esta fecha requiere adelanto, pero no hay métodos de pago configurados."}
             </div>
-            {menus.filter((m) => Number(m.count || 0) > 0).map((m, idx) => {
+            {menus.map((m, idx) => {
+              if (Number(m.count || 0) <= 0) return null;
               const rowTotal = Number(m.adelanto_per_unit || 0) * Number(m.count || 0);
               return (
                 <div
-                  key={`row-${idx}`}
+                  key={`row-${m.special_date_menu_id || idx}`}
                   className="bo-bookingEditorSpecialAdelantoRow"
                   data-slot={`booking-editor-special-adelanto-row-${m.special_date_menu_id}`}
                   data-testid={`booking-editor-special-adelanto-row-${m.special_date_menu_id}`}
