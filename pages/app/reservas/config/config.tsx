@@ -326,6 +326,19 @@ export default function Page() {
           }}
         />
 
+        {/* Special date activation — placed right after the day state panel
+            so the toggle is visible without scrolling. It opens the rest of
+            the menu special workflow via the hint banner. */}
+        <AnimatePresence initial={false}>
+          {day.isOpen ? (
+            <SpecialDateActivationPanel
+              specialDate={specialDate}
+              busy={busy}
+              onToggle={handleSpecialDateActivationToggle}
+            />
+          ) : null}
+        </AnimatePresence>
+
         <AnimatePresence initial={false}>
           {day.isOpen ? (
             <motion.div
@@ -408,16 +421,6 @@ export default function Page() {
               onInfoClose={() => setShowMandatoryInfo(false)}
               onInfoToggle={() => setShowMandatoryInfo(true)}
               onSave={saveMandatoryMenus}
-            />
-          ) : null}
-        </AnimatePresence>
-
-        <AnimatePresence initial={false}>
-          {day.isOpen ? (
-            <SpecialDateActivationPanel
-              specialDate={specialDate}
-              busy={busy}
-              onToggle={handleSpecialDateActivationToggle}
             />
           ) : null}
         </AnimatePresence>

@@ -299,6 +299,38 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
       data-testid="special-date-form-section"
       aria-label="Reservas especiales"
     >
+      {/* Sticky save bar sits OUTSIDE the panel card so it's anchored to the
+          page scroll container (not trapped inside the .bo-panel which can
+          host transforms / motion wrappers that break position:sticky). On
+          mobile it stays in reach at the viewport bottom; on desktop the
+          same bar pins to the bottom of the panel content via the parent
+          layout's natural overflow. */}
+      <div
+        className="sticky bottom-0 z-10 mx-auto -mt-2 flex w-full max-w-[768px] justify-center rounded-[var(--bo-radius-lg)] border border-(--bo-border) bg-(--bo-surface) px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-(--bo-surface)/80"
+        data-ui="special-date-save-row"
+        data-testid="special-date-save-row"
+      >
+        <button
+          type="button"
+          className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] sm:w-auto"
+          onClick={() => void handleSave()}
+          disabled={saving}
+          data-testid="special-date-save-btn"
+        >
+          {saving ? (
+            <span className="flex items-center gap-2" data-testid="special-date-save-saving">
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                data-testid="special-date-save-spinner"
+              />
+              <span data-testid="special-date-save-saving-text">Guardando...</span>
+            </span>
+          ) : (
+            <span data-testid="special-date-save-btn-text">Guardar configuración</span>
+          )}
+        </button>
+      </div>
+
       <div
         data-ui="special-date-form-card"
         data-testid="special-date-form-card"
@@ -317,7 +349,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
             never covers the last interactive element. */}
         <div
           data-slot="panel-body"
-          className="bo-panelBody grid gap-5 pb-24 sm:pb-6"
+          className="bo-panelBody grid gap-5 pb-6"
           data-testid="special-date-form-body"
         >
           {/* #1 Title + Description — labels above, full width */}
@@ -731,34 +763,6 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               </motion.div>
             ) : null}
           </AnimatePresence>
-        </div>
-
-        {/* Sticky save bar — anchored inside the panel card so it scrolls with
-            the content on desktop but stays in reach on mobile. */}
-        <div
-          className="sticky bottom-0 -mx-4 -mb-4 flex justify-center rounded-b-[var(--bo-radius-lg)] border-t border-(--bo-border) bg-(--bo-surface) px-4 py-3"
-          data-ui="special-date-save-row"
-          data-testid="special-date-save-row"
-        >
-          <button
-            type="button"
-            className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] sm:w-auto"
-            onClick={() => void handleSave()}
-            disabled={saving}
-            data-testid="special-date-save-btn"
-          >
-            {saving ? (
-              <span className="flex items-center gap-2" data-testid="special-date-save-saving">
-                <span
-                  className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-                  data-testid="special-date-save-spinner"
-                />
-                <span data-testid="special-date-save-saving-text">Guardando...</span>
-              </span>
-            ) : (
-              <span data-testid="special-date-save-btn-text">Guardar configuración</span>
-            )}
-          </button>
         </div>
       </div>
     </section>
