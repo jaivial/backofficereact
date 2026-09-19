@@ -2,7 +2,7 @@ import React from "react";
 
 import { Switch } from "../../../../../../ui/shadcn/Switch";
 import { Select } from "../../../../../../ui/inputs/Select";
-import { WEB_PLACEMENT_OPTIONS } from "./webPlacement";
+import { WEB_PLACEMENT_OPTIONS } from "../../../../../../ui/widgets/menus/webPlacement";
 
 /**
  * Public visibility settings for a food-type page.

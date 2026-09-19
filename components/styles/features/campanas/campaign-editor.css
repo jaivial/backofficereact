@@ -1,0 +1,137 @@
+/* ────────────────────────────────────────────────────────────────
+ * Campañas — email body editor (shadcn / Tiptap surface).
+ * Only the document itself and the loading fallback live here. The
+ * toolbar reuses the shadcn Toggle and the `bo-*` tokens, so it stays
+ * in sync with every other control of the backoffice.
+ * ──────────────────────────────────────────────────────────────── */
+
+.bo-editorBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.bo-editorProse {
+  flex: 1 1 auto;
+  padding: 14px 16px;
+  color: var(--bo-text);
+  font-size: 15px;
+  line-height: 1.65;
+  outline: none;
+}
+
+/* One rhythm for every block, whatever the operator inserted. */
+.bo-editorProse > * + * {
+  margin-top: 10px;
+}
+
+.bo-editorProse p {
+  margin: 0;
+}
+
+.bo-editorProse h1 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--bo-accent);
+}
+
+.bo-editorProse h2 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.bo-editorProse h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.35;
+  font-weight: 650;
+}
+
+.bo-editorProse ul {
+  margin: 0;
+  padding-left: 22px;
+  list-style: disc;
+}
+
+.bo-editorProse li {
+  margin: 3px 0;
+}
+
+.bo-editorProse li p {
+  margin: 0;
+}
+
+.bo-editorProse blockquote {
+  margin: 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--bo-accent);
+  background: rgba(185, 168, 255, 0.08);
+  color: var(--bo-muted);
+}
+
+.bo-editorProse hr {
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--bo-border-2);
+}
+
+.bo-editorProse a {
+  color: var(--bo-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bo-editorProse code {
+  font-family: var(--bo-font-mono);
+  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+/* 1px outline at low opacity, never a tinted neutral: it reads as depth,
+   not as dirt on the image edge. */
+.bo-editorProse img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  outline: 1px solid oklch(1 0 0 / 0.1);
+}
+
+/* Selected image: the accent outline is the static cue that the width strip
+   below the toolbar acts on it. */
+.bo-editorProse img.ProseMirror-selectednode {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 1px;
+}
+
+/* Empty document hint, painted by the Placeholder extension. */
+.bo-editorProse p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--bo-faint);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Plain markdown textarea shown until the engine lands; same box as the surface. */
+.bo-editorFallback {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  color: var(--bo-text);
+  font-family: var(--bo-font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+}
+
+:root[data-theme="light"] .bo-editorProse img {
+  outline-color: oklch(0 0 0 / 0.1);
+}

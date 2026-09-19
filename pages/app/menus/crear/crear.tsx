@@ -36,6 +36,9 @@ import { Breadcrumbs } from "../../../../ui/nav/Breadcrumbs";
 import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
 // Coordination id: menu_section_kind_presets_v1 + dessert_section_source_v1
 import { AddSectionModal } from "../../../../ui/widgets/menus/AddSectionModal";
+import { MenuImageSectionCard } from "../../../../ui/widgets/menus/MenuImageSectionCard";
+import { MenuVisibilityPanel } from "../../../../ui/widgets/menus/MenuVisibilityPanel";
+import { normalizeWebPlacement } from "../../../../ui/widgets/menus/webPlacement";
 import WeekdayGrid, { WEEKDAYS } from "../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 import type { AddSectionSelection } from "../../../../ui/widgets/menus/AddSectionModal";
 
@@ -253,6 +256,12 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     renderSpecialMenuImageUploadArea, basicsFingerprint, basicsPayload, sectionsFingerprint,
     menuAIDishesById, loadingSectionTitles, toggleSameDayBooking,
     dessertSyncConfirm, confirmDessertSync, cancelDessertSync,
+    // Coordination id: special_menu_sections_v1 + special_menu_visibility_v1
+    specialMenuSections, specialMenuSectionBusy,
+    addSpecialMenuSection, updateSpecialMenuSectionTitle, deleteSpecialMenuSection,
+    uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
+    menuWebPlacement, menuPublicActive, menuVisibilityBusy,
+    setMenuWebPlacement, setMenuPublicActive,
   } = H;
 
   const { pushToast } = useToasts();
@@ -758,6 +767,28 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                 </div>
               </motion.div>
 
+              {/* Coordination id: special_menu_visibility_v1 - the visibility
+                  dropdown lives in the configuracion tab so it sits next to
+                  the rest of the menu settings, and it is rendered for every
+                  menu type so the backoffice can keep behaviour consistent
+                  across closed / carta / special menus. */}
+              <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel" data-testid="menu-crear-visibility-panel">
+                <div className="bo-panelHead" data-slot="crear-panelHead">
+                  <div className="bo-panelTitle" data-slot="crear-panelTitle"><Eye size={15} /> Visibilidad publica</div>
+                  <div className="bo-panelMeta" data-slot="crear-panelMeta">Activa el menu y elige donde aparece en la web</div>
+                </div>
+                <div className="bo-panelBody" data-slot="crear-visibilityPanelBody">
+                  <MenuVisibilityPanel
+                    menuId={menuId}
+                    placement={menuWebPlacement}
+                    active={menuPublicActive}
+                    busy={menuVisibilityBusy}
+                    onChangePlacement={(value) => void setMenuWebPlacement(value)}
+                    onChangeActive={(checked) => void setMenuPublicActive(checked)}
+                  />
+                </div>
+              </motion.div>
+
               {!isSpecial ? (
                 <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
                   <div className="bo-panelHead" data-slot="crear-panelHead">
@@ -912,6 +943,42 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
             Sube una imagen del menu especial para mostrarla en la plantilla web.
           </p>
           {renderSpecialMenuImageUploadArea()}
+
+          {/* Coordination id: special_menu_sections_v1 - one menu can carry
+              several image sections. The list renders one card per section
+              and the "Anadir seccion" button appends a new one. */}
+          <div className="bo-menuImageSections" data-slot="crear-menuImageSections" data-coordination-id="special_menu_sections_v1">
+            <h3 className="bo-menuImageSectionsTitle" data-slot="crear-menuImageSectionsTitle">Secciones con imagen</h3>
+            <p className="bo-mutedText" data-slot="crear-menuImageSectionsHelp">
+              Cada seccion lleva un titulo opcional y una imagen. Puedes anadir tantas como necesites.
+            </p>
+            <div className="bo-menuImageSectionsList" data-slot="crear-menuImageSectionsList">
+              {specialMenuSections.map((section) => (
+                <MenuImageSectionCard
+                  key={section.id}
+                  sectionId={section.id}
+                  title={section.title}
+                  imageUrl={section.image_url}
+                  busy={!!specialMenuSectionBusy[section.id]}
+                  onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
+                  onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
+                  onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
+                  onDelete={() => void deleteSpecialMenuSection(section.id)}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              className="bo-btn bo-btn--ghost bo-btn--sm bo-menuImageSectionsAdd"
+              onClick={() => void addSpecialMenuSection()}
+              disabled={!menuId}
+              data-testid="menu-crear-add-special-section"
+              data-slot="crear-menuImageSectionsAdd"
+            >
+              <Plus size={14} /> Anadir seccion
+            </button>
+          </div>
+
           <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} data-testid="menu-crear-step4-back">Volver</button>
             <button className="bo-btn bo-btn--primary" type="button" onClick={() => setStep(3)} data-testid="menu-crear-step4-continue">Continuar al editor</button>
