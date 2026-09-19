@@ -194,7 +194,7 @@ export function buildBookingSpecial(args: {
     .filter((m) => Number(m.count || 0) > 0)
     .map((m) => ({
       special_date_menu_id: Number(m.special_date_menu_id || 0),
-      menu_id: m.is_custom ? null : null,
+      menu_id: m.menu_id ?? null,
       label: String(m.label || ""),
       unit_price: round2(Number(m.unit_price || 0)),
       count: Number(m.count || 0),

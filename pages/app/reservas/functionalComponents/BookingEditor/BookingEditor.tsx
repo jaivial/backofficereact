@@ -632,10 +632,14 @@ export function BookingEditor({
           special_date_menu_id: Number(m.special_date_menu_id || 0),
           count: Number(m.count || 0),
           adelanto_payment_method: m.adelanto_payment_method || undefined,
+          // Custom menus have no principales rows — the user picks later.
+          // Non-custom menus submit {dish_id, name} when both are known, or
+          // fall back to {dish_id: 0, name} for legacy menus whose API only
+          // exposes dish names (the server can match by name in that case).
           items: Array.isArray(m.items)
             ? m.items
-                .filter((it) => it && it.dish_id)
-                .map((it) => ({ dish_id: Number(it.dish_id || 0) }))
+                .filter((it) => it && (Number(it.dish_id || 0) > 0 || String(it.name || "").trim()))
+                .map((it) => ({ dish_id: Number(it.dish_id || 0), name: String(it.name || "").trim() }))
             : [],
         }));
       const adelantos_paid = (Array.isArray(draft.specialAdelantosPaid) ? draft.specialAdelantosPaid : [])
