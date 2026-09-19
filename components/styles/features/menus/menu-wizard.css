@@ -2739,3 +2739,151 @@
   grid-column: 1 / -1;
   margin-top: 6px;
 }
+
+/* =============================================================================
+ * Special menu image sections (coordination id: special_menu_sections_v1)
+ *
+ * Each section is one card with an optional title input and an image upload
+ * area. The card uses concentric radius (outer 14px, inner 10px), a layered
+ * shadow, and a 1px outline at 0.1 opacity for visual depth on images.
+ * ============================================================================= */
+
+.bo-menuImageSections {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--bo-surface) 96%, transparent),
+    color-mix(in srgb, var(--bo-shell) 92%, transparent)
+  );
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--bo-bg) 18%, transparent);
+}
+
+.bo-menuImageSectionsTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--bo-fg);
+}
+
+.bo-menuImageSectionsHelp {
+  margin: 0;
+  font-size: 13px;
+}
+
+.bo-menuImageSectionsList {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-menuImageSectionCard {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface) 98%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--bo-bg) 22%, transparent);
+}
+
+.bo-menuImageSectionCardHead {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-menuImageSectionCardDrag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: transparent;
+  color: var(--bo-muted);
+  cursor: grab;
+  transition: background 150ms cubic-bezier(0.2, 0, 0, 1),
+              color 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.bo-menuImageSectionCardDrag:hover {
+  background: color-mix(in srgb, var(--bo-shell) 70%, transparent);
+  color: var(--bo-fg);
+}
+
+.bo-menuImageSectionCardDrag:active {
+  cursor: grabbing;
+  transform: scale(0.96);
+}
+
+.bo-menuImageSectionCardTitle {
+  border-radius: 10px;
+}
+
+.bo-menuImageSectionCardMedia {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-shell) 90%, transparent);
+}
+
+.bo-menuImageSectionCardPreview {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.bo-menuImageSectionCardPreview img,
+.bo-menuImageSectionCardImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 10px;
+  outline: 1px solid oklch(0 0 0 / 0.1);
+}
+
+.bo-menuImageSectionCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bo-menuImageSectionCardDropzone {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 28px 16px;
+  color: var(--bo-muted);
+}
+
+.bo-menuImageSectionsAdd {
+  justify-self: start;
+  transition: transform 150ms cubic-bezier(0.2, 0, 0, 1),
+              background 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.bo-menuImageSectionsAdd:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* =============================================================================
+ * Per-menu public visibility (coordination id: special_menu_visibility_v1)
+ *
+ * The panel reuses the bo-foodPageVisibility card shell so the dropdown and
+ * the toggle read as the same control across every entry point.
+ * ============================================================================= */
+
+.bo-menuWizardPage .bo-foodPageVisibilityRow {
+  background: color-mix(in srgb, var(--bo-surface) 96%, transparent);
+}
