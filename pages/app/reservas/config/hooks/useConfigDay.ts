@@ -10,6 +10,7 @@ import type {
   MandatoryMenuConfig,
   MenuSelectorItem,
   OpeningMode,
+  SpecialDateSettings,
 } from "../../../../../api/types";
 import { clampDailyLimit, mergeHoursByOpeningMode, sortServiceHours, toggleHour } from "../helpers/configHelpers";
 import type { useToasts } from "../../../../../ui/feedback/useToasts";
@@ -46,6 +47,8 @@ interface UseConfigDayOptions {
   setDraftLimit: (limit: string) => void;
   setBusy: (busy: boolean) => void;
   setError: (error: string | null) => void;
+  specialDate: SpecialDateSettings | null;
+  setSpecialDate: (s: SpecialDateSettings | null) => void;
 }
 
 export function useConfigDay({
@@ -80,6 +83,8 @@ export function useConfigDay({
   setDraftLimit,
   setBusy,
   setError,
+  specialDate,
+  setSpecialDate,
 }: UseConfigDayOptions) {
   const pushSuccess = useCallback(
     (message: string) => {
@@ -239,6 +244,64 @@ export function useConfigDay({
       void loadMandatoryMenuConfig(d);
     },
     [loadAll, loadMandatoryMenuConfig],
+  );
+
+  // Special date (reservas especiales) activation — coordination id special_dates_v1
+  const loadSpecialDate = useCallback(
+    async (d: string) => {
+      try {
+        const res = await api.config.getSpecialDate(d);
+        if (res.success) {
+          setSpecialDate((res as { special_date: SpecialDateSettings | null }).special_date ?? null);
+        } else {
+          setSpecialDate(null);
+        }
+      } catch {
+        setSpecialDate(null);
+      }
+    },
+    [api.config, setSpecialDate],
+  );
+
+  const handleSpecialDateActivationToggle = useCallback(
+    async (checked: boolean) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const base: SpecialDateSettings = specialDate ?? {
+          date,
+          is_active: false,
+          title: "",
+          description: "",
+          prereserva_enabled: false,
+          max_per_table_enabled: false,
+          max_per_table: null,
+          requires_adelanto: false,
+          adelanto_payment_methods: [],
+          adelanto_unified: false,
+          adelanto_unified_amount: null,
+          prereserva_starts_on: null,
+          prereserva_ends_on: null,
+          menus: [],
+        };
+        const res = await api.config.saveSpecialDate({ ...base, date, is_active: checked });
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar la fecha especial" });
+          return;
+        }
+        setSpecialDate((res as { special_date: SpecialDateSettings }).special_date);
+        pushToast({
+          kind: "success",
+          title: checked ? "Reservas especiales activadas" : "Reservas especiales desactivadas",
+          message: checked ? "Esta fecha aparece como especial para los clientes" : "Esta fecha vuelve al modo estándar",
+        });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo actualizar la fecha especial");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [api.config, date, specialDate, pushToast, setBusy, setError, setSpecialDate],
   );
 
   const toggleDay = useCallback(async () => {
@@ -546,5 +609,7 @@ export function useConfigDay({
     handleNightHour,
     toggleHourSplit,
     commitHourSplitPercentages,
+    loadSpecialDate,
+    handleSpecialDateActivationToggle,
   };
 }
