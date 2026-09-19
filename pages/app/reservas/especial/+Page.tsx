@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarDays, Sparkles } from "lucide-react";
 
 import type { MenuSelectorItem, SpecialDateListEntry, SpecialDateSettings } from "../../../../api/types";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
-import { DatePicker } from "../../../../ui/inputs/DatePicker";
+import { createClient } from "../../../../api/client";
+import { useMonthCalendar } from "../../../../ui/hooks/useMonthCalendar";
+import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDatePicker";
 import { SpecialDateForm } from "./functionalComponents/SpecialDateForm";
 import { SpecialDateCardList } from "./functionalComponents/SpecialDateCardList";
 
@@ -39,9 +41,12 @@ export default function Page() {
   // merely when the row exists — deactivated rows fall back to the conversion view).
   const isActiveSpecial = Boolean(data.specialDate?.is_active);
 
-  // Default the new-special-date picker to the currently-selected date so the
-  // operator can convert that exact day in one click. Falls back to today.
+  // The picker uses the same MonthCalendarDatePicker as the "Añadir reserva"
+  // and "Config" pages so the operator gets one calendar everywhere.
+  const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const [pickDate, setPickDate] = useState<string>(data.date || todayISO());
+  const calendar = useMonthCalendar(api, pickDate);
+  const goToToday = () => setPickDate(todayISO());
 
   return (
     <section data-ui="especial-page" data-testid="especial-page-section" aria-label="Reservas especiales">
@@ -70,9 +75,9 @@ export default function Page() {
         />
       ) : (
         <div className="mx-auto grid max-w-[768px] gap-6" data-testid="especial-page-inactive">
-          {/* #1 — Convert this date to special. The button is disabled until a
-              valid date is picked; clicking navigates to the Config tab on
-              that date so the operator can flip the activation toggle there. */}
+          {/* #1 — Convert this date to special. Same calendar as Añadir /
+              Config so the operator gets one picker everywhere. The
+              "Fecha de hoy" button above the picker jumps to today. */}
           <section
             data-testid="especial-page-convert-section"
             aria-labelledby="especial-page-convert-title"
@@ -90,6 +95,17 @@ export default function Page() {
                 seleccionada en el calendario (o hoy si no hay ninguna). Tras elegir, ve a la
                 pestaña de Configuración de esa fecha y activa el interruptor.
               </p>
+              <div className="flex justify-end" data-testid="especial-page-convert-today-row">
+                <button
+                  type="button"
+                  onClick={goToToday}
+                  className="bo-btn bo-btn--ghost flex items-center gap-1.5 transition-transform duration-150 active:scale-[0.96]"
+                  data-testid="especial-page-convert-today-btn"
+                >
+                  <CalendarDays size={14} strokeWidth={1.8} aria-hidden="true" />
+                  Fecha de hoy
+                </button>
+              </div>
               <div
                 className="flex flex-col gap-3 sm:flex-row sm:items-end"
                 data-testid="especial-page-convert-row"
@@ -101,11 +117,18 @@ export default function Page() {
                   >
                     Fecha
                   </label>
-                  <DatePicker
-                    className="w-full"
+                  <MonthCalendarDatePicker
                     value={pickDate}
                     onChange={(iso: string) => setPickDate(iso)}
+                    year={calendar.year}
+                    month={calendar.month}
+                    days={calendar.days}
+                    onPrevMonth={calendar.onPrevMonth}
+                    onNextMonth={calendar.onNextMonth}
+                    loading={calendar.loading}
+                    className="w-full"
                     data-testid="especial-page-convert-date-input"
+                    data-ui="date-picker"
                   />
                 </div>
                 <a
