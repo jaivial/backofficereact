@@ -15,11 +15,12 @@ export function SpecialDateCardList({
   onSelect,
   testId = "special-date-card-list",
 }: {
-  entries: SpecialDateListEntry[];
+  entries: SpecialDateListEntry[] | undefined | null;
   onSelect: (date: string) => void;
   testId?: string;
 }) {
-  if (entries.length === 0) {
+  const list = entries ?? [];
+  if (list.length === 0) {
     return (
       <div
         data-testid={`${testId}-empty`}
@@ -33,7 +34,7 @@ export function SpecialDateCardList({
 
   return (
     <ul data-testid={testId} className="flex flex-col gap-2" aria-label="Fechas con menú especial">
-      {entries.map((e) => (
+      {list.map((e) => (
         <SpecialDateCard key={e.date} entry={e} onSelect={onSelect} />
       ))}
     </ul>
@@ -47,7 +48,10 @@ function SpecialDateCard({
   entry: SpecialDateListEntry;
   onSelect: (date: string) => void;
 }) {
-  const menuSummary = entry.menus.length === 0 ? "Sin menús asignados" : entry.menus.join(", ");
+  const menus = entry.menus ?? [];
+  const menuSummary = menus.length === 0 ? "Sin menús asignados" : menus.join(", ");
+  const people = typeof entry.people === "number" ? entry.people : 0;
+  const limit = typeof entry.limit === "number" && entry.limit > 0 ? entry.limit : 45;
   const testId = `special-date-card-${entry.date}`;
 
   return (
@@ -87,15 +91,15 @@ function SpecialDateCard({
           {/* Right: occupancy + chevron */}
           <div className="flex flex-col items-end justify-between gap-2" data-testid={`${testId}-meta`}>
             <DonutOccupancy
-              totalPeople={entry.people}
-              limit={entry.limit}
+              totalPeople={people}
+              limit={limit}
               size={48}
               strokeWidth={6}
               data-testid={`${testId}-donut`}
             />
             <div className="flex items-center gap-1 text-xs text-(--bo-muted)">
               <span className="tabular-nums" data-testid={`${testId}-ratio`}>
-                {entry.people}/{entry.limit}
+                {people}/{limit}
               </span>
               <ChevronRight size={16} strokeWidth={1.8} className="text-(--bo-muted)" aria-hidden="true" />
             </div>
