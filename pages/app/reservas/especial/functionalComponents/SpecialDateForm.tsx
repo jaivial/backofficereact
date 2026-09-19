@@ -56,6 +56,7 @@ function ToggleRow({
   onToggle,
   ariaLabel,
   testId,
+  variant = "default",
 }: {
   title: string;
   desc: string;
@@ -63,14 +64,19 @@ function ToggleRow({
   onToggle: (v: boolean) => void;
   ariaLabel: string;
   testId: string;
+  variant?: "default" | "plain";
 }) {
+  const chrome =
+    variant === "plain"
+      ? "bg-transparent border-0 shadow-none"
+      : "rounded-lg border border-(--bo-border) bg-(--bo-surface-2) active:border-(--bo-accent-border, var(--bo-border))";
   return (
     <div
       data-ui={testId}
       data-testid={testId}
       role="group"
       aria-label={title}
-      className="flex min-h-12 cursor-pointer select-none items-center justify-between gap-3 rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2 active:border-(--bo-accent-border, var(--bo-border))"
+      className={`flex min-h-12 cursor-pointer select-none items-center justify-between gap-3 px-3 py-2 ${chrome}`}
       onClick={() => onToggle(!checked)}
     >
       <div data-slot="toggle-row-text" data-testid={`${testId}-text`}>
@@ -272,6 +278,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         custom_title: m.custom_title ?? null,
         custom_image_url: m.custom_image_url ?? null,
         adelanto_amount: m.adelanto_amount ?? null,
+        price: m.price ?? null,
         position: idx,
       })),
     };
@@ -299,38 +306,6 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
       data-testid="special-date-form-section"
       aria-label="Reservas especiales"
     >
-      {/* Sticky save bar sits OUTSIDE the panel card so it's anchored to the
-          page scroll container (not trapped inside the .bo-panel which can
-          host transforms / motion wrappers that break position:sticky). On
-          mobile it stays in reach at the viewport bottom; on desktop the
-          same bar pins to the bottom of the panel content via the parent
-          layout's natural overflow. */}
-      <div
-        className="sticky bottom-0 z-10 mx-auto -mt-2 flex w-full max-w-[768px] justify-center rounded-[var(--bo-radius-lg)] border border-(--bo-border) bg-(--bo-surface) px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-(--bo-surface)/80"
-        data-ui="special-date-save-row"
-        data-testid="special-date-save-row"
-      >
-        <button
-          type="button"
-          className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] sm:w-auto"
-          onClick={() => void handleSave()}
-          disabled={saving}
-          data-testid="special-date-save-btn"
-        >
-          {saving ? (
-            <span className="flex items-center gap-2" data-testid="special-date-save-saving">
-              <span
-                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-                data-testid="special-date-save-spinner"
-              />
-              <span data-testid="special-date-save-saving-text">Guardando...</span>
-            </span>
-          ) : (
-            <span data-testid="special-date-save-btn-text">Guardar configuración</span>
-          )}
-        </button>
-      </div>
-
       <div
         data-ui="special-date-form-card"
         data-testid="special-date-form-card"
@@ -500,6 +475,34 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                         </div>
                       </>
                     ) : null}
+
+                    {/* Variable price per menu — used for total / adelanto
+                        calculations in the booking wizard. Defaults to the
+                        catalogue price when menu_id is set. */}
+                    <div
+                      className="grid gap-1"
+                      data-testid={`special-date-menu-row-${idx + 1}-price-field`}
+                    >
+                      <div
+                        className="text-xs text-(--bo-muted)"
+                        data-testid={`special-date-menu-row-${idx + 1}-price-label`}
+                      >
+                        Precio del menú (€ / persona)
+                      </div>
+                      <input
+                        className="bo-input w-full"
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        step={0.5}
+                        value={m.price != null ? String(m.price) : ""}
+                        onChange={(e) =>
+                          updateMenuRow(m._key, { price: toNumberOrNull(e.target.value) })
+                        }
+                        placeholder="0.00"
+                        data-testid={`special-date-menu-row-${idx + 1}-price-input`}
+                      />
+                    </div>
                   </div>
                 );
               })}
@@ -729,6 +732,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
             onToggle={handleMaxPerTableToggle}
             ariaLabel="Activar máximo por mesa"
             testId="special-date-max-per-table-row"
+            variant="plain"
           />
 
           <AnimatePresence>
@@ -741,7 +745,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="flex justify-center"
+                className="flex justify-center rounded-none border-0 bg-transparent shadow-none"
               >
                 <PlusMinusCounter
                   label="Máximo por mesa"
@@ -764,6 +768,35 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
             ) : null}
           </AnimatePresence>
         </div>
+      </div>
+
+      {/* Sticky save bar at the BOTTOM of the section so it visually anchors
+          after the panel card. Sits outside the panel to avoid the Vike
+          AnimatePresence transform trap (see PR #395/#396). */}
+      <div
+        className="sticky bottom-0 z-10 mx-auto mt-3 flex w-full max-w-[768px] justify-center rounded-[var(--bo-radius-lg)] border border-(--bo-border) bg-(--bo-surface) px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-(--bo-surface)/80"
+        data-ui="special-date-save-row"
+        data-testid="special-date-save-row"
+      >
+        <button
+          type="button"
+          className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] sm:w-auto"
+          onClick={() => void handleSave()}
+          disabled={saving}
+          data-testid="special-date-save-btn"
+        >
+          {saving ? (
+            <span className="flex items-center gap-2" data-testid="special-date-save-saving">
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                data-testid="special-date-save-spinner"
+              />
+              <span data-testid="special-date-save-saving-text">Guardando...</span>
+            </span>
+          ) : (
+            <span data-testid="special-date-save-btn-text">Guardar configuración</span>
+          )}
+        </button>
       </div>
     </section>
   );
