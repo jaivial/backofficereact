@@ -2385,6 +2385,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/special-dates?${q.toString()}`, { method: "GET" });
       },
+      async listSpecialDates(): Promise<import("./types").SpecialDateListResponse | APIError> {
+        return json("/api/admin/config/special-dates", { method: "GET" });
+      },
       async saveSpecialDate(input: import("./types").SpecialDateSavePayload): Promise<APISuccess<{ special_date: import("./types").SpecialDateSettings }> | APIError> {
         return json("/api/admin/config/special-dates", {
           method: "POST",

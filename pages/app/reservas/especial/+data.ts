@@ -2,7 +2,7 @@ import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../../api/client";
-import type { MenuSelectorItem, SpecialDateSettings } from "../../../../api/types";
+import type { MenuSelectorItem, SpecialDateListEntry, SpecialDateSettings } from "../../../../api/types";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -25,12 +25,14 @@ export async function data(pageContext: PageContextServer) {
 
   let specialDate: SpecialDateSettings | null = null;
   let availableMenus: MenuSelectorItem[] = [];
+  let list: SpecialDateListEntry[] = [];
   let error: string | null = null;
 
   try {
-    const [sdRes, menusRes] = await Promise.all([
+    const [sdRes, menusRes, listRes] = await Promise.all([
       api.config.getSpecialDate(date),
       api.menus.getSelector(),
+      api.config.listSpecialDates(),
     ]);
 
     if (sdRes.success) {
@@ -42,9 +44,13 @@ export async function data(pageContext: PageContextServer) {
     if (menusRes.success) {
       availableMenus = (menusRes as { menus?: MenuSelectorItem[] }).menus || [];
     }
+
+    if (listRes.success) {
+      list = (listRes as { special_dates?: SpecialDateListEntry[] }).special_dates || [];
+    }
   } catch (e) {
     error = e instanceof Error ? e.message : "Error cargando reservas especiales";
   }
 
-  return { date, specialDate, availableMenus, error };
+  return { date, specialDate, availableMenus, list, error };
 }

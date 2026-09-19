@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ImagePlus, Plus, Trash2 } from "lucide-react";
+import { Check, ImagePlus, Plus, Trash2 } from "lucide-react";
 
 import type { MenuSelectorItem, SpecialDateMenu, SpecialDatePaymentMethod, SpecialDateSettings } from "../../../../../api/types";
 import { SPECIAL_DATE_PAYMENT_METHODS } from "../../../../../api/types";
@@ -8,6 +8,7 @@ import { createClient } from "../../../../../api/client";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { DatePicker } from "../../../../../ui/inputs/DatePicker";
+import { Select } from "../../../../../ui/inputs/Select";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
 
 type EditableMenu = SpecialDateMenu & { _key: string };
@@ -69,7 +70,7 @@ function ToggleRow({
       data-testid={testId}
       role="group"
       aria-label={title}
-      className="flex min-h-12 cursor-pointer select-none items-center justify-between gap-3 rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2 transition-colors active:border-(--bo-accent-border, var(--bo-border))"
+      className="flex min-h-12 cursor-pointer select-none items-center justify-between gap-3 rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2 active:border-(--bo-accent-border, var(--bo-border))"
       onClick={() => onToggle(!checked)}
     >
       <div data-slot="toggle-row-text" data-testid={`${testId}-text`}>
@@ -80,6 +81,51 @@ function ToggleRow({
         <Switch checked={checked} onCheckedChange={onToggle} aria-label={ariaLabel} data-testid={`${testId}-switch`} />
       </span>
     </div>
+  );
+}
+
+/** Vertical-stack label + full-width control. */
+function Field({
+  label,
+  testId,
+  children,
+}: {
+  label: string;
+  testId: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-1.5" data-testid={testId}>
+      <label className="bo-label text-left" data-testid={`${testId}-label`}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+/** Compact payment-method chip with a checkmark when selected. */
+function PaymentChip({
+  value,
+  label,
+  selected,
+  onClick,
+}: {
+  value: SpecialDatePaymentMethod;
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={selected}
+      onClick={onClick}
+      className={`bo-chip inline-flex h-8 items-center gap-1.5 px-3 text-xs transition-transform duration-150 active:scale-[0.96]${selected ? " is-on" : ""}`}
+      data-testid={`special-date-payment-method-${value}`}
+    >
+      {selected ? <Check size={14} strokeWidth={2} aria-hidden="true" /> : null}
+      <span>{label}</span>
+    </button>
   );
 }
 
@@ -111,19 +157,11 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     setUnifiedAmountDraft(initial?.adelanto_unified && initial?.adelanto_unified_amount != null ? String(initial?.adelanto_unified_amount) : "");
   }, [initial, date]);
 
-  const isActive = draft.is_active;
-
   const patch = useCallback((p: Partial<SpecialDateSettings>) => {
     setDraft((prev: SpecialDateSettings) => ({ ...prev, ...p }));
   }, []);
 
-  const handleMaxPerTableToggle = useCallback(
-    (checked: boolean) => {
-      patch({ max_per_table_enabled: checked });
-    },
-    [patch],
-  );
-
+  const handleMaxPerTableToggle = useCallback((checked: boolean) => patch({ max_per_table_enabled: checked }), [patch]);
   const handleMaxPerTableCommit = useCallback(() => {
     const n = toNumberOrNull(maxPerTableDraft);
     const safe = n != null && n >= 1 ? Math.trunc(n) : null;
@@ -141,14 +179,10 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     },
     [patch, draft.requires_adelanto, draft.adelanto_payment_methods],
   );
-
   const handleRequiresAdelantoToggle = useCallback(
-    (checked: boolean) => {
-      patch({ requires_adelanto: checked });
-    },
+    (checked: boolean) => patch({ requires_adelanto: checked }),
     [patch],
   );
-
   const togglePaymentMethod = useCallback(
     (method: SpecialDatePaymentMethod) => {
       const cur = draft.adelanto_payment_methods;
@@ -157,58 +191,58 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     },
     [draft.adelanto_payment_methods, patch],
   );
-
   const handleAdelantoUnifiedToggle = useCallback(
     (checked: boolean) => {
       patch({
         adelanto_unified: checked,
-        // When unifying, mirror the unified amount to each row so per-row state stays consistent.
         menus: checked
-          ? editableMenus.map((m) => ({
-              ...m,
-              adelanto_amount: toNumberOrNull(unifiedAmountDraft) ?? m.adelanto_amount ?? 0,
-            }))
+          ? editableMenus.map((m) => ({ ...m, adelanto_amount: toNumberOrNull(unifiedAmountDraft) ?? m.adelanto_amount ?? 0 }))
           : editableMenus.map((m) => ({ ...m })),
       });
     },
     [editableMenus, patch, unifiedAmountDraft],
   );
-
   const handleUnifiedAmountCommit = useCallback(() => {
     const n = toNumberOrNull(unifiedAmountDraft);
     const safe = n != null && n >= 0 ? n : 0;
-    patch({
-      adelanto_unified_amount: safe,
-      menus: editableMenus.map((m) => ({ ...m, adelanto_amount: safe })),
-    });
+    patch({ adelanto_unified_amount: safe, menus: editableMenus.map((m) => ({ ...m, adelanto_amount: safe })) });
     setUnifiedAmountDraft(String(safe));
   }, [editableMenus, patch, unifiedAmountDraft]);
 
+  const [addingMenu, setAddingMenu] = React.useState(false);
+  // Stable ref so the onClick prop identity doesn't churn across re-renders
+  // (avoids duplicate invocations when the button prop swap is briefly stacked).
+  const addMenuRowRef = React.useRef<() => void>(() => undefined);
   const addMenuRow = useCallback(() => {
-    const firstAvailable = availableMenus[0];
-    setEditableMenus((prev) => [
-      ...prev,
-      {
-        _key: uid(),
-        menu_id: firstAvailable?.id ?? null,
-        custom_title: null,
-        custom_image_url: null,
-        adelanto_amount: draft.adelanto_unified ? toNumberOrNull(unifiedAmountDraft) ?? 0 : null,
-        position: prev.length,
-      },
-    ]);
-  }, [availableMenus, draft.adelanto_unified, unifiedAmountDraft]);
+    if (addingMenu) return;
+    setAddingMenu(true);
+    setEditableMenus((prev) => {
+      const usedIds = new Set(prev.map((m) => m.menu_id).filter((v): v is number => typeof v === "number"));
+      const nextAvailable = availableMenus.find((am) => !usedIds.has(am.id)) ?? availableMenus[0];
+      return [
+        ...prev,
+        {
+          _key: uid(),
+          menu_id: nextAvailable?.id ?? null,
+          custom_title: null,
+          custom_image_url: null,
+          adelanto_amount: draft.adelanto_unified ? toNumberOrNull(unifiedAmountDraft) ?? 0 : null,
+          position: prev.length,
+        },
+      ];
+    });
+    setTimeout(() => setAddingMenu(false), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addingMenu, availableMenus, draft.adelanto_unified, unifiedAmountDraft]);
+  addMenuRowRef.current = addMenuRow;
 
   const removeMenuRow = useCallback((key: string) => {
     setEditableMenus((prev) => prev.filter((m) => m._key !== key));
   }, []);
 
-  const updateMenuRow = useCallback(
-    (key: string, patchRow: Partial<EditableMenu>) => {
-      setEditableMenus((prev) => prev.map((m) => (m._key === key ? { ...m, ...patchRow } : m)));
-    },
-    [],
-  );
+  const updateMenuRow = useCallback((key: string, patchRow: Partial<EditableMenu>) => {
+    setEditableMenus((prev) => prev.map((m) => (m._key === key ? { ...m, ...patchRow } : m)));
+  }, []);
 
   const uploadCustomImage = useCallback(
     async (key: string, file: File) => {
@@ -260,46 +294,197 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   }, [api, date, draft, editableMenus, onSaved, pushToast]);
 
   return (
-    <section data-ui="special-date-form" data-testid="special-date-form-section" aria-label="Reservas especiales">
+    <section
+      data-ui="special-date-form"
+      data-testid="special-date-form-section"
+      aria-label="Reservas especiales"
+    >
       <div
         data-ui="special-date-form-card"
         data-testid="special-date-form-card"
-        className="bo-panel mx-auto w-full max-w-[768px]"
+        className="bo-panel relative mx-auto w-full max-w-[768px]"
       >
         <div data-slot="panel-head" className="bo-panelHead" data-testid="special-date-form-head">
           <div data-role="title" className="bo-panelTitle" data-testid="special-date-form-title">
             Reservas especiales · {date}
           </div>
           <div data-role="meta" className="bo-panelMeta" data-testid="special-date-form-meta">
-            {isActive ? "Fecha especial activa" : "Fecha especial inactiva"}
+            Fecha especial activa
           </div>
         </div>
 
-        <div data-slot="panel-body" className="bo-panelBody pb-20 sm:pb-4" style={{ display: "grid", gap: 18 }} data-testid="special-date-form-body">
-          {/* Title + Description */}
-          <div data-ui="special-date-title-field" data-testid="special-date-title-field">
-            <label className="bo-label" data-testid="special-date-title-label">Título</label>
+        {/* Form body — extra bottom padding (only mobile) so the sticky save bar
+            never covers the last interactive element. */}
+        <div
+          data-slot="panel-body"
+          className="bo-panelBody grid gap-5 pb-24 sm:pb-6"
+          data-testid="special-date-form-body"
+        >
+          {/* #1 Title + Description — labels above, full width */}
+          <Field label="Título" testId="special-date-title-field">
             <input
-              className="bo-input"
+              className="bo-input w-full"
               value={draft.title}
               onChange={(e) => patch({ title: e.target.value })}
               placeholder="Ej: Cena de gala"
               data-testid="special-date-title-input"
             />
-          </div>
-          <div data-ui="special-date-description-field" data-testid="special-date-description-field">
-            <label className="bo-label" data-testid="special-date-description-label">Descripción</label>
+          </Field>
+
+          <Field label="Descripción" testId="special-date-description-field">
             <textarea
-              className="bo-input"
+              className="bo-input w-full"
               rows={3}
               value={draft.description}
               onChange={(e) => patch({ description: e.target.value })}
               placeholder="Detalles visibles para el cliente"
               data-testid="special-date-description-input"
             />
+          </Field>
+
+          {/* #2 Menus — moved above prereserva. Each row is its own card with a
+              soft border and a full-width Select that excludes already-chosen
+              catalogue menus. */}
+          <div data-ui="special-date-menus" data-testid="special-date-menus-section">
+            <div className="bo-label mb-1.5 text-left" data-testid="special-date-menus-label">
+              Menús de la fecha especial
+            </div>
+            <div
+              className="flex flex-col gap-2"
+              data-slot="menusList"
+              data-testid="special-date-menus-list"
+            >
+              {editableMenus.map((m, idx) => {
+                const isCustom = !m.menu_id;
+                const usedIds = new Set(
+                  editableMenus.map((x) => x.menu_id).filter((v): v is number => typeof v === "number"),
+                );
+                const menuOptions = [
+                  { value: "__custom__", label: "Personalizado (título + imagen)" },
+                  ...availableMenus
+                    .filter((am) => !usedIds.has(am.id) || am.id === m.menu_id)
+                    .map((am) => ({ value: String(am.id), label: am.menu_title })),
+                ];
+                const selectedLabel = isCustom
+                  ? "Personalizado (título + imagen)"
+                  : availableMenus.find((am) => am.id === m.menu_id)?.menu_title ?? "Selecciona menú";
+                return (
+                  <div
+                    key={m._key}
+                    data-testid={`special-date-menu-row-${idx + 1}`}
+                    className="grid gap-2.5 rounded-lg border border-(--bo-border) bg-(--bo-surface-2) p-3"
+                  >
+                    <div
+                      className="flex items-center justify-between gap-2"
+                      data-testid={`special-date-menu-row-${idx + 1}-head`}
+                    >
+                      <div className="text-sm font-medium" data-testid={`special-date-menu-row-${idx + 1}-index`}>
+                        Menú {idx + 1}
+                      </div>
+                      <button
+                        type="button"
+                        className="bo-btn bo-btn--ghost bo-btn--icon"
+                        onClick={() => removeMenuRow(m._key)}
+                        aria-label={`Eliminar menú ${idx + 1}`}
+                        data-testid={`special-date-menu-row-${idx + 1}-delete`}
+                      >
+                        <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
+                      </button>
+                    </div>
+
+                    <div data-slot={`menuSource-${idx}`}>
+                      <div
+                        className="text-xs text-(--bo-muted)"
+                        data-testid={`special-date-menu-row-${idx + 1}-source-label`}
+                      >
+                        Menú del catálogo
+                      </div>
+                      <div className="mt-1 w-full" data-testid={`special-date-menu-row-${idx + 1}-source-select`}>
+                        <Select
+                          value={m.menu_id != null ? String(m.menu_id) : "__custom__"}
+                          onChange={(v) => {
+                            if (v === "__custom__") updateMenuRow(m._key, { menu_id: null });
+                            else updateMenuRow(m._key, { menu_id: Number(v), custom_title: null, custom_image_url: null });
+                          }}
+                          options={menuOptions}
+                          placeholder={selectedLabel}
+                          fitWidestOption
+                          className="w-full"
+                          ariaLabel={`Menú del catálogo para la fila ${idx + 1}`}
+                        />
+                      </div>
+                    </div>
+
+                    {isCustom ? (
+                      <>
+                        <div data-slot={`menuCustom-${idx}`}>
+                          <div
+                            className="text-xs text-(--bo-muted)"
+                            data-testid={`special-date-menu-row-${idx + 1}-custom-title-label`}
+                          >
+                            Título personalizado
+                          </div>
+                          <input
+                            className="bo-input mt-1 w-full"
+                            value={m.custom_title ?? ""}
+                            onChange={(e) => updateMenuRow(m._key, { custom_title: e.target.value })}
+                            placeholder="Ej: Menú infantil"
+                            data-testid={`special-date-menu-row-${idx + 1}-custom-title-input`}
+                          />
+                        </div>
+                        <div
+                          className="flex items-center gap-3"
+                          data-slot={`menuCustomImage-${idx}`}
+                          data-testid={`special-date-menu-row-${idx + 1}-custom-image`}
+                        >
+                          {m.custom_image_url ? (
+                            <img
+                              src={m.custom_image_url}
+                              alt={m.custom_title || "Menú personalizado"}
+                              className="h-16 w-16 rounded object-cover border border-(--bo-border)"
+                              data-testid={`special-date-menu-row-${idx + 1}-custom-image-preview`}
+                            />
+                          ) : (
+                            <div
+                              className="flex h-16 w-16 items-center justify-center rounded border border-dashed border-(--bo-border) text-(--bo-muted)"
+                              data-testid={`special-date-menu-row-${idx + 1}-custom-image-empty`}
+                            >
+                              <ImagePlus size={18} strokeWidth={1.8} aria-hidden="true" />
+                            </div>
+                          )}
+                          <label className="bo-btn bo-btn--ghost" data-testid={`special-date-menu-row-${idx + 1}-custom-image-label`}>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: "none" }}
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                if (f) void uploadCustomImage(m._key, f);
+                              }}
+                              data-testid={`special-date-menu-row-${idx + 1}-custom-image-input`}
+                            />
+                            Subir imagen
+                          </label>
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
+                );
+              })}
+              <button
+                type="button"
+                className="bo-btn bo-btn--ghost flex items-center justify-center gap-2 disabled:opacity-50"
+                onClick={() => addMenuRowRef.current()}
+                disabled={addingMenu}
+                data-testid="special-date-menus-add-btn"
+              >
+                <Plus size={16} strokeWidth={1.8} aria-hidden="true" />
+                Añadir menú
+              </button>
+            </div>
           </div>
 
-          {/* Prereserva */}
+          {/* #3 Prereserva toggle */}
           <ToggleRow
             title="Prereserva"
             desc="Activa el modo prereserva para este día"
@@ -343,25 +528,28 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                       transition={{ duration: 0.2 }}
                       style={{ display: "grid", gap: 14 }}
                     >
-                      {/* Payment methods */}
+                      {/* Payment methods — extra top margin, compact chips with tick. */}
                       <div data-ui="special-date-payment-methods-field" data-testid="special-date-payment-methods-field">
-                        <div className="bo-label" data-testid="special-date-payment-methods-label">Métodos de pago aceptados</div>
-                        <div className="bo-chips" data-slot="paymentMethodsChips" data-testid="special-date-payment-methods-chips">
-                          {SPECIAL_DATE_PAYMENT_METHODS.map((m: { value: SpecialDatePaymentMethod; label: string }) => {
-                            const on = draft.adelanto_payment_methods.includes(m.value);
-                            return (
-                              <button
-                                key={m.value}
-                                type="button"
-                                className={`bo-chip min-h-11 px-4 text-sm transition-transform duration-150 active:scale-[0.96]${on ? " is-on" : ""}`}
-                                onClick={() => togglePaymentMethod(m.value)}
-                                aria-pressed={on}
-                                data-testid={`special-date-payment-method-${m.value}`}
-                              >
-                                {m.label}
-                              </button>
-                            );
-                          })}
+                        <div
+                          className="bo-label mb-3 text-left"
+                          data-testid="special-date-payment-methods-label"
+                        >
+                          Métodos de pago aceptados
+                        </div>
+                        <div
+                          className="bo-chips"
+                          data-slot="paymentMethodsChips"
+                          data-testid="special-date-payment-methods-chips"
+                        >
+                          {SPECIAL_DATE_PAYMENT_METHODS.map((m) => (
+                            <PaymentChip
+                              key={m.value}
+                              value={m.value}
+                              label={m.label}
+                              selected={draft.adelanto_payment_methods.includes(m.value)}
+                              onClick={() => togglePaymentMethod(m.value)}
+                            />
+                          ))}
                         </div>
                       </div>
 
@@ -376,10 +564,9 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                       />
 
                       {draft.adelanto_unified ? (
-                        <div data-ui="special-date-unified-amount-field" data-testid="special-date-unified-amount-field">
-                          <label className="bo-label" data-testid="special-date-unified-amount-label">Adelanto por persona (€)</label>
+                        <Field label="Adelanto por persona (€)" testId="special-date-unified-amount-field">
                           <input
-                            className="bo-input"
+                            className="bo-input w-full"
                             type="number"
                             inputMode="decimal"
                             min={0}
@@ -390,24 +577,39 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                             placeholder="0.00"
                             data-testid="special-date-unified-amount-input"
                           />
-                        </div>
+                        </Field>
                       ) : null}
 
                       {!draft.adelanto_unified && editableMenus.length > 0 ? (
                         <div data-ui="special-date-per-menu-amounts" data-testid="special-date-per-menu-amounts">
-                          <div className="bo-label" data-testid="special-date-per-menu-amounts-label">
+                          <div
+                            className="bo-label mb-1.5 text-left"
+                            data-testid="special-date-per-menu-amounts-label"
+                          >
                             Adelanto por menú
                           </div>
-                          <div className="flex flex-col gap-2" data-slot="perMenuAmountsList" data-testid="special-date-per-menu-amounts-list">
+                          <div
+                            className="flex flex-col gap-2"
+                            data-slot="perMenuAmountsList"
+                            data-testid="special-date-per-menu-amounts-list"
+                          >
                             {editableMenus.map((m) => {
-                              const label = m.custom_title || availableMenus.find((am) => am.id === m.menu_id)?.menu_title || `Menú ${m._key.slice(-4)}`;
+                              const label =
+                                m.custom_title ||
+                                availableMenus.find((am) => am.id === m.menu_id)?.menu_title ||
+                                `Menú ${m._key.slice(-4)}`;
                               return (
                                 <div
                                   key={m._key}
                                   className="flex items-center justify-between gap-3 rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2"
                                   data-testid={`special-date-per-menu-amount-row-${m._key}`}
                                 >
-                                  <div className="text-sm" data-testid={`special-date-per-menu-amount-row-${m._key}-label`}>{label}</div>
+                                  <div
+                                    className="text-sm"
+                                    data-testid={`special-date-per-menu-amount-row-${m._key}-label`}
+                                  >
+                                    {label}
+                                  </div>
                                   <input
                                     className="bo-input"
                                     style={{ maxWidth: 120 }}
@@ -416,7 +618,9 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                                     min={0}
                                     step={0.5}
                                     value={m.adelanto_amount != null ? String(m.adelanto_amount) : ""}
-                                    onChange={(e) => updateMenuRow(m._key, { adelanto_amount: toNumberOrNull(e.target.value) })}
+                                    onChange={(e) =>
+                                      updateMenuRow(m._key, { adelanto_amount: toNumberOrNull(e.target.value) })
+                                    }
                                     placeholder="0.00"
                                     data-testid={`special-date-per-menu-amount-row-${m._key}-input`}
                                   />
@@ -429,12 +633,28 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
 
                       {/* Prereserva window */}
                       <div data-ui="special-date-prereserva-window" data-testid="special-date-prereserva-window">
-                        <div className="bo-label" data-testid="special-date-prereserva-window-label">
+                        <div
+                          className="bo-label mb-1.5 text-left"
+                          data-testid="special-date-prereserva-window-label"
+                        >
                           Ventana de prereserva
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-3" data-slot="prereservaWindowRow" data-testid="special-date-prereserva-window-row">
-                          <div data-slot="prereservaStart" data-testid="special-date-prereserva-start-field">
-                            <div className="text-xs text-(--bo-muted)" data-testid="special-date-prereserva-start-label">Desde</div>
+                        <div
+                          className="flex flex-col gap-3 sm:flex-row"
+                          data-slot="prereservaWindowRow"
+                          data-testid="special-date-prereserva-window-row"
+                        >
+                          <div
+                            className="grid gap-1"
+                            data-slot="prereservaStart"
+                            data-testid="special-date-prereserva-start-field"
+                          >
+                            <div
+                              className="text-xs text-(--bo-muted)"
+                              data-testid="special-date-prereserva-start-label"
+                            >
+                              Desde
+                            </div>
                             <DatePicker
                               className="w-full"
                               value={draft.prereserva_starts_on ?? ""}
@@ -442,8 +662,17 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                               data-testid="special-date-prereserva-start-input"
                             />
                           </div>
-                          <div data-slot="prereservaEnd" data-testid="special-date-prereserva-end-field">
-                            <div className="text-xs text-(--bo-muted)" data-testid="special-date-prereserva-end-label">Hasta</div>
+                          <div
+                            className="grid gap-1"
+                            data-slot="prereservaEnd"
+                            data-testid="special-date-prereserva-end-field"
+                          >
+                            <div
+                              className="text-xs text-(--bo-muted)"
+                              data-testid="special-date-prereserva-end-label"
+                            >
+                              Hasta
+                            </div>
                             <DatePicker
                               className="w-full"
                               value={draft.prereserva_ends_on ?? ""}
@@ -460,112 +689,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
             ) : null}
           </AnimatePresence>
 
-          {/* Menus */}
-          <div data-ui="special-date-menus" data-testid="special-date-menus-section">
-            <div className="bo-label" data-testid="special-date-menus-label">Menús de la fecha especial</div>
-            <div className="flex flex-col gap-3" data-slot="menusList" data-testid="special-date-menus-list">
-              {editableMenus.map((m, idx) => {
-                const isCustom = !m.menu_id;
-                return (
-                  <div
-                    key={m._key}
-                    className="rounded-lg border border-(--bo-border) bg-(--bo-surface-2) p-3 flex flex-col gap-3"
-                    data-testid={`special-date-menu-row-${idx + 1}`}
-                  >
-                    <div className="flex items-center justify-between gap-3" data-slot={`menuRowHead-${idx}`} data-testid={`special-date-menu-row-${idx + 1}-head`}>
-                      <div className="text-sm font-medium" data-testid={`special-date-menu-row-${idx + 1}-index`}>Menú {idx + 1}</div>
-                      <button
-                        type="button"
-                        className="bo-btn bo-btn--ghost bo-btn--icon"
-                        onClick={() => removeMenuRow(m._key)}
-                        aria-label={`Eliminar menú ${idx + 1}`}
-                        data-testid={`special-date-menu-row-${idx + 1}-delete`}
-                      >
-                        <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
-                      </button>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-3" data-slot={`menuRowBody-${idx}`} data-testid={`special-date-menu-row-${idx + 1}-body`}>
-                      <div className="flex-1" data-slot={`menuSource-${idx}`}>
-                        <div className="text-xs text-(--bo-muted)" data-testid={`special-date-menu-row-${idx + 1}-source-label`}>
-                          Menú del catálogo
-                        </div>
-                        <select
-                          className="bo-input"
-                          value={m.menu_id != null ? String(m.menu_id) : "__custom__"}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === "__custom__") {
-                              updateMenuRow(m._key, { menu_id: null });
-                            } else {
-                              updateMenuRow(m._key, { menu_id: Number(v), custom_title: null, custom_image_url: null });
-                            }
-                          }}
-                          data-testid={`special-date-menu-row-${idx + 1}-source-select`}
-                        >
-                          <option value="__custom__">Personalizado (título + imagen)</option>
-                          {availableMenus.map((am) => (
-                            <option key={am.id} value={String(am.id)}>{am.menu_title}</option>
-                          ))}
-                        </select>
-                      </div>
-                      {isCustom ? (
-                        <div className="flex-1" data-slot={`menuCustom-${idx}`}>
-                          <div className="text-xs text-(--bo-muted)" data-testid={`special-date-menu-row-${idx + 1}-custom-title-label`}>Título personalizado</div>
-                          <input
-                            className="bo-input"
-                            value={m.custom_title ?? ""}
-                            onChange={(e) => updateMenuRow(m._key, { custom_title: e.target.value })}
-                            placeholder="Ej: Menú infantil"
-                            data-testid={`special-date-menu-row-${idx + 1}-custom-title-input`}
-                          />
-                        </div>
-                      ) : null}
-                    </div>
-                    {isCustom ? (
-                      <div className="flex items-center gap-3" data-slot={`menuCustomImage-${idx}`} data-testid={`special-date-menu-row-${idx + 1}-custom-image`}>
-                        {m.custom_image_url ? (
-                          <img
-                            src={m.custom_image_url}
-                            alt={m.custom_title || "Menú personalizado"}
-                            className="h-16 w-16 rounded object-cover border border-(--bo-border)"
-                            data-testid={`special-date-menu-row-${idx + 1}-custom-image-preview`}
-                          />
-                        ) : (
-                          <div className="h-16 w-16 rounded border border-dashed border-(--bo-border) flex items-center justify-center text-(--bo-muted)" data-testid={`special-date-menu-row-${idx + 1}-custom-image-empty`}>
-                            <ImagePlus size={18} strokeWidth={1.8} aria-hidden="true" />
-                          </div>
-                        )}
-                        <label className="bo-btn bo-btn--ghost" data-testid={`special-date-menu-row-${idx + 1}-custom-image-label`}>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            style={{ display: "none" }}
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              if (f) void uploadCustomImage(m._key, f);
-                            }}
-                            data-testid={`special-date-menu-row-${idx + 1}-custom-image-input`}
-                          />
-                          Subir imagen
-                        </label>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-              <button
-                type="button"
-                className="bo-btn bo-btn--ghost flex items-center justify-center gap-2"
-                onClick={addMenuRow}
-                data-testid="special-date-menus-add-btn"
-              >
-                <Plus size={16} strokeWidth={1.8} aria-hidden="true" />
-                Añadir menú
-              </button>
-            </div>
-          </div>
-
-          {/* Max per table */}
+          {/* Max per table (kept at the end of the active group). */}
           <ToggleRow
             title="Máximo por mesa"
             desc="Limita el número de comensales por reserva para esta fecha"
@@ -607,32 +731,34 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               </motion.div>
             ) : null}
           </AnimatePresence>
+        </div>
 
-          {/* Save — sticky on mobile so it stays reachable without scrolling to the end.
-              Bleeds to the panel edges (-mx-4/-mb-4 vs bo-panelBody padding:16px) and
-              keeps the panel's bottom radius for concentric corners. */}
-          <div
-            className="sticky bottom-0 z-10 -mx-4 -mb-4 flex justify-center rounded-b-[var(--bo-radius-lg)] border-t border-(--bo-border) bg-(--bo-surface) px-4 py-3"
-            data-ui="special-date-save-row"
-            data-testid="special-date-save-row"
+        {/* Sticky save bar — anchored inside the panel card so it scrolls with
+            the content on desktop but stays in reach on mobile. */}
+        <div
+          className="sticky bottom-0 -mx-4 -mb-4 flex justify-center rounded-b-[var(--bo-radius-lg)] border-t border-(--bo-border) bg-(--bo-surface) px-4 py-3"
+          data-ui="special-date-save-row"
+          data-testid="special-date-save-row"
+        >
+          <button
+            type="button"
+            className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] sm:w-auto"
+            onClick={() => void handleSave()}
+            disabled={saving}
+            data-testid="special-date-save-btn"
           >
-            <button
-              type="button"
-              className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] sm:w-auto"
-              onClick={() => void handleSave()}
-              disabled={saving}
-              data-testid="special-date-save-btn"
-            >
-              {saving ? (
-                <span className="flex items-center gap-2" data-testid="special-date-save-saving">
-                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" data-testid="special-date-save-spinner" />
-                  <span data-testid="special-date-save-saving-text">Guardando...</span>
-                </span>
-              ) : (
-                <span data-testid="special-date-save-btn-text">Guardar configuración</span>
-              )}
-            </button>
-          </div>
+            {saving ? (
+              <span className="flex items-center gap-2" data-testid="special-date-save-saving">
+                <span
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                  data-testid="special-date-save-spinner"
+                />
+                <span data-testid="special-date-save-saving-text">Guardando...</span>
+              </span>
+            ) : (
+              <span data-testid="special-date-save-btn-text">Guardar configuración</span>
+            )}
+          </button>
         </div>
       </div>
     </section>
