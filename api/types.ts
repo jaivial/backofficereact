@@ -544,8 +544,28 @@ export type GroupMenuV2 = {
   ai_generated_img?: string | null;
   menu_preview?: GroupMenuV2MenuPreview | null;
   special_menu_image_url?: string;
+  // Coordination id: special_menu_sections_v1 - ordered list of image sections
+  // (title + image) editable from /app/comida/menus/crear?menuId= step 4.
+  special_menu_sections?: SpecialMenuSection[];
+  // Coordination id: special_menu_visibility_v1 - same dropdown the food-type
+  // settings already use (inside_menus | independent_section) plus an on/off
+  // toggle scoped per menu.
+  web_placement?: string;
+  menu_public_active?: boolean;
   settings: GroupMenuV2Settings;
   sections: GroupMenuV2Section[];
+};
+
+// Coordination id: special_menu_sections_v1
+// One section = one optional title + one image, persisted to the
+// special_menu_sections table and surfaced to the public site in display
+// order. The editor mirrors this shape in its in-memory state.
+export type SpecialMenuSection = {
+  id: number;
+  title: string;
+  image_url: string;
+  position: number;
+  created_at?: string;
 };
 
 export type DishCatalogItem = {
@@ -2424,11 +2444,30 @@ export type POSCashDayCurrent = {
 
 export type RestaurantAdTextAlign = "left" | "center" | "right";
 export type RestaurantAdContentType = "title" | "subtitle" | "text" | "image";
+// Operator-sized box of an element (coord id ads_element_size_v1): width as a
+// percentage of the card content width and, for images, a height in pixels.
+// Absent = the public template default, so legacy content is untouched.
+export type RestaurantAdElementSize = { width?: number; height?: number };
+// Customisable look of an element (coord id ads_element_style_v1): typography
+// for texts, radius for images, opacity, colour and the drag offset.
+export type RestaurantAdElementStyle = {
+  font_size?: number;
+  font_weight?: number;
+  letter_spacing?: number;
+  line_height?: number;
+  color?: string;
+  opacity?: number;
+  radius?: number;
+  offset_x?: number;
+  offset_y?: number;
+};
 export type RestaurantAdContentElement = {
   id: string;
   type: RestaurantAdContentType;
   value: string;
   align?: RestaurantAdTextAlign;
+  size?: RestaurantAdElementSize;
+  style?: RestaurantAdElementStyle;
 };
 export type RestaurantAdCTA = {
   id: string;
@@ -2437,15 +2476,44 @@ export type RestaurantAdCTA = {
   navigation_mode: "route" | "custom";
   route: string;
   custom_url: string;
+  /** Operator-sized pill width as a percentage of the card (ads_button_width_v1). */
+  width?: number;
+  /** Content index the button renders before (ads_button_slot_v1); absent = actions row. */
+  slot?: number;
 };
 export type RestaurantAdImageGenerationStatus = "idle" | "pending" | "ready" | "failed";
 export type RestaurantAdScheduleRange = { id: number; name: string; starts_at: string; ends_at: string };
+
+// Anuncio layout (coord id ads_layout_v1): "unico" is the classic single
+// announcement; "multiple" renders a step wizard (cards column -> announcement).
+export type RestaurantAdLayoutMode = "unico" | "multiple";
+export type RestaurantAdStepBackground = "image" | "color" | "transparent";
+export type RestaurantAdStep = {
+  id: string;
+  title: string;
+  description: string;
+  background_mode: RestaurantAdStepBackground;
+  background_color?: string;
+  background_image?: string;
+  /** Background of the opened announcement, independent from the card (ads_step_detail_background_v1). */
+  detail_background_mode?: RestaurantAdStepBackground;
+  detail_background_color?: string;
+  detail_background_image?: string;
+  /** Renders the "Ver más" wizard-advance button (default true). */
+  see_more?: boolean;
+  buttons: RestaurantAdCTA[];
+  /** Announcement body shown when the wizard advances to this step. */
+  content: RestaurantAdContentElement[];
+};
+export type RestaurantAdLayout = { mode: RestaurantAdLayoutMode; steps: RestaurantAdStep[] };
+
 export type RestaurantAd = {
   id: number;
   name: string;
   active: boolean;
   content: RestaurantAdContentElement[];
   ctas: RestaurantAdCTA[];
+  layout?: RestaurantAdLayout;
   starts_at?: string | null;
   ends_at?: string | null;
   blocked_ranges?: RestaurantAdScheduleRange[];
@@ -2454,7 +2522,7 @@ export type RestaurantAd = {
   created_at?: string;
   updated_at?: string;
 };
-export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas" | "starts_at" | "ends_at">;
+export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas" | "starts_at" | "ends_at" | "layout">;
 
 // Campanas: one markdown body broadcast to email + WhatsApp (coord id camp-*).
 export type CampaignChannel = "email" | "whatsapp";
