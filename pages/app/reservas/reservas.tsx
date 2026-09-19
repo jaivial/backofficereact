@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical } from "lucide-react";
+import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical, Sparkles } from "lucide-react";
 import { createClient } from "../../../api/client";
-import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics } from "../../../api/types";
+import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics, SpecialDateSettings } from "../../../api/types";
+import { StatusBadge } from "../../../ui/feedback/StatusBadge";
 import { sessionAtom } from "../../../state/atoms";
 import { Select } from "../../../ui/inputs/Select";
 import { DropdownMenu } from "../../../ui/inputs/DropdownMenu";
@@ -288,6 +289,10 @@ export default function Page() {
   const [floors, setFloors] = useState<ConfigFloor[]>(data.floors || []);
   const [totalCount, setTotalCount] = useState<number>(data.total_count || 0);
 
+  // Coordination id: special_dates_v1 - active special-date settings for the
+  // currently selected date. Null when the date is not configured.
+  const [specialDate, setSpecialDate] = useState<SpecialDateSettings | null>(null);
+
   const [confirm, setConfirm] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
   const [details, setDetails] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
   const [edit, setEdit] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
@@ -360,6 +365,19 @@ export default function Page() {
     } catch { /* ignore */ }
   }, [api, session]);
 
+  // Coordination id: special_dates_v1 - fetch the special-date settings (if any)
+  // for the selected date. Cheap, idempotent, scoped to the day being shown.
+  const loadSpecialDate = useCallback(async (d: string) => {
+    if (!session) return;
+    try {
+      const res = await api.config.getSpecialDate(d);
+      if (!res.success) { setSpecialDate(null); return; }
+      setSpecialDate(((res as any).special_date as SpecialDateSettings | null) || null);
+    } catch {
+      setSpecialDate(null);
+    }
+  }, [api.config, session]);
+
   const loadBookings = useCallback(async (next: { date: string; status: string; q: string; sort: "reservation_time" | "added_date"; dir: "asc" | "desc"; page: number; count: number }) => {
     if (!session) return;
     setBusy(true);
@@ -388,6 +406,7 @@ export default function Page() {
   const onSelectDate = useCallback((d: string) => {
     setDate(d);
     setDay(null);
+    setSpecialDate(null);
     syncURLDate(d);
     const nextView = parseYearMonth(d);
     setView((currentView) => {
@@ -399,7 +418,8 @@ export default function Page() {
     setPage(nextPage);
     void loadBookings({ date: d, status, q, sort, dir, page: nextPage, count });
     void loadSummary(d);
-  }, [count, dir, loadBookings, loadMonth, loadSummary, q, sort, status, syncURLDate]);
+    void loadSpecialDate(d);
+  }, [count, dir, loadBookings, loadMonth, loadSpecialDate, loadSummary, q, sort, status, syncURLDate]);
 
   const onPrevMonth = useCallback(() => {
     setView((currentView) => {
@@ -568,12 +588,14 @@ export default function Page() {
     void loadBookings({ date, status, q, sort, dir, page, count });
     void loadMonth(view.year, view.month);
     void loadSummary(date);
-  }, [count, data, date, dir, loadBookings, loadMonth, loadSummary, page, q, session, sort, status, view]);
+    void loadSpecialDate(date);
+  }, [count, data, date, dir, loadBookings, loadMonth, loadSpecialDate, loadSummary, page, q, session, sort, status, view]);
 
   const editInitial = useMemo<BookingEditorDraft | null>(() => {
     const b = edit.booking;
     if (!b) return null;
     const arroz = arrozRowsFromBooking(b);
+    const isSpecial = Boolean(b.special && Array.isArray(b.special.menus) && b.special.menus.length > 0);
     return {
       reservation_date: b.reservation_date,
       reservation_time: formatHHMM(b.reservation_time),
@@ -585,14 +607,19 @@ export default function Page() {
       table_number: normalizeTableNumber(b.table_number || ""),
       babyStrollers: b.babyStrollers || 0,
       highChairs: b.highChairs || 0,
-      special_menu: Boolean(b.special_menu),
-      menu_de_grupo_id: b.menu_de_grupo_id || null,
-      principales: principalesRowsFromBooking(b),
-      extras: b.special_menu ? [] : extrasFromBooking(b),
-      arroz_enabled: !b.special_menu && arroz.length > 0,
-      arroz,
+      special_menu: Boolean(b.special_menu) && !isSpecial,
+      menu_de_grupo_id: isSpecial ? null : b.menu_de_grupo_id || null,
+      principales: isSpecial ? [] : principalesRowsFromBooking(b),
+      extras: isSpecial ? [] : (b.special_menu ? [] : extrasFromBooking(b)),
+      arroz_enabled: !b.special_menu && !isSpecial && arroz.length > 0,
+      arroz: isSpecial ? [] : arroz,
       commentary: b.commentary || "",
       preferred_floor_number: typeof b.preferred_floor_number === "number" ? b.preferred_floor_number : null,
+      // Coordination id: special_booking_v1 - the editor fetches fresh
+      // special-date settings on mount and uses this snapshot to seed the
+      // per-menu draft (counts / payment method / principales). It is
+      // cleared once the settings arrive and the draft is hydrated.
+      specialInitialSnapshot: isSpecial ? b.special ?? null : null,
     };
   }, [edit.booking]);
 
@@ -721,6 +748,21 @@ export default function Page() {
               <AnimatePresence initial={false}>
                 {isDayOpen ? (
                   <motion.div key="reservas-side" className="bo-reservasSide" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
+                    {/* Coordination id: special_dates_v1 - soft warn + special
+                        title just above the occupancy donut, inside the same
+                        side container (SPEC §5 point 3). Renders nothing when
+                        the selected date is not an active special date. */}
+                    {specialDate?.is_active ? (
+                      <div className="bo-reservasSpecialBanner" data-slot="reservas-special-banner" data-testid="reservas-special-banner">
+                        <StatusBadge variant="warning" data-testid="reservas-special-banner-badge">
+                          <Sparkles size={12} strokeWidth={2} aria-hidden="true" style={{ marginRight: 4, verticalAlign: -2 }} />
+                          Fecha especial
+                        </StatusBadge>
+                        <div className="bo-reservasSpecialBannerTitle" data-slot="reservas-special-banner-title" data-testid="reservas-special-banner-title">
+                          {specialDate.title || "Fecha especial"}
+                        </div>
+                      </div>
+                    ) : null}
                     <DonutOccupancy totalPeople={occPeople} limit={occLimit} totalBookings={metrics?.total} pending={metrics?.pending} confirmed={metrics?.confirmed} />
 
                     <div className={`bo-filters${filtersOpen ? " is-open" : ""}`} aria-label="Filtros reservas" data-slot="reservas-filtros-reservas">

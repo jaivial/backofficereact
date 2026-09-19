@@ -65,6 +65,55 @@ export type Booking = {
   // Coordination id: booking_extras_v1
   extras?: BookingExtra[];
   extras_json?: string | null;
+  /**
+   * Snapshot of the special booking context, present when the booking was
+   * created/edited against an active special date. Coordinates with the
+   * backend snapshot column `special_json` (SPEC §3).
+   * Coordination id: special_booking_v1 (crosses FE/BE).
+   */
+  special?: BookingSpecial | null;
+};
+
+/**
+ * Snapshot of a booking against an active special date (SPEC §3 + §4).
+ * The same shape is used by the server when returning bookings from the admin
+ * list/by-id endpoints and when the editor submits the create/update payload.
+ */
+export type BookingSpecialMenuItem = {
+  dish_id: number;
+  name: string;
+};
+
+export type BookingSpecialMenu = {
+  special_date_menu_id: number;
+  menu_id: number | null;
+  label: string;
+  unit_price: number;
+  count: number;
+  adelanto_per_unit: number;
+  /** Selected payment method for this menu's adelanto (only meaningful when
+   *  the special date requires adelanto). */
+  adelanto_payment_method: import("./types").SpecialDatePaymentMethod | null;
+  items: BookingSpecialMenuItem[];
+};
+
+export type BookingSpecialAdelantoByMethod = {
+  method: import("./types").SpecialDatePaymentMethod;
+  required: number;
+  paid: number;
+  pending: number;
+};
+
+export type BookingSpecial = {
+  title: string;
+  is_prereserva: boolean;
+  menus: BookingSpecialMenu[];
+  adelanto_required_total: number;
+  adelanto_paid_total: number;
+  adelanto_pending_total: number;
+  adelanto_status: "paid" | "pending";
+  adelanto_by_method: BookingSpecialAdelantoByMethod[];
+  amount_left: number;
 };
 
 export type BookingExtra = {
@@ -2170,6 +2219,50 @@ export type MandatoryMenuConfig = {
   menuChooseMain: number[];
 };
 
+// Special Dates (reservas especiales)
+// Coordination id: special_dates_v1 (crosses FE/BE).
+export type SpecialDatePaymentMethod = "card" | "bizum" | "transferencia" | "efectivo";
+
+export const SPECIAL_DATE_PAYMENT_METHODS: ReadonlyArray<{ value: SpecialDatePaymentMethod; label: string }> = [
+  { value: "card", label: "Tarjeta" },
+  { value: "bizum", label: "Bizum" },
+  { value: "transferencia", label: "Transferencia" },
+  { value: "efectivo", label: "Efectivo" },
+];
+
+export const SPECIAL_DATE_PAYMENT_METHOD_LABELS: Record<SpecialDatePaymentMethod, string> = SPECIAL_DATE_PAYMENT_METHODS.reduce(
+  (acc, m) => ({ ...acc, [m.value]: m.label }),
+  {} as Record<SpecialDatePaymentMethod, string>,
+);
+
+export type SpecialDateMenu = {
+  id?: number | null;
+  menu_id?: number | null;
+  custom_title?: string | null;
+  custom_image_url?: string | null;
+  adelanto_amount?: number | null;
+  position?: number;
+};
+
+export type SpecialDateSettings = {
+  date: string;
+  is_active: boolean;
+  title: string;
+  description: string;
+  prereserva_enabled: boolean;
+  max_per_table_enabled: boolean;
+  max_per_table: number | null;
+  requires_adelanto: boolean;
+  adelanto_payment_methods: SpecialDatePaymentMethod[];
+  adelanto_unified: boolean;
+  adelanto_unified_amount: number | null;
+  prereserva_starts_on: string | null;
+  prereserva_ends_on: string | null;
+  menus: SpecialDateMenu[];
+};
+
+export type SpecialDateSavePayload = Partial<Omit<SpecialDateSettings, "date">> & { date: string };
+
 export type MandatoryMenuSavePayload = {
   date: string;
   status: boolean;
@@ -2327,7 +2420,7 @@ export type POSTicket = { id: number; ticketNumber: string; status: "OPEN" | "PA
 export type POSVisit = { id: number; channel: "DINE_IN" | "TAKEAWAY" | "DELIVERY"; tableId?: number | null; tableName?: string; covers: number; serviceDate: string; serviceType: "LUNCH" | "DINNER" | "OTHER"; status: "OPEN" | "CLOSED" | "CANCELLED"; version: number; tickets?: POSTicket[] };
 export type POSBootstrap = { success: true; settings: POSSettings; products: POSProduct[]; tables: Array<{ id: number; name: string; capacity: number; occupied: boolean }>; visits: POSVisit[] };
 
-export type LegalPageSlug = "aviso-legal" | "booking-policies" | "proteccion-datos";
+export type LegalPageSlug = "aviso-legal" | "booking-policies" | "proteccion-datos" | "special-booking-politics";
 
 export type LegalPageSummary = {
   slug: LegalPageSlug;

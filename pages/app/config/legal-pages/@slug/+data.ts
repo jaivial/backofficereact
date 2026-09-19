@@ -3,11 +3,12 @@ import { useConfig } from "vike-react/useConfig";
 
 import type { LegalPageSlug } from "../../../../../api/types";
 
-const VALID_SLUGS: LegalPageSlug[] = ["aviso-legal", "booking-policies", "proteccion-datos"];
+const VALID_SLUGS: LegalPageSlug[] = ["aviso-legal", "booking-policies", "proteccion-datos", "special-booking-politics"];
 const SLUG_TITLES: Record<LegalPageSlug, string> = {
   "aviso-legal": "Aviso Legal",
   "booking-policies": "Políticas de Reserva",
   "proteccion-datos": "Protección de Datos",
+  "special-booking-politics": "Políticas de Reservas Especiales",
 };
 
 export type Data = Awaited<ReturnType<typeof data>>;
