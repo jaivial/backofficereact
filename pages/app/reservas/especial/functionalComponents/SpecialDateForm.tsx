@@ -9,7 +9,6 @@ import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { Switch } from "../../../../../ui/shadcn/Switch";
 import { DatePicker } from "../../../../../ui/inputs/DatePicker";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
-import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 
 type EditableMenu = SpecialDateMenu & { _key: string };
 
@@ -42,6 +41,46 @@ function toNumberOrNull(v: string): number | null {
   if (v === "" || v == null) return null;
   const n = Number(v.replace(",", "."));
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Mobile-friendly toggle row: the whole row is the tap target (>=44px), the
+ * Switch stays the keyboard/AT control. Clicking the Switch stops propagation
+ * so the row handler and the switch never double-toggle.
+ */
+function ToggleRow({
+  title,
+  desc,
+  checked,
+  onToggle,
+  ariaLabel,
+  testId,
+}: {
+  title: string;
+  desc: string;
+  checked: boolean;
+  onToggle: (v: boolean) => void;
+  ariaLabel: string;
+  testId: string;
+}) {
+  return (
+    <div
+      data-ui={testId}
+      data-testid={testId}
+      role="group"
+      aria-label={title}
+      className="flex min-h-12 cursor-pointer select-none items-center justify-between gap-3 rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2 transition-colors active:border-(--bo-accent-border, var(--bo-border))"
+      onClick={() => onToggle(!checked)}
+    >
+      <div data-slot="toggle-row-text" data-testid={`${testId}-text`}>
+        <div className="text-sm font-medium" data-testid={`${testId}-title`}>{title}</div>
+        <div className="text-xs text-(--bo-muted)" data-testid={`${testId}-desc`}>{desc}</div>
+      </div>
+      <span onClick={(e) => e.stopPropagation()}>
+        <Switch checked={checked} onCheckedChange={onToggle} aria-label={ariaLabel} data-testid={`${testId}-switch`} />
+      </span>
+    </div>
+  );
 }
 
 export interface SpecialDateFormProps {
@@ -236,7 +275,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
           </div>
         </div>
 
-        <div data-slot="panel-body" className="bo-panelBody" style={{ display: "grid", gap: 18 }} data-testid="special-date-form-body">
+        <div data-slot="panel-body" className="bo-panelBody pb-20 sm:pb-4" style={{ display: "grid", gap: 18 }} data-testid="special-date-form-body">
           {/* Title + Description */}
           <div data-ui="special-date-title-field" data-testid="special-date-title-field">
             <label className="bo-label" data-testid="special-date-title-label">Título</label>
@@ -261,24 +300,14 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
           </div>
 
           {/* Prereserva */}
-          <div
-            data-ui="special-date-prereserva-row"
-            data-testid="special-date-prereserva-row"
-            className="flex items-center justify-between rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2"
-          >
-            <div data-slot="prereserva-text" data-testid="special-date-prereserva-text">
-              <div className="text-sm font-medium" data-testid="special-date-prereserva-title">Prereserva</div>
-              <div className="text-xs text-(--bo-muted)" data-testid="special-date-prereserva-desc">
-                Activa el modo prereserva para este día
-              </div>
-            </div>
-            <Switch
-              checked={draft.prereserva_enabled}
-              onCheckedChange={handlePrereservaToggle}
-              aria-label="Activar prereserva"
-              data-testid="special-date-prereserva-switch"
-            />
-          </div>
+          <ToggleRow
+            title="Prereserva"
+            desc="Activa el modo prereserva para este día"
+            checked={draft.prereserva_enabled}
+            onToggle={handlePrereservaToggle}
+            ariaLabel="Activar prereserva"
+            testId="special-date-prereserva-row"
+          />
 
           <AnimatePresence>
             {draft.prereserva_enabled ? (
@@ -293,24 +322,14 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                 style={{ display: "grid", gap: 14 }}
               >
                 {/* Requires adelanto */}
-                <div
-                  data-ui="special-date-requires-adelanto-row"
-                  data-testid="special-date-requires-adelanto-row"
-                  className="flex items-center justify-between rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2"
-                >
-                  <div data-slot="requires-adelanto-text" data-testid="special-date-requires-adelanto-text">
-                    <div className="text-sm font-medium" data-testid="special-date-requires-adelanto-title">Requiere adelanto</div>
-                    <div className="text-xs text-(--bo-muted)" data-testid="special-date-requires-adelanto-desc">
-                      El cliente debe pagar un adelanto para confirmar
-                    </div>
-                  </div>
-                  <Switch
-                    checked={draft.requires_adelanto}
-                    onCheckedChange={handleRequiresAdelantoToggle}
-                    aria-label="Activar adelanto"
-                    data-testid="special-date-requires-adelanto-switch"
-                  />
-                </div>
+                <ToggleRow
+                  title="Requiere adelanto"
+                  desc="El cliente debe pagar un adelanto para confirmar"
+                  checked={draft.requires_adelanto}
+                  onToggle={handleRequiresAdelantoToggle}
+                  ariaLabel="Activar adelanto"
+                  testId="special-date-requires-adelanto-row"
+                />
 
                 <AnimatePresence>
                   {draft.requires_adelanto ? (
@@ -334,7 +353,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                               <button
                                 key={m.value}
                                 type="button"
-                                className={`bo-chip${on ? " is-on" : ""}`}
+                                className={`bo-chip min-h-11 px-4 text-sm transition-transform duration-150 active:scale-[0.96]${on ? " is-on" : ""}`}
                                 onClick={() => togglePaymentMethod(m.value)}
                                 aria-pressed={on}
                                 data-testid={`special-date-payment-method-${m.value}`}
@@ -347,24 +366,14 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                       </div>
 
                       {/* Adelanto unified toggle */}
-                      <div
-                        data-ui="special-date-adelanto-unified-row"
-                        data-testid="special-date-adelanto-unified-row"
-                        className="flex items-center justify-between rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2"
-                      >
-                        <div data-slot="unified-text" data-testid="special-date-adelanto-unified-text">
-                          <div className="text-sm font-medium" data-testid="special-date-adelanto-unified-title">Todos iguales</div>
-                          <div className="text-xs text-(--bo-muted)" data-testid="special-date-adelanto-unified-desc">
-                            Aplica el mismo adelanto por persona a todos los menús
-                          </div>
-                        </div>
-                        <Switch
-                          checked={draft.adelanto_unified}
-                          onCheckedChange={handleAdelantoUnifiedToggle}
-                          aria-label="Unificar adelanto"
-                          data-testid="special-date-adelanto-unified-switch"
-                        />
-                      </div>
+                      <ToggleRow
+                        title="Todos iguales"
+                        desc="Aplica el mismo adelanto por persona a todos los menús"
+                        checked={draft.adelanto_unified}
+                        onToggle={handleAdelantoUnifiedToggle}
+                        ariaLabel="Unificar adelanto"
+                        testId="special-date-adelanto-unified-row"
+                      />
 
                       {draft.adelanto_unified ? (
                         <div data-ui="special-date-unified-amount-field" data-testid="special-date-unified-amount-field">
@@ -427,6 +436,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           <div data-slot="prereservaStart" data-testid="special-date-prereserva-start-field">
                             <div className="text-xs text-(--bo-muted)" data-testid="special-date-prereserva-start-label">Desde</div>
                             <DatePicker
+                              className="w-full"
                               value={draft.prereserva_starts_on ?? ""}
                               onChange={(iso: string) => patch({ prereserva_starts_on: iso || null })}
                               data-testid="special-date-prereserva-start-input"
@@ -435,6 +445,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           <div data-slot="prereservaEnd" data-testid="special-date-prereserva-end-field">
                             <div className="text-xs text-(--bo-muted)" data-testid="special-date-prereserva-end-label">Hasta</div>
                             <DatePicker
+                              className="w-full"
                               value={draft.prereserva_ends_on ?? ""}
                               onChange={(iso: string) => patch({ prereserva_ends_on: iso || null })}
                               data-testid="special-date-prereserva-end-input"
@@ -480,7 +491,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                         </div>
                         <select
                           className="bo-input"
-                          value={m.menu_id != null ? String(m.menu_id) : ""}
+                          value={m.menu_id != null ? String(m.menu_id) : "__custom__"}
                           onChange={(e) => {
                             const v = e.target.value;
                             if (v === "__custom__") {
@@ -491,7 +502,6 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           }}
                           data-testid={`special-date-menu-row-${idx + 1}-source-select`}
                         >
-                          <option value="">— Personalizado —</option>
                           <option value="__custom__">Personalizado (título + imagen)</option>
                           {availableMenus.map((am) => (
                             <option key={am.id} value={String(am.id)}>{am.menu_title}</option>
@@ -556,24 +566,14 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
           </div>
 
           {/* Max per table */}
-          <div
-            data-ui="special-date-max-per-table-row"
-            data-testid="special-date-max-per-table-row"
-            className="flex items-center justify-between rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2"
-          >
-            <div data-slot="maxPerTableText" data-testid="special-date-max-per-table-text">
-              <div className="text-sm font-medium" data-testid="special-date-max-per-table-title">Máximo por mesa</div>
-              <div className="text-xs text-(--bo-muted)" data-testid="special-date-max-per-table-desc">
-                Limita el número de comensales por reserva para esta fecha
-              </div>
-            </div>
-            <Switch
-              checked={draft.max_per_table_enabled}
-              onCheckedChange={handleMaxPerTableToggle}
-              aria-label="Activar máximo por mesa"
-              data-testid="special-date-max-per-table-switch"
-            />
-          </div>
+          <ToggleRow
+            title="Máximo por mesa"
+            desc="Limita el número de comensales por reserva para esta fecha"
+            checked={draft.max_per_table_enabled}
+            onToggle={handleMaxPerTableToggle}
+            ariaLabel="Activar máximo por mesa"
+            testId="special-date-max-per-table-row"
+          />
 
           <AnimatePresence>
             {draft.max_per_table_enabled ? (
@@ -608,20 +608,17 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
             ) : null}
           </AnimatePresence>
 
-          {!isActive ? (
-            <InlineAlert
-              kind="info"
-              title="Fecha especial inactiva"
-              message="Activa esta fecha desde la pestaña Configuración para que aparezca como disponible para los clientes."
-              testId="special-date-inactive-hint"
-            />
-          ) : null}
-
-          {/* Save */}
-          <div className="flex justify-center pt-2" data-ui="special-date-save-row" data-testid="special-date-save-row">
+          {/* Save — sticky on mobile so it stays reachable without scrolling to the end.
+              Bleeds to the panel edges (-mx-4/-mb-4 vs bo-panelBody padding:16px) and
+              keeps the panel's bottom radius for concentric corners. */}
+          <div
+            className="sticky bottom-0 z-10 -mx-4 -mb-4 flex justify-center rounded-b-[var(--bo-radius-lg)] border-t border-(--bo-border) bg-(--bo-surface) px-4 py-3"
+            data-ui="special-date-save-row"
+            data-testid="special-date-save-row"
+          >
             <button
               type="button"
-              className="bo-btn primary w-full sm:w-auto px-8"
+              className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] sm:w-auto"
               onClick={() => void handleSave()}
               disabled={saving}
               data-testid="special-date-save-btn"
