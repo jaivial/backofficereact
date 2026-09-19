@@ -2241,6 +2241,7 @@ export type SpecialDateMenu = {
   custom_title?: string | null;
   custom_image_url?: string | null;
   adelanto_amount?: number | null;
+  price?: number | null;
   position?: number;
 };
 
