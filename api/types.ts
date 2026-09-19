@@ -2170,6 +2170,50 @@ export type MandatoryMenuConfig = {
   menuChooseMain: number[];
 };
 
+// Special Dates (reservas especiales)
+// Coordination id: special_dates_v1 (crosses FE/BE).
+export type SpecialDatePaymentMethod = "card" | "bizum" | "transferencia" | "efectivo";
+
+export const SPECIAL_DATE_PAYMENT_METHODS: ReadonlyArray<{ value: SpecialDatePaymentMethod; label: string }> = [
+  { value: "card", label: "Tarjeta" },
+  { value: "bizum", label: "Bizum" },
+  { value: "transferencia", label: "Transferencia" },
+  { value: "efectivo", label: "Efectivo" },
+];
+
+export const SPECIAL_DATE_PAYMENT_METHOD_LABELS: Record<SpecialDatePaymentMethod, string> = SPECIAL_DATE_PAYMENT_METHODS.reduce(
+  (acc, m) => ({ ...acc, [m.value]: m.label }),
+  {} as Record<SpecialDatePaymentMethod, string>,
+);
+
+export type SpecialDateMenu = {
+  id?: number | null;
+  menu_id?: number | null;
+  custom_title?: string | null;
+  custom_image_url?: string | null;
+  adelanto_amount?: number | null;
+  position?: number;
+};
+
+export type SpecialDateSettings = {
+  date: string;
+  is_active: boolean;
+  title: string;
+  description: string;
+  prereserva_enabled: boolean;
+  max_per_table_enabled: boolean;
+  max_per_table: number | null;
+  requires_adelanto: boolean;
+  adelanto_payment_methods: SpecialDatePaymentMethod[];
+  adelanto_unified: boolean;
+  adelanto_unified_amount: number | null;
+  prereserva_starts_on: string | null;
+  prereserva_ends_on: string | null;
+  menus: SpecialDateMenu[];
+};
+
+export type SpecialDateSavePayload = Partial<Omit<SpecialDateSettings, "date">> & { date: string };
+
 export type MandatoryMenuSavePayload = {
   date: string;
   status: boolean;
@@ -2327,7 +2371,7 @@ export type POSTicket = { id: number; ticketNumber: string; status: "OPEN" | "PA
 export type POSVisit = { id: number; channel: "DINE_IN" | "TAKEAWAY" | "DELIVERY"; tableId?: number | null; tableName?: string; covers: number; serviceDate: string; serviceType: "LUNCH" | "DINNER" | "OTHER"; status: "OPEN" | "CLOSED" | "CANCELLED"; version: number; tickets?: POSTicket[] };
 export type POSBootstrap = { success: true; settings: POSSettings; products: POSProduct[]; tables: Array<{ id: number; name: string; capacity: number; occupied: boolean }>; visits: POSVisit[] };
 
-export type LegalPageSlug = "aviso-legal" | "booking-policies" | "proteccion-datos";
+export type LegalPageSlug = "aviso-legal" | "booking-policies" | "proteccion-datos" | "special-booking-politics";
 
 export type LegalPageSummary = {
   slug: LegalPageSlug;
