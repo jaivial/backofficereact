@@ -749,21 +749,29 @@ export default function Page() {
                 {isDayOpen ? (
                   <motion.div key="reservas-side" className="bo-reservasSide" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
                     {/* Coordination id: special_dates_v1 - soft warn + special
-                        title just above the occupancy donut, inside the same
-                        side container (SPEC §5 point 3). Renders nothing when
-                        the selected date is not an active special date. */}
-                    {specialDate?.is_active ? (
-                      <div className="bo-reservasSpecialBanner" data-slot="reservas-special-banner" data-testid="reservas-special-banner">
-                        <StatusBadge variant="warning" data-testid="reservas-special-banner-badge">
-                          <Sparkles size={12} strokeWidth={2} aria-hidden="true" style={{ marginRight: 4, verticalAlign: -2 }} />
-                          Fecha especial
-                        </StatusBadge>
-                        <div className="bo-reservasSpecialBannerTitle" data-slot="reservas-special-banner-title" data-testid="reservas-special-banner-title">
-                          {specialDate.title || "Fecha especial"}
+                        title centered INSIDE the same container as the
+                        occupancy donut (SPEC §5 point 3). Renders nothing
+                        when the selected date is not an active special
+                        date. The banner sits visually above the donut via
+                        the parent stack. */}
+                    <div
+                      className="bo-reservasSpecialStack flex flex-col items-center gap-2 text-center"
+                      data-slot="reservas-special-stack"
+                      data-testid="reservas-special-warn"
+                    >
+                      {specialDate?.is_active ? (
+                        <div className="bo-reservasSpecialBanner" data-slot="reservas-special-banner" data-testid="reservas-special-banner">
+                          <StatusBadge variant="warning" data-testid="reservas-special-banner-badge">
+                            <Sparkles size={12} strokeWidth={2} aria-hidden="true" style={{ marginRight: 4, verticalAlign: -2 }} />
+                            Fecha especial
+                          </StatusBadge>
+                          <div className="bo-reservasSpecialBannerTitle" data-slot="reservas-special-banner-title" data-testid="reservas-special-banner-title">
+                            {specialDate.title || "Fecha especial"}
+                          </div>
                         </div>
-                      </div>
-                    ) : null}
-                    <DonutOccupancy totalPeople={occPeople} limit={occLimit} totalBookings={metrics?.total} pending={metrics?.pending} confirmed={metrics?.confirmed} />
+                      ) : null}
+                      <DonutOccupancy totalPeople={occPeople} limit={occLimit} totalBookings={metrics?.total} pending={metrics?.pending} confirmed={metrics?.confirmed} />
+                    </div>
 
                     <div className={`bo-filters${filtersOpen ? " is-open" : ""}`} aria-label="Filtros reservas" data-slot="reservas-filtros-reservas">
                       <div className="bo-filtersTop" data-slot="reservas-filtersTop">
