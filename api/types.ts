@@ -2263,6 +2263,18 @@ export type SpecialDateSettings = {
 
 export type SpecialDateSavePayload = Partial<Omit<SpecialDateSettings, "date">> & { date: string };
 
+export type SpecialDateListEntry = {
+  date: string;
+  title: string;
+  is_active: boolean;
+  prereserva_enabled: boolean;
+  menus: string[];
+  people: number;
+  limit: number;
+};
+
+export type SpecialDateListResponse = { success: true; special_dates: SpecialDateListEntry[] };
+
 export type MandatoryMenuSavePayload = {
   date: string;
   status: boolean;
