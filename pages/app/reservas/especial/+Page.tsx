@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { ArrowLeft, Sparkles } from "lucide-react";
 
 import type { MenuSelectorItem, SpecialDateListEntry, SpecialDateSettings } from "../../../../api/types";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
+import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { SpecialDateForm } from "./functionalComponents/SpecialDateForm";
 import { SpecialDateCardList } from "./functionalComponents/SpecialDateCardList";
 
@@ -14,6 +15,11 @@ type PageData = {
   list: SpecialDateListEntry[];
   error: string | null;
 };
+
+function todayISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 export default function Page() {
   const pageContext = usePageContext();
@@ -32,6 +38,10 @@ export default function Page() {
   // Date is "active special" only when the server returned is_active=true (not
   // merely when the row exists — deactivated rows fall back to the conversion view).
   const isActiveSpecial = Boolean(data.specialDate?.is_active);
+
+  // Default the new-special-date picker to the currently-selected date so the
+  // operator can convert that exact day in one click. Falls back to today.
+  const [pickDate, setPickDate] = useState<string>(data.date || todayISO());
 
   return (
     <section data-ui="especial-page" data-testid="especial-page-section" aria-label="Reservas especiales">
@@ -60,7 +70,9 @@ export default function Page() {
         />
       ) : (
         <div className="mx-auto grid max-w-[768px] gap-6" data-testid="especial-page-inactive">
-          {/* #1 — Convert this date to special */}
+          {/* #1 — Convert this date to special. The button is disabled until a
+              valid date is picked; clicking navigates to the Config tab on
+              that date so the operator can flip the activation toggle there. */}
           <section
             data-testid="especial-page-convert-section"
             aria-labelledby="especial-page-convert-title"
@@ -70,17 +82,35 @@ export default function Page() {
               <div className="flex items-center gap-2">
                 <Sparkles size={18} strokeWidth={1.6} className="text-(--bo-accent, rgba(185,168,255,0.9))" aria-hidden="true" />
                 <h2 id="especial-page-convert-title" className="text-base font-medium">
-                  Convertir esta fecha en especial
+                  Añadir menú especial
                 </h2>
               </div>
               <p className="text-sm text-(--bo-muted)" data-testid="especial-page-convert-desc">
-                Activa la pestaña de menú especial para esta fecha desde Configuración. Luego podrás
-                definir el título, los menús, prereserva y adelanto.
+                Elige la fecha que quieres activar como menú especial. Por defecto se usa la fecha
+                seleccionada en el calendario (o hoy si no hay ninguna). Tras elegir, ve a la
+                pestaña de Configuración de esa fecha y activa el interruptor.
               </p>
-              <div>
+              <div
+                className="flex flex-col gap-3 sm:flex-row sm:items-end"
+                data-testid="especial-page-convert-row"
+              >
+                <div className="grid flex-1 gap-1.5" data-testid="especial-page-convert-date-field">
+                  <label
+                    className="bo-label text-left"
+                    data-testid="especial-page-convert-date-label"
+                  >
+                    Fecha
+                  </label>
+                  <DatePicker
+                    className="w-full"
+                    value={pickDate}
+                    onChange={(iso: string) => setPickDate(iso)}
+                    data-testid="especial-page-convert-date-input"
+                  />
+                </div>
                 <a
-                  href={`/app/reservas/config?date=${encodeURIComponent(data.date)}`}
-                  className="bo-btn bo-btn--primary"
+                  href={`/app/reservas/config?date=${encodeURIComponent(pickDate)}`}
+                  className="bo-btn bo-btn--primary transition-transform duration-150 active:scale-[0.96]"
                   data-testid="especial-page-convert-btn"
                 >
                   Activar reservas especiales
