@@ -383,3 +383,23 @@
   color: rgba(238, 240, 246, 0.52);
 }
 
+/* Subtle entrance for iconography inside empty-state / hero cards. Used by
+   SpecialDateCardList (sparkles). Interruptible (CSS animation), opacity
+   ramp + small blur for a calm fade-in. */
+@keyframes sparkle-fade {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 0.6;
+    filter: blur(0px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-sparkle-fade {
+    animation: none !important;
+  }
+}
+

@@ -267,6 +267,28 @@ export function useConfigDay({
     async (checked: boolean) => {
       setBusy(true);
       setError(null);
+      // Optimistic UI: flip the local state immediately so the switch
+      // reflects the user's click without waiting for the POST roundtrip.
+      // We reconcile with the server response below; on failure we revert.
+      const previous = specialDate;
+      setSpecialDate(
+        (specialDate ?? {
+          date,
+          is_active: false,
+          title: "",
+          description: "",
+          prereserva_enabled: false,
+          max_per_table_enabled: false,
+          max_per_table: null,
+          requires_adelanto: false,
+          adelanto_payment_methods: [],
+          adelanto_unified: false,
+          adelanto_unified_amount: null,
+          prereserva_starts_on: null,
+          prereserva_ends_on: null,
+          menus: [],
+        }) && { ...(specialDate ?? {}), is_active: checked } as SpecialDateSettings
+      );
       try {
         const base: SpecialDateSettings = specialDate ?? {
           date,
@@ -286,6 +308,8 @@ export function useConfigDay({
         };
         const res = await api.config.saveSpecialDate({ ...base, date, is_active: checked });
         if (!res.success) {
+          // Revert the optimistic change so the switch snaps back.
+          if (previous !== undefined) setSpecialDate(previous);
           pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar la fecha especial" });
           return;
         }
@@ -296,6 +320,8 @@ export function useConfigDay({
           message: checked ? "Esta fecha aparece como especial para los clientes" : "Esta fecha vuelve al modo estándar",
         });
       } catch (e) {
+        // Revert on network / unexpected errors.
+        if (previous !== undefined) setSpecialDate(previous);
         setError(e instanceof Error ? e.message : "No se pudo actualizar la fecha especial");
       } finally {
         setBusy(false);
