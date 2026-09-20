@@ -26,7 +26,14 @@ export function SpecialDateCardList({
         data-testid={`${testId}-empty`}
         className="rounded-lg border border-dashed border-(--bo-border) bg-(--bo-surface-2) px-4 py-6 text-center text-sm text-(--bo-muted)"
       >
-        <Sparkles size={18} strokeWidth={1.6} className="mx-auto mb-2 opacity-60" aria-hidden="true" />
+        {/* Subtle entrance: opacity fades in once the list mounts (interruptible).
+            Animation is skipped on first render via key so SSR → CSR doesn't replay. */}
+        <Sparkles
+          size={18}
+          strokeWidth={1.6}
+          className="mx-auto mb-2 opacity-60 motion-safe:animate-[sparkle-fade_1.6s_ease-out]"
+          aria-hidden="true"
+        />
         No hay fechas especiales configuradas todavía.
       </div>
     );
@@ -56,14 +63,21 @@ function SpecialDateCard({
 
   return (
     <li>
+      {/*
+        Surface depth via box-shadow instead of a structural border.
+        Concentric: outer radius = --bo-radius-lg; the inner donut block
+        uses the same value with a 1px gap so the corners breathe.
+        Hover reveals a colored border + accent shadow via the static-cue
+        rule (the chevron also nudges right for affordance).
+      */}
       <button
         type="button"
         onClick={() => onSelect(entry.date)}
         aria-label={`Ir a ${entry.date}: ${entry.title || menuSummary}`}
-        className="bo-panel w-full cursor-pointer text-left transition-transform duration-150 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--bo-accent, rgba(185,168,255,0.6))"
+        className="group bo-panel relative flex w-full cursor-pointer items-stretch gap-3 overflow-hidden rounded-[var(--bo-radius-lg)] p-3 text-left transition-[transform,opacity,box-shadow,border-color] duration-150 ease-out active:scale-[0.96] hover:border-(--bo-accent-border, rgba(185,168,255,0.35)) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--bo-accent, rgba(185,168,255,0.6)) sm:p-4"
         data-testid={testId}
       >
-        <div className="flex items-stretch gap-3 p-3 sm:p-4">
+        <div className="flex items-stretch gap-3">
           {/* Left: title + menu subtitle + prereserva badge */}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -88,7 +102,7 @@ function SpecialDateCard({
             </div>
           </div>
 
-          {/* Right: occupancy + chevron */}
+          {/* Right: occupancy + chevron. Chev nudges right on hover for affordance. */}
           <div className="flex flex-col items-end justify-between gap-2" data-testid={`${testId}-meta`}>
             <DonutOccupancy
               totalPeople={people}
@@ -101,7 +115,13 @@ function SpecialDateCard({
               <span className="tabular-nums" data-testid={`${testId}-ratio`}>
                 {people}/{limit}
               </span>
-              <ChevronRight size={16} strokeWidth={1.8} className="text-(--bo-muted)" aria-hidden="true" />
+              <ChevronRight
+                size={16}
+                strokeWidth={1.8}
+                className="text-(--bo-muted) transition-transform duration-150 ease-out group-hover:translate-x-0.5 motion-reduce:transition-none"
+                aria-hidden="true"
+                data-testid={`${testId}-chevron`}
+              />
             </div>
           </div>
         </div>
