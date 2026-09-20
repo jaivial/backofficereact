@@ -1,12 +1,14 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo } from "react";
+import { navigate } from "vike/client/router";
 import { usePageContext } from "vike-react/usePageContext";
-import { ArrowLeft, CalendarDays, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 import type { MenuSelectorItem, SpecialDateListEntry, SpecialDateSettings } from "../../../../api/types";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { createClient } from "../../../../api/client";
 import { useMonthCalendar } from "../../../../ui/hooks/useMonthCalendar";
 import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDatePicker";
+import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 import { SpecialDateForm } from "./functionalComponents/SpecialDateForm";
 import { SpecialDateCardList } from "./functionalComponents/SpecialDateCardList";
 
@@ -33,39 +35,57 @@ export default function Page() {
     error: null,
   }) as PageData;
 
-  if (data.error) {
-    return <InlineAlert kind="error" title="Error" message={data.error} testId="especial-error-alert" />;
-  }
-
   // Date is "active special" only when the server returned is_active=true (not
   // merely when the row exists — deactivated rows fall back to the conversion view).
   const isActiveSpecial = Boolean(data.specialDate?.is_active);
 
-  // The picker uses the same MonthCalendarDatePicker as the "Añadir reserva"
-  // and "Config" pages so the operator gets one calendar everywhere.
+  // The picker uses the same MonthCalendarDatePicker + PageToolbar combo as the
+  // Settings tab (/app/reservas/config). It is ALWAYS visible at the top so the
+  // operator can jump between special dates from any state (active or inactive)
+  // without going back to the Reservas tab first.
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
-  const [pickDate, setPickDate] = useState<string>(data.date || todayISO());
-  const calendar = useMonthCalendar(api, pickDate);
-  const goToToday = () => setPickDate(todayISO());
+  const calendar = useMonthCalendar(api, data.date || todayISO());
+
+  const onDateChange = useCallback(
+    (iso: string) => {
+      if (!iso || iso === data.date) return;
+      // SPA navigation so +data.ts re-runs on the new date without a full reload
+      // — matches how the other reservas tabs switch dates.
+      void navigate(`/app/reservas/especial?date=${encodeURIComponent(iso)}`);
+    },
+    [data.date],
+  );
 
   return (
     <section data-ui="especial-page" data-testid="especial-page-section" aria-label="Reservas especiales">
-      <div
-        className="mx-auto mb-4 flex max-w-[768px] items-center justify-between gap-3"
-        data-testid="especial-page-header"
-      >
-        <a
-          href={`/app/reservas/config?date=${encodeURIComponent(data.date)}`}
-          className="bo-btn bo-btn--ghost flex items-center gap-2"
-          data-testid="especial-page-activate-cta"
-        >
-          <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
-          Ir a configuración
-        </a>
-        <div className="text-sm text-(--bo-muted)" data-testid="especial-page-date">
-          {data.date}
+      {/* #1 — Top toolbar with the date picker. Same component + position as the
+          Settings tab (/app/reservas/config) so the operator gets one
+          calendar everywhere. Always visible regardless of the active/inactive
+          state below. */}
+      <PageToolbar
+        className="bo-toolbar--centered"
+        left={
+          <MonthCalendarDatePicker
+            value={data.date || todayISO()}
+            onChange={onDateChange}
+            year={calendar.year}
+            month={calendar.month}
+            days={calendar.days}
+            onPrevMonth={calendar.onPrevMonth}
+            onNextMonth={calendar.onNextMonth}
+            loading={calendar.loading}
+            data-testid="especial-page-date-picker"
+            data-ui="date-picker"
+          />
+        }
+        data-testid="especial-page-toolbar"
+      />
+
+      {data.error ? (
+        <div className="mx-auto mt-4 max-w-[768px]" data-testid="especial-page-error-wrap">
+          <InlineAlert kind="error" title="Error" message={data.error} testId="especial-error-alert" />
         </div>
-      </div>
+      ) : null}
 
       {isActiveSpecial ? (
         <SpecialDateForm
@@ -75,9 +95,9 @@ export default function Page() {
         />
       ) : (
         <div className="mx-auto grid max-w-[768px] gap-6" data-testid="especial-page-inactive">
-          {/* #1 — Convert this date to special. Same calendar as Añadir /
-              Config so the operator gets one picker everywhere. The
-              "Fecha de hoy" button above the picker jumps to today. */}
+          {/* #2 — "Convert this date to special" hint. The date picker above
+              already lets the user change date, so we only show a short
+              instruction + a CTA into the Config tab to flip the switch. */}
           <section
             data-testid="especial-page-convert-section"
             aria-labelledby="especial-page-convert-title"
@@ -87,62 +107,29 @@ export default function Page() {
               <div className="flex items-center gap-2">
                 <Sparkles size={18} strokeWidth={1.6} className="text-(--bo-accent, rgba(185,168,255,0.9))" aria-hidden="true" />
                 <h2 id="especial-page-convert-title" className="text-base font-medium">
-                  Añadir menú especial
+                  Activar fecha como menú especial
                 </h2>
               </div>
               <p className="text-sm text-(--bo-muted)" data-testid="especial-page-convert-desc">
-                Elige la fecha que quieres activar como menú especial. Por defecto se usa la fecha
-                seleccionada en el calendario (o hoy si no hay ninguna). Tras elegir, ve a la
-                pestaña de Configuración de esa fecha y activa el interruptor.
+                Esta fecha aún no tiene un menú especial activo. Elige otra fecha
+                con el calendario de arriba o ve a Configuración para activar el
+                interruptor de “Reservas especiales” en esta fecha.
               </p>
-              <div className="flex justify-end" data-testid="especial-page-convert-today-row">
-                <button
-                  type="button"
-                  onClick={goToToday}
-                  className="bo-btn bo-btn--ghost flex items-center gap-1.5 transition-transform duration-150 active:scale-[0.96]"
-                  data-testid="especial-page-convert-today-btn"
-                >
-                  <CalendarDays size={14} strokeWidth={1.8} aria-hidden="true" />
-                  Fecha de hoy
-                </button>
-              </div>
-              <div
-                className="flex flex-col gap-3 sm:flex-row sm:items-end"
-                data-testid="especial-page-convert-row"
-              >
-                <div className="grid flex-1 gap-1.5" data-testid="especial-page-convert-date-field">
-                  <label
-                    className="bo-label text-left"
-                    data-testid="especial-page-convert-date-label"
-                  >
-                    Fecha
-                  </label>
-                  <MonthCalendarDatePicker
-                    value={pickDate}
-                    onChange={(iso: string) => setPickDate(iso)}
-                    year={calendar.year}
-                    month={calendar.month}
-                    days={calendar.days}
-                    onPrevMonth={calendar.onPrevMonth}
-                    onNextMonth={calendar.onNextMonth}
-                    loading={calendar.loading}
-                    className="w-full"
-                    data-testid="especial-page-convert-date-input"
-                    data-ui="date-picker"
-                  />
-                </div>
+              <div className="flex justify-end" data-testid="especial-page-convert-actions">
                 <a
-                  href={`/app/reservas/config?date=${encodeURIComponent(pickDate)}`}
+                  href={`/app/reservas/config?date=${encodeURIComponent(data.date || todayISO())}`}
                   className="bo-btn bo-btn--primary transition-transform duration-150 active:scale-[0.96]"
                   data-testid="especial-page-convert-btn"
                 >
-                  Activar reservas especiales
+                  Ir a configuración
                 </a>
               </div>
             </div>
           </section>
 
-          {/* #2 — Card list of every existing special date */}
+          {/* #3 — Card list of every existing special date. Always rendered so
+              a transient failure on the single-date lookup (which only sets
+              `data.error` for transport errors now) doesn't hide it. */}
           <section
             data-testid="especial-page-list-section"
             aria-labelledby="especial-page-list-title"

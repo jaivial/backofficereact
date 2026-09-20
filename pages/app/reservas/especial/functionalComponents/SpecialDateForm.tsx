@@ -770,11 +770,13 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         </div>
       </div>
 
-      {/* Sticky save bar at the BOTTOM of the section so it visually anchors
+      {/* Save bar at the bottom of the section so it visually anchors
           after the panel card. Sits outside the panel to avoid the Vike
-          AnimatePresence transform trap (see PR #395/#396). */}
+          AnimatePresence transform trap (see PR #395/#396). The bar is NOT
+          sticky — it scrolls with the page so it does not move while the
+          operator scrolls (issue: el botón "Guardar" se mueve al hacer scroll). */}
       <div
-        className="sticky bottom-0 z-10 mx-auto mt-3 flex w-full max-w-[768px] justify-center rounded-[var(--bo-radius-lg)] border border-(--bo-border) bg-(--bo-surface) px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-(--bo-surface)/80"
+        className="mx-auto mt-6 flex w-full max-w-[768px] justify-end rounded-[var(--bo-radius-lg)] border border-(--bo-border) bg-(--bo-surface) px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-(--bo-surface)/80"
         data-ui="special-date-save-row"
         data-testid="special-date-save-row"
       >
