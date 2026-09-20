@@ -11,6 +11,7 @@ import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDat
 import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 import { SpecialDateForm } from "./functionalComponents/SpecialDateForm";
 import { SpecialDateCardList } from "./functionalComponents/SpecialDateCardList";
+import { useGlobalSocketTopic } from "../../../../ui/realtime/GlobalSocketProvider";
 
 type PageData = {
   date: string;
@@ -19,6 +20,17 @@ type PageData = {
   list: SpecialDateListEntry[];
   error: string | null;
 };
+type SpecialDateEvent = {
+  type: "special_date_changed" | "special_date_deleted";
+  restaurant_id: number;
+  date: string;
+  is_active?: boolean;
+  title?: string;
+  people?: number;
+  limit?: number;
+};
+
+
 
 function todayISO(): string {
   const d = new Date();
@@ -47,6 +59,48 @@ export default function Page() {
   const [error, setError] = useState<string | null>(ssrData.error);
 
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
+
+  // Real-time sync: subscribe to special_date events from the global
+  // WebSocket. When ANY tab saves a special_date, this hook patches
+  // the local list in place — no refetch needed for the card list
+  // summary. The single-date fetch below handles the detail.
+  useGlobalSocketTopic<SpecialDateEvent>("special_date", (raw) => {
+    const payload = raw as SpecialDateEvent | null;
+    if (!payload || !payload.date) return;
+    setList((prev) => {
+      const idx = prev.findIndex((e) => e.date === payload.date);
+      if (payload.type === "special_date_deleted") {
+        return idx >= 0 ? prev.filter((e) => e.date !== payload.date) : prev;
+      }
+      // Upsert. The Especial card list only needs (date, title,
+      // is_active, prereserva_enabled, menus, people, limit). For now
+      // we patch the existing row if present, otherwise drop the
+      // event — a fresh row will appear on the next focus refetch.
+      if (idx < 0) return prev;
+      const next = prev.slice();
+      const cur = next[idx];
+      next[idx] = {
+        ...cur,
+        title: payload.title ?? cur.title,
+        is_active: payload.is_active ?? cur.is_active,
+      };
+      return next;
+    });
+    // If the event is for the *currently selected* date, also patch
+    // `specialDate` so the form / inactive view updates without a
+    // refetch.
+    if (payload.date === date) {
+      setSpecialDate((prev) => {
+        if (!prev && payload.type === "special_date_deleted") return null;
+        if (!prev) return prev;
+        return {
+          ...prev,
+          is_active: payload.is_active ?? prev.is_active,
+          title: payload.title ?? prev.title,
+        };
+      });
+    }
+  });
 
   // Re-fetch the single-date row whenever the date changes. The card list
   // is fetched once on mount (it doesn't depend on the selected date) so the
