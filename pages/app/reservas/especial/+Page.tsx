@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { navigate } from "vike/client/router";
 import { usePageContext } from "vike-react/usePageContext";
 import { Sparkles } from "lucide-react";
 
@@ -183,12 +184,12 @@ export default function Page() {
             <SpecialDateCardList
               entries={list}
               onSelect={(d) => {
-                setDate(d);
-                if (typeof window !== "undefined") {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set("date", d);
-                  window.history.replaceState(null, "", url.toString());
-                }
+                // Real SPA navigation — re-runs +data.ts on the new date so
+                // the SSR snapshot (specialDate / list / availableMenus)
+                // is fresh before the component renders. This matches the
+                // operator's expectation: clicking a card "goes to" the
+                // card's date on the Especial tab.
+                void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
               }}
               testId="especial-page-list"
             />
@@ -242,12 +243,10 @@ export default function Page() {
             <SpecialDateCardList
               entries={list}
               onSelect={(d) => {
-                setDate(d);
-                if (typeof window !== "undefined") {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set("date", d);
-                  window.history.replaceState(null, "", url.toString());
-                }
+                // Same SPA navigation as the active view — see the comment
+                // above. The active/inactive toggle is derived from the
+                // fresh `specialDate` returned by +data.ts on the new date.
+                void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
               }}
               testId="especial-page-list"
             />
