@@ -271,23 +271,27 @@ export function useConfigDay({
       // reflects the user's click without waiting for the POST roundtrip.
       // We reconcile with the server response below; on failure we revert.
       const previous = specialDate;
+      const defaults: SpecialDateSettings = {
+        date,
+        is_active: false,
+        title: "",
+        description: "",
+        prereserva_enabled: false,
+        max_per_table_enabled: false,
+        max_per_table: null,
+        requires_adelanto: false,
+        adelanto_payment_methods: [],
+        adelanto_unified: false,
+        adelanto_unified_amount: null,
+        prereserva_starts_on: null,
+        prereserva_ends_on: null,
+        menus: [],
+      };
+      // Optimistic: when specialDate is null we MUST include `date` in the
+      // optimistic object (the previous expression evaluated to
+      // `{is_active: true}` only, which broke the switch on the next render).
       setSpecialDate(
-        (specialDate ?? {
-          date,
-          is_active: false,
-          title: "",
-          description: "",
-          prereserva_enabled: false,
-          max_per_table_enabled: false,
-          max_per_table: null,
-          requires_adelanto: false,
-          adelanto_payment_methods: [],
-          adelanto_unified: false,
-          adelanto_unified_amount: null,
-          prereserva_starts_on: null,
-          prereserva_ends_on: null,
-          menus: [],
-        }) && { ...(specialDate ?? {}), is_active: checked } as SpecialDateSettings
+        specialDate ? { ...specialDate, is_active: checked } : { ...defaults, is_active: checked }
       );
       try {
         const base: SpecialDateSettings = specialDate ?? {
@@ -313,7 +317,11 @@ export function useConfigDay({
           pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo actualizar la fecha especial" });
           return;
         }
-        setSpecialDate((res as { special_date: SpecialDateSettings }).special_date);
+        // The POST endpoint only returns { success, date } — it does NOT
+        // echo the saved settings. Re-fetch the row so the switch (and the
+        // hint banner) reflects the real DB state and doesn't snap back to
+        // OFF on the next render.
+        await loadSpecialDate(date);
         pushToast({
           kind: "success",
           title: checked ? "Reservas especiales activadas" : "Reservas especiales desactivadas",
@@ -327,7 +335,7 @@ export function useConfigDay({
         setBusy(false);
       }
     },
-    [api.config, date, specialDate, pushToast, setBusy, setError, setSpecialDate],
+    [api.config, date, specialDate, pushToast, setBusy, setError, setSpecialDate, loadSpecialDate],
   );
 
   const toggleDay = useCallback(async () => {
