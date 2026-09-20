@@ -62,17 +62,30 @@ export function SpecialDateCardList({
  * so the tap target is the entire card (>=44px tall, accessible by
  * default) and the grid layout below never depends on a list-wrapper.
  *
- * shadcn-style chrome:
- *  - rounded-lg border bg-card text-card-foreground shadow-sm
- *  - hover lifts the shadow + accent border
- *  - hover bg-accent/30 for the icon + occupancy chip
+ * Layout is three stacked rows inside the card body:
  *
- * Occupancy indicator: a small square chip with just the percentage
- * number — NO donut / circle graph. The chip sits in the header
- * (mobile) or footer (>=sm) and uses the same shadcn `border-border
- * bg-secondary` surface as the users icon. The chip border tints
- * amber/red as occupancy climbs so the operator gets a quick visual
- * signal without a chart.
+ *   ┌─────────────────────────────────────────────────────────────┐
+ *   │  [date icon]  Mon, 15 Jan 2026              [Prereserva]    │  <- header
+ *   │                                                             │
+ *   │  Title (optional)                                           │
+ *   │                                                             │
+ *   │  Menús: arroz, postre, ...                                  │  <- menus
+ *   │                                                             │
+ *   │  ──────────────────────────────────────────────────────────  │
+ *   │  [NN%]   👥  0/45  pax  →                                    │  <- count
+ *   └─────────────────────────────────────────────────────────────┘
+ *
+ * - header: small calendar icon + date + prereserva badge (shadcn
+ *   rounded-full chip).
+ * - menus: a single line-clamp-2 line with the menu list.
+ * - count: percentage chip on the LEFT of the people breakdown
+ *   (users icon + "people/limit" + "pax" suffix) + chevron on the
+ *   right. The percentage sits on the same row so the eye reads
+ *   "% → people/limit" left-to-right.
+ *
+ * The percentage chip is a small square (48px) with just the rounded
+ * percentage centered inside — NO donut / circle. Border tints
+ * amber/orange/red as occupancy climbs.
  */
 function SpecialDateCard({
   entry,
@@ -105,56 +118,38 @@ function SpecialDateCard({
       )}
       data-testid={testId}
     >
-      {/* Header row: date + (mobile-only) occupancy chip + prereserva badge.
-          On mobile the chip is in the top-right; on >=sm the chip moves
-          to the footer and this row only carries the badge. */}
-      <div
-        className={cn(
-          "flex items-start justify-between gap-2 px-4 pt-4 sm:pt-5",
-          // Bottom padding becomes 0 on >=sm because the footer takes over.
-          "pb-3 sm:pb-0",
-        )}
-        data-testid={`${testId}-header`}
-      >
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          {/* Calendar accent in a small accent-tinted square so it reads
-              as a "date chip" instead of a stray icon. */}
-          <span
-            aria-hidden="true"
-            className={cn(
-              "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
-              "bg-accent/40 text-primary",
-            )}
-            data-testid={`${testId}-date-icon`}
-          >
-            <CalendarDays size={14} strokeWidth={1.8} />
-          </span>
-          <span
-            className="truncate text-sm font-semibold tabular-nums"
-            data-testid={`${testId}-date`}
-          >
-            {formatHumanDate(entry.date)}
-          </span>
-        </div>
+      {/* Three vertical sections, each in its own div. The body is
+          a flex column so the rows always stack the same way
+          regardless of viewport. */}
+      <div className="flex flex-col px-4 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5">
 
-        <div className="flex shrink-0 items-center gap-2">
-          {/* Mobile-only occupancy chip (small) — sits in the header.
-              Square container with just the percentage number, NO
-              donut / circle graph. */}
-          <OccupancyChip
-            pct={occupancy.pct}
-            tone={occupancy.tone}
-            people={people}
-            limit={limit}
-            className="sm:hidden"
-            data-testid={`${testId}-occupancy-mobile`}
-          />
-          {/* Status badge — shadcn-style secondary/primary variants
-              (warning for prereserva, muted otherwise). */}
+        {/* 1 — Header: date icon + date + prereserva badge. */}
+        <div
+          className="flex items-start justify-between gap-2"
+          data-testid={`${testId}-header`}
+        >
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <span
+              aria-hidden="true"
+              className={cn(
+                "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+                "bg-accent/40 text-primary",
+              )}
+              data-testid={`${testId}-date-icon`}
+            >
+              <CalendarDays size={14} strokeWidth={1.8} />
+            </span>
+            <span
+              className="truncate text-sm font-semibold tabular-nums"
+              data-testid={`${testId}-date`}
+            >
+              {formatHumanDate(entry.date)}
+            </span>
+          </div>
           <span
             data-testid={`${testId}-prereserva`}
             className={cn(
-              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
+              "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
               prereserva
                 ? "border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300"
                 : "border-border bg-secondary text-muted-foreground",
@@ -163,76 +158,68 @@ function SpecialDateCard({
             {prereserva ? "Prereserva" : "Sin prereserva"}
           </span>
         </div>
-      </div>
 
-      {/* Title (optional). */}
-      {entry.title ? (
+        {/* Title (optional) — sits inside the header block so a long
+            title wraps under the date without pushing the menus row. */}
+        {entry.title ? (
+          <div
+            className="mt-1.5 truncate text-sm font-medium text-card-foreground"
+            data-testid={`${testId}-title`}
+          >
+            {entry.title}
+          </div>
+        ) : null}
+
+        {/* 2 — Menus row. Always full-width. */}
         <div
-          className={cn(
-            "truncate px-4 text-sm font-medium text-card-foreground",
-            "sm:px-5",
-          )}
-          data-testid={`${testId}-title`}
+          className="mt-2 line-clamp-2 text-xs text-muted-foreground"
+          data-testid={`${testId}-menus`}
         >
-          {entry.title}
+          <span className="font-medium text-foreground/80">Menús: </span>
+          {menuSummary}
         </div>
-      ) : null}
 
-      {/* Menus line. Always full-width. */}
-      <div
-        className={cn(
-          "mt-1 line-clamp-2 px-4 text-xs text-muted-foreground",
-          "sm:px-5",
-        )}
-        data-testid={`${testId}-menus`}
-      >
-        <span className="font-medium text-foreground/80">Menús: </span>
-        {menuSummary}
-      </div>
-
-      {/* Footer (>=sm): occupancy chip on the left + ratio + chevron on
-          the right. On mobile the chip lives in the header, so this
-          footer only shows the ratio + chevron. */}
-      <div
-        className={cn(
-          "mt-3 flex items-center justify-between gap-3 border-t border-border/60 px-4 py-3",
-          "sm:mt-4 sm:px-5 sm:py-4",
-        )}
-        data-testid={`${testId}-footer`}
-      >
-        {/* sm+ occupancy chip — slightly bigger, sits in the footer
-            row. Same square + percentage design, no chart. */}
-        <OccupancyChip
-          pct={occupancy.pct}
-          tone={occupancy.tone}
-          people={people}
-          limit={limit}
-          size="lg"
-          className="hidden sm:inline-flex"
-          data-testid={`${testId}-occupancy-footer`}
-        />
-
+        {/* 3 — Count row: percentage chip (LEFT) + people breakdown
+            (users icon + ratio + pax suffix) + chevron. The chip
+            sits to the LEFT of the breakdown so the operator reads
+            "%  ->  people/limit  pax" left-to-right. */}
         <div
           className={cn(
-            "flex flex-1 items-center justify-end gap-2 text-xs text-muted-foreground",
-            "sm:gap-2.5",
+            "mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-3",
+            "sm:mt-4 sm:gap-3 sm:pt-4",
           )}
-          data-testid={`${testId}-meta`}
+          data-testid={`${testId}-count`}
         >
-          <span
-            aria-hidden="true"
-            data-testid={`${testId}-users-icon`}
-            className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-secondary text-secondary-foreground sm:h-7 sm:w-7"
-          >
-            <Users size={14} strokeWidth={1.8} />
-          </span>
-          <span
-            className="tabular-nums font-medium text-card-foreground"
-            data-testid={`${testId}-ratio`}
-          >
-            {people}/{limit}
-          </span>
-          <span className="hidden sm:inline">pax</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Percentage chip — small square, NO donut/circle. */}
+            <OccupancyChip
+              pct={occupancy.pct}
+              tone={occupancy.tone}
+              people={people}
+              limit={limit}
+              data-testid={`${testId}-occupancy`}
+            />
+            {/* People breakdown. */}
+            <div
+              className="flex items-center gap-1.5 text-xs text-muted-foreground sm:gap-2"
+              data-testid={`${testId}-meta`}
+            >
+              <span
+                aria-hidden="true"
+                data-testid={`${testId}-users-icon`}
+                className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-secondary text-secondary-foreground sm:h-7 sm:w-7"
+              >
+                <Users size={14} strokeWidth={1.8} />
+              </span>
+              <span
+                className="tabular-nums font-medium text-card-foreground"
+                data-testid={`${testId}-ratio`}
+              >
+                {people}/{limit}
+              </span>
+              <span className="hidden sm:inline">pax</span>
+            </div>
+          </div>
           <ChevronRight
             size={16}
             strokeWidth={1.8}
@@ -252,27 +239,15 @@ function SpecialDateCard({
 
 /**
  * Small square chip showing the occupancy percentage. NO circle chart
- * — just a centered number on a shadcn-style bordered surface. The chip
- * border tints amber/red as occupancy climbs so the operator gets a
- * quick visual cue.
- *
- * Sizing:
- *  - default: 40px square (mobile header)
- *  - lg:      48px square (sm+ footer)
- *
- * Color tones (matches the DonutOccupancy tones):
- *  - base (0–49%):  border-border, text-card-foreground
- *  - y50 (50–74%):  border-amber-500/40, text-amber-700 dark:text-amber-300
- *  - o75 (75–84%):  border-amber-500/50, text-amber-700 dark:text-amber-300
- *  - o85 (85–99%):  border-orange-500/50, text-orange-700 dark:text-orange-300
- *  - r100 (>=100%): border-red-500/50, text-red-700 dark:text-red-300
+ * — just a centered number on a shadcn-style bordered surface. The
+ * chip border tints amber/red as occupancy climbs so the operator gets
+ * a quick visual cue.
  */
 function OccupancyChip({
   pct,
   tone,
   people,
   limit,
-  size = "sm",
   className,
   ...rest
 }: {
@@ -280,7 +255,6 @@ function OccupancyChip({
   tone: "base" | "y50" | "o75" | "o85" | "r100";
   people: number;
   limit: number;
-  size?: "sm" | "lg";
   className?: string;
   "data-testid"?: string;
 }) {
@@ -291,16 +265,11 @@ function OccupancyChip({
     o85: "border-orange-500/50 bg-orange-500/15 text-orange-700 dark:text-orange-300",
     r100: "border-red-500/50 bg-red-500/15 text-red-700 dark:text-red-300",
   } as const;
-  const sizeClasses =
-    size === "lg"
-      ? "h-12 w-12 text-sm"
-      : "h-10 w-10 text-xs";
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-md border font-semibold tabular-nums",
+        "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border text-xs font-semibold tabular-nums sm:h-12 sm:w-12 sm:text-sm",
         toneClasses[tone],
-        sizeClasses,
         className,
       )}
       aria-label={`Ocupación ${pct}% (${people} de ${limit} pax)`}
