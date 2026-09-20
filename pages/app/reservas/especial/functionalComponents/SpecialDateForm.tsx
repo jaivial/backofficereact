@@ -288,10 +288,21 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la configuración" });
         return;
       }
-      const saved = (res as { special_date: SpecialDateSettings }).special_date;
-      setDraft(saved);
-      setEditableMenus(withKeys(saved.menus ?? []));
-      onSaved?.(saved);
+      // The POST endpoint only returns { success, date } — it does NOT
+      // echo the saved settings. Re-fetch via getSpecialDate so the form
+      // reflects the real DB row. Without this, the optimistic local
+      // `setDraft(res.special_date)` set `draft` to undefined and the next
+      // render crashed with "Cannot read properties of undefined
+      // (reading 'requires_adelanto')", breaking the whole UI.
+      const fresh = await api.config.getSpecialDate(date);
+      if (fresh.success) {
+        const saved = (fresh as { special_date: SpecialDateSettings | null }).special_date;
+        if (saved) {
+          setDraft(saved);
+          setEditableMenus(withKeys(saved.menus ?? []));
+          onSaved?.(saved);
+        }
+      }
       pushToast({ kind: "success", title: "Guardado", message: "Reservas especiales actualizadas" });
     } catch (e) {
       pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar la configuración" });
