@@ -2,7 +2,6 @@ import React from "react";
 import { CalendarDays, ChevronRight, Sparkles, Users } from "lucide-react";
 
 import type { SpecialDateListEntry } from "../../../../../api/types";
-import { DonutOccupancy } from "../../../../../ui/widgets/DonutOccupancy";
 import { cn } from "../../../../../ui/shadcn/utils";
 
 /**
@@ -66,15 +65,14 @@ export function SpecialDateCardList({
  * shadcn-style chrome:
  *  - rounded-lg border bg-card text-card-foreground shadow-sm
  *  - hover lifts the shadow + accent border
- *  - hover bg-accent/30 for the icon + donut ring
+ *  - hover bg-accent/30 for the icon + occupancy chip
  *
- * Responsive donut position:
- *  - mobile (<sm): the donut sits in the top-right of the header row
- *    next to the prereserva badge so the body stays single-column.
- *  - tablet (sm): the donut moves to the bottom-left of a footer row
- *    that also shows the occupancy ratio.
- *  - desktop (md+): the donut grows a bit and the footer is wider
- *    with the ratio + chevron aligned right.
+ * Occupancy indicator: a small square chip with just the percentage
+ * number — NO donut / circle graph. The chip sits in the header
+ * (mobile) or footer (>=sm) and uses the same shadcn `border-border
+ * bg-secondary` surface as the users icon. The chip border tints
+ * amber/red as occupancy climbs so the operator gets a quick visual
+ * signal without a chart.
  */
 function SpecialDateCard({
   entry,
@@ -89,11 +87,7 @@ function SpecialDateCard({
   const limit = typeof entry.limit === "number" && entry.limit > 0 ? entry.limit : 45;
   const prereserva = entry.prereserva_enabled;
   const testId = `special-date-card-${entry.date}`;
-
-  // Donut sizing per breakpoint. Mobile-first: small in the header,
-  // bigger in the footer from `sm` up.
-  const donutSizeMobile = 40;
-  const donutSizeFooter = 56;
+  const occupancy = computeOccupancy(people, limit);
 
   return (
     <button
@@ -111,9 +105,9 @@ function SpecialDateCard({
       )}
       data-testid={testId}
     >
-      {/* Header row: date + (mobile-only) donut + prereserva badge.
-          On mobile the donut is in the top-right; on >=sm the donut
-          moves to the footer and this row only carries the badge. */}
+      {/* Header row: date + (mobile-only) occupancy chip + prereserva badge.
+          On mobile the chip is in the top-right; on >=sm the chip moves
+          to the footer and this row only carries the badge. */}
       <div
         className={cn(
           "flex items-start justify-between gap-2 px-4 pt-4 sm:pt-5",
@@ -144,21 +138,19 @@ function SpecialDateCard({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          {/* Mobile-only compact donut (40px) — sits in the header. */}
-          <div className="sm:hidden" data-testid={`${testId}-donut-mobile-wrap`}>
-            <DonutOccupancy
-              totalPeople={people}
-              limit={limit}
-              size={donutSizeMobile}
-              strokeWidth={5}
-              className="shrink-0"
-              data-testid={`${testId}-donut`}
-            />
-          </div>
+          {/* Mobile-only occupancy chip (small) — sits in the header.
+              Square container with just the percentage number, NO
+              donut / circle graph. */}
+          <OccupancyChip
+            pct={occupancy.pct}
+            tone={occupancy.tone}
+            people={people}
+            limit={limit}
+            className="sm:hidden"
+            data-testid={`${testId}-occupancy-mobile`}
+          />
           {/* Status badge — shadcn-style secondary/primary variants
-              (warning for prereserva, muted otherwise). We reuse the
-              project's StatusBadge for consistency, but the colors
-              map to the same semantic vars. */}
+              (warning for prereserva, muted otherwise). */}
           <span
             data-testid={`${testId}-prereserva`}
             className={cn(
@@ -173,8 +165,7 @@ function SpecialDateCard({
         </div>
       </div>
 
-      {/* Title (optional). Sits below the header on mobile; sits in
-          the same row as the footer donut on >=sm. */}
+      {/* Title (optional). */}
       {entry.title ? (
         <div
           className={cn(
@@ -199,9 +190,9 @@ function SpecialDateCard({
         {menuSummary}
       </div>
 
-      {/* Footer (>=sm): donut on the left + occupancy ratio on the right.
-          On mobile the donut lives in the header, so this footer only
-          shows the ratio + chevron. */}
+      {/* Footer (>=sm): occupancy chip on the left + ratio + chevron on
+          the right. On mobile the chip lives in the header, so this
+          footer only shows the ratio + chevron. */}
       <div
         className={cn(
           "mt-3 flex items-center justify-between gap-3 border-t border-border/60 px-4 py-3",
@@ -209,20 +200,17 @@ function SpecialDateCard({
         )}
         data-testid={`${testId}-footer`}
       >
-        {/* sm+ donut — bigger, sits in a 56px slot so the arc + center
-            text stay legible. The shadcn surface uses `bg-accent/40`
-            inside the DonutOccupancy center to lift the percentage off
-            the card surface. */}
-        <div className="hidden sm:block shrink-0" data-testid={`${testId}-donut-footer-wrap`}>
-          <DonutOccupancy
-            totalPeople={people}
-            limit={limit}
-            size={donutSizeFooter}
-            strokeWidth={6}
-            className="shrink-0"
-            data-testid={`${testId}-donut`}
-          />
-        </div>
+        {/* sm+ occupancy chip — slightly bigger, sits in the footer
+            row. Same square + percentage design, no chart. */}
+        <OccupancyChip
+          pct={occupancy.pct}
+          tone={occupancy.tone}
+          people={people}
+          limit={limit}
+          size="lg"
+          className="hidden sm:inline-flex"
+          data-testid={`${testId}-occupancy-footer`}
+        />
 
         <div
           className={cn(
@@ -260,6 +248,87 @@ function SpecialDateCard({
       </div>
     </button>
   );
+}
+
+/**
+ * Small square chip showing the occupancy percentage. NO circle chart
+ * — just a centered number on a shadcn-style bordered surface. The chip
+ * border tints amber/red as occupancy climbs so the operator gets a
+ * quick visual cue.
+ *
+ * Sizing:
+ *  - default: 40px square (mobile header)
+ *  - lg:      48px square (sm+ footer)
+ *
+ * Color tones (matches the DonutOccupancy tones):
+ *  - base (0–49%):  border-border, text-card-foreground
+ *  - y50 (50–74%):  border-amber-500/40, text-amber-700 dark:text-amber-300
+ *  - o75 (75–84%):  border-amber-500/50, text-amber-700 dark:text-amber-300
+ *  - o85 (85–99%):  border-orange-500/50, text-orange-700 dark:text-orange-300
+ *  - r100 (>=100%): border-red-500/50, text-red-700 dark:text-red-300
+ */
+function OccupancyChip({
+  pct,
+  tone,
+  people,
+  limit,
+  size = "sm",
+  className,
+  ...rest
+}: {
+  pct: number;
+  tone: "base" | "y50" | "o75" | "o85" | "r100";
+  people: number;
+  limit: number;
+  size?: "sm" | "lg";
+  className?: string;
+  "data-testid"?: string;
+}) {
+  const toneClasses: Record<typeof tone, string> = {
+    base: "border-border bg-card text-card-foreground",
+    y50: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    o75: "border-amber-500/50 bg-amber-500/15 text-amber-700 dark:text-amber-300",
+    o85: "border-orange-500/50 bg-orange-500/15 text-orange-700 dark:text-orange-300",
+    r100: "border-red-500/50 bg-red-500/15 text-red-700 dark:text-red-300",
+  } as const;
+  const sizeClasses =
+    size === "lg"
+      ? "h-12 w-12 text-sm"
+      : "h-10 w-10 text-xs";
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center justify-center rounded-md border font-semibold tabular-nums",
+        toneClasses[tone],
+        sizeClasses,
+        className,
+      )}
+      aria-label={`Ocupación ${pct}% (${people} de ${limit} pax)`}
+      title={`${pct}% de ocupación (${people}/${limit} pax)`}
+      {...rest}
+    >
+      {pct}%
+    </span>
+  );
+}
+
+/**
+ * Returns the rounded occupancy percentage and the tone bucket it falls
+ * into, matching the thresholds used by DonutOccupancy.
+ */
+function computeOccupancy(
+  people: number,
+  limit: number,
+): { pct: number; tone: "base" | "y50" | "o75" | "o85" | "r100" } {
+  if (!Number.isFinite(limit) || limit <= 0) return { pct: 0, tone: "base" };
+  const raw = (people / limit) * 100;
+  const pct = Number.isFinite(raw) ? Math.round(raw) : 0;
+  let tone: "base" | "y50" | "o75" | "o85" | "r100" = "base";
+  if (pct >= 100) tone = "r100";
+  else if (pct >= 85) tone = "o85";
+  else if (pct >= 75) tone = "o75";
+  else if (pct >= 50) tone = "y50";
+  return { pct, tone };
 }
 
 function formatHumanDate(iso: string): string {
