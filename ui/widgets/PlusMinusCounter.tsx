@@ -44,6 +44,10 @@ export function PlusMinusCounter({
 }: PlusMinusCounterProps) {
   const valueText = String(value);
   const isCounter = variant === "counter";
+  // Match the icon metrics the bo-counter shell uses (InlineCounter): 16px at
+  // stroke 2, against 14px at 2.2 for the timeAdjust shell.
+  const iconSize = isCounter ? 16 : 14;
+  const iconStroke = isCounter ? 2 : 2.2;
 
   return (
     <div
@@ -73,7 +77,7 @@ export function PlusMinusCounter({
           aria-label={decrementAriaLabel || `Reducir ${label}`}
           data-testid="plus-minus-counter-minus"
         >
-          <Minus size={14} strokeWidth={2.2} />
+          <Minus size={iconSize} strokeWidth={iconStroke} />
         </button>
 
         <div
@@ -95,7 +99,7 @@ export function PlusMinusCounter({
           aria-label={incrementAriaLabel || `Aumentar ${label}`}
           data-testid="plus-minus-counter-plus"
         >
-          <Plus size={14} strokeWidth={2.2} />
+          <Plus size={iconSize} strokeWidth={iconStroke} />
         </button>
       </div>
 
