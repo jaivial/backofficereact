@@ -133,7 +133,7 @@ export default function Page() {
   // reconcile below. Activating a date creates a row the list has never
   // seen, and the socket upsert deliberately ignores unknown dates, so
   // without this refetch a freshly activated date would be missing from
-  // the "Fechas con menú especial" tab until the window regained focus.
+  // the "Fechas festivas" tab until the window regained focus.
   const refreshList = useCallback(async () => {
     const res = await api.config.listSpecialDates();
     if (res.success) {
@@ -197,7 +197,7 @@ export default function Page() {
       setSpecialDate(previous);
     }, []),
     // Pull the card list once the row exists so the newly activated date
-    // shows up in the "Fechas con menú especial" tab right away.
+    // shows up in the "Fechas festivas" tab right away.
     onSuccess: useCallback(() => {
       void refreshList();
     }, [refreshList]),
@@ -262,7 +262,7 @@ export default function Page() {
       ) : null}
 
       {/* #2 — Special-menu day: settings form + dates list behind tabs.
-          Inactive day: the "Sin menu especial" empty state with the
+          Inactive day: the "Sin fecha festiva" empty state with the
           Activar CTA. The switch between the two is driven purely by
           `specialDate.is_active`, which activation flips optimistically
           — so the tabs slide in without a remount or a navigation. */}
@@ -293,7 +293,7 @@ export default function Page() {
               className="grid gap-3"
             >
               <h2 id="especial-page-list-title" className="text-base font-medium text-center">
-                Fechas con menú especial
+                Fechas festivas
               </h2>
               <SpecialDateCardList
                 entries={list}
@@ -305,10 +305,10 @@ export default function Page() {
         </div>
       ) : (
         <div className="mx-auto grid max-w-[768px] gap-6" data-testid="especial-page-inactive">
-          {/* #3 — No special menu for this day yet. */}
+          {/* #3 — No fecha festiva for this day yet. */}
           <section
             data-testid="especial-page-convert-section"
-            aria-label="Activar menu especial"
+            aria-label="Activar fecha festiva"
             className="bo-panel"
           >
             <div className="bo-panelBody pt-4" data-testid="especial-page-convert-body">
@@ -335,7 +335,7 @@ export default function Page() {
             className="grid gap-3"
           >
             <h2 id="especial-page-inactive-list-title" className="text-base font-medium text-center">
-              Fechas con menú especial
+              Fechas festivas
             </h2>
             <SpecialDateCardList
               entries={list}
