@@ -31,6 +31,9 @@ const EMPTY_SETTINGS: SpecialDateSettings = {
   menus: [],
 };
 
+/** Backend contract: max_per_table must be >= 1 when the limit is enabled. */
+const MAX_PER_TABLE_MIN = 1;
+
 function uid(): string {
   return "m_" + Math.random().toString(36).slice(2, 9);
 }
@@ -173,13 +176,24 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     setDraft((prev: SpecialDateSettings) => ({ ...prev, ...p }));
   }, []);
 
-  const handleMaxPerTableToggle = useCallback((checked: boolean) => patch({ max_per_table_enabled: checked }), [patch]);
-  const handleMaxPerTableCommit = useCallback(() => {
-    const n = toNumberOrNull(maxPerTableDraft);
-    const safe = n != null && n >= 1 ? Math.trunc(n) : null;
-    patch({ max_per_table: safe });
-    setMaxPerTableDraft(safe != null ? String(safe) : "");
-  }, [maxPerTableDraft, patch]);
+  // Turning the limit on must seed a usable value. The backend rejects
+  // max_per_table < 1 (and a null value while enabled), so leaving the draft
+  // empty rendered the counter at 0 and made "Guardar" fail.
+  const handleMaxPerTableToggle = useCallback(
+    (checked: boolean) => {
+      if (!checked) {
+        patch({ max_per_table_enabled: false });
+        return;
+      }
+      const current = toNumberOrNull(maxPerTableDraft);
+      const seeded = current != null && current >= MAX_PER_TABLE_MIN ? Math.trunc(current) : MAX_PER_TABLE_MIN;
+      setMaxPerTableDraft(String(seeded));
+      patch({ max_per_table_enabled: true, max_per_table: seeded });
+    },
+    [maxPerTableDraft, patch],
+  );
+  // Never below the floor, even if the draft is empty or malformed.
+  const maxPerTableValue = Math.max(MAX_PER_TABLE_MIN, toNumberOrNull(maxPerTableDraft) ?? MAX_PER_TABLE_MIN);
 
   const handlePrereservaToggle = useCallback(
     (checked: boolean) => {
@@ -812,20 +826,19 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                 <PlusMinusCounter
                   variant="counter"
                   label="Máximo por mesa"
-                  value={maxPerTableDraft === "" ? 0 : Number(maxPerTableDraft)}
+                  value={maxPerTableValue}
+                  canDecrease={maxPerTableValue > MAX_PER_TABLE_MIN}
                   onDecrease={() => {
-                    const cur = Number(maxPerTableDraft || 0);
-                    const next = Math.max(1, cur - 1);
+                    const next = Math.max(MAX_PER_TABLE_MIN, maxPerTableValue - 1);
                     setMaxPerTableDraft(String(next));
                     patch({ max_per_table: next });
                   }}
                   onIncrease={() => {
-                    const cur = Number(maxPerTableDraft || 0);
-                    const next = cur + 1;
+                    const next = maxPerTableValue + 1;
                     setMaxPerTableDraft(String(next));
                     patch({ max_per_table: next });
                   }}
-                  helperText="Mínimo 1"
+                  helperText={`Mínimo ${MAX_PER_TABLE_MIN}`}
                 />
               </motion.div>
             ) : null}
