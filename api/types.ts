@@ -46,6 +46,10 @@ export type Booking = {
   reservation_time: string;
   party_size: number;
   children: number;
+  /** Coordination id: mobility_issues_v1 */
+  has_mobility_issues?: boolean;
+  /** How many of `party_size` have mobility issues. */
+  mobility_people?: number;
   contact_phone: string | null;
   contact_phone_country_code: string | null;
   status: string | null;
@@ -2253,6 +2257,12 @@ export type SpecialDateSettings = {
   prereserva_enabled: boolean;
   max_per_table_enabled: boolean;
   max_per_table: number | null;
+  /**
+   * Ask "problemas de movilidad" on this date, so the floor can avoid
+   * seating affected guests on a first floor with no lift.
+   * Coordination id: mobility_issues_v1
+   */
+  mobility_enabled: boolean;
   requires_adelanto: boolean;
   adelanto_payment_methods: SpecialDatePaymentMethod[];
   adelanto_unified: boolean;

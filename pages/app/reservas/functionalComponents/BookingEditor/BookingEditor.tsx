@@ -120,6 +120,14 @@ export type BookingEditorDraft = {
    * / payment method / selected principales. Cleared after first hydration.
    */
   specialInitialSnapshot?: import("../../../../../api/types").BookingSpecial | null;
+
+  /**
+   * "Problemas de movilidad" — only asked when the date's special settings
+   * enable it. `mobility_people` counts how many of `party_size` are
+   * affected. Coordination id: mobility_issues_v1
+   */
+  has_mobility_issues?: boolean;
+  mobility_people?: number;
 };
 
 export function BookingEditor({
@@ -591,6 +599,15 @@ export function BookingEditor({
       special_menu: Boolean(draft.special_menu),
     };
 
+    // Coordination id: mobility_issues_v1 — only sent when the date asks.
+    if (specialDate?.mobility_enabled) {
+      const hasMobility = Boolean(draft.has_mobility_issues);
+      payload.has_mobility_issues = hasMobility;
+      payload.mobility_people = hasMobility
+        ? clampInt(Number(draft.mobility_people || 0), 0, partySize)
+        : 0;
+    }
+
     if (draft.special_menu) {
       const menuId = Number(draft.menu_de_grupo_id || 0);
       if (!Number.isFinite(menuId) || menuId <= 0) return setFormError("Selecciona un menú de grupo");
@@ -847,6 +864,17 @@ export function BookingEditor({
           </div>
         </div>
       </div>
+
+      {specialDate?.mobility_enabled ? (
+        <MobilityField
+          busy={busy}
+          partySize={Number(draft.party_size) || 1}
+          hasIssues={Boolean(draft.has_mobility_issues)}
+          people={Number(draft.mobility_people) || 0}
+          onToggle={(v) => setDraft((p) => ({ ...p, has_mobility_issues: v, mobility_people: v ? Math.max(1, Number(p.mobility_people) || 1) : 0 }))}
+          onCountChange={(v) => setDraft((p) => ({ ...p, mobility_people: v }))}
+        />
+      ) : null}
 
       {specialDate ? (
         <SpecialBookingSection
@@ -1565,6 +1593,83 @@ function SpecialMenuSubSection({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * "Personas con problemas de movilidad" — a yes/no chip pair that reveals a
+ * counter when the answer is yes. Rendered only when the special date has
+ * the question enabled, so it never appears on ordinary bookings.
+ *
+ * The counter is bounded by the party size: you cannot report more affected
+ * guests than people on the booking.
+ *
+ * Coordination id: mobility_issues_v1
+ */
+function MobilityField({
+  busy,
+  partySize,
+  hasIssues,
+  people,
+  onToggle,
+  onCountChange,
+}: {
+  busy?: boolean;
+  partySize: number;
+  hasIssues: boolean;
+  people: number;
+  onToggle: (next: boolean) => void;
+  onCountChange: (next: number) => void;
+}) {
+  const maxPeople = Math.max(1, partySize);
+  return (
+    <Panel
+      className="bo-bookingPanel--menu"
+      data-slot="bookingEditor-panel"
+      title="Personas con problemas de movilidad"
+      meta={hasIssues ? `${clampInt(people, 1, maxPeople)} de ${maxPeople}` : "No"}
+    >
+      <div
+        className="bo-chips bo-bookingBinaryChips"
+        role="group"
+        aria-label="Personas con problemas de movilidad"
+        data-slot="booking-editor-mobility-toggle"
+        data-testid="booking-editor-mobility-toggle"
+      >
+        <button
+          type="button"
+          className={`bo-chip${hasIssues ? "" : " is-on"}`}
+          onClick={() => onToggle(false)}
+          disabled={busy}
+          data-testid="booking-editor-mobility-no"
+        >
+          No
+        </button>
+        <button
+          type="button"
+          className={`bo-chip${hasIssues ? " is-on" : ""}`}
+          onClick={() => onToggle(true)}
+          disabled={busy}
+          data-testid="booking-editor-mobility-yes"
+        >
+          Sí
+        </button>
+      </div>
+
+      {hasIssues ? (
+        <div className="mt-3" data-testid="booking-editor-mobility-count-wrap">
+          <CounterField
+            className="bo-bookingField bo-bookingField--mobility"
+            style={{ width: "100%" }}
+            label={`¿Cuántas personas? (máx. ${maxPeople})`}
+            value={clampInt(Number(people || 0), 1, maxPeople)}
+            min={1}
+            max={maxPeople}
+            onChange={onCountChange}
+          />
+        </div>
+      ) : null}
+    </Panel>
   );
 }
 

@@ -48,6 +48,8 @@ export type ReservasColumnId =
   | "adelantoDesglose"
   | "adelantoMetodos"
   | "menusEspeciales"
+  | "movilidad"
+  | "movilidadPax"
   | "pendiente";
 
 export type ReservasColumnCtx = {
@@ -136,6 +138,44 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
   { id: "comment", label: "Comentario", thClass: "col-comment", cellClass: "col-comment", hideBelowWidth: 1680, render: (b) => b.commentary || "" },
   // ─── Special booking columns (SPEC §5.4) — null-dash for non-special rows.
   // Only `adelantoEstado` is visible by default; the rest stay opt-in.
+  // ─── Mobility (coordination id: mobility_issues_v1). Only meaningful on
+  // special-date bookings, so non-special rows fall back to the dash.
+  {
+    id: "movilidad",
+    label: "Problemas movilidad",
+    thClass: "col-movilidad",
+    cellClass: "col-movilidad",
+    hideBelowWidth: 1480,
+    render: (b) => {
+      if (!isSpecial(b)) return DASH;
+      const has = Boolean(b.has_mobility_issues);
+      return (
+        <span
+          className="bo-reservasColIcon"
+          title={has ? "Con problemas de movilidad" : "Sin problemas de movilidad"}
+          aria-label={has ? "Con problemas de movilidad" : "Sin problemas de movilidad"}
+          data-testid={`reservas-movilidad-${b.id}`}
+        >
+          {has ? (
+            <Check size={16} strokeWidth={2.2} className="text-[color:var(--bo-color-success)]" aria-hidden="true" />
+          ) : (
+            <X size={16} strokeWidth={2.2} className="text-[color:var(--bo-muted)]" aria-hidden="true" />
+          )}
+        </span>
+      );
+    },
+  },
+  {
+    id: "movilidadPax",
+    label: "Comensales movilidad",
+    thClass: "col-movilidad-pax num",
+    cellClass: "col-movilidad-pax num",
+    hideBelowWidth: 1680,
+    render: (b) => {
+      if (!isSpecial(b) || !b.has_mobility_issues) return DASH;
+      return b.mobility_people ?? 0;
+    },
+  },
   {
     id: "adelantoEstado",
     label: "Estado adelanto",

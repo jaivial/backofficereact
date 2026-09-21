@@ -607,6 +607,10 @@ export default function Page() {
       table_number: normalizeTableNumber(b.table_number || ""),
       babyStrollers: b.babyStrollers || 0,
       highChairs: b.highChairs || 0,
+      // Coordination id: mobility_issues_v1 - hydrate the saved answer so
+      // editing a booking does not silently reset it.
+      has_mobility_issues: Boolean(b.has_mobility_issues),
+      mobility_people: Number(b.mobility_people) || 0,
       special_menu: Boolean(b.special_menu) && !isSpecial,
       menu_de_grupo_id: isSpecial ? null : b.menu_de_grupo_id || null,
       principales: isSpecial ? [] : principalesRowsFromBooking(b),

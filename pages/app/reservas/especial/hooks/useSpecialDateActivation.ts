@@ -19,6 +19,7 @@ export function emptySpecialDate(date: string): SpecialDateSettings {
     prereserva_enabled: false,
     max_per_table_enabled: false,
     max_per_table: null,
+    mobility_enabled: false,
     requires_adelanto: false,
     adelanto_payment_methods: [],
     adelanto_unified: false,
