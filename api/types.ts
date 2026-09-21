@@ -616,6 +616,9 @@ export type SpecialMenuSection = {
   id: number;
   title: string;
   image_url: string;
+  // Coordination id: special_menu_sections_image_state_v1 - upload state the
+  // editor hydrates from: skeleton (uploading), image (ready) or default (empty).
+  image_state?: "empty" | "uploading" | "ready";
   position: number;
   created_at?: string;
 };

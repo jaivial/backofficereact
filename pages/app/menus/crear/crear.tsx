@@ -388,6 +388,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
           sectionId={section.id}
           title={section.title}
           imageUrl={section.image_url}
+          imageState={section.image_state ?? "empty"}
           busy={!!specialMenuSectionBusy[section.id]}
           onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
           onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
