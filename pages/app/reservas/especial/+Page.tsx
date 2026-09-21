@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { navigate } from "vike/client/router";
 import { usePageContext } from "vike-react/usePageContext";
 
 import type { MenuSelectorItem, SpecialDateListEntry, SpecialDateSettings } from "../../../../api/types";
@@ -232,15 +231,13 @@ export default function Page() {
     [date],
   );
 
-  // Clicking a card in the list is a real SPA navigation: it re-runs
-  // +data.ts for that date so the SSR snapshot (specialDate / list /
-  // availableMenus) is fresh before the component renders. It ALSO applies
-  // the selection locally through `onDateChange`: vike re-renders this page
-  // without remounting it, so the local `date` state would otherwise stay
-  // on the previously picked day and the click would appear to do nothing.
+  // Clicking a card in the list selects that date locally through
+  // `onDateChange` (state + URL). No vike navigation on purpose: navigating
+  // to this same route swapped `pageContext.data` asynchronously and left the
+  // date picker (and the view) mid-re-render, so follow-up clicks appeared
+  // dead. Coordination id: especial_activate_v1
   const onSelectListedDate = useCallback(
     (d: string) => {
-      void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
       onDateChange(d);
     },
     [onDateChange],
