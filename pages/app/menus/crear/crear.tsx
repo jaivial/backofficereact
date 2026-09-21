@@ -213,7 +213,7 @@ function ReorderSectionDragWrapper({ value, className, children }: { value: stri
   );
 }
 
-export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
+export function CrearPage({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean } = {}) {
   const H = useMenuEditor();
   useErrorToast(H.error);
 
@@ -377,19 +377,60 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   const menuPreviewUploadDisabled = !menuId || menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy || H.menuPreviewAIGenerating;
   const specialMenuUploadDisabled = !menuId || specialMenuImageBusy || busy;
 
+  // Coordination id: special_menu_sections_v1 - the multi-section (title+image)
+  // content of a "menu especial". Shared by the wizard step and the final
+  // editor so both use the same sections system.
+  const specialMenuSectionsBlock = (
+    <div className="bo-menuImageSections" data-slot="crear-menuImageSections" data-coordination-id="special_menu_sections_v1">
+      <h3 className="bo-menuImageSectionsTitle" data-slot="crear-menuImageSectionsTitle">Secciones con imagen</h3>
+      <p className="bo-mutedText" data-slot="crear-menuImageSectionsHelp">
+        Cada seccion lleva un titulo opcional y una imagen. Puedes anadir tantas como necesites.
+      </p>
+      <div className="bo-menuImageSectionsList" data-slot="crear-menuImageSectionsList">
+        {specialMenuSections.map((section) => (
+          <MenuImageSectionCard
+            key={section.id}
+            sectionId={section.id}
+            title={section.title}
+            imageUrl={section.image_url}
+            busy={!!specialMenuSectionBusy[section.id]}
+            onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
+            onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
+            onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
+            onDelete={() => void deleteSpecialMenuSection(section.id)}
+          />
+        ))}
+      </div>
+      <button
+        type="button"
+        className="bo-btn bo-btn--ghost bo-btn--sm bo-menuImageSectionsAdd"
+        onClick={() => void addSpecialMenuSection()}
+        disabled={!menuId}
+        data-testid="menu-crear-add-special-section"
+        data-slot="crear-menuImageSectionsAdd"
+      >
+        <Plus size={14} /> Anadir seccion
+      </button>
+    </div>
+  );
+
   return (
     <section className="bo-menuWizardPage" aria-label="Editor de menu" data-testid="menu-crear-page">
-      <Breadcrumbs
-        items={[
-          { label: "Menus", href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
-          { label: menuTypeFullLabel(menuType), href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
-          { label: title.trim() || "Nuevo menu" },
-        ]}
-        className="bo-menuWizardBreadcrumbs"
-      />
+      {/* Coordination id: menu_add_modal_chrome_v1 - inside the add-menu modal
+          the wizard carries no breadcrumb and no step tracker. */}
+      {!embedded ? (
+        <Breadcrumbs
+          items={[
+            { label: "Menus", href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
+            { label: menuTypeFullLabel(menuType), href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
+            { label: title.trim() || "Nuevo menu" },
+          ]}
+          className="bo-menuWizardBreadcrumbs"
+        />
+      ) : null}
       <AutosaveToast state={saveState} />
 
-      {step !== 3 || isDraft ? (
+      {!embedded && (step !== 3 || isDraft) ? (
         <div className="bo-stepBars" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step + 1} data-testid="menu-crear-step-progress">
           {[0, 1, 2, 3].map((idx) => (
             <div key={idx} className={`bo-stepBar ${idx === step ? "is-active" : ""} ${idx < step ? "is-done" : ""}`} data-testid={`menu-crear-step-bar-${idx}`} />
@@ -426,7 +467,6 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                   </div>
                   <div className="bo-typeTitle" data-slot="crear-typeTitle">{opt.label}</div>
                   <div className="bo-typeDesc" data-slot="crear-typeDesc">{optData.description}</div>
-                  <div className="bo-typeHint" data-slot="crear-typeHint">{optData.hint}</div>
                 </button>
               );
             })}
@@ -607,6 +647,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
             {isSpecial ? (
               <Panel className="bo-accordionSection bo-sectionsEditor" data-slot="crear-sectionsEditor" title="Contenido del menu especial">
                 {renderSpecialMenuImageUploadArea()}
+                {specialMenuSectionsBlock}
               </Panel>
             ) : !hydrated ? (
               <div className="bo-sectionsEditor" aria-live="polite" aria-busy="true" data-slot="crear-sectionsEditor">
@@ -947,37 +988,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
           {/* Coordination id: special_menu_sections_v1 - one menu can carry
               several image sections. The list renders one card per section
               and the "Anadir seccion" button appends a new one. */}
-          <div className="bo-menuImageSections" data-slot="crear-menuImageSections" data-coordination-id="special_menu_sections_v1">
-            <h3 className="bo-menuImageSectionsTitle" data-slot="crear-menuImageSectionsTitle">Secciones con imagen</h3>
-            <p className="bo-mutedText" data-slot="crear-menuImageSectionsHelp">
-              Cada seccion lleva un titulo opcional y una imagen. Puedes anadir tantas como necesites.
-            </p>
-            <div className="bo-menuImageSectionsList" data-slot="crear-menuImageSectionsList">
-              {specialMenuSections.map((section) => (
-                <MenuImageSectionCard
-                  key={section.id}
-                  sectionId={section.id}
-                  title={section.title}
-                  imageUrl={section.image_url}
-                  busy={!!specialMenuSectionBusy[section.id]}
-                  onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
-                  onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
-                  onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
-                  onDelete={() => void deleteSpecialMenuSection(section.id)}
-                />
-              ))}
-            </div>
-            <button
-              type="button"
-              className="bo-btn bo-btn--ghost bo-btn--sm bo-menuImageSectionsAdd"
-              onClick={() => void addSpecialMenuSection()}
-              disabled={!menuId}
-              data-testid="menu-crear-add-special-section"
-              data-slot="crear-menuImageSectionsAdd"
-            >
-              <Plus size={14} /> Anadir seccion
-            </button>
-          </div>
+          {specialMenuSectionsBlock}
 
           <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} data-testid="menu-crear-step4-back">Volver</button>

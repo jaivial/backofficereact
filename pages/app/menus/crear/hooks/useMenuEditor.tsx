@@ -348,7 +348,7 @@ export type UseMenuEditorReturn = {
 
 export function useMenuEditor(): UseMenuEditorReturn {
   const pageContext = usePageContext();
-  const data = pageContext.data as { menu: GroupMenuV2 | null; slider?: MenuSlider | null; error: string | null };
+  const data = pageContext.data as { menu: GroupMenuV2 | null; slider?: MenuSlider | null; error: string | null; editorPreviewOpen?: boolean };
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const initialSlider = data.slider ?? null;
@@ -400,7 +400,9 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
-  const [desktopPreviewOpen, setDesktopPreviewOpen] = useState(data.menu?.editor_preview_open !== false);
+  // Coordination id: menu_editor_preview_open_v1 - seeded from the user
+  // preference the page's initial REST carries; saved over the socket below.
+  const [desktopPreviewOpen, setDesktopPreviewOpenState] = useState(data.editorPreviewOpen ?? true);
   const [desktopPreviewDocked, setDesktopPreviewDocked] = useState(true);
   const [previewThemeConfig, setPreviewThemeConfig] = useState<PreviewThemeConfig | null>(null);
   const [previewThemeLoading, setPreviewThemeLoading] = useState(true);
@@ -477,7 +479,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
       showDishImages,
       showSectionTabs,
       showMenuPreviewImage,
-      desktopPreviewOpen,
       includedCoffee,
       beverageType,
       beveragePrice,
@@ -489,7 +490,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       mainLimit,
       mainLimitNum,
     }),
-    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, importantInfo, desktopPreviewOpen, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showSectionTabs, showMenuPreviewImage, subtitles, title],
+    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, importantInfo, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showSectionTabs, showMenuPreviewImage, subtitles, title],
   );
   const basicsPayload = useMemo(() => buildBasicsPayload(basicsDraft), [basicsDraft]);
   const basicsFingerprint = useMemo(() => JSON.stringify(basicsPayload), [basicsPayload]);
@@ -1351,7 +1352,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
       setShowDishImages(mapped.showDishImages);
       setShowSectionTabs(mapped.showSectionTabs);
       setShowMenuPreviewImage(mapped.showMenuPreviewImage);
-      setDesktopPreviewOpen(mapped.desktopPreviewOpen);
       setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
       setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
       setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
@@ -1370,7 +1370,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       const mappedBasicsPayload = buildBasicsPayload({
         title: mapped.title, price: mapped.price || "0", active: mapped.active, menuType: mapped.menuType,
         subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages, showSectionTabs: mapped.showSectionTabs,
-        showMenuPreviewImage: mapped.showMenuPreviewImage, desktopPreviewOpen: mapped.desktopPreviewOpen,
+        showMenuPreviewImage: mapped.showMenuPreviewImage,
         includedCoffee: mapped.settings.included_coffee,
         beverageType: mapped.settings.beverage.type,
         beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
@@ -2253,6 +2253,25 @@ export function useMenuEditor(): UseMenuEditorReturn {
     window.setTimeout(() => setMenuWeekdayBusy(false), 3000);
   }, [menuId, pushToast]);
 
+  // --- Editor/preview split: WS-only mutation (no REST) ---
+  // Coordination id: menu_editor_preview_open_v1 (toggle -> editor_preview_set ->
+  // user_preferences(user_id, restaurant_id) -> session REST on next load).
+  const setDesktopPreviewOpen = (open: boolean) => {
+    setDesktopPreviewOpenState(open);
+    const ws = menuAIWSSocketRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      pushToast({ kind: "error", title: "Error", message: "Conexion no disponible. Intentalo de nuevo." });
+      return;
+    }
+    let correlationId = "";
+    try { correlationId = window.sessionStorage.getItem("vcCorrelationId") || ""; } catch { correlationId = ""; }
+    try {
+      ws.send(JSON.stringify({ type: "editor_preview_set", menu_id: menuId, open, correlation_id: correlationId }));
+    } catch { /* ignore */ }
+    // Named observation point: frontend sent a websocket mutation.
+    console.log(`[checkpoint] editor_preview_ws_sent menu_id=${menuId ?? 0} open=${open}`);
+  };
+
   const refreshBeverageOptions = useCallback(() => {
     setBeverageModalOpen(true);
     sendBeverageMessage({ type: "beverage_refresh" });
@@ -2404,7 +2423,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setShowDishImages(mapped.showDishImages);
     setShowSectionTabs(mapped.showSectionTabs);
     setShowMenuPreviewImage(mapped.showMenuPreviewImage);
-    setDesktopPreviewOpen(mapped.desktopPreviewOpen);
     setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
     setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
     setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
@@ -2426,7 +2444,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     const mappedBasicsPayload = buildBasicsPayload({
       title: mapped.title, price: mapped.price, active: mapped.active, menuType: mapped.menuType,
       subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages, showSectionTabs: mapped.showSectionTabs,
-      showMenuPreviewImage: mapped.showMenuPreviewImage, desktopPreviewOpen: mapped.desktopPreviewOpen,
+      showMenuPreviewImage: mapped.showMenuPreviewImage,
       includedCoffee: mapped.settings.included_coffee,
       beverageType: mapped.settings.beverage.type,
       beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),

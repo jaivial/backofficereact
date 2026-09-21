@@ -461,7 +461,7 @@ export default function Page() {
       <FloatingActionButton aria-label="Crear menu" onClick={openCreateModal} data-testid="menus-page-create-button" />
 
       <Modal open={createModalOpen} title="Crear menu" onClose={closeCreateModal} widthPx={1400}>
-        <CrearPage onClose={closeCreateModal} />
+        <CrearPage onClose={closeCreateModal} embedded />
       </Modal>
 
       <ConfirmDialog

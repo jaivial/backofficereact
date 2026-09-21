@@ -3,6 +3,8 @@ import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../../api/client";
 import type { GroupMenuV2Summary } from "../../../../api/types";
+// Coordination id: menu_editor_preview_open_v1
+import { menuEditorPreviewOpenFromPrefs } from "../../../../lib/menuEditorPreferences";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -25,5 +27,7 @@ export async function data(pageContext: PageContextServer) {
     error = e instanceof Error ? e.message : "Error cargando menus";
   }
 
-  return { menus, error };
+  // The editor/preview split is a per-user preference; the session REST carries
+  // it so the page (and the add-menu modal) hydrates with the right split.
+  return { menus, error, editorPreviewOpen: menuEditorPreviewOpenFromPrefs(pageContext.bo?.session?.preferences) };
 }
