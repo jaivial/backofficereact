@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { navigate } from "vike/client/router";
 import { usePageContext } from "vike-react/usePageContext";
-import { Sparkles } from "lucide-react";
 
 import type { MenuSelectorItem, SpecialDateListEntry, SpecialDateSettings } from "../../../../api/types";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
@@ -12,6 +11,10 @@ import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 import { SpecialDateForm } from "./functionalComponents/SpecialDateForm";
 import { SpecialDateCardList } from "./functionalComponents/SpecialDateCardList";
 import { useGlobalSocketTopic } from "../../../../ui/realtime/GlobalSocketProvider";
+import { SpecialDateActivateEmpty } from "./functionalComponents/SpecialDateActivateEmpty";
+import { SpecialDateTabs } from "./functionalComponents/SpecialDateTabs";
+import type { SpecialDateTabId } from "./functionalComponents/SpecialDateTabs";
+import { useSpecialDateActivation } from "./hooks/useSpecialDateActivation";
 
 type PageData = {
   date: string;
@@ -160,6 +163,36 @@ export default function Page() {
   // conversion view).
   const isActiveSpecial = Boolean(specialDate?.is_active);
 
+  // Which tab of the special-date view is on screen. Local state only:
+  // switching tabs must never navigate or remount, otherwise the form
+  // would lose its in-progress draft.
+  const [tab, setTab] = useState<SpecialDateTabId>("ajustes");
+
+  // Activation writes through the save endpoint (which broadcasts on the
+  // global socket) and flips `specialDate` optimistically so the tabs
+  // appear with no re-render of the page shell.
+  const { activating, error: activateError, activate } = useSpecialDateActivation({
+    date,
+    current: specialDate,
+    onOptimistic: useCallback((next: SpecialDateSettings) => {
+      setSpecialDate(next);
+      // Land on the settings tab: the operator just asked for a special
+      // menu, so the form is what they want next.
+      setTab("ajustes");
+    }, []),
+    onRevert: useCallback((previous: SpecialDateSettings | null) => {
+      setSpecialDate(previous);
+    }, []),
+  });
+
+  // Clicking a card in the list is a real SPA navigation: it re-runs
+  // +data.ts for that date so the SSR snapshot (specialDate / list /
+  // availableMenus) is fresh before the component renders. Defined once
+  // and shared by both branches instead of duplicating the closure.
+  const onSelectListedDate = useCallback((d: string) => {
+    void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
+  }, []);
+
   const onDateChange = useCallback(
     (iso: string) => {
       if (!iso || iso === date) return;
@@ -210,76 +243,68 @@ export default function Page() {
         </div>
       ) : null}
 
-      {/* #2 — Active special-date form (full editor). */}
+      {/* #2 — Special-menu day: settings form + dates list behind tabs.
+          Inactive day: the "Sin menu especial" empty state with the
+          Activar CTA. The switch between the two is driven purely by
+          `specialDate.is_active`, which activation flips optimistically
+          — so the tabs slide in without a remount or a navigation. */}
       {isActiveSpecial ? (
-        <div className="mx-auto max-w-[768px] grid gap-6" data-testid="especial-page-active">
-          {/* key={date} forces a clean remount when the operator picks a
-              different date, so the form re-seeds its draft from the new
-              `initial` (SpecialDateForm uses useState lazy initializers
-              and does not re-derive on prop change). */}
-          <SpecialDateForm
-            key={date}
-            date={date}
-            initial={specialDate}
-            availableMenus={availableMenus}
-          />
-          {/* Always show the list below the form so the operator can jump
-              to another special date without leaving the tab — addresses
-              "tengo una fecha con menú especial pero no aparece en la
-              lista de cards". */}
-          <section
-            data-testid="especial-page-list-section"
-            aria-labelledby="especial-page-list-title"
-            className="grid gap-3"
-          >
-            <h2 id="especial-page-list-title" className="text-base font-medium">
-              Fechas con menú especial
-            </h2>
-            <SpecialDateCardList
-              entries={list}
-              onSelect={(d) => {
-                // Real SPA navigation — re-runs +data.ts on the new date so
-                // the SSR snapshot (specialDate / list / availableMenus)
-                // is fresh before the component renders. This matches the
-                // operator's expectation: clicking a card "goes to" the
-                // card's date on the Especial tab.
-                void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
-              }}
-              testId="especial-page-list"
-            />
-          </section>
+        <div className="mx-auto max-w-[768px] grid gap-4" data-testid="especial-page-active">
+          <SpecialDateTabs active={tab} onChange={setTab} />
+
+          {tab === "ajustes" ? (
+            <section
+              data-testid="especial-page-settings-section"
+              aria-label="Reservas especiales"
+            >
+              {/* key={date} forces a clean remount when the operator picks a
+                  different date, so the form re-seeds its draft from the new
+                  `initial` (SpecialDateForm uses useState lazy initializers
+                  and does not re-derive on prop change). */}
+              <SpecialDateForm
+                key={date}
+                date={date}
+                initial={specialDate}
+                availableMenus={availableMenus}
+              />
+            </section>
+          ) : (
+            <section
+              data-testid="especial-page-list-section"
+              aria-labelledby="especial-page-list-title"
+              className="grid gap-3"
+            >
+              <h2 id="especial-page-list-title" className="text-base font-medium text-center">
+                Fechas con menú especial
+              </h2>
+              <SpecialDateCardList
+                entries={list}
+                onSelect={onSelectListedDate}
+                testId="especial-page-list"
+              />
+            </section>
+          )}
         </div>
       ) : (
         <div className="mx-auto grid max-w-[768px] gap-6" data-testid="especial-page-inactive">
-          {/* #3 — "Convert this date to special" hint. The date picker above
-              already lets the user change date, so we only show a short
-              instruction + a CTA into the Config tab to flip the switch. */}
+          {/* #3 — No special menu for this day yet. */}
           <section
             data-testid="especial-page-convert-section"
-            aria-labelledby="especial-page-convert-title"
+            aria-label="Activar menu especial"
             className="bo-panel"
           >
-            <div className="bo-panelBody grid gap-3" data-testid="especial-page-convert-body">
-              <div className="flex items-center gap-2">
-                <Sparkles size={18} strokeWidth={1.6} className="text-(--bo-accent, rgba(185,168,255,0.9))" aria-hidden="true" />
-                <h2 id="especial-page-convert-title" className="text-base font-medium">
-                  Activar fecha como menú especial
-                </h2>
-              </div>
-              <p className="text-sm text-(--bo-muted)" data-testid="especial-page-convert-desc">
-                Esta fecha aún no tiene un menú especial activo. Elige otra fecha
-                con el calendario de arriba o ve a Configuración para activar el
-                interruptor de “Reservas especiales” en esta fecha.
-              </p>
-              <div className="flex justify-end" data-testid="especial-page-convert-actions">
-                <a
-                  href={`/app/reservas/config?date=${encodeURIComponent(date || todayISO())}`}
-                  className="bo-btn bo-btn--primary transition-transform duration-150 active:scale-[0.96]"
-                  data-testid="especial-page-convert-btn"
-                >
-                  Ir a configuración
-                </a>
-              </div>
+            <div className="bo-panelBody pt-4" data-testid="especial-page-convert-body">
+              <SpecialDateActivateEmpty onActivate={() => void activate()} activating={activating} />
+              {activateError ? (
+                <div className="mt-4" data-testid="especial-page-activate-error-wrap">
+                  <InlineAlert
+                    kind="error"
+                    title="Error"
+                    message={activateError}
+                    testId="especial-activate-error-alert"
+                  />
+                </div>
+              ) : null}
             </div>
           </section>
 
@@ -287,21 +312,16 @@ export default function Page() {
               a transient failure on the single-date lookup (which only sets
               `error` for transport errors now) doesn't hide it. */}
           <section
-            data-testid="especial-page-list-section"
-            aria-labelledby="especial-page-list-title"
+            data-testid="especial-page-inactive-list-section"
+            aria-labelledby="especial-page-inactive-list-title"
             className="grid gap-3"
           >
-            <h2 id="especial-page-list-title" className="text-base font-medium">
+            <h2 id="especial-page-inactive-list-title" className="text-base font-medium text-center">
               Fechas con menú especial
             </h2>
             <SpecialDateCardList
               entries={list}
-              onSelect={(d) => {
-                // Same SPA navigation as the active view — see the comment
-                // above. The active/inactive toggle is derived from the
-                // fresh `specialDate` returned by +data.ts on the new date.
-                void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
-              }}
+              onSelect={onSelectListedDate}
               testId="especial-page-list"
             />
           </section>
