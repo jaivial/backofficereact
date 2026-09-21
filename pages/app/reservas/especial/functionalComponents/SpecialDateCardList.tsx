@@ -43,21 +43,18 @@ export function SpecialDateCardList({
   }
 
   return (
-    <div className="bo-panel" data-testid={`${testId}-panel`}>
-      {/* The panel keeps the outer chrome; `bo-panelBody` now lives on each
-          card button instead of on this stack, so every card carries the
-          panel surface itself. Padding here only spaces the stack inside
-          the panel. */}
-      <div
-        data-testid={testId}
-        aria-label="Fechas con menú especial"
-        className="grid grid-cols-1 gap-3 px-[18px] pt-4 pb-4"
-        role="group"
-      >
-        {list.map((e) => (
-          <SpecialDateCard key={e.date} entry={e} onSelect={onSelect} />
-        ))}
-      </div>
+    /* Each card is its own panel surface now, so the stack is a plain
+       grid — wrapping it in a second `bo-panel` would nest one panel
+       inside another and double the chrome. */
+    <div
+      data-testid={testId}
+      aria-label="Fechas con menú especial"
+      className="grid grid-cols-1 gap-3"
+      role="group"
+    >
+      {list.map((e) => (
+        <SpecialDateCard key={e.date} entry={e} onSelect={onSelect} />
+      ))}
     </div>
   );
 }
@@ -113,25 +110,24 @@ function SpecialDateCard({
       onClick={() => onSelect(entry.date)}
       aria-label={`Ir a ${entry.date}: ${entry.title || menuSummary}`}
       className={cn(
-        // The card container carries the shared `bo-panelBody` chrome
-        // (its 0 18px 16px padding). Colours stay on the shadcn card
-        // tokens so this surface and its children keep using ONE token
-        // system, and the border is kept because it is what separates
-        // one card from the next inside the stack.
-        "bo-panelBody",
-        "group relative block w-full cursor-pointer overflow-hidden rounded-lg",
-        "border border-border bg-card text-card-foreground shadow-sm",
-        "transition-[transform,box-shadow,border-color,background-color] duration-150 ease-out",
-        "hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "active:scale-[0.99]",
-        "text-left",
+        // Panel surface. `bo-panel` paints the chrome (radius, background,
+        // shadow) and `bo-panelBody` supplies the 0 18px 16px padding —
+        // bo-panelBody alone is padding-only, which is why it has to be
+        // paired with bo-panel for the card to actually read as a panel.
+        "bo-panel bo-panelBody",
+        "group relative block w-full cursor-pointer overflow-hidden",
+        // pt: bo-panelBody intentionally has no top padding.
+        "pt-4 text-left text-(--bo-text)",
+        "transition-[transform,box-shadow,background-color] duration-150 ease-out",
+        "hover:bg-(--bo-bg-hover) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--bo-accent) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bo-surface)",
+        "active:scale-[0.99] motion-reduce:transition-none",
       )}
       data-testid={testId}
     >
       {/* Three vertical sections, each in its own div. The body is
           a flex column so the rows always stack the same way
           regardless of viewport. */}
-      <div className="flex flex-col pt-4 sm:pt-5" data-testid={`${testId}-body`}>
+      <div className="flex flex-col" data-testid={`${testId}-body`}>
 
         {/* 1 — Header: date icon + date + prereserva badge. */}
         <div
@@ -143,7 +139,7 @@ function SpecialDateCard({
               aria-hidden="true"
               className={cn(
                 "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
-                "bg-accent/40 text-primary",
+                "bg-(--bo-accent-alpha) text-(--bo-accent)",
               )}
               data-testid={`${testId}-date-icon`}
             >
@@ -162,7 +158,7 @@ function SpecialDateCard({
               "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
               prereserva
                 ? "border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                : "border-border bg-secondary text-muted-foreground",
+                : "border-(--bo-border) bg-(--bo-surface-2) text-(--bo-muted)",
             )}
           >
             {prereserva ? "Prereserva" : "Sin prereserva"}
@@ -173,7 +169,7 @@ function SpecialDateCard({
             title wraps under the date without pushing the menus row. */}
         {entry.title ? (
           <div
-            className="mt-1.5 truncate text-sm font-medium text-card-foreground"
+            className="mt-1.5 truncate text-sm font-medium text-(--bo-text)"
             data-testid={`${testId}-title`}
           >
             {entry.title}
@@ -182,7 +178,7 @@ function SpecialDateCard({
 
         {/* 2 — Menus row. Always full-width. */}
         <div
-          className="mt-2 line-clamp-2 text-xs text-muted-foreground"
+          className="mt-2 line-clamp-2 text-xs text-(--bo-muted)"
           data-testid={`${testId}-menus`}
         >
           <span className="font-medium text-foreground/80">Menús: </span>
@@ -195,7 +191,7 @@ function SpecialDateCard({
             "%  ->  people/limit  pax" left-to-right. */}
         <div
           className={cn(
-            "mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-3",
+            "mt-3 flex items-center justify-between gap-2 border-t border-(--bo-border) pt-3",
             "sm:mt-4 sm:gap-3 sm:pt-4",
           )}
           data-testid={`${testId}-count`}
@@ -211,18 +207,18 @@ function SpecialDateCard({
             />
             {/* People breakdown. */}
             <div
-              className="flex items-center gap-1.5 text-xs text-muted-foreground sm:gap-2"
+              className="flex items-center gap-1.5 text-xs text-(--bo-muted) sm:gap-2"
               data-testid={`${testId}-meta`}
             >
               <span
                 aria-hidden="true"
                 data-testid={`${testId}-users-icon`}
-                className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-secondary text-secondary-foreground sm:h-7 sm:w-7"
+                className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-(--bo-surface-2) text-(--bo-text) sm:h-7 sm:w-7"
               >
                 <Users size={14} strokeWidth={1.8} />
               </span>
               <span
-                className="tabular-nums font-medium text-card-foreground"
+                className="tabular-nums font-medium text-(--bo-text)"
                 data-testid={`${testId}-ratio`}
               >
                 {people}/{limit}
@@ -234,7 +230,7 @@ function SpecialDateCard({
             size={16}
             strokeWidth={1.8}
             className={cn(
-              "ml-1 shrink-0 text-muted-foreground",
+              "ml-1 shrink-0 text-(--bo-muted)",
               "transition-transform duration-150 ease-out",
               "group-hover:translate-x-0.5 motion-reduce:transition-none",
             )}
@@ -269,7 +265,7 @@ function OccupancyChip({
   "data-testid"?: string;
 }) {
   const toneClasses: Record<typeof tone, string> = {
-    base: "border-border bg-card text-card-foreground",
+    base: "border-(--bo-border) bg-(--bo-surface-2) text-(--bo-text)",
     y50: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
     o75: "border-amber-500/50 bg-amber-500/15 text-amber-700 dark:text-amber-300",
     o85: "border-orange-500/50 bg-orange-500/15 text-orange-700 dark:text-orange-300",
