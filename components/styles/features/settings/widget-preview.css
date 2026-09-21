@@ -461,10 +461,44 @@
   flex: 1 0 auto;
 }
 
-.bo-bookingRow--schedule,
 .bo-bookingRow--contact,
 .bo-bookingRow--extras {
   align-items: flex-end;
+}
+
+/* Schedule row (Fecha + Hora) stacks as a column at EVERY width, not just
+   under the mobile breakpoint. `.bo-row` is a wrapping flex row, so on wide
+   screens the two fields sat side by side and the special-date badge under
+   the date picker pushed the Hora field out of alignment. */
+.bo-bookingRow--schedule {
+  flex-direction: column;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+/* Special-date badge (coordination id: special_dates_v1). Previously had no
+   styles at all: the pill and the title rendered as two loose blocks with no
+   grouping, spacing or alignment. */
+.bo-bookingEditorSpecialBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--bo-radius-sm, 12px);
+  border: 1px solid color-mix(in srgb, var(--bo-color-warning) 38%, transparent);
+  background: color-mix(in srgb, var(--bo-color-warning) 12%, transparent);
+  text-align: center;
+}
+
+.bo-bookingEditorSpecialBadgeTitle {
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
+  color: var(--bo-text);
+  overflow-wrap: anywhere;
 }
 
 .bo-bookingChoiceRow {
