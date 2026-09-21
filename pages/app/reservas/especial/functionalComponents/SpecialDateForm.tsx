@@ -10,6 +10,7 @@ import { Switch } from "../../../../../ui/shadcn/Switch";
 import { DatePicker } from "../../../../../ui/inputs/DatePicker";
 import { Select } from "../../../../../ui/inputs/Select";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
+import { FadeSeparator } from "../../../../../ui/layout/FadeSeparator";
 
 type EditableMenu = SpecialDateMenu & { _key: string };
 
@@ -350,6 +351,8 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
             />
           </Field>
 
+          <FadeSeparator testId="special-date-sep-title-description" />
+
           <Field label="Descripción" testId="special-date-description-field">
             <textarea
               className="bo-input w-full"
@@ -360,6 +363,8 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               data-testid="special-date-description-input"
             />
           </Field>
+
+          <FadeSeparator testId="special-date-sep-description-menus" />
 
           {/* #2 Menus — moved above prereserva. Each row is its own card with a
               soft border and a full-width Select that excludes already-chosen
@@ -530,6 +535,8 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               </button>
             </div>
           </div>
+
+          <FadeSeparator testId="special-date-sep-menus-prereserva" />
 
           {/* #3 Prereserva toggle */}
           <ToggleRow
@@ -735,6 +742,8 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               </motion.div>
             ) : null}
           </AnimatePresence>
+
+          <FadeSeparator testId="special-date-sep-prereserva-maxpertable" />
 
           {/* Max per table (kept at the end of the active group). */}
           <ToggleRow
