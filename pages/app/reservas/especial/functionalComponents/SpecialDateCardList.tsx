@@ -25,34 +25,39 @@ export function SpecialDateCardList({
   const list = entries ?? [];
   if (list.length === 0) {
     return (
-      <div
-        data-testid={`${testId}-empty`}
-        className={cn(
-          "rounded-lg border border-dashed border-border bg-card/50 px-4 py-8 text-center text-sm text-muted-foreground",
-          "shadow-sm",
-        )}
-      >
-        <Sparkles
-          size={20}
-          strokeWidth={1.6}
-          className="mx-auto mb-2 opacity-60"
-          aria-hidden="true"
-        />
-        No hay fechas especiales configuradas todavía.
+      <div className="bo-panel" data-testid={`${testId}-empty-panel`}>
+        <div
+          data-testid={`${testId}-empty`}
+          className="bo-panelBody pt-4 text-center text-sm text-(--bo-muted)"
+        >
+          <Sparkles
+            size={20}
+            strokeWidth={1.6}
+            className="mx-auto mb-2 opacity-60"
+            aria-hidden="true"
+          />
+          No hay fechas especiales configuradas todavía.
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      data-testid={testId}
-      aria-label="Fechas con menú especial"
-      className="grid grid-cols-1 gap-3"
-      role="group"
-    >
-      {list.map((e) => (
-        <SpecialDateCard key={e.date} entry={e} onSelect={onSelect} />
-      ))}
+    <div className="bo-panel" data-testid={`${testId}-panel`}>
+      {/* Same surface as every other panel in the backoffice: the button
+          stack lives inside a `bo-panelBody`, so the container chrome
+          (radius, background, shadow, padding) matches the rest of the
+          app instead of a bespoke one-off card. */}
+      <div
+        data-testid={testId}
+        aria-label="Fechas con menú especial"
+        className="bo-panelBody grid grid-cols-1 gap-3 pt-4"
+        role="group"
+      >
+        {list.map((e) => (
+          <SpecialDateCard key={e.date} entry={e} onSelect={onSelect} />
+        ))}
+      </div>
     </div>
   );
 }
