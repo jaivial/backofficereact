@@ -7,7 +7,8 @@ import { SPECIAL_DATE_PAYMENT_METHODS } from "../../../../../api/types";
 import { createClient } from "../../../../../api/client";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { Switch } from "../../../../../ui/shadcn/Switch";
-import { DatePicker } from "../../../../../ui/inputs/DatePicker";
+import { EuroInput } from "../../../../../ui/inputs/EuroInput";
+import { InlineDateRangeCalendar } from "../../../../../ui/inputs/InlineDateRangeCalendar";
 import { Select } from "../../../../../ui/inputs/Select";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
 import { FadeSeparator } from "../../../../../ui/layout/FadeSeparator";
@@ -277,8 +278,12 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     setEditableMenus((prev) => prev.map((m) => (m._key === key ? { ...m, ...patchRow } : m)));
   }, []);
 
+  // Row key whose custom image is uploading (coordination id: special_date_menu_image_v1)
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+
   const uploadCustomImage = useCallback(
     async (key: string, file: File) => {
+      setUploadingKey(key);
       try {
         const res = await api.config.uploadSpecialDateMenuImage(file);
         if (!res.success) {
@@ -289,6 +294,8 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         pushToast({ kind: "success", title: "Imagen subida", message: "Imagen del menú personalizada guardada" });
       } catch (e) {
         pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo subir la imagen" });
+      } finally {
+        setUploadingKey((cur) => (cur === key ? null : cur));
       }
     },
     [api, pushToast, updateMenuRow],
@@ -482,26 +489,48 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           />
                         </div>
                         <div
-                          className="flex items-center gap-3"
+                          className="grid justify-items-center gap-2"
                           data-slot={`menuCustomImage-${idx}`}
                           data-testid={`special-date-menu-row-${idx + 1}-custom-image`}
                         >
-                          {m.custom_image_url ? (
+                          <div
+                            className="text-xs text-bo-muted"
+                            data-testid={`special-date-menu-row-${idx + 1}-custom-image-heading`}
+                          >
+                            Imagen
+                          </div>
+                          {uploadingKey === m._key ? (
+                            <div
+                              className="flex h-32 w-32 flex-col items-center justify-center gap-2 rounded border border-dashed border-bo-border text-bo-muted"
+                              data-testid={`special-date-menu-row-${idx + 1}-custom-image-uploading`}
+                            >
+                              <span
+                                className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"
+                                data-testid={`special-date-menu-row-${idx + 1}-custom-image-spinner`}
+                              />
+                              <span
+                                className="text-xs"
+                                data-testid={`special-date-menu-row-${idx + 1}-custom-image-uploading-text`}
+                              >
+                                Subiendo...
+                              </span>
+                            </div>
+                          ) : m.custom_image_url ? (
                             <img
                               src={m.custom_image_url}
                               alt={m.custom_title || "Menú personalizado"}
-                              className="h-16 w-16 rounded object-cover border border-(--bo-border)"
+                              className="h-32 w-32 rounded border border-bo-border object-cover"
                               data-testid={`special-date-menu-row-${idx + 1}-custom-image-preview`}
                             />
                           ) : (
                             <div
-                              className="flex h-16 w-16 items-center justify-center rounded border border-dashed border-(--bo-border) text-(--bo-muted)"
+                              className="flex h-32 w-32 items-center justify-center rounded border border-dashed border-bo-border text-bo-muted"
                               data-testid={`special-date-menu-row-${idx + 1}-custom-image-empty`}
                             >
-                              <ImagePlus size={18} strokeWidth={1.8} aria-hidden="true" />
+                              <ImagePlus size={28} strokeWidth={1.8} aria-hidden="true" />
                             </div>
                           )}
-                          <label className="bo-btn bo-btn--ghost" data-testid={`special-date-menu-row-${idx + 1}-custom-image-label`}>
+                          <label className="bo-btn bo-btn--ghost w-fit" data-testid={`special-date-menu-row-${idx + 1}-custom-image-label`}>
                             <input
                               type="file"
                               accept="image/*"
@@ -512,7 +541,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                               }}
                               data-testid={`special-date-menu-row-${idx + 1}-custom-image-input`}
                             />
-                            Subir imagen
+                            Añadir imagen
                           </label>
                         </div>
                       </>
@@ -531,10 +560,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                       >
                         Precio del menú (€ / persona)
                       </div>
-                      <input
-                        className="bo-input w-full"
-                        type="number"
-                        inputMode="decimal"
+                      <EuroInput
                         min={0}
                         step={0.5}
                         value={m.price != null ? String(m.price) : ""}
@@ -650,7 +676,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           Métodos de pago aceptados
                         </div>
                         <div
-                          className="bo-chips"
+                          className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"
                           data-slot="paymentMethodsChips"
                           data-testid="special-date-payment-methods-chips"
                         >
@@ -666,33 +692,8 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                         </div>
                       </div>
 
-                      {/* Adelanto unified toggle */}
-                      <ToggleRow
-                        title="Todos iguales"
-                        desc="Aplica el mismo adelanto por persona a todos los menús"
-                        checked={draft.adelanto_unified}
-                        onToggle={handleAdelantoUnifiedToggle}
-                        ariaLabel="Unificar adelanto"
-                        testId="special-date-adelanto-unified-row"
-                      />
-
-                      {draft.adelanto_unified ? (
-                        <Field label="Adelanto por persona (€)" testId="special-date-unified-amount-field">
-                          <input
-                            className="bo-input w-full"
-                            type="number"
-                            inputMode="decimal"
-                            min={0}
-                            step={0.5}
-                            value={unifiedAmountDraft}
-                            onChange={(e) => setUnifiedAmountDraft(e.target.value)}
-                            onBlur={handleUnifiedAmountCommit}
-                            placeholder="0.00"
-                            data-testid="special-date-unified-amount-input"
-                          />
-                        </Field>
-                      ) : null}
-
+                      {/* Per-menu adelanto amounts: the "lista de menús +
+                          adelanto amount" the unified toggle sits below. */}
                       {!draft.adelanto_unified && editableMenus.length > 0 ? (
                         <div data-ui="special-date-per-menu-amounts" data-testid="special-date-per-menu-amounts">
                           <div
@@ -714,7 +715,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                               return (
                                 <div
                                   key={m._key}
-                                  className="flex items-center justify-between gap-3 rounded-lg border border-(--bo-border) bg-(--bo-surface-2) px-3 py-2"
+                                  className="flex items-center justify-between gap-3 rounded-lg border border-bo-border bg-bo-surface-2 px-3 py-2"
                                   data-testid={`special-date-per-menu-amount-row-${m._key}`}
                                 >
                                   <div
@@ -723,11 +724,8 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                                   >
                                     {label}
                                   </div>
-                                  <input
-                                    className="bo-input"
-                                    style={{ maxWidth: 120 }}
-                                    type="number"
-                                    inputMode="decimal"
+                                  <EuroInput
+                                    wrapperStyle={{ maxWidth: 120 }}
                                     min={0}
                                     step={0.5}
                                     value={m.adelanto_amount != null ? String(m.adelanto_amount) : ""}
@@ -743,10 +741,39 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           </div>
                         </div>
                       ) : null}
+
+                      {/* Adelanto unified toggle — only meaningful with more
+                          than one menu, and always below the per-menu list. */}
+                      {editableMenus.length > 1 ? (
+                        <ToggleRow
+                          title="Todos iguales"
+                          desc="Aplica el mismo adelanto por persona a todos los menús"
+                          checked={draft.adelanto_unified}
+                          onToggle={handleAdelantoUnifiedToggle}
+                          ariaLabel="Unificar adelanto"
+                          testId="special-date-adelanto-unified-row"
+                        />
+                      ) : null}
+
+                      {draft.adelanto_unified ? (
+                        <Field label="Adelanto por persona (€)" testId="special-date-unified-amount-field">
+                          <EuroInput
+                            min={0}
+                            step={0.5}
+                            value={unifiedAmountDraft}
+                            onChange={(e) => setUnifiedAmountDraft(e.target.value)}
+                            onBlur={handleUnifiedAmountCommit}
+                            placeholder="0.00"
+                            data-testid="special-date-unified-amount-input"
+                          />
+                        </Field>
+                      ) : null}
                       </>
                       )}
 
-                      {/* Prereserva window */}
+                      {/* Prereserva window — one centred range calendar instead
+                          of two date pickers, reusing the shared
+                          InlineDateRangeCalendar (coordination id: prereserva_window_v1). */}
                       <div data-ui="special-date-prereserva-window" data-testid="special-date-prereserva-window">
                         <div
                           className="bo-label mb-1.5 text-left"
@@ -755,46 +782,17 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           Ventana de prereserva
                         </div>
                         <div
-                          className="flex flex-col gap-3 sm:flex-row"
+                          className="flex justify-center"
                           data-slot="prereservaWindowRow"
                           data-testid="special-date-prereserva-window-row"
                         >
-                          <div
-                            className="grid gap-1"
-                            data-slot="prereservaStart"
-                            data-testid="special-date-prereserva-start-field"
-                          >
-                            <div
-                              className="text-xs text-(--bo-muted)"
-                              data-testid="special-date-prereserva-start-label"
-                            >
-                              Desde
-                            </div>
-                            <DatePicker
-                              className="w-full"
-                              value={draft.prereserva_starts_on ?? ""}
-                              onChange={(iso: string) => patch({ prereserva_starts_on: iso || null })}
-                              data-testid="special-date-prereserva-start-input"
-                            />
-                          </div>
-                          <div
-                            className="grid gap-1"
-                            data-slot="prereservaEnd"
-                            data-testid="special-date-prereserva-end-field"
-                          >
-                            <div
-                              className="text-xs text-(--bo-muted)"
-                              data-testid="special-date-prereserva-end-label"
-                            >
-                              Hasta
-                            </div>
-                            <DatePicker
-                              className="w-full"
-                              value={draft.prereserva_ends_on ?? ""}
-                              onChange={(iso: string) => patch({ prereserva_ends_on: iso || null })}
-                              data-testid="special-date-prereserva-end-input"
-                            />
-                          </div>
+                          <InlineDateRangeCalendar
+                            from={draft.prereserva_starts_on ?? ""}
+                            to={draft.prereserva_ends_on ?? ""}
+                            onChange={({ from, to }) =>
+                              patch({ prereserva_starts_on: from || null, prereserva_ends_on: to || null })
+                            }
+                          />
                         </div>
                       </div>
                     </motion.div>
