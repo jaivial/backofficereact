@@ -1,14 +1,20 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { navigate } from "vike/client/router";
 import { usePageContext } from "vike-react/usePageContext";
-import { ArrowLeft, CalendarDays, Sparkles } from "lucide-react";
 
 import type { MenuSelectorItem, SpecialDateListEntry, SpecialDateSettings } from "../../../../api/types";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { createClient } from "../../../../api/client";
 import { useMonthCalendar } from "../../../../ui/hooks/useMonthCalendar";
 import { MonthCalendarDatePicker } from "../../../../ui/widgets/MonthCalendarDatePicker";
+import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 import { SpecialDateForm } from "./functionalComponents/SpecialDateForm";
 import { SpecialDateCardList } from "./functionalComponents/SpecialDateCardList";
+import { useGlobalSocketTopic } from "../../../../ui/realtime/GlobalSocketProvider";
+import { SpecialDateActivateEmpty } from "./functionalComponents/SpecialDateActivateEmpty";
+import { SpecialDateTabs } from "./functionalComponents/SpecialDateTabs";
+import type { SpecialDateTabId } from "./functionalComponents/SpecialDateTabs";
+import { useSpecialDateActivation } from "./hooks/useSpecialDateActivation";
 
 type PageData = {
   date: string;
@@ -17,6 +23,17 @@ type PageData = {
   list: SpecialDateListEntry[];
   error: string | null;
 };
+type SpecialDateEvent = {
+  type: "special_date_changed" | "special_date_deleted";
+  restaurant_id: number;
+  date: string;
+  is_active?: boolean;
+  title?: string;
+  people?: number;
+  limit?: number;
+};
+
+
 
 function todayISO(): string {
   const d = new Date();
@@ -25,7 +42,7 @@ function todayISO(): string {
 
 export default function Page() {
   const pageContext = usePageContext();
-  const data = (pageContext.data ?? {
+  const ssrData = (pageContext.data ?? {
     date: "",
     specialDate: null,
     availableMenus: [],
@@ -33,129 +50,296 @@ export default function Page() {
     error: null,
   }) as PageData;
 
-  if (data.error) {
-    return <InlineAlert kind="error" title="Error" message={data.error} testId="especial-error-alert" />;
-  }
+  // Local mirror of the SSR data so the date selector can update the
+  // selected date + view instantly (same UX as the Reservas/Bookings tab —
+  // `onSelectDate` in pages/app/reservas/reservas.tsx). The SSR snapshot is
+  // the initial seed only; everything afterwards is fetched via the API
+  // client below.
+  const [date, setDate] = useState<string>(ssrData.date || todayISO());
+  const [specialDate, setSpecialDate] = useState<SpecialDateSettings | null>(ssrData.specialDate);
+  const [list, setList] = useState<SpecialDateListEntry[]>(ssrData.list ?? []);
+  const [availableMenus] = useState<MenuSelectorItem[]>(ssrData.availableMenus ?? []);
+  const [error, setError] = useState<string | null>(ssrData.error);
 
-  // Date is "active special" only when the server returned is_active=true (not
-  // merely when the row exists — deactivated rows fall back to the conversion view).
-  const isActiveSpecial = Boolean(data.specialDate?.is_active);
-
-  // The picker uses the same MonthCalendarDatePicker as the "Añadir reserva"
-  // and "Config" pages so the operator gets one calendar everywhere.
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
-  const [pickDate, setPickDate] = useState<string>(data.date || todayISO());
-  const calendar = useMonthCalendar(api, pickDate);
-  const goToToday = () => setPickDate(todayISO());
+
+  // Real-time sync: subscribe to special_date events from the global
+  // WebSocket. When ANY tab saves a special_date, this hook patches
+  // the local list in place — no refetch needed for the card list
+  // summary. The single-date fetch below handles the detail.
+  useGlobalSocketTopic<SpecialDateEvent>("special_date", (raw) => {
+    const payload = raw as SpecialDateEvent | null;
+    if (!payload || !payload.date) return;
+    setList((prev) => {
+      const idx = prev.findIndex((e) => e.date === payload.date);
+      if (payload.type === "special_date_deleted") {
+        return idx >= 0 ? prev.filter((e) => e.date !== payload.date) : prev;
+      }
+      // Upsert. The Especial card list only needs (date, title,
+      // is_active, prereserva_enabled, menus, people, limit). For now
+      // we patch the existing row if present, otherwise drop the
+      // event — a fresh row will appear on the next focus refetch.
+      if (idx < 0) return prev;
+      const next = prev.slice();
+      const cur = next[idx];
+      next[idx] = {
+        ...cur,
+        title: payload.title ?? cur.title,
+        is_active: payload.is_active ?? cur.is_active,
+      };
+      return next;
+    });
+    // If the event is for the *currently selected* date, also patch
+    // `specialDate` so the form / inactive view updates without a
+    // refetch.
+    if (payload.date === date) {
+      setSpecialDate((prev) => {
+        if (!prev && payload.type === "special_date_deleted") return null;
+        if (!prev) return prev;
+        return {
+          ...prev,
+          is_active: payload.is_active ?? prev.is_active,
+          title: payload.title ?? prev.title,
+        };
+      });
+    }
+  });
+
+  // Re-fetch the single-date row whenever the date changes. The card list
+  // is fetched once on mount (it doesn't depend on the selected date) so the
+  // operator can immediately see every special date — even the one they
+  // just activated — without waiting for the date-change effect.
+  useEffect(() => {
+    let cancelled = false;
+    void api.config
+      .getSpecialDate(date)
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success) {
+          setSpecialDate((res as { special_date: SpecialDateSettings | null }).special_date ?? null);
+        }
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : String(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [api, date]);
+
+  // Single definition of "reload the card list", shared by the mount
+  // effect, the window `focus` listener and the post-activation
+  // reconcile below. Activating a date creates a row the list has never
+  // seen, and the socket upsert deliberately ignores unknown dates, so
+  // without this refetch a freshly activated date would be missing from
+  // the "Fechas con menú especial" tab until the window regained focus.
+  const refreshList = useCallback(async () => {
+    const res = await api.config.listSpecialDates();
+    if (res.success) {
+      setList((res as { special_dates?: SpecialDateListEntry[] }).special_dates || []);
+    }
+  }, [api]);
+
+  // Card list: load once on mount + refresh whenever the active state of any
+  // date may have changed (i.e. after the operator toggles the activation
+  // switch on the Config tab, then returns here). Listening on a window
+  // `focus` event is cheap and matches the "always render" requirement.
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () => {
+      void api.config.listSpecialDates().then((res) => {
+        if (cancelled) return;
+        if (res.success) {
+          setList((res as { special_dates?: SpecialDateListEntry[] }).special_dates || []);
+        }
+      });
+    };
+    refresh();
+    if (typeof window !== "undefined") {
+      window.addEventListener("focus", refresh);
+    }
+    return () => {
+      cancelled = true;
+      if (typeof window !== "undefined") {
+        window.removeEventListener("focus", refresh);
+      }
+    };
+  }, [api]);
+
+  // Calendar grid for the picker. Always derived from the *current* local
+  // `date` so the popover follows the selection immediately.
+  const calendar = useMonthCalendar(api, date);
+
+  // Date is "active special" only when the server returned is_active=true
+  // (not merely when the row exists — deactivated rows fall back to the
+  // conversion view).
+  const isActiveSpecial = Boolean(specialDate?.is_active);
+
+  // Which tab of the special-date view is on screen. Local state only:
+  // switching tabs must never navigate or remount, otherwise the form
+  // would lose its in-progress draft.
+  const [tab, setTab] = useState<SpecialDateTabId>("ajustes");
+
+  // Activation writes through the save endpoint (which broadcasts on the
+  // global socket) and flips `specialDate` optimistically so the tabs
+  // appear with no re-render of the page shell.
+  const { activating, error: activateError, activate } = useSpecialDateActivation({
+    date,
+    current: specialDate,
+    onOptimistic: useCallback((next: SpecialDateSettings) => {
+      setSpecialDate(next);
+      // Land on the settings tab: the operator just asked for a special
+      // menu, so the form is what they want next.
+      setTab("ajustes");
+    }, []),
+    onRevert: useCallback((previous: SpecialDateSettings | null) => {
+      setSpecialDate(previous);
+    }, []),
+    // Pull the card list once the row exists so the newly activated date
+    // shows up in the "Fechas con menú especial" tab right away.
+    onSuccess: useCallback(() => {
+      void refreshList();
+    }, [refreshList]),
+  });
+
+  // Clicking a card in the list is a real SPA navigation: it re-runs
+  // +data.ts for that date so the SSR snapshot (specialDate / list /
+  // availableMenus) is fresh before the component renders. Defined once
+  // and shared by both branches instead of duplicating the closure.
+  const onSelectListedDate = useCallback((d: string) => {
+    void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
+  }, []);
+
+  const onDateChange = useCallback(
+    (iso: string) => {
+      if (!iso || iso === date) return;
+      // 1) Update local state immediately so the picker button label and
+      //    the page view follow the click without waiting on the network.
+      setDate(iso);
+      // 2) Update the URL via replaceState so the new date is shareable /
+      //    reloadable, but we do NOT trigger a full SPA navigation (which
+      //    would re-mount the component and re-run +data.ts). This matches
+      //    how the Reservas/Bookings tab switches dates.
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("date", iso);
+        window.history.replaceState(null, "", url.toString());
+      }
+    },
+    [date],
+  );
 
   return (
     <section data-ui="especial-page" data-testid="especial-page-section" aria-label="Reservas especiales">
-      <div
-        className="mx-auto mb-4 flex max-w-[768px] items-center justify-between gap-3"
-        data-testid="especial-page-header"
-      >
-        <a
-          href={`/app/reservas/config?date=${encodeURIComponent(data.date)}`}
-          className="bo-btn bo-btn--ghost flex items-center gap-2"
-          data-testid="especial-page-activate-cta"
-        >
-          <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
-          Ir a configuración
-        </a>
-        <div className="text-sm text-(--bo-muted)" data-testid="especial-page-date">
-          {data.date}
-        </div>
-      </div>
+      {/* #1 — Top toolbar with the date picker. Same component + position as the
+          Settings tab (/app/reservas/config) so the operator gets one
+          calendar everywhere. Always visible regardless of the active/inactive
+          state below. */}
+      <PageToolbar
+        className="bo-toolbar--centered"
+        left={
+          <MonthCalendarDatePicker
+            value={date || todayISO()}
+            onChange={onDateChange}
+            year={calendar.year}
+            month={calendar.month}
+            days={calendar.days}
+            onPrevMonth={calendar.onPrevMonth}
+            onNextMonth={calendar.onNextMonth}
+            loading={calendar.loading}
+            data-testid="especial-page-date-picker"
+            data-ui="date-picker"
+          />
+        }
+        data-testid="especial-page-toolbar"
+      />
 
+      {error ? (
+        <div className="mx-auto mt-4 max-w-[768px]" data-testid="especial-page-error-wrap">
+          <InlineAlert kind="error" title="Error" message={error} testId="especial-error-alert" />
+        </div>
+      ) : null}
+
+      {/* #2 — Special-menu day: settings form + dates list behind tabs.
+          Inactive day: the "Sin menu especial" empty state with the
+          Activar CTA. The switch between the two is driven purely by
+          `specialDate.is_active`, which activation flips optimistically
+          — so the tabs slide in without a remount or a navigation. */}
       {isActiveSpecial ? (
-        <SpecialDateForm
-          date={data.date}
-          initial={data.specialDate}
-          availableMenus={data.availableMenus}
-        />
+        <div className="mx-auto max-w-[768px] grid gap-4" data-testid="especial-page-active">
+          <SpecialDateTabs active={tab} onChange={setTab} />
+
+          {tab === "ajustes" ? (
+            <section
+              data-testid="especial-page-settings-section"
+              aria-label="Reservas especiales"
+            >
+              {/* key={date} forces a clean remount when the operator picks a
+                  different date, so the form re-seeds its draft from the new
+                  `initial` (SpecialDateForm uses useState lazy initializers
+                  and does not re-derive on prop change). */}
+              <SpecialDateForm
+                key={date}
+                date={date}
+                initial={specialDate}
+                availableMenus={availableMenus}
+              />
+            </section>
+          ) : (
+            <section
+              data-testid="especial-page-list-section"
+              aria-labelledby="especial-page-list-title"
+              className="grid gap-3"
+            >
+              <h2 id="especial-page-list-title" className="text-base font-medium text-center">
+                Fechas con menú especial
+              </h2>
+              <SpecialDateCardList
+                entries={list}
+                onSelect={onSelectListedDate}
+                testId="especial-page-list"
+              />
+            </section>
+          )}
+        </div>
       ) : (
         <div className="mx-auto grid max-w-[768px] gap-6" data-testid="especial-page-inactive">
-          {/* #1 — Convert this date to special. Same calendar as Añadir /
-              Config so the operator gets one picker everywhere. The
-              "Fecha de hoy" button above the picker jumps to today. */}
+          {/* #3 — No special menu for this day yet. */}
           <section
             data-testid="especial-page-convert-section"
-            aria-labelledby="especial-page-convert-title"
+            aria-label="Activar menu especial"
             className="bo-panel"
           >
-            <div className="bo-panelBody grid gap-3" data-testid="especial-page-convert-body">
-              <div className="flex items-center gap-2">
-                <Sparkles size={18} strokeWidth={1.6} className="text-(--bo-accent, rgba(185,168,255,0.9))" aria-hidden="true" />
-                <h2 id="especial-page-convert-title" className="text-base font-medium">
-                  Añadir menú especial
-                </h2>
-              </div>
-              <p className="text-sm text-(--bo-muted)" data-testid="especial-page-convert-desc">
-                Elige la fecha que quieres activar como menú especial. Por defecto se usa la fecha
-                seleccionada en el calendario (o hoy si no hay ninguna). Tras elegir, ve a la
-                pestaña de Configuración de esa fecha y activa el interruptor.
-              </p>
-              <div className="flex justify-end" data-testid="especial-page-convert-today-row">
-                <button
-                  type="button"
-                  onClick={goToToday}
-                  className="bo-btn bo-btn--ghost flex items-center gap-1.5 transition-transform duration-150 active:scale-[0.96]"
-                  data-testid="especial-page-convert-today-btn"
-                >
-                  <CalendarDays size={14} strokeWidth={1.8} aria-hidden="true" />
-                  Fecha de hoy
-                </button>
-              </div>
-              <div
-                className="flex flex-col gap-3 sm:flex-row sm:items-end"
-                data-testid="especial-page-convert-row"
-              >
-                <div className="grid flex-1 gap-1.5" data-testid="especial-page-convert-date-field">
-                  <label
-                    className="bo-label text-left"
-                    data-testid="especial-page-convert-date-label"
-                  >
-                    Fecha
-                  </label>
-                  <MonthCalendarDatePicker
-                    value={pickDate}
-                    onChange={(iso: string) => setPickDate(iso)}
-                    year={calendar.year}
-                    month={calendar.month}
-                    days={calendar.days}
-                    onPrevMonth={calendar.onPrevMonth}
-                    onNextMonth={calendar.onNextMonth}
-                    loading={calendar.loading}
-                    className="w-full"
-                    data-testid="especial-page-convert-date-input"
-                    data-ui="date-picker"
+            <div className="bo-panelBody pt-4" data-testid="especial-page-convert-body">
+              <SpecialDateActivateEmpty onActivate={() => void activate()} activating={activating} />
+              {activateError ? (
+                <div className="mt-4" data-testid="especial-page-activate-error-wrap">
+                  <InlineAlert
+                    kind="error"
+                    title="Error"
+                    message={activateError}
+                    testId="especial-activate-error-alert"
                   />
                 </div>
-                <a
-                  href={`/app/reservas/config?date=${encodeURIComponent(pickDate)}`}
-                  className="bo-btn bo-btn--primary transition-transform duration-150 active:scale-[0.96]"
-                  data-testid="especial-page-convert-btn"
-                >
-                  Activar reservas especiales
-                </a>
-              </div>
+              ) : null}
             </div>
           </section>
 
-          {/* #2 — Card list of every existing special date */}
+          {/* #4 — Card list of every existing special date. Always rendered so
+              a transient failure on the single-date lookup (which only sets
+              `error` for transport errors now) doesn't hide it. */}
           <section
-            data-testid="especial-page-list-section"
-            aria-labelledby="especial-page-list-title"
+            data-testid="especial-page-inactive-list-section"
+            aria-labelledby="especial-page-inactive-list-title"
             className="grid gap-3"
           >
-            <h2 id="especial-page-list-title" className="text-base font-medium">
+            <h2 id="especial-page-inactive-list-title" className="text-base font-medium text-center">
               Fechas con menú especial
             </h2>
             <SpecialDateCardList
-              entries={data.list}
-              onSelect={(d) => {
-                window.location.assign(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
-              }}
+              entries={list}
+              onSelect={onSelectListedDate}
               testId="especial-page-list"
             />
           </section>

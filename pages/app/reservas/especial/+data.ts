@@ -28,28 +28,35 @@ export async function data(pageContext: PageContextServer) {
   let list: SpecialDateListEntry[] = [];
   let error: string | null = null;
 
-  try {
-    const [sdRes, menusRes, listRes] = await Promise.all([
-      api.config.getSpecialDate(date),
-      api.menus.getSelector(),
-      api.config.listSpecialDates(),
-    ]);
+  // Run all three calls in parallel — but DO NOT short-circuit on a single
+  // failure. The list of existing special dates must ALWAYS load so the user
+  // can recover from a bad/missing special-date row (issue: "la lista de
+  // otras fechas especiales no carga a veces"). Only the *transport* error
+  // on the single-date lookup blocks the page; everything else silently
+  // falls back to an empty value so the rest of the UI still renders.
+  const results = await Promise.allSettled([
+    api.config.getSpecialDate(date),
+    api.menus.getSelector(),
+    api.config.listSpecialDates(),
+  ]);
 
-    if (sdRes.success) {
-      specialDate = (sdRes as { special_date: SpecialDateSettings | null }).special_date ?? null;
-    } else {
-      error = sdRes.message || "Error cargando reservas especiales";
-    }
+  const [sdSettled, menusSettled, listSettled] = results;
 
-    if (menusRes.success) {
-      availableMenus = (menusRes as { menus?: MenuSelectorItem[] }).menus || [];
-    }
+  if (sdSettled.status === "fulfilled" && sdSettled.value.success) {
+    specialDate = (sdSettled.value as { special_date: SpecialDateSettings | null }).special_date ?? null;
+  } else if (sdSettled.status === "rejected") {
+    // Only block the page if the single-date lookup itself errored (network,
+    // 5xx). success=false with special_date=null just means "no special date
+    // for this day" — that is a normal state and must NOT hide the list.
+    error = sdSettled.reason instanceof Error ? sdSettled.reason.message : String(sdSettled.reason);
+  }
 
-    if (listRes.success) {
-      list = (listRes as { special_dates?: SpecialDateListEntry[] }).special_dates || [];
-    }
-  } catch (e) {
-    error = e instanceof Error ? e.message : "Error cargando reservas especiales";
+  if (menusSettled.status === "fulfilled" && menusSettled.value.success) {
+    availableMenus = (menusSettled.value as { menus?: MenuSelectorItem[] }).menus || [];
+  }
+
+  if (listSettled.status === "fulfilled" && listSettled.value.success) {
+    list = (listSettled.value as { special_dates?: SpecialDateListEntry[] }).special_dates || [];
   }
 
   return { date, specialDate, availableMenus, list, error };
