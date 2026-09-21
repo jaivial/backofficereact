@@ -76,10 +76,27 @@
   color: var(--bo-text);
   padding: 0 12px;
   font-size: 16px; /* prevents iOS Safari auto-zoom on focus */
+  /* Tailwind preflight is disabled (tailwind.config.ts corePlugins), and the
+     reset only does `button { font: inherit }`, so form controls otherwise
+     keep their UA font. That makes a <textarea.bo-input> render in the UA
+     monospace face while a sibling <input.bo-input> renders sans-serif. */
+  font-family: var(--bo-font);
   outline: none;
   min-width: 0;
   transition: border-color var(--bo-transition-base, 150ms) ease,
     background-color var(--bo-transition-base, 150ms) ease;
+}
+
+/* Multi-line control. `.bo-input` centres its text with a fixed 40px height,
+   which only works for a single line — on a textarea that leaves no vertical
+   padding and clamps `rows`. Restore real padding and let the height grow,
+   keeping the horizontal padding and font identical to the input. */
+textarea.bo-input {
+  height: auto;
+  min-height: 40px;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: vertical;
 }
 
 .bo-input:hover {

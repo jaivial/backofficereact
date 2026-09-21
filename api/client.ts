@@ -2380,6 +2380,26 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // Special Dates (reservas especiales) — coordination id special_dates_v1
+      async getSpecialDate(date: string): Promise<APISuccess<{ special_date: import("./types").SpecialDateSettings | null }> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/special-dates?${q.toString()}`, { method: "GET" });
+      },
+      async listSpecialDates(): Promise<import("./types").SpecialDateListResponse | APIError> {
+        return json("/api/admin/config/special-dates", { method: "GET" });
+      },
+      async saveSpecialDate(input: import("./types").SpecialDateSavePayload): Promise<APISuccess<{ special_date: import("./types").SpecialDateSettings }> | APIError> {
+        return json("/api/admin/config/special-dates", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async uploadSpecialDateMenuImage(file: File): Promise<APISuccess<{ url: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "special-menu.webp");
+        return json("/api/admin/config/special-dates/menu-image", { method: "POST", body: form });
+      },
     },
 
     legalPages: {
