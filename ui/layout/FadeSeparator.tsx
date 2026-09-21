@@ -10,9 +10,11 @@ import { cn } from "../shadcn/utils";
  * child content. The element is a 1px-tall block, so the gradient IS the
  * line — transparent at 0% and 100%, solid in the middle.
  *
- * Decorative by default: rendered as `role="separator"` with
- * `aria-orientation`, and `aria-hidden` when it carries no semantic weight
- * so screen readers are not interrupted between every field.
+ * Decorative by default: it carries NO role and is `aria-hidden`, because a
+ * run of purely visual rules should not add an announcement between every
+ * field. Pairing `role="separator"` with `aria-hidden` would be
+ * contradictory — the role adds the node to the a11y tree and aria-hidden
+ * removes it — so the role is only applied when `decorative` is false.
  *
  * Reusable across the app — pass `className` for spacing, `tone` to pick
  * the line colour, and `testId` so each instance keeps a unique hook.
@@ -41,9 +43,9 @@ export function FadeSeparator({
   const color = TONE_VAR[tone];
   return (
     <div
-      role="separator"
-      aria-orientation="horizontal"
-      {...(decorative ? { "aria-hidden": true } : {})}
+      {...(decorative
+        ? ({ "aria-hidden": true } as const)
+        : ({ role: "separator", "aria-orientation": "horizontal" } as const))}
       data-ui="fade-separator"
       data-tone={tone}
       data-testid={testId}
