@@ -1,5 +1,5 @@
 import React from "react";
-import { PartyPopper, Settings2 } from "lucide-react";
+import { CalendarDays, Settings2 } from "lucide-react";
 
 import { Tabs } from "../../../../../ui/nav/Tabs";
 import type { TabItem } from "../../../../../ui/nav/Tabs";
@@ -39,7 +39,7 @@ export function SpecialDateTabs({
       id: "fechas",
       label: "Fechas festivas",
       href: "#",
-      icon: <PartyPopper size={16} strokeWidth={1.8} />,
+      icon: <CalendarDays size={16} strokeWidth={1.8} />,
     },
   ];
 

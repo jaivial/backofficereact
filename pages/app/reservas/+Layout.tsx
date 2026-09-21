@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { navigate } from "vike/client/router";
-import { CalendarDays, PlusCircle, SlidersHorizontal, Map, Sparkles } from "lucide-react";
+import { CalendarDays, PlusCircle, SlidersHorizontal, Map, PartyPopper } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
@@ -91,7 +91,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       { id: "reservas", label: "Reservas", href: `/app/reservas${qs}`, icon: <CalendarDays className="bo-ico" /> },
       { id: "tables", label: "Mapas", href: `/app/reservas/tables${qs}`, icon: <Map className="bo-ico" /> },
       { id: "config", label: "Configuración", href: `/app/reservas/config${qs}`, icon: <SlidersHorizontal className="bo-ico" /> },
-      { id: "especial", label: "Especial", href: `/app/reservas/especial${qs}`, icon: <Sparkles className="bo-ico" /> },
+      { id: "especial", label: "Especial", href: `/app/reservas/especial${qs}`, icon: <PartyPopper className="bo-ico" /> },
       { id: "anadir", label: "Añadir", href: `/app/reservas/anadir${qs}`, icon: <PlusCircle className="bo-ico" /> },
     ],
     [qs],
