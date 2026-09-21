@@ -778,38 +778,37 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               </motion.div>
             ) : null}
           </AnimatePresence>
+          {/* Save row — last child of the form body. It is a plain sibling
+              of the fields above (never inside an AnimatePresence subtree),
+              so it does not reintroduce the Vike transform trap from
+              PR #395/#396. Not sticky: it scrolls with the page so the
+              "Guardar" button does not move while the operator scrolls. */}
+          <div
+            className="mt-1 flex w-full justify-end border-t border-[color:var(--bo-border)] pt-4"
+            data-ui="special-date-save-row"
+            data-testid="special-date-save-row"
+          >
+            <button
+              type="button"
+              className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] motion-reduce:transition-none sm:w-auto"
+              onClick={() => void handleSave()}
+              disabled={saving}
+              data-testid="special-date-save-btn"
+            >
+              {saving ? (
+                <span className="flex items-center gap-2" data-testid="special-date-save-saving">
+                  <span
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                    data-testid="special-date-save-spinner"
+                  />
+                  <span data-testid="special-date-save-saving-text">Guardando...</span>
+                </span>
+              ) : (
+                <span data-testid="special-date-save-btn-text">Guardar configuración</span>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Save bar at the bottom of the section so it visually anchors
-          after the panel card. Sits outside the panel to avoid the Vike
-          AnimatePresence transform trap (see PR #395/#396). The bar is NOT
-          sticky — it scrolls with the page so it does not move while the
-          operator scrolls (issue: el botón "Guardar" se mueve al hacer scroll). */}
-      <div
-        className="mx-auto mt-6 flex w-full max-w-[768px] justify-end rounded-[var(--bo-radius-lg)] border border-(--bo-border) bg-(--bo-surface) px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-(--bo-surface)/80"
-        data-ui="special-date-save-row"
-        data-testid="special-date-save-row"
-      >
-        <button
-          type="button"
-          className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] sm:w-auto"
-          onClick={() => void handleSave()}
-          disabled={saving}
-          data-testid="special-date-save-btn"
-        >
-          {saving ? (
-            <span className="flex items-center gap-2" data-testid="special-date-save-saving">
-              <span
-                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-                data-testid="special-date-save-spinner"
-              />
-              <span data-testid="special-date-save-saving-text">Guardando...</span>
-            </span>
-          ) : (
-            <span data-testid="special-date-save-btn-text">Guardar configuración</span>
-          )}
-        </button>
       </div>
     </section>
   );
