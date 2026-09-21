@@ -93,6 +93,15 @@
   line-height: var(--bo-leading-normal);
 }
 
+/* Coordination id: menu_add_modal_chrome_v1 - inside the add-menu modal the
+   dialog already draws the card, so the wizard panels drop their own chrome
+   (background, border and shadow) instead of stacking a second card. */
+.bo-menuWizardPage--embedded .bo-menuWizardPanel {
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
 .bo-typeGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
