@@ -214,15 +214,15 @@ function ReorderSectionDragWrapper({ value, className, children }: { value: stri
 }
 
 export function CrearPage({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean } = {}) {
-  const H = useMenuEditor();
+  const H = useMenuEditor({ embedded });
   useErrorToast(H.error);
 
   const {
     error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages, showSectionTabs,
     showMenuPreviewImage, sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement,
     beverageOptions, menuWeekdays, menuWeekdayBusy, beverageModalOpen, beverageDeleteTarget,
-    beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, importantInfo, specialMenuImage,
-    menuPreviewImageBusy, specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen,
+    beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, importantInfo,
+    menuPreviewImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen,
     desktopPreviewDocked, previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
     sectionLoadingState, menuAITracker, dishImageTarget, dishImageAdvisorDraft, dishImageAdvisorBusy,
     dishImageCropDraft, dishImageBusy, menuPreviewImageAdvisorDraft, menuPreviewImageAdvisorBusy,
@@ -231,29 +231,29 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
     shouldReduceMotion, sectionOrder,
     dishImageAdvisorPreviewKB, menuPreviewImageAdvisorPreviewKB,
     previewThemeId, previewThemeLabel, previewNeedsUpgrade, previewMenuPayload, previewUrl,
-    previewFrameRef, dishImageInputRef, menuPreviewImageInputRef, specialMenuImageInputRef,
+    previewFrameRef, dishImageInputRef, menuPreviewImageInputRef,
     setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
     setShowDishImages, setShowSectionTabs, setShowMenuPreviewImage, setSections, setIncludedCoffee, setBeverageType,
     refreshBeverageOptions, setBeverageOptionSelected, setMenuWeekday, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeveragePrice, setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize,
-    setMainLimit, setMainLimitNum, setComments, setImportantInfo, setSpecialMenuImage, setSaveState, setBusy,
+    setMainLimit, setMainLimitNum, setComments, setImportantInfo, setSaveState, setBusy,
     setHydrated, setMobileTab, setDesktopPreviewOpen,
     setAllergenModal, setMenuAITracker, setDishImageTarget, setDishImageAdvisorDraft,
     setDishImageAdvisorBusy, setDishImageCropDraft, setDishImageBusy,
     setMenuPreviewImageAdvisorDraft, setMenuPreviewImageAdvisorBusy,
     setMenuPreviewImageCropDraft, setMenuPreviewImageCropBusy, setSearchTerms, setSearchResults,
-    setSectionLoadingState, setMenuPreviewImageBusy, setSpecialMenuImageBusy,
+    setSectionLoadingState, setMenuPreviewImageBusy,
     patchBasics, syncSectionsAndDishes, createDraftAndContinue, addSection, setSectionDessertSource, removeSection,
     updateSection, handleSectionToggle, updateSectionAnnotation, addSectionAnnotation,
     removeSectionAnnotation, setSectionDescriptionsEnabled, moveSection, reorderSections, addDish, updateDish, removeDish,
     reorderDishes, handleSearch, pickDishImage, onDishImageFileSelected, onDishImageAdvisorImprove,
-    onDishImageCropConfirm, onPublish, openSpecialMenuImagePicker, onSpecialMenuImageFileSelected,
+    onDishImageCropConfirm, onPublish,
     openMenuPreviewImagePicker, onMenuPreviewImageFileSelected, onMenuPreviewImageAdvisorImprove,
     onMenuPreviewImageCropConfirm, resolvePersistedDishTarget, moveDishImageAdvisorToCrop,
     moveMenuPreviewImageAdvisorToCrop, closeDishImageAdvisor, closeDishImageCropper,
     closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper, renderMenuPreviewUploadArea,
-    renderSpecialMenuImageUploadArea, basicsFingerprint, basicsPayload, sectionsFingerprint,
+    basicsFingerprint, basicsPayload, sectionsFingerprint,
     menuAIDishesById, loadingSectionTitles, toggleSameDayBooking,
     dessertSyncConfirm, confirmDessertSync, cancelDessertSync,
     // Coordination id: special_menu_sections_v1 + special_menu_visibility_v1
@@ -375,32 +375,26 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
   };
 
   const menuPreviewUploadDisabled = !menuId || menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy || H.menuPreviewAIGenerating;
-  const specialMenuUploadDisabled = !menuId || specialMenuImageBusy || busy;
 
-  // Coordination id: special_menu_sections_v1 - the multi-section (title+image)
-  // content of a "menu especial". Shared by the wizard step and the final
-  // editor so both use the same sections system.
+  // Coordination id: special_menu_sections_v1 - a "menu especial" is only its
+  // image sections: the cards render directly under the panel title, with no
+  // extra container, titles or subtitles. Shared by the wizard step and the
+  // final editor.
   const specialMenuSectionsBlock = (
-    <div className="bo-menuImageSections" data-slot="crear-menuImageSections" data-coordination-id="special_menu_sections_v1">
-      <h3 className="bo-menuImageSectionsTitle" data-slot="crear-menuImageSectionsTitle">Secciones con imagen</h3>
-      <p className="bo-mutedText" data-slot="crear-menuImageSectionsHelp">
-        Cada seccion lleva un titulo opcional y una imagen. Puedes anadir tantas como necesites.
-      </p>
-      <div className="bo-menuImageSectionsList" data-slot="crear-menuImageSectionsList">
-        {specialMenuSections.map((section) => (
-          <MenuImageSectionCard
-            key={section.id}
-            sectionId={section.id}
-            title={section.title}
-            imageUrl={section.image_url}
-            busy={!!specialMenuSectionBusy[section.id]}
-            onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
-            onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
-            onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
-            onDelete={() => void deleteSpecialMenuSection(section.id)}
-          />
-        ))}
-      </div>
+    <div className="bo-menuImageSectionsList" data-slot="crear-menuImageSectionsList" data-coordination-id="special_menu_sections_v1" data-testid="menu-crear-special-sections-list">
+      {specialMenuSections.map((section) => (
+        <MenuImageSectionCard
+          key={section.id}
+          sectionId={section.id}
+          title={section.title}
+          imageUrl={section.image_url}
+          busy={!!specialMenuSectionBusy[section.id]}
+          onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
+          onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
+          onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
+          onDelete={() => void deleteSpecialMenuSection(section.id)}
+        />
+      ))}
       <button
         type="button"
         className="bo-btn bo-btn--ghost bo-btn--sm bo-menuImageSectionsAdd"
@@ -646,7 +640,6 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
           <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane bo-editorPane--platos ${mobileTab === "editor" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane">
             {isSpecial ? (
               <Panel className="bo-accordionSection bo-sectionsEditor" data-slot="crear-sectionsEditor" title="Contenido del menu especial">
-                {renderSpecialMenuImageUploadArea()}
                 {specialMenuSectionsBlock}
               </Panel>
             ) : !hydrated ? (
@@ -976,18 +969,10 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
         </div>
       ) : null}
 
-      {/* Step 4: Special Menu Image */}
+      {/* Step 4: Special Menu Image Sections */}
       {step === 4 && isSpecial ? (
         <div className="bo-menuWizardPanel" data-slot="crear-menuWizardPanel">
-          <h2 className="bo-sectionTitle" data-slot="menu-crear-imagen-menu">Imagen del menu</h2>
-          <p className="bo-mutedText" style={{ marginBottom: 16 }} data-slot="crear-mutedText">
-            Sube una imagen del menu especial para mostrarla en la plantilla web.
-          </p>
-          {renderSpecialMenuImageUploadArea()}
-
-          {/* Coordination id: special_menu_sections_v1 - one menu can carry
-              several image sections. The list renders one card per section
-              and the "Anadir seccion" button appends a new one. */}
+          <h2 className="bo-sectionTitle" data-slot="menu-crear-contenido-menu-especial">Contenido del menu especial</h2>
           {specialMenuSectionsBlock}
 
           <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
@@ -1000,7 +985,6 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
       {/* Hidden file inputs */}
       <input ref={dishImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onDishImageFileSelected} data-testid="menu-crear-dish-image-input" />
       <input ref={menuPreviewImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onMenuPreviewImageFileSelected} data-testid="menu-crear-preview-image-input" />
-      <input ref={specialMenuImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" className="bo-hiddenFileInput" onChange={onSpecialMenuImageFileSelected} data-testid="menu-crear-special-menu-image-input" />
 
       {/* Dish image advisor modal */}
       <DishImageAdvisorModalComponent
