@@ -3,6 +3,8 @@ import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../../../api/client";
 import type { GroupMenuV2, MenuSlider } from "../../../../../api/types";
+// Coordination id: menu_editor_preview_open_v1
+import { menuEditorPreviewOpenFromPrefs } from "../../../../../lib/menuEditorPreferences";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -35,5 +37,7 @@ export async function data(pageContext: PageContextServer) {
     }
   }
 
-  return { menu, slider, error };
+  // The editor/preview split is a per-user preference; the session REST carries
+  // it so the editor hydrates with the right split on first paint.
+  return { menu, slider, error, editorPreviewOpen: menuEditorPreviewOpenFromPrefs(pageContext.bo?.session?.preferences) };
 }
