@@ -810,6 +810,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                 className="flex justify-center rounded-none border-0 bg-transparent shadow-none"
               >
                 <PlusMinusCounter
+                  variant="counter"
                   label="Máximo por mesa"
                   value={maxPerTableDraft === "" ? 0 : Number(maxPerTableDraft)}
                   onDecrease={() => {
