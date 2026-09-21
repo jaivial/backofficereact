@@ -87,7 +87,7 @@ export function useSpecialDateActivation({
       const res = await api.config.saveSpecialDate(next);
       if (!res.success) {
         onRevert(previous);
-        setError(res.message || "No se pudo activar el menú especial");
+        setError(res.message || "No se pudo activar la fecha festiva");
         return;
       }
       // The row now exists server-side. Let the caller reconcile any
