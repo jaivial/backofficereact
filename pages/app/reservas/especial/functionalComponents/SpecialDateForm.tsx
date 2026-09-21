@@ -22,6 +22,7 @@ const EMPTY_SETTINGS: SpecialDateSettings = {
   prereserva_enabled: false,
   max_per_table_enabled: false,
   max_per_table: null,
+  mobility_enabled: false,
   requires_adelanto: false,
   adelanto_payment_methods: [],
   adelanto_unified: false,
@@ -194,6 +195,12 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   );
   // Never below the floor, even if the draft is empty or malformed.
   const maxPerTableValue = Math.max(MAX_PER_TABLE_MIN, toNumberOrNull(maxPerTableDraft) ?? MAX_PER_TABLE_MIN);
+
+  // Coordination id: mobility_issues_v1
+  const handleMobilityToggle = useCallback(
+    (checked: boolean) => patch({ mobility_enabled: checked }),
+    [patch],
+  );
 
   const handlePrereservaToggle = useCallback(
     (checked: boolean) => {
@@ -843,6 +850,20 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               </motion.div>
             ) : null}
           </AnimatePresence>
+          <FadeSeparator testId="special-date-sep-maxpertable-mobility" />
+
+          {/* Movilidad — asks the guest about mobility issues so the floor
+              can avoid seating them upstairs when there is no lift.
+              Coordination id: mobility_issues_v1 */}
+          <ToggleRow
+            title="Problemas de movilidad"
+            desc="Preguntar si hay personas con problemas de movilidad, para poder ubicar mejor la reserva si el restaurante tiene una primera planta sin ascensor"
+            checked={draft.mobility_enabled}
+            onToggle={handleMobilityToggle}
+            ariaLabel="Activar pregunta de problemas de movilidad"
+            testId="special-date-mobility-row"
+          />
+
           {/* Save row — last child of the form body. It is a plain sibling
               of the fields above (never inside an AnimatePresence subtree),
               so it does not reintroduce the Vike transform trap from
