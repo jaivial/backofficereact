@@ -192,15 +192,6 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     },
     [maxPerTableDraft, patch],
   );
-  const handleMaxPerTableCommit = useCallback(() => {
-    const n = toNumberOrNull(maxPerTableDraft);
-    // Clamp to the minimum rather than clearing: the field is only visible
-    // while the limit is enabled, and an empty value cannot be saved.
-    const safe = n != null && n >= MAX_PER_TABLE_MIN ? Math.trunc(n) : MAX_PER_TABLE_MIN;
-    patch({ max_per_table: safe });
-    setMaxPerTableDraft(String(safe));
-  }, [maxPerTableDraft, patch]);
-
   // Never below the floor, even if the draft is empty or malformed.
   const maxPerTableValue = Math.max(MAX_PER_TABLE_MIN, toNumberOrNull(maxPerTableDraft) ?? MAX_PER_TABLE_MIN);
 
