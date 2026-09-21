@@ -113,13 +113,16 @@ function SpecialDateCard({
       onClick={() => onSelect(entry.date)}
       aria-label={`Ir a ${entry.date}: ${entry.title || menuSummary}`}
       className={cn(
-        // Panel surface: the card container now uses the shared
-        // `bo-panelBody` chrome instead of a bespoke shadcn card.
+        // The card container carries the shared `bo-panelBody` chrome
+        // (its 0 18px 16px padding). Colours stay on the shadcn card
+        // tokens so this surface and its children keep using ONE token
+        // system, and the border is kept because it is what separates
+        // one card from the next inside the stack.
         "bo-panelBody",
         "group relative block w-full cursor-pointer overflow-hidden rounded-lg",
-        "bg-(--bo-surface-2) text-(--bo-text) shadow-sm",
-        "transition-[transform,box-shadow,background-color] duration-150 ease-out",
-        "hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "border border-border bg-card text-card-foreground shadow-sm",
+        "transition-[transform,box-shadow,border-color,background-color] duration-150 ease-out",
+        "hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "active:scale-[0.99]",
         "text-left",
       )}
