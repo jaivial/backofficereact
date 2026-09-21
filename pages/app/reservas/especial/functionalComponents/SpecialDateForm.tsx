@@ -331,8 +331,9 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
           </div>
         </div>
 
-        {/* Form body — extra bottom padding (only mobile) so the sticky save bar
-            never covers the last interactive element. */}
+        {/* Form body — holds every field and, as its last child, the save
+            row. The save bar is not sticky any more, so the bottom padding
+            here is just breathing room under the save button. */}
         <div
           data-slot="panel-body"
           className="bo-panelBody grid gap-5 pb-6"
