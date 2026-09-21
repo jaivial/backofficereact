@@ -1,4 +1,12 @@
-import type { Booking, BookingExtra, GroupMenu, GroupMenuSummary } from "../../../../../api/types";
+import type {
+  Booking,
+  BookingExtra,
+  BookingSpecial,
+  GroupMenu,
+  GroupMenuSummary,
+  SpecialDatePaymentMethod,
+} from "../../../../../api/types";
+import type { DraftAdelantoPaid, DraftSpecialMenu } from "../../../../../api/specialBookingHelpers";
 
 export type RiceRow = { type: string; servings: number };
 export type PrincipalesRow = { name: string; servings: number };
@@ -92,4 +100,40 @@ export function findMenuTitle(summaries: GroupMenuSummary[], id: number | null |
   if (!id) return "";
   const m = summaries.find((x) => x.id === id);
   return m ? String(m.menu_title || "") : "";
+}
+
+/**
+ * Hydrate the editor's per-menu draft from the booking's special snapshot.
+ * Used when editing a booking that was created on a special date (SPEC §5.5).
+ * Coordination id: special_booking_v1.
+ */
+export function specialMenusFromBooking(special: BookingSpecial | null | undefined): {
+  menus: DraftSpecialMenu[];
+  adelantos_paid: DraftAdelantoPaid[];
+} {
+  const menus: DraftSpecialMenu[] = Array.isArray(special?.menus)
+    ? special!.menus.map((m) => ({
+        special_date_menu_id: Number(m.special_date_menu_id || 0),
+        menu_id: m.menu_id ? Number(m.menu_id) : null,
+        is_custom: !m.menu_id,
+        label: String(m.label || ""),
+        unit_price: Number(m.unit_price || 0),
+        count: Number(m.count || 0),
+        adelanto_per_unit: Number(m.adelanto_per_unit || 0),
+        adelanto_payment_method: (m.adelanto_payment_method || null) as SpecialDatePaymentMethod | null,
+        items: Array.isArray(m.items)
+          ? m.items.map((it) => ({ dish_id: Number(it.dish_id || 0), name: String(it.name || "") }))
+          : [],
+      }))
+    : [];
+  // The server stores adelantos_paid under `special_json.adelantos_paid` but
+  // exposes only the computed `adelanto_by_method` in the booking response.
+  // For the edit form we seed per-method amounts from that breakdown so the
+  // user sees the current paid totals and can adjust them.
+  const adelantos_paid: DraftAdelantoPaid[] = Array.isArray(special?.adelanto_by_method)
+    ? special!.adelanto_by_method
+        .filter((row) => Number(row.paid) > 0)
+        .map((row) => ({ method: row.method as SpecialDatePaymentMethod, amount: Number(row.paid || 0) }))
+    : [];
+  return { menus, adelantos_paid };
 }

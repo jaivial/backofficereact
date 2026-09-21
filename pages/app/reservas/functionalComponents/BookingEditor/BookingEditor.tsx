@@ -1,24 +1,42 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, Sparkles } from "lucide-react";
 import { ReactCountryFlag as CountryFlag } from "react-country-flag";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { createClient } from "../../../../../api/client";
-import type { BookingExtra, ConfigFloor, GroupMenu, GroupMenuSummary } from "../../../../../api/types";
+import {
+  type BookingExtra,
+  type ConfigFloor,
+  type GroupMenu,
+  type GroupMenuSummary,
+  SPECIAL_DATE_PAYMENT_METHOD_LABELS,
+  type SpecialDatePaymentMethod,
+  type SpecialDateSettings,
+} from "../../../../../api/types";
 import { MonthCalendarDatePicker } from "../../../../../ui/widgets/MonthCalendarDatePicker";
 import { useMonthCalendar } from "../../../../../ui/hooks/useMonthCalendar";
 import { TimePicker } from "../../../../../ui/inputs/TimePicker";
 import { AutoGrowTextarea } from "../../../../../ui/inputs/AutoGrowTextarea";
 import { Select } from "../../../../../ui/inputs/Select";
+import { SearchableSelect } from "../../../../../ui/inputs/SearchableSelect";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
+import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { InlineCounter } from "../../../../../ui/widgets/InlineCounter";
 import { Panel } from "../../../../../ui/shell/Panel";
 import { ScrollArea } from "../../../../../ui/layout/ScrollArea";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { OptionsSwitchList, OptionsToggleModal } from "../../../../../ui/widgets/OptionsToggle/OptionsToggle";
 
-import { principalesItemsFromMenu, type PrincipalesRow, type RiceRow } from "./bookingDraft";
+import { principalesItemsFromMenu, specialMenusFromBooking, type PrincipalesRow, type RiceRow } from "./bookingDraft";
+import {
+  buildBookingSpecial,
+  computeSpecialTotals,
+  draftMenusFromSettings,
+  principalesMatchCounter,
+  type DraftAdelantoPaid,
+  type DraftSpecialMenu,
+} from "../../../../../api/specialBookingHelpers";
 
 type API = ReturnType<typeof createClient>;
 
@@ -87,6 +105,29 @@ export type BookingEditorDraft = {
   arroz_enabled: boolean;
   arroz: RiceRow[];
   commentary: string;
+
+  /**
+   * Special-date booking fields (SPEC §3 / §5). All optional so the legacy
+   * create modal (no `specialDate` in scope) keeps working unchanged.
+   * Coordination id: special_booking_v1 (crosses FE/BE).
+   */
+  specialDate?: SpecialDateSettings | null;
+  specialMenus?: DraftSpecialMenu[];
+  specialAdelantosPaid?: DraftAdelantoPaid[];
+  /**
+   * When editing an existing booking that was created on a special date, the
+   * editor hydrates its menu draft from this snapshot to round-trip the count
+   * / payment method / selected principales. Cleared after first hydration.
+   */
+  specialInitialSnapshot?: import("../../../../../api/types").BookingSpecial | null;
+
+  /**
+   * "Problemas de movilidad" — only asked when the date's special settings
+   * enable it. `mobility_people` counts how many of `party_size` are
+   * affected. Coordination id: mobility_issues_v1
+   */
+  has_mobility_issues?: boolean;
+  mobility_people?: number;
 };
 
 export function BookingEditor({
@@ -154,7 +195,69 @@ export function BookingEditor({
   // occupancy per day (lock icons, "0/45 pax" badges, etc.).
   const calendar = useMonthCalendar(api, draft.reservation_date);
 
+  // Coordination id: special_dates_v1 - cached special-date settings per
+  // ISO date. Avoids re-fetching when the user toggles the date picker to the
+  // same value and provides the data the special menu section needs.
+  const specialDateCacheRef = React.useRef<Map<string, SpecialDateSettings | null>>(new Map());
+  const [specialDate, setSpecialDate] = useState<SpecialDateSettings | null>(draft.specialDate ?? null);
+  const [specialDateLoading, setSpecialDateLoading] = useState(false);
+
   const principalesItems = useMemo(() => principalesItemsFromMenu(menuDetail), [menuDetail]);
+
+  // Coordination id: special_booking_v1 - mirror of the backend snapshot
+  // helper used for live form feedback (SPEC §3). When special date is active
+  // and the user has chosen menus + paid amounts, recompute the breakdown.
+  const specialLiveTotals = useMemo(() => {
+    if (!specialDate) return null;
+    const menus = Array.isArray(draft.specialMenus) ? draft.specialMenus : [];
+    return computeSpecialTotals({
+      menus,
+      adelantos_paid: draft.specialAdelantosPaid,
+      partySize: Number(draft.party_size || 0),
+    });
+  }, [draft.specialAdelantosPaid, draft.party_size, draft.specialMenus, specialDate]);
+
+  // When the special date settings arrive after the draft was created (typical
+  // create flow), seed the per-menu draft from the settings if no snapshot is
+  // pending and no draft has been touched yet.
+  useEffect(() => {
+    if (!specialDate) {
+      setDraft((p) => ({ ...p, specialMenus: [], specialAdelantosPaid: [] }));
+      return;
+    }
+    setDraft((p) => {
+      const hasSnapshot = Boolean(p.specialInitialSnapshot);
+      const emptyDraft = !Array.isArray(p.specialMenus) || p.specialMenus.length === 0;
+      if (hasSnapshot && emptyDraft) {
+        const { menus, adelantos_paid } = specialMenusFromBooking(p.specialInitialSnapshot);
+        return {
+          ...p,
+          specialMenus: menus,
+          specialAdelantosPaid: adelantos_paid,
+          specialInitialSnapshot: null,
+        };
+      }
+      if (!hasSnapshot && emptyDraft) {
+        return { ...p, specialMenus: draftMenusFromSettings(specialDate.menus), specialAdelantosPaid: [] };
+      }
+      // Keep user-edited draft intact, just sync labels/prices from settings.
+      const map = new Map((specialDate.menus || []).map((m) => [Number(m.id || 0), m]));
+      const next = (p.specialMenus || []).map((m) => {
+        const cfg = map.get(Number(m.special_date_menu_id || 0));
+        if (!cfg) return m;
+        const isCustom = !cfg.menu_id;
+        return {
+          ...m,
+          menu_id: cfg.menu_id ? Number(cfg.menu_id) : null,
+          is_custom: isCustom,
+          label: isCustom ? String(cfg.custom_title || m.label || "") : m.label || String((cfg as any).menu_title || ""),
+          unit_price: isCustom ? m.unit_price : m.unit_price,
+          adelanto_per_unit: Number(cfg.adelanto_amount || m.adelanto_per_unit || 0),
+        };
+      });
+      return { ...p, specialMenus: next };
+    });
+  }, [specialDate, setDraft]);
   const menuOptions = useMemo(
     () => menus.map((m) => ({ value: String(m.id), label: `${m.menu_title} · ${m.price}€` })),
     [menus],
@@ -199,6 +302,43 @@ export function BookingEditor({
       cancelled = true;
     };
   }, [api.menus.grupos, draft.special_menu]);
+
+  // Coordination id: special_dates_v1 - fetch the special-date settings when
+  // the draft date changes; cache so reopening the same date is instant.
+  useEffect(() => {
+    const date = String(draft.reservation_date || "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      setSpecialDate(null);
+      return;
+    }
+    const cache = specialDateCacheRef.current;
+    if (cache.has(date)) {
+      setSpecialDate(cache.get(date) || null);
+      return;
+    }
+    let cancelled = false;
+    setSpecialDateLoading(true);
+    api.config
+      .getSpecialDate(date)
+      .then((res) => {
+        if (cancelled) return;
+        const settings = (res.success ? (res as any).special_date : null) as SpecialDateSettings | null;
+        const normalized: SpecialDateSettings | null = settings && settings.is_active ? settings : null;
+        cache.set(date, normalized);
+        setSpecialDate(normalized);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        cache.set(date, null);
+        setSpecialDate(null);
+      })
+      .finally(() => {
+        if (!cancelled) setSpecialDateLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [api.config, draft.reservation_date]);
 
   useEffect(() => {
     if (!draft.special_menu) {
@@ -270,8 +410,24 @@ export function BookingEditor({
     const phone = normalizePhoneParts(draft.contact_phone_country_code, draft.contact_phone);
     const menuId = Number(draft.menu_de_grupo_id || 0);
 
-    return /^\d{4}-\d{2}-\d{2}$/.test(date) && Boolean(time) && Boolean(name) && Boolean(phone) && (!draft.special_menu || menuId > 0);
-  }, [draft]);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !time || !name || !phone) return false;
+    if (specialDate) {
+      // Coordination id: special_booking_v1 - require Σ menu counters equal
+      // party_size AND every non-custom menu's principales rows equal its
+      // counter (SPEC §5.5 exact-match rule).
+      const party = Math.max(0, Number(draft.party_size || 0));
+      const menus = Array.isArray(draft.specialMenus) ? draft.specialMenus : [];
+      const sumCount = menus.reduce((acc, m) => acc + (Number(m.count) || 0), 0);
+      if (sumCount !== party) return false;
+      for (const m of menus) {
+        if (Number(m.count || 0) <= 0) continue;
+        if (!principalesMatchCounter(m)) return false;
+        if (specialDate.requires_adelanto && !m.adelanto_payment_method) return false;
+      }
+      return true;
+    }
+    return !draft.special_menu || menuId > 0;
+  }, [draft, specialDate]);
 
   const setField = useCallback(<K extends keyof BookingEditorDraft>(key: K, value: BookingEditorDraft[K]) => {
     setDraft((p) => ({ ...p, [key]: value }));
@@ -443,6 +599,15 @@ export function BookingEditor({
       special_menu: Boolean(draft.special_menu),
     };
 
+    // Coordination id: mobility_issues_v1 — only sent when the date asks.
+    if (specialDate?.mobility_enabled) {
+      const hasMobility = Boolean(draft.has_mobility_issues);
+      payload.has_mobility_issues = hasMobility;
+      payload.mobility_people = hasMobility
+        ? clampInt(Number(draft.mobility_people || 0), 0, partySize)
+        : 0;
+    }
+
     if (draft.special_menu) {
       const menuId = Number(draft.menu_de_grupo_id || 0);
       if (!Number.isFinite(menuId) || menuId <= 0) return setFormError("Selecciona un menú de grupo");
@@ -460,6 +625,52 @@ export function BookingEditor({
       // merges them with the auto summary into the stored commentary.
       payload.extras = (draft.extras || []).map((extra) => extra.id);
       payload.commentary = String(draft.commentary || "").trim();
+    } else if (specialDate) {
+      // Coordination id: special_booking_v1 - submit the special snapshot
+      // block (SPEC §4 / §5.5). The server validates counts + principales
+      // against the date settings.
+      const menus = Array.isArray(draft.specialMenus) ? draft.specialMenus : [];
+      const sumCount = menus.reduce((acc, m) => acc + (Number(m.count) || 0), 0);
+      if (sumCount !== partySize) {
+        return setFormError("La suma de menús especiales debe coincidir con el número de comensales");
+      }
+      for (const m of menus) {
+        if (Number(m.count || 0) <= 0) continue;
+        if (!principalesMatchCounter(m)) {
+          return setFormError(`Selecciona los principales del menú "${m.label || "especial"}" (${m.count} raciones)`);
+        }
+        if (specialDate.requires_adelanto && !m.adelanto_payment_method) {
+          return setFormError(`Selecciona el método de pago del menú "${m.label || "especial"}"`);
+        }
+      }
+      const specialMenus = menus
+        .filter((m) => Number(m.count || 0) > 0)
+        .map((m) => ({
+          special_date_menu_id: Number(m.special_date_menu_id || 0),
+          count: Number(m.count || 0),
+          adelanto_payment_method: m.adelanto_payment_method || undefined,
+          // Custom menus have no principales rows — the user picks later.
+          // Non-custom menus submit {dish_id, name} when both are known, or
+          // fall back to {dish_id: 0, name} for legacy menus whose API only
+          // exposes dish names (the server can match by name in that case).
+          items: Array.isArray(m.items)
+            ? m.items
+                .filter((it) => it && (Number(it.dish_id || 0) > 0 || String(it.name || "").trim()))
+                .map((it) => ({ dish_id: Number(it.dish_id || 0), name: String(it.name || "").trim() }))
+            : [],
+        }));
+      const adelantos_paid = (Array.isArray(draft.specialAdelantosPaid) ? draft.specialAdelantosPaid : [])
+        .filter((p) => p && p.method && Number(p.amount) > 0)
+        .map((p) => ({ method: p.method, amount: Number(p.amount) }));
+      payload.special = {
+        menus: specialMenus,
+        adelantos_paid,
+      };
+      payload.special_menu = false;
+      payload.menu_de_grupo_id = null;
+      payload.principales_json = [];
+      payload.commentary = String(draft.commentary || "").trim();
+      payload.extras = (draft.extras || []).map((extra) => extra.id);
     } else {
       payload.commentary = String(draft.commentary || "").trim();
       // Coordination id: booking_extras_v1 - extras apply in both modes.
@@ -485,7 +696,7 @@ export function BookingEditor({
     }
 
     await onSubmit(payload);
-  }, [draft, onSubmit]);
+  }, [draft, onSubmit, specialDate]);
 
   const isCreate = submitLabel === "Crear";
   const submitDisabled = busy || (isCreate && !requiredFieldsComplete);
@@ -543,6 +754,20 @@ export function BookingEditor({
                 loading={calendar.loading}
                 data-testid="anadir-date-picker"
               />
+              {/* Coordination id: special_dates_v1 - soft warn + title shown
+                  below the date picker when the selected date is an active
+                  special date (SPEC §5.5). Skipped during initial load. */}
+              {specialDate ? (
+                <div className="bo-bookingEditorSpecialBadge" data-slot="booking-editor-special-badge" data-testid="booking-editor-special-badge">
+                  <StatusBadge variant="warning" data-testid="booking-editor-special-badge-pill">
+                    <Sparkles size={12} strokeWidth={2} aria-hidden="true" style={{ marginRight: 4, verticalAlign: -2 }} />
+                    Fecha especial
+                  </StatusBadge>
+                  <div className="bo-bookingEditorSpecialBadgeTitle" data-slot="booking-editor-special-badge-title" data-testid="booking-editor-special-badge-title">
+                    {specialDate.title || "Fecha especial"}
+                  </div>
+                </div>
+              ) : null}
             </div>
             <div className="bo-field bo-field--inline bo-bookingField bo-bookingField--time" data-slot="booking-editor-time">
               <div className="bo-label" style={{ textAlign: "left" }} data-slot="bookingEditor-label">Hora</div>
@@ -640,6 +865,30 @@ export function BookingEditor({
         </div>
       </div>
 
+      {specialDate?.mobility_enabled ? (
+        <MobilityField
+          busy={busy}
+          partySize={Number(draft.party_size) || 1}
+          hasIssues={Boolean(draft.has_mobility_issues)}
+          people={Number(draft.mobility_people) || 0}
+          onToggle={(v) => setDraft((p) => ({ ...p, has_mobility_issues: v, mobility_people: v ? Math.max(1, Number(p.mobility_people) || 1) : 0 }))}
+          onCountChange={(v) => setDraft((p) => ({ ...p, mobility_people: v }))}
+        />
+      ) : null}
+
+      {specialDate ? (
+        <SpecialBookingSection
+          api={api}
+          busy={busy}
+          draft={draft}
+          specialDate={specialDate}
+          setDraft={setDraft}
+          setFormError={setFormError}
+          reduceMotion={reduceMotion === true}
+          totals={specialLiveTotals}
+        />
+      ) : (
+        <>
       <Panel className="bo-bookingPanel--menu" data-slot="bookingEditor-panel" title="Menú de grupo" meta={draft.special_menu ? "Sí" : "No"}>
           <div className="bo-chips bo-bookingBinaryChips" role="group" aria-label="Menú de grupo" data-slot="booking-editor-menu-toggle">
             <button type="button" className={`bo-chip${draft.special_menu ? "" : " is-on"}`} onClick={() => toggleSpecialMenu(false)} disabled={busy} data-slot="booking-editor-menu-no">
@@ -698,16 +947,19 @@ export function BookingEditor({
             >
               <div className="bo-field bo-bookingMenuSelectField" data-slot="booking-editor-menu-select-field">
                 <div className="bo-label" data-slot="bookingEditor-label">Seleccionar menú</div>
-                <Select
-                  className="bo-selectBtn--sm"
-                  size="sm"
-                  style={{ width: "fit-content" }}
-                  value={draft.menu_de_grupo_id ? String(draft.menu_de_grupo_id) : ""}
-                  onChange={(v) => setField("menu_de_grupo_id", v ? Number(v) : null)}
-                  options={menuOptions}
-                  placeholder="Selecciona…"
-                  ariaLabel="Seleccionar menú"
-                />
+                <div style={{ width: "fit-content" }}>
+                  <SearchableSelect
+                    className="bo-selectBtn--sm"
+                    value={draft.menu_de_grupo_id ? String(draft.menu_de_grupo_id) : ""}
+                    onChange={(v) => setField("menu_de_grupo_id", v ? Number(v) : null)}
+                    options={menuOptions}
+                    placeholder="Selecciona…"
+                    searchPlaceholder="Buscar menú…"
+                    emptyText="Sin menús"
+                    ariaLabel="Seleccionar menú"
+                    data-testid="booking-editor-menu-select"
+                  />
+                </div>
               </div>
 
               {draft.menu_de_grupo_id ? (
@@ -717,15 +969,16 @@ export function BookingEditor({
                     {draft.principales.map((row, idx) => (
                       <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
                         <div className="bo-bookingChoiceSelectorRow" data-slot="booking-editor-principal-selector-row">
-                          <Select
+                          <SearchableSelect
                             className="bo-selectBtn--sm bo-bookingChoiceSelect"
-                            size="sm"
-                            style={{ flex: "0 0 auto" }}
                             value={row.name}
                             onChange={(v) => updatePrincipalRow(idx, { name: v, servings: Math.min(row.servings, row.name ? remainingPrincipales + row.servings : remainingPrincipales) })}
                             options={principalOptions}
                             placeholder="Selecciona…"
+                            searchPlaceholder="Buscar principal…"
+                            emptyText="Sin principales"
                             ariaLabel="Principal"
+                            data-testid={`booking-editor-principal-select-${idx}`}
                           />
                           <button type="button" className="bo-actionBtn" onClick={() => removePrincipalRow(idx)} aria-label="Quitar principal" disabled={busy} data-slot={`booking-editor-remove-principal-${idx}`}>
                             <Trash2 size={18} strokeWidth={1.8} />
@@ -820,15 +1073,16 @@ export function BookingEditor({
                 {draft.arroz.map((row, idx) => (
                   <div key={idx} className="bo-row bo-bookingChoiceRow" style={{ gap: 8 }} data-slot="bookingEditor-bookingChoiceRow">
                     <div className="bo-bookingChoiceSelectorRow" data-slot="booking-editor-rice-selector-row">
-                      <Select
+                      <SearchableSelect
                         className="bo-selectBtn--sm bo-bookingChoiceSelect"
-                        size="sm"
-                        style={{ flex: "0 0 auto" }}
                         value={row.type}
                         onChange={(v) => updateRiceRow(idx, { type: v })}
                         options={arrozOptions}
                         placeholder="Selecciona…"
+                        searchPlaceholder="Buscar tipo de arroz…"
+                        emptyText="Sin tipos"
                         ariaLabel="Tipo de arroz"
+                        data-testid={`booking-editor-arroz-select-${idx}`}
                       />
                       <button type="button" className="bo-actionBtn" onClick={() => removeRiceRow(idx)} aria-label="Quitar arroz" disabled={busy} data-slot={`booking-editor-remove-arroz-${idx}`}>
                         <Trash2 size={18} strokeWidth={1.8} />
@@ -857,6 +1111,8 @@ export function BookingEditor({
             </AnimatePresence>
         </Panel>
       ) : null}
+        </>
+      )}
 
       <Panel className="bo-bookingPanel--extras" data-slot="bookingEditor-panel" data-testid="booking-editor-extras-panel" title="Extras" meta={extrasSelectedIds.length > 0 ? `${extrasSelectedIds.length} seleccionados` : "Ninguno"}>
           <OptionsSwitchList
@@ -933,6 +1189,487 @@ export function BookingEditor({
       />
     </div>
     </>
+  );
+}
+
+/**
+ * Special booking editor section — renders the "Selección de menús
+ * especiales" panel (one sub-section per offered menu) plus the optional
+ * "Adelanto" panel. Replaces the legacy "Menú de grupo" + "Arroz" panels
+ * whenever the draft date is an active special date (SPEC §5.5).
+ *
+ * Coordination id: special_booking_v1 (crosses FE/BE).
+ */
+function SpecialBookingSection({
+  api,
+  busy,
+  draft,
+  specialDate,
+  setDraft,
+  setFormError,
+  reduceMotion,
+  totals,
+}: {
+  api: API;
+  busy: boolean;
+  draft: BookingEditorDraft;
+  specialDate: SpecialDateSettings;
+  setDraft: React.Dispatch<React.SetStateAction<BookingEditorDraft>>;
+  setFormError: (msg: string | null) => void;
+  reduceMotion: boolean;
+  totals: import("../../../../../api/specialBookingHelpers").SpecialTotals | null;
+}) {
+  const menus = Array.isArray(draft.specialMenus) ? draft.specialMenus : [];
+  const acceptedMethods = Array.isArray(specialDate.adelanto_payment_methods) ? specialDate.adelanto_payment_methods : [];
+  const partySize = Math.max(0, Number(draft.party_size || 0));
+  const sumCount = menus.reduce((acc, m) => acc + (Number(m.count) || 0), 0);
+  const remainingPax = Math.max(0, partySize - sumCount);
+
+  const setMenuCount = useCallback((idx: number, next: number) => {
+    setFormError(null);
+    setDraft((p) => {
+      const cur = Array.isArray(p.specialMenus) ? p.specialMenus : [];
+      const safe = Math.max(0, Math.trunc(Number(next) || 0));
+      const updated = cur.map((m, i) => (i === idx ? { ...m, count: safe } : m));
+      return { ...p, specialMenus: updated };
+    });
+  }, [setDraft, setFormError]);
+
+  const setMenuMethod = useCallback((idx: number, method: SpecialDatePaymentMethod | null) => {
+    setFormError(null);
+    setDraft((p) => {
+      const cur = Array.isArray(p.specialMenus) ? p.specialMenus : [];
+      return { ...p, specialMenus: cur.map((m, i) => (i === idx ? { ...m, adelanto_payment_method: method } : m)) };
+    });
+  }, [setDraft, setFormError]);
+
+  const addPrincipal = useCallback((menuIdx: number) => {
+    setFormError(null);
+    setDraft((p) => {
+      const cur = Array.isArray(p.specialMenus) ? p.specialMenus : [];
+      const updated = cur.map((m, i) => {
+        if (i !== menuIdx) return m;
+        if (m.is_custom) return m;
+        const rows = Array.isArray(m.items) ? m.items : [];
+        return { ...m, items: [...rows, { dish_id: 0, name: "" }] };
+      });
+      return { ...p, specialMenus: updated };
+    });
+  }, [setDraft, setFormError]);
+
+  const removePrincipal = useCallback((menuIdx: number, itemIdx: number) => {
+    setDraft((p) => {
+      const cur = Array.isArray(p.specialMenus) ? p.specialMenus : [];
+      return { ...p, specialMenus: cur.map((m, i) => {
+        if (i !== menuIdx) return m;
+        const rows = Array.isArray(m.items) ? m.items : [];
+        return { ...m, items: rows.filter((_, j) => j !== itemIdx) };
+      }) };
+    });
+  }, [setDraft]);
+
+  const updatePrincipal = useCallback((menuIdx: number, itemIdx: number, patch: { dish_id?: number; name?: string }) => {
+    setDraft((p) => {
+      const cur = Array.isArray(p.specialMenus) ? p.specialMenus : [];
+      return { ...p, specialMenus: cur.map((m, i) => {
+        if (i !== menuIdx) return m;
+        const rows = Array.isArray(m.items) ? m.items : [];
+        return { ...m, items: rows.map((it, j) => (j === itemIdx ? { ...it, ...patch } : it)) };
+      }) };
+    });
+  }, [setDraft]);
+
+  const setAdelantoPaid = useCallback((method: SpecialDatePaymentMethod, amount: number) => {
+    setDraft((p) => {
+      const cur = Array.isArray(p.specialAdelantosPaid) ? p.specialAdelantosPaid : [];
+      const safe = Math.max(0, Number(amount) || 0);
+      const others = cur.filter((row) => row.method !== method);
+      return { ...p, specialAdelantosPaid: safe > 0 ? [...others, { method, amount: safe }] : others };
+    });
+  }, [setDraft]);
+
+  const advanceMethodsOptions = acceptedMethods.map((m) => ({ value: m, label: SPECIAL_DATE_PAYMENT_METHOD_LABELS[m] || m }));
+  const paidMap = new Map((draft.specialAdelantosPaid || []).map((row) => [row.method, Number(row.amount) || 0]));
+
+  return (
+    <>
+      <Panel
+        className="bo-bookingPanel--special-menus"
+        data-slot="bookingEditor-panel"
+        data-testid="booking-editor-special-menus-panel"
+        title="Selección de menús especiales"
+        meta={`${sumCount} / ${partySize || 0} comensales`}
+      >
+        <div className="bo-mutedText" data-slot="booking-editor-special-menus-hint">
+          Elige los menús para esta reserva. La suma de comensales por menú debe coincidir con el total de la reserva.
+        </div>
+        <div style={{ marginTop: 10, display: "grid", gap: 12 }} data-slot="booking-editor-special-menus-list">
+          {menus.map((menu, menuIdx) => (
+            <SpecialMenuSubSection
+              key={menu.special_date_menu_id || menuIdx}
+              api={api}
+              busy={busy}
+              menu={menu}
+              partySize={partySize}
+              remainingPax={remainingPax}
+              onCountChange={(v) => setMenuCount(menuIdx, v)}
+              onMethodChange={(m) => setMenuMethod(menuIdx, m)}
+              onAddPrincipal={() => addPrincipal(menuIdx)}
+              onRemovePrincipal={(itemIdx) => removePrincipal(menuIdx, itemIdx)}
+              onUpdatePrincipal={(itemIdx, patch) => updatePrincipal(menuIdx, itemIdx, patch)}
+            />
+          ))}
+          {!menus.length ? (
+            <div className="bo-mutedText" data-slot="booking-editor-special-menus-empty">
+              Esta fecha especial no tiene menús configurados todavía.
+            </div>
+          ) : null}
+        </div>
+      </Panel>
+
+      {specialDate.requires_adelanto ? (
+        <Panel
+          className="bo-bookingPanel--special-adelanto"
+          data-slot="bookingEditor-panel"
+          data-testid="booking-editor-special-adelanto-panel"
+          title="Adelanto"
+          meta={totals ? `${Number(totals.required_total).toFixed(2)}€ requeridos` : "—"}
+        >
+          <div style={{ display: "grid", gap: 12 }} data-slot="booking-editor-special-adelanto-body">
+            <div className="bo-mutedText" data-slot="booking-editor-special-adelanto-hint">
+              {acceptedMethods.length > 0
+                ? "Indica por menú el método de pago del adelanto. Las cantidades ya abonadas pueden ajustarse abajo."
+                : "Esta fecha requiere adelanto, pero no hay métodos de pago configurados."}
+            </div>
+            {menus.map((m, idx) => {
+              if (Number(m.count || 0) <= 0) return null;
+              const rowTotal = Number(m.adelanto_per_unit || 0) * Number(m.count || 0);
+              return (
+                <div
+                  key={`row-${m.special_date_menu_id || idx}`}
+                  className="bo-bookingEditorSpecialAdelantoRow"
+                  data-slot={`booking-editor-special-adelanto-row-${m.special_date_menu_id}`}
+                  data-testid={`booking-editor-special-adelanto-row-${m.special_date_menu_id}`}
+                  style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}
+                >
+                  <div data-slot="booking-editor-special-adelanto-row-label" style={{ display: "grid" }}>
+                    <strong>{m.label || `Menú #${m.special_date_menu_id}`}</strong>
+                    <span className="bo-mutedText" style={{ fontSize: 12 }}>
+                      {m.count} × {Number(m.adelanto_per_unit || 0).toFixed(2)}€
+                    </span>
+                  </div>
+                  <SearchableSelect
+                    value={m.adelanto_payment_method || ""}
+                    onChange={(v) => setMenuMethod(idx, v ? (v as SpecialDatePaymentMethod) : null)}
+                    options={[{ value: "", label: "Sin método" }, ...advanceMethodsOptions]}
+                    placeholder="Método…"
+                    searchPlaceholder="Buscar método…"
+                    emptyText="Sin métodos"
+                    ariaLabel="Método de pago del adelanto"
+                    data-testid={`booking-editor-special-adelanto-method-${m.special_date_menu_id}`}
+                  />
+                  <div data-slot="booking-editor-special-adelanto-row-total" style={{ minWidth: 80, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                    {rowTotal.toFixed(2)}€
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="bo-bookingEditorSpecialTotals" data-slot="booking-editor-special-adelanto-totals" style={{ display: "grid", gap: 6 }}>
+              {totals?.by_method.map((row) => (
+                <div
+                  key={row.method}
+                  className="bo-bookingEditorSpecialTotalRow"
+                  data-slot={`booking-editor-special-adelanto-total-row-${row.method}`}
+                  style={{ display: "flex", justifyContent: "space-between", gap: 12, fontVariantNumeric: "tabular-nums" }}
+                >
+                  <span>{SPECIAL_DATE_PAYMENT_METHOD_LABELS[row.method] || row.method}</span>
+                  <span>
+                    {Number(row.required).toFixed(2)}€ req · {Number(row.paid).toFixed(2)}€ pagados
+                  </span>
+                </div>
+              ))}
+              <div className="bo-bookingEditorSpecialTotalAll" data-slot="booking-editor-special-adelanto-total-all" style={{ display: "flex", justifyContent: "space-between", gap: 12, paddingTop: 6, borderTop: "1px solid var(--bo-border)", fontVariantNumeric: "tabular-nums" }}>
+                <strong>TOTAL</strong>
+                <strong>{totals ? `${Number(totals.required_total).toFixed(2)}€` : "—"}</strong>
+              </div>
+            </div>
+
+            <div className="bo-bookingEditorSpecialAdelantoStatus" data-slot="booking-editor-special-adelanto-status" style={{ display: "grid", gap: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>Estado del adelanto</div>
+              {acceptedMethods.map((method) => {
+                const required = totals?.by_method.find((row) => row.method === method)?.required ?? 0;
+                const paidRow = totals?.by_method.find((row) => row.method === method)?.paid ?? 0;
+                const pending = Math.max(0, required - paidRow);
+                const ok = required > 0 && pending <= 0;
+                return (
+                  <div
+                    key={method}
+                    className="bo-bookingEditorSpecialAdelantoStatusRow"
+                    data-slot={`booking-editor-special-adelanto-status-row-${method}`}
+                    style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 8, alignItems: "center" }}
+                  >
+                    <span>{SPECIAL_DATE_PAYMENT_METHOD_LABELS[method] || method}</span>
+                    <span className="bo-mutedText" style={{ fontVariantNumeric: "tabular-nums" }}>req {required.toFixed(2)}€</span>
+                    <input
+                      className="bo-input bo-input--sm"
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      step={0.01}
+                      style={{ width: 110, textAlign: "right", fontVariantNumeric: "tabular-nums" }}
+                      value={String(paidMap.get(method) ?? "")}
+                      onChange={(e) => setAdelantoPaid(method, Number(e.target.value))}
+                      aria-label={`Cantidad abonada (${SPECIAL_DATE_PAYMENT_METHOD_LABELS[method] || method})`}
+                      data-testid={`booking-editor-special-adelanto-paid-${method}`}
+                      data-slot={`booking-editor-special-adelanto-paid-${method}`}
+                    />
+                    {required > 0 ? (
+                      ok ? (
+                        <StatusBadge variant="success" data-testid={`booking-editor-special-adelanto-status-${method}`}>
+                          Pagado
+                        </StatusBadge>
+                      ) : (
+                        <StatusBadge variant="danger" data-testid={`booking-editor-special-adelanto-status-${method}`}>
+                          Pendiente · {pending.toFixed(2)}€
+                        </StatusBadge>
+                      )
+                    ) : (
+                      <span className="bo-mutedText" data-slot={`booking-editor-special-adelanto-status-empty-${method}`}>—</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Panel>
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * Single-menu sub-section inside the "Selección de menús especiales" panel:
+ * label + (optional) custom image + people counter, and — for non-custom
+ * menus — a SearchableSelect dish dropdown per principales row that must
+ * EXACTLY match the counter (SPEC §5.5 exact-match rule).
+ */
+function SpecialMenuSubSection({
+  api,
+  busy,
+  menu,
+  partySize,
+  remainingPax,
+  onCountChange,
+  onMethodChange,
+  onAddPrincipal,
+  onRemovePrincipal,
+  onUpdatePrincipal,
+}: {
+  api: API;
+  busy: boolean;
+  menu: DraftSpecialMenu;
+  partySize: number;
+  remainingPax: number;
+  onCountChange: (next: number) => void;
+  onMethodChange: (next: SpecialDatePaymentMethod | null) => void;
+  onAddPrincipal: () => void;
+  onRemovePrincipal: (itemIdx: number) => void;
+  onUpdatePrincipal: (itemIdx: number, patch: { dish_id?: number; name?: string }) => void;
+}) {
+  const [menuDetail, setMenuDetail] = useState<GroupMenu | null>(null);
+  const [loadingMenu, setLoadingMenu] = useState(false);
+
+  useEffect(() => {
+    if (menu.is_custom || !menu.menu_id) {
+      setMenuDetail(null);
+      return;
+    }
+    setLoadingMenu(true);
+    let cancelled = false;
+    api.menus.grupos
+      .get(menu.menu_id)
+      .then((res) => {
+        if (cancelled || !res.success) return;
+        setMenuDetail((res as any).menu || null);
+      })
+      .catch(() => undefined)
+      .finally(() => { if (!cancelled) setLoadingMenu(false); });
+    return () => { cancelled = true; };
+  }, [api.menus.grupos, menu.is_custom, menu.menu_id]);
+
+  const dishItems = useMemo(() => principalesItemsFromMenu(menuDetail), [menuDetail]);
+  const dishOptions = useMemo(() => dishItems.map((it) => ({ value: it, label: it })), [dishItems]);
+  const items = Array.isArray(menu.items) ? menu.items : [];
+  const filledCount = items.filter((it) => it && it.name).length;
+  const rowsRemaining = Math.max(0, Number(menu.count || 0) - filledCount);
+
+  return (
+    <div
+      className="bo-bookingEditorSpecialMenuRow"
+      data-slot={`booking-editor-special-menu-row-${menu.special_date_menu_id}`}
+      data-testid={`booking-editor-special-menu-row-${menu.special_date_menu_id}`}
+      style={{ display: "grid", gap: 8, padding: 10, border: "1px solid var(--bo-border)", borderRadius: 8 }}
+    >
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <strong data-slot={`booking-editor-special-menu-label-${menu.special_date_menu_id}`}>
+          {menu.label || `Menú #${menu.special_date_menu_id}`}
+        </strong>
+        {menu.is_custom ? (
+          <span className="bo-mutedText" style={{ fontSize: 12 }} data-slot={`booking-editor-special-menu-custom-${menu.special_date_menu_id}`}>
+            Menú personalizado
+          </span>
+        ) : null}
+        <div style={{ marginLeft: "auto" }}>
+          <InlineCounter
+            label="Comensales"
+            value={Number(menu.count || 0)}
+            onChange={onCountChange}
+            min={0}
+            max={partySize || 10000}
+            disabled={busy}
+          />
+        </div>
+      </div>
+
+      {menu.is_custom ? (
+        <div className="bo-mutedText" data-slot={`booking-editor-special-menu-later-${menu.special_date_menu_id}`}>
+          Los principales se decidirán más tarde.
+        </div>
+      ) : (
+        <div style={{ display: "grid", gap: 6 }}>
+          {items.map((row, itemIdx) => (
+            <div
+              key={itemIdx}
+              className="bo-row bo-bookingChoiceRow"
+              style={{ gap: 8 }}
+              data-slot={`booking-editor-special-menu-principal-row-${menu.special_date_menu_id}-${itemIdx}`}
+            >
+              <SearchableSelect
+                value={row.name}
+                onChange={(v) => onUpdatePrincipal(itemIdx, { name: v, dish_id: 0 })}
+                options={dishOptions}
+                placeholder={dishOptions.length ? "Selecciona principal…" : "Sin principales"}
+                searchPlaceholder="Buscar principal…"
+                emptyText="Sin principales"
+                disabled={loadingMenu || busy}
+                ariaLabel={`Principal del menú ${menu.label || menu.special_date_menu_id}`}
+                data-testid={`booking-editor-special-menu-principal-select-${menu.special_date_menu_id}-${itemIdx}`}
+              />
+              <button
+                type="button"
+                className="bo-actionBtn"
+                onClick={() => onRemovePrincipal(itemIdx)}
+                aria-label="Quitar principal"
+                disabled={busy}
+                data-slot={`booking-editor-special-menu-principal-remove-${menu.special_date_menu_id}-${itemIdx}`}
+              >
+                <Trash2 size={18} strokeWidth={1.8} />
+              </button>
+            </div>
+          ))}
+          {Number(menu.count || 0) > items.length ? (
+            <button
+              type="button"
+              className="bo-btn bo-btn--ghost"
+              onClick={onAddPrincipal}
+              disabled={busy || !dishOptions.length}
+              data-slot={`booking-editor-special-menu-principal-add-${menu.special_date_menu_id}`}
+              data-testid={`booking-editor-special-menu-principal-add-${menu.special_date_menu_id}`}
+            >
+              <Plus size={18} strokeWidth={1.8} /> Añadir principal
+            </button>
+          ) : null}
+          {!dishOptions.length ? (
+            <div className="bo-mutedText" data-slot={`booking-editor-special-menu-no-principales-${menu.special_date_menu_id}`}>
+              Este menú no tiene lista de principales.
+            </div>
+          ) : null}
+          {rowsRemaining > 0 && dishOptions.length > 0 ? (
+            <div className="bo-mutedText" style={{ fontSize: 12 }} data-slot={`booking-editor-special-menu-remaining-${menu.special_date_menu_id}`}>
+              Faltan {rowsRemaining} principal(es) por seleccionar.
+            </div>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * "Personas con problemas de movilidad" — a yes/no chip pair that reveals a
+ * counter when the answer is yes. Rendered only when the special date has
+ * the question enabled, so it never appears on ordinary bookings.
+ *
+ * The counter is bounded by the party size: you cannot report more affected
+ * guests than people on the booking.
+ *
+ * Coordination id: mobility_issues_v1
+ */
+function MobilityField({
+  busy,
+  partySize,
+  hasIssues,
+  people,
+  onToggle,
+  onCountChange,
+}: {
+  busy?: boolean;
+  partySize: number;
+  hasIssues: boolean;
+  people: number;
+  onToggle: (next: boolean) => void;
+  onCountChange: (next: number) => void;
+}) {
+  const maxPeople = Math.max(1, partySize);
+  return (
+    <Panel
+      className="bo-bookingPanel--menu"
+      data-slot="bookingEditor-panel"
+      title="Personas con problemas de movilidad"
+      meta={hasIssues ? `${clampInt(people, 1, maxPeople)} de ${maxPeople}` : "No"}
+    >
+      <div
+        className="bo-chips bo-bookingBinaryChips"
+        role="group"
+        aria-label="Personas con problemas de movilidad"
+        data-slot="booking-editor-mobility-toggle"
+        data-testid="booking-editor-mobility-toggle"
+      >
+        <button
+          type="button"
+          className={`bo-chip${hasIssues ? "" : " is-on"}`}
+          onClick={() => onToggle(false)}
+          disabled={busy}
+          data-testid="booking-editor-mobility-no"
+        >
+          No
+        </button>
+        <button
+          type="button"
+          className={`bo-chip${hasIssues ? " is-on" : ""}`}
+          onClick={() => onToggle(true)}
+          disabled={busy}
+          data-testid="booking-editor-mobility-yes"
+        >
+          Sí
+        </button>
+      </div>
+
+      {hasIssues ? (
+        <div className="mt-3" data-testid="booking-editor-mobility-count-wrap">
+          <CounterField
+            className="bo-bookingField bo-bookingField--mobility"
+            style={{ width: "100%" }}
+            label={`¿Cuántas personas? (máx. ${maxPeople})`}
+            value={clampInt(Number(people || 0), 1, maxPeople)}
+            min={1}
+            max={maxPeople}
+            onChange={onCountChange}
+          />
+        </div>
+      ) : null}
+    </Panel>
   );
 }
 
