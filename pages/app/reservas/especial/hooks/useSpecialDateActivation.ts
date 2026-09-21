@@ -47,8 +47,9 @@ export type SpecialDateActivation = {
  * instead of waiting a round-trip.
  *
  * `onOptimistic` receives the activated row before the request is sent;
- * `onRevert` is called with the previous value when the write fails, so
- * the caller owns its own state and this hook stays reusable.
+ * `onRevert` is called with the previous value when the write fails and
+ * `onSuccess` after the row is committed, so the caller owns its own
+ * state and this hook stays reusable.
  *
  * Coordination id: especial_activate_v1
  */
@@ -57,11 +58,13 @@ export function useSpecialDateActivation({
   current,
   onOptimistic,
   onRevert,
+  onSuccess,
 }: {
   date: string;
   current: SpecialDateSettings | null;
   onOptimistic: (next: SpecialDateSettings) => void;
   onRevert: (previous: SpecialDateSettings | null) => void;
+  onSuccess?: () => void;
 }): SpecialDateActivation {
   const [activating, setActivating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,14 +87,19 @@ export function useSpecialDateActivation({
       if (!res.success) {
         onRevert(previous);
         setError(res.message || "No se pudo activar el menú especial");
+        return;
       }
+      // The row now exists server-side. Let the caller reconcile any
+      // derived collection (the card list) that the socket upsert
+      // cannot patch, because it had no entry for this date before.
+      onSuccess?.();
     } catch (e: unknown) {
       onRevert(previous);
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setActivating(false);
     }
-  }, [activating, current, date, onOptimistic, onRevert]);
+  }, [activating, current, date, onOptimistic, onRevert, onSuccess]);
 
   return { activating, error, activate };
 }
