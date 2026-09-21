@@ -128,6 +128,19 @@ export default function Page() {
     };
   }, [api, date]);
 
+  // Single definition of "reload the card list", shared by the mount
+  // effect, the window `focus` listener and the post-activation
+  // reconcile below. Activating a date creates a row the list has never
+  // seen, and the socket upsert deliberately ignores unknown dates, so
+  // without this refetch a freshly activated date would be missing from
+  // the "Fechas con menú especial" tab until the window regained focus.
+  const refreshList = useCallback(async () => {
+    const res = await api.config.listSpecialDates();
+    if (res.success) {
+      setList((res as { special_dates?: SpecialDateListEntry[] }).special_dates || []);
+    }
+  }, [api]);
+
   // Card list: load once on mount + refresh whenever the active state of any
   // date may have changed (i.e. after the operator toggles the activation
   // switch on the Config tab, then returns here). Listening on a window
@@ -183,6 +196,11 @@ export default function Page() {
     onRevert: useCallback((previous: SpecialDateSettings | null) => {
       setSpecialDate(previous);
     }, []),
+    // Pull the card list once the row exists so the newly activated date
+    // shows up in the "Fechas con menú especial" tab right away.
+    onSuccess: useCallback(() => {
+      void refreshList();
+    }, [refreshList]),
   });
 
   // Clicking a card in the list is a real SPA navigation: it re-runs
