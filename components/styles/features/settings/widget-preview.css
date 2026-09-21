@@ -476,6 +476,16 @@
   flex-wrap: nowrap;
 }
 
+/* Date field stacks its label, picker and special-date badge as a column at
+   EVERY width. `.bo-field--inline` is a flex row, so above the mobile
+   breakpoint the label sat beside the picker and the badge was dragged onto
+   the same line. The mobile rule below already did this under 550px; this
+   lifts it to all widths. */
+.bo-bookingRow--schedule .bo-bookingField--date {
+  flex-direction: column;
+  align-items: center;
+}
+
 /* Special-date badge (coordination id: special_dates_v1). Previously had no
    styles at all: the pill and the title rendered as two loose blocks with no
    grouping, spacing or alignment. */
