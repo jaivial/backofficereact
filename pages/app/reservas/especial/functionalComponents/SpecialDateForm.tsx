@@ -868,7 +868,9 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               of the fields above (never inside an AnimatePresence subtree),
               so it does not reintroduce the Vike transform trap from
               PR #395/#396. Not sticky: it scrolls with the page so the
-              "Guardar" button does not move while the operator scrolls. */}
+              "Guardar" button does not move while the operator scrolls.
+              Observation point: `special_date.save_row.render` — coordination
+              id special_dates_v1 (frontend form -> save endpoint). */}
           <div
             className="mt-1 flex w-full justify-end border-t border-[color:var(--bo-border)] pt-4"
             data-ui="special-date-save-row"
@@ -876,7 +878,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
           >
             <button
               type="button"
-              className="bo-btn bo-btn--primary w-full px-8 transition-transform duration-150 active:scale-[0.96] motion-reduce:transition-none sm:w-auto"
+              className="bo-btn bo-btn--primary w-fit px-8 transition-transform duration-150 active:scale-[0.96] motion-reduce:transition-none"
               onClick={() => void handleSave()}
               disabled={saving}
               data-testid="special-date-save-btn"
