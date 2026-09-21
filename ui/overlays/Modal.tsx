@@ -77,7 +77,9 @@ export function Modal({
           exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.16, ease: "easeOut" }}
           role="presentation"
-          onMouseDown={(e) => {
+          onClick={(e) => {
+            // onClick (not onMouseDown) so a slow release can never fall
+            // through to the page behind once the dialog starts closing.
             if (e.target === e.currentTarget) onClose();
           }}
         >

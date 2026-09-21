@@ -961,7 +961,6 @@ export function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []
   menuPreviewImageUrl: string;
   menuPreviewAIRequested: boolean;
   menuPreviewAIGenerating: boolean;
-  specialMenuImageUrl: string;
 } {
   const prevByID = new Map<number, EditorSection>();
   for (const sec of prevSections) {
@@ -983,7 +982,6 @@ export function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []
     menuPreviewImageUrl: previewState.menuPreviewImageUrl,
     menuPreviewAIRequested: previewState.menuPreviewAIRequested,
     menuPreviewAIGenerating: previewState.menuPreviewAIGenerating,
-    specialMenuImageUrl: menu.special_menu_image_url || "",
     sections,
     settings: {
       included_coffee: !!menu.settings?.included_coffee,
