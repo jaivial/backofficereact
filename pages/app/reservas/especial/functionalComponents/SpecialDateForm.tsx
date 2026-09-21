@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ImagePlus, Plus, Trash2 } from "lucide-react";
+import { Check, ImagePlus, Info, Plus, Trash2 } from "lucide-react";
 
 import type { MenuSelectorItem, SpecialDateMenu, SpecialDatePaymentMethod, SpecialDateSettings } from "../../../../../api/types";
 import { SPECIAL_DATE_PAYMENT_METHODS } from "../../../../../api/types";
@@ -149,6 +149,11 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
 
   const [draft, setDraft] = useState<SpecialDateSettings>(() => initial ?? { ...EMPTY_SETTINGS, date, is_active: false });
   const [editableMenus, setEditableMenus] = useState<EditableMenu[]>(() => withKeys(initial?.menus ?? []));
+
+  // The adelanto is charged per menu, so the whole adelanto block has nothing
+  // to act on until a menu exists. Derived from the live editable rows (not
+  // `initial`) so adding or removing a menu flips the fallback immediately.
+  const hasNoMenus = editableMenus.length === 0;
   const [saving, setSaving] = useState(false);
   const [maxPerTableDraft, setMaxPerTableDraft] = useState<string>(() =>
     initial?.max_per_table_enabled && initial?.max_per_table != null ? String(initial.max_per_table) : "",
@@ -582,6 +587,40 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                       transition={{ duration: 0.2 }}
                       style={{ display: "grid", gap: 14 }}
                     >
+                      {hasNoMenus ? (
+                        /* An adelanto is always charged per menu, so every
+                           control in here (payment methods, unified amount,
+                           per-menu amounts) is meaningless until at least one
+                           menu exists. Show the reason instead of inputs that
+                           cannot be applied to anything. */
+                        <div
+                          className="rounded-lg border border-dashed border-[color:var(--bo-border)] bg-[var(--bo-surface-2)] px-4 py-5 text-center"
+                          data-ui="special-date-adelanto-empty"
+                          data-testid="special-date-adelanto-empty"
+                        >
+                          <Info
+                            size={18}
+                            strokeWidth={1.8}
+                            className="mx-auto mb-2 text-[color:var(--bo-card-ink-2)]"
+                            aria-hidden="true"
+                            data-testid="special-date-adelanto-empty-icon"
+                          />
+                          <p
+                            className="text-sm font-medium text-[color:var(--bo-text)]"
+                            data-testid="special-date-adelanto-empty-title"
+                          >
+                            Añade un menú primero
+                          </p>
+                          <p
+                            className="mt-1 text-xs text-[color:var(--bo-card-ink-2)]"
+                            data-testid="special-date-adelanto-empty-desc"
+                          >
+                            El adelanto se cobra por menú. Añade al menos un menú en
+                            “Menús de la fecha especial” para configurarlo.
+                          </p>
+                        </div>
+                      ) : (
+                      <>
                       {/* Payment methods — extra top margin, compact chips with tick. */}
                       <div data-ui="special-date-payment-methods-field" data-testid="special-date-payment-methods-field">
                         <div
@@ -684,6 +723,8 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           </div>
                         </div>
                       ) : null}
+                      </>
+                      )}
 
                       {/* Prereserva window */}
                       <div data-ui="special-date-prereserva-window" data-testid="special-date-prereserva-window">
