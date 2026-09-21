@@ -288,10 +288,21 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo guardar la configuración" });
         return;
       }
-      const saved = (res as { special_date: SpecialDateSettings }).special_date;
-      setDraft(saved);
-      setEditableMenus(withKeys(saved.menus ?? []));
-      onSaved?.(saved);
+      // The POST endpoint only returns { success, date } — it does NOT
+      // echo the saved settings. Re-fetch via getSpecialDate so the form
+      // reflects the real DB row. Without this, the optimistic local
+      // `setDraft(res.special_date)` set `draft` to undefined and the next
+      // render crashed with "Cannot read properties of undefined
+      // (reading 'requires_adelanto')", breaking the whole UI.
+      const fresh = await api.config.getSpecialDate(date);
+      if (fresh.success) {
+        const saved = (fresh as { special_date: SpecialDateSettings | null }).special_date;
+        if (saved) {
+          setDraft(saved);
+          setEditableMenus(withKeys(saved.menus ?? []));
+          onSaved?.(saved);
+        }
+      }
       pushToast({ kind: "success", title: "Guardado", message: "Reservas especiales actualizadas" });
     } catch (e) {
       pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar la configuración" });
@@ -770,11 +781,13 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         </div>
       </div>
 
-      {/* Sticky save bar at the BOTTOM of the section so it visually anchors
+      {/* Save bar at the bottom of the section so it visually anchors
           after the panel card. Sits outside the panel to avoid the Vike
-          AnimatePresence transform trap (see PR #395/#396). */}
+          AnimatePresence transform trap (see PR #395/#396). The bar is NOT
+          sticky — it scrolls with the page so it does not move while the
+          operator scrolls (issue: el botón "Guardar" se mueve al hacer scroll). */}
       <div
-        className="sticky bottom-0 z-10 mx-auto mt-3 flex w-full max-w-[768px] justify-center rounded-[var(--bo-radius-lg)] border border-(--bo-border) bg-(--bo-surface) px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-(--bo-surface)/80"
+        className="mx-auto mt-6 flex w-full max-w-[768px] justify-end rounded-[var(--bo-radius-lg)] border border-(--bo-border) bg-(--bo-surface) px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-(--bo-surface)/80"
         data-ui="special-date-save-row"
         data-testid="special-date-save-row"
       >
