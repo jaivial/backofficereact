@@ -1954,18 +1954,8 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             body: JSON.stringify({ ids }),
           });
         },
-        async uploadSpecialSectionImage(
-          menuId: number,
-          sectionId: number,
-          file: File,
-        ): Promise<APISuccess<{ image_url: string }> | APIError> {
-          const form = new FormData();
-          form.append("image", file, file.name || `section-${sectionId}.webp`);
-          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}/image`, {
-            method: "POST",
-            body: form,
-          });
-        },
+        // Coordination id: special_menu_sections_image_state_v1 - section image
+        // uploads travel the group-menus-v2 socket; only the clear stays REST.
         async deleteSpecialSectionImage(
           menuId: number,
           sectionId: number,

@@ -1,6 +1,8 @@
 import React, { useCallback, useRef } from "react";
 import { GripVertical, Trash2, Upload } from "lucide-react";
 
+import { MediaSkeleton } from "../../feedback/MediaSkeleton";
+
 /**
  * Reusable card for one special-menu image section.
  *
@@ -16,6 +18,8 @@ export type MenuImageSectionCardProps = {
   sectionId: number;
   title: string;
   imageUrl: string;
+  /** Coordination id: special_menu_sections_image_state_v1 */
+  imageState?: "empty" | "uploading" | "ready";
   busy?: boolean;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
   onTitleChange: (value: string) => void;
@@ -28,6 +32,7 @@ function MenuImageSectionCardImpl({
   sectionId,
   title,
   imageUrl,
+  imageState = "empty",
   busy = false,
   dragHandleProps,
   onTitleChange,
@@ -36,6 +41,7 @@ function MenuImageSectionCardImpl({
   onDelete,
 }: MenuImageSectionCardProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const isUploading = imageState === "uploading";
 
   const openPicker = useCallback(() => {
     if (busy) return;
@@ -95,7 +101,9 @@ function MenuImageSectionCardImpl({
       </header>
 
       <div className="bo-menuImageSectionCardMedia" data-slot="menu-image-section-card-media">
-        {imageUrl ? (
+        {isUploading ? (
+          <MediaSkeleton testId={`menu-image-section-card-media-skeleton-${sectionId}`} label="Subiendo imagen de la seccion" />
+        ) : imageUrl ? (
           <div className="bo-menuImageSectionCardPreview" data-slot="menu-image-section-card-preview">
             <img src={imageUrl} alt={title || "Imagen de la seccion"} loading="lazy" decoding="async" data-slot="menu-image-section-card-image" />
             <div className="bo-menuImageSectionCardActions" data-slot="menu-image-section-card-actions">
@@ -107,7 +115,7 @@ function MenuImageSectionCardImpl({
                 data-testid={`menu-image-section-card-change-${sectionId}`}
                 data-slot="menu-image-section-card-change"
               >
-                <Upload size={14} /> {busy ? "Procesando..." : "Cambiar imagen"}
+                <Upload size={14} /> {busy || isUploading ? "Procesando..." : "Cambiar imagen"}
               </button>
               <button
                 type="button"
@@ -134,7 +142,7 @@ function MenuImageSectionCardImpl({
               data-testid={`menu-image-section-card-upload-${sectionId}`}
               data-slot="menu-image-section-card-upload"
             >
-              <Upload size={14} /> {busy ? "Procesando..." : "Subir imagen"}
+              <Upload size={14} /> {busy || isUploading ? "Procesando..." : "Subir imagen"}
             </button>
           </div>
         )}
