@@ -10,6 +10,7 @@ import type {
   ModifiedBookingItem,
   BOSession,
   ConfigDefaults,
+  MobilityDayConfig,
   ConfigDailyLimit,
   ConfigDayStatus,
   ConfigDayRangeResult,
@@ -2039,11 +2040,24 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         mesasDeTresLimit: string;
         allowFloorReservation?: boolean;
         allowSalonReservation?: boolean;
+        mobility_enabled?: boolean;
       }>): Promise<APISuccess<ConfigDefaults> | APIError> {
         return json("/api/admin/config/defaults", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
+        });
+      },
+      /** Per-day mobility question override (coordination id mobility_day_override_v1). */
+      async getMobilityDay(date: string): Promise<APISuccess<MobilityDayConfig> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/mobility-day?${q.toString()}`, { method: "GET" });
+      },
+      async setMobilityDay(date: string, mobility_enabled: boolean): Promise<APISuccess<MobilityDayConfig> | APIError> {
+        return json("/api/admin/config/mobility-day", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ date, mobility_enabled }),
         });
       },
       async getDay(date: string): Promise<APISuccess<ConfigDayStatus> | APIError> {

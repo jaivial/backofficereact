@@ -56,6 +56,16 @@ export default function Page() {
   // the initial seed only; everything afterwards is fetched via the API
   // client below.
   const [date, setDate] = useState<string>(ssrData.date || todayISO());
+
+  // Keep the local date in sync with the SSR snapshot when vike swaps
+  // `pageContext.data` during an SPA navigation to this same route (card
+  // clicks, back/forward). The component re-renders without remounting, so
+  // without this the view stayed on the previously picked date.
+  const ssrDate = ssrData.date;
+  useEffect(() => {
+    if (!ssrDate) return;
+    setDate((cur) => (cur === ssrDate ? cur : ssrDate));
+  }, [ssrDate]);
   const [specialDate, setSpecialDate] = useState<SpecialDateSettings | null>(ssrData.specialDate);
   const [list, setList] = useState<SpecialDateListEntry[]>(ssrData.list ?? []);
   const [availableMenus] = useState<MenuSelectorItem[]>(ssrData.availableMenus ?? []);
@@ -203,14 +213,6 @@ export default function Page() {
     }, [refreshList]),
   });
 
-  // Clicking a card in the list is a real SPA navigation: it re-runs
-  // +data.ts for that date so the SSR snapshot (specialDate / list /
-  // availableMenus) is fresh before the component renders. Defined once
-  // and shared by both branches instead of duplicating the closure.
-  const onSelectListedDate = useCallback((d: string) => {
-    void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
-  }, []);
-
   const onDateChange = useCallback(
     (iso: string) => {
       if (!iso || iso === date) return;
@@ -228,6 +230,20 @@ export default function Page() {
       }
     },
     [date],
+  );
+
+  // Clicking a card in the list is a real SPA navigation: it re-runs
+  // +data.ts for that date so the SSR snapshot (specialDate / list /
+  // availableMenus) is fresh before the component renders. It ALSO applies
+  // the selection locally through `onDateChange`: vike re-renders this page
+  // without remounting it, so the local `date` state would otherwise stay
+  // on the previously picked day and the click would appear to do nothing.
+  const onSelectListedDate = useCallback(
+    (d: string) => {
+      void navigate(`/app/reservas/especial?date=${encodeURIComponent(d)}`);
+      onDateChange(d);
+    },
+    [onDateChange],
   );
 
   return (

@@ -422,7 +422,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                   <div
                     key={m._key}
                     data-testid={`special-date-menu-row-${idx + 1}`}
-                    className="grid gap-2.5 rounded-lg border border-(--bo-border) bg-(--bo-surface-2) p-3"
+                    className="grid gap-2.5 rounded-lg bg-transparent p-3 outline outline-1 outline-bo-border"
                   >
                     <div
                       className="flex items-center justify-between gap-2"
@@ -458,7 +458,6 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           }}
                           options={menuOptions}
                           placeholder={selectedLabel}
-                          fitWidestOption
                           className="w-full"
                           ariaLabel={`Menú del catálogo para la fila ${idx + 1}`}
                         />
@@ -551,7 +550,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               })}
               <button
                 type="button"
-                className="bo-btn bo-btn--ghost flex items-center justify-center gap-2 disabled:opacity-50"
+                className="bo-btn bo-btn--ghost flex w-fit items-center justify-center gap-2 disabled:opacity-50"
                 onClick={() => addMenuRowRef.current()}
                 disabled={addingMenu}
                 data-testid="special-date-menus-add-btn"

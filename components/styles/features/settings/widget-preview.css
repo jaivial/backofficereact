@@ -417,7 +417,6 @@
 @media (min-width: 769px) {
   .bo-reservaAddPage {
     width: min(100%, 1100px);
-    margin-inline: auto;
   }
 }
 

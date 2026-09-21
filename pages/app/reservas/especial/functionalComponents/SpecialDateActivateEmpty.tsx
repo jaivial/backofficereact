@@ -7,7 +7,6 @@ import React from "react";
  *
  *   ┌──────────────────────────────┐
  *   │       Sin fecha festiva      │   <- status line
- *   │    Activar fecha festiva     │   <- prompt
  *   │          [ Activar ]         │   <- CTA (fit-content)
  *   └──────────────────────────────┘
  *
@@ -31,34 +30,22 @@ export function SpecialDateActivateEmpty({
       data-testid="especial-activate-empty"
     >
       <p
-        className="text-center text-base font-medium text-(--bo-text)"
+        className="text-center text-base font-medium text-bo-text"
         data-testid="especial-activate-empty-title"
       >
         Sin fecha festiva
       </p>
 
-      {/* Prompt + CTA stacked in their own column, per spec. */}
-      <div
-        className="flex w-full flex-col items-center gap-2"
-        data-testid="especial-activate-empty-cta-group"
+      <button
+        type="button"
+        onClick={onActivate}
+        disabled={activating}
+        aria-busy={activating}
+        className="bo-btn bo-btn--primary w-fit transition-transform duration-150 ease-out active:scale-[0.96] disabled:opacity-60 motion-reduce:transition-none"
+        data-testid="especial-activate-empty-btn"
       >
-        <p
-          className="text-center text-sm text-(--bo-muted)"
-          data-testid="especial-activate-empty-cta-label"
-        >
-          Activar fecha festiva
-        </p>
-        <button
-          type="button"
-          onClick={onActivate}
-          disabled={activating}
-          aria-busy={activating}
-          className="bo-btn bo-btn--primary w-fit transition-transform duration-150 ease-out active:scale-[0.96] disabled:opacity-60 motion-reduce:transition-none"
-          data-testid="especial-activate-empty-btn"
-        >
-          {activating ? "Activando…" : "Activar"}
-        </button>
-      </div>
+        {activating ? "Activando…" : "Activar"}
+      </button>
     </div>
   );
 }

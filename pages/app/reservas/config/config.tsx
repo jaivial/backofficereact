@@ -25,7 +25,8 @@ import type { PageData } from "./types/config.types";
 import { useConfigDay } from "./hooks/useConfigDay";
 import { SalonesDelDiaPanel } from "./functionalComponents/SalonesDelDiaPanel";
 import { MandatoryMenuConfig as MandatoryMenuConfigPanel } from "./functionalComponents/MandatoryMenuConfig/MandatoryMenuConfig";
-import { SpecialDateActivationPanel } from "./functionalComponents/SpecialDateActivationPanel";
+import { MobilityDayPanel } from "./functionalComponents/MobilityDayPanel";
+import { useMobilityDay } from "../../../../ui/hooks/useMobilityDay";
 
 export default function Page() {
   const pageContext = usePageContext();
@@ -86,6 +87,9 @@ export default function Page() {
   const [specialDate, setSpecialDate] = useState<SpecialDateSettings | null>(null);
   const [rangeModalOpen, setRangeModalOpen] = useState(false);
 
+  // Per-day "problemas de movilidad" question — coordination id mobility_day_override_v1
+  const mobilityDay = useMobilityDay(api, date);
+
   const {
     loadAll,
     loadMandatoryMenuConfig,
@@ -105,8 +109,6 @@ export default function Page() {
     handleNightHour,
     toggleHourSplit,
     commitHourSplitPercentages,
-    loadSpecialDate,
-    handleSpecialDateActivationToggle,
   } = useConfigDay({
     api,
     date,
@@ -225,11 +227,10 @@ export default function Page() {
     [api],
   );
 
-  // Load mandatory menu + special date config on mount and whenever date changes
+  // Load mandatory menu config on mount and whenever date changes
   useEffect(() => {
     void loadMandatoryMenuConfigFromApi(date);
-    void loadSpecialDate(date);
-  }, [date, loadMandatoryMenuConfigFromApi, loadSpecialDate]);
+  }, [date, loadMandatoryMenuConfigFromApi]);
 
   const setLocationBookingOverride = useCallback(
     async (patch: { allowFloorReservation?: boolean; allowSalonReservation?: boolean }) => {
@@ -265,12 +266,11 @@ export default function Page() {
       void loadAll(d);
       void loadMandatoryMenuConfigFromApi(d);
       void loadLocationBooking(d);
-      void loadSpecialDate(d);
       if (typeof window !== "undefined") {
         window.history.replaceState(null, "", withDateParam(window.location.href, d));
       }
     },
-    [loadAll, loadMandatoryMenuConfigFromApi, loadLocationBooking, loadSpecialDate],
+    [loadAll, loadMandatoryMenuConfigFromApi, loadLocationBooking],
   );
 
   const dayVisibilityTransition = reduceMotion ? { duration: 0 } : { duration: 0.3, ease: "easeInOut" as const };
@@ -326,15 +326,15 @@ export default function Page() {
           }}
         />
 
-        {/* Special date activation — placed right after the day state panel
-            so the toggle is visible without scrolling. It opens the rest of
-            the menu special workflow via the hint banner. */}
+        {/* Per-day mobility question — the concrete day choice wins over the
+            global default for this date. Coordination id: mobility_day_override_v1 */}
         <AnimatePresence initial={false}>
           {day.isOpen ? (
-            <SpecialDateActivationPanel
-              specialDate={specialDate}
-              busy={busy}
-              onToggle={handleSpecialDateActivationToggle}
+            <MobilityDayPanel
+              enabled={mobilityDay.enabled}
+              override={mobilityDay.override}
+              busy={mobilityDay.busy || busy}
+              onToggle={(checked) => void mobilityDay.setEnabled(checked)}
             />
           ) : null}
         </AnimatePresence>

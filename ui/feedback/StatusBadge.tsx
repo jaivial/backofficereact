@@ -9,6 +9,7 @@ const badgeVariants = cva("bo-badge", {
       danger: "bo-badge--danger",
       warning: "bo-badge--warning",
       info: "bo-badge--info",
+      outline: "bo-badge--outlined",
       neutral: "",
     },
     size: {

@@ -70,6 +70,7 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
         defaultHourPercentages: Record<string, number>;
         allowFloorReservation: boolean;
         allowSalonReservation: boolean;
+        mobility_enabled: boolean;
       }>,
       successMessage?: string,
     ) => {
@@ -478,6 +479,27 @@ export function ConfigRestauranteContent({ defaults, floors, busy, setBusy, setE
             decrementAriaLabel="Reducir mesas de 3"
             incrementAriaLabel="Aumentar mesas de 3"
           />
+      </Panel>
+
+      <Panel title="Problemas de movilidad" meta="Pregunta en el flujo de reservas" bodyClassName="bo-row" data-ui="config-restaurante-mobility-panel" data-testid="config-restaurante-mobility-panel">
+        <label className="bo-checkboxContainer gap-3" data-testid="config-restaurante-mobility-label">
+          <input
+            type="checkbox"
+            checked={Boolean(defaults.mobility_enabled)}
+            onChange={(e) =>
+              void saveDefaults(
+                { mobility_enabled: e.target.checked },
+                `Pregunta de movilidad ${e.target.checked ? "activada" : "desactivada"}`,
+              )
+            }
+            aria-label="Activar pregunta de problemas de movilidad"
+            data-testid="config-restaurante-mobility-checkbox"
+          />
+          <span className="bo-checkboxMark" aria-hidden="true" data-testid="config-restaurante-mobility-mark" />
+          <span className="text-sm text-bo-text" data-testid="config-restaurante-mobility-text">
+            Preguntar por problemas de movilidad (cada día puede sobreescribirlo)
+          </span>
+        </label>
       </Panel>
 
       <Panel title="Plantas del restaurante" meta={`${floorCount} plantas`} bodyClassName="bo-configFloorsPanel" data-ui="config-restaurante-floors-panel">
