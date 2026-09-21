@@ -415,7 +415,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
   );
 
   return (
-    <section className="bo-menuWizardPage" aria-label="Editor de menu" data-testid="menu-crear-page">
+    <section className={`bo-menuWizardPage${embedded ? " bo-menuWizardPage--embedded" : ""}`} aria-label="Editor de menu" data-testid="menu-crear-page">
       {/* Coordination id: menu_add_modal_chrome_v1 - inside the add-menu modal
           the wizard carries no breadcrumb and no step tracker. */}
       {!embedded ? (
