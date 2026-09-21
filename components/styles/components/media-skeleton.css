@@ -1,0 +1,38 @@
+/* Reusable media skeleton (coordination id: special_menu_sections_image_state_v1) */
+.bo-mediaSkeleton {
+  position: relative;
+  width: 100%;
+  min-height: 140px;
+  border-radius: 10px;
+  border: 1px solid var(--bo-border);
+  background: color-mix(in srgb, var(--bo-surface) 92%, transparent);
+  overflow: hidden;
+}
+
+.bo-mediaSkeletonGlow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--bo-fg) 8%, transparent) 45%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  animation: bo-mediaSkeletonSweep 1.4s ease-in-out infinite;
+}
+
+@keyframes bo-mediaSkeletonSweep {
+  0% {
+    background-position: 140% 0;
+  }
+  100% {
+    background-position: -40% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bo-mediaSkeletonGlow {
+    animation: none;
+  }
+}

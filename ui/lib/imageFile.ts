@@ -130,3 +130,14 @@ export async function imageToWebpMax50KB(file: File): Promise<File> {
   if (!bestBlob) throw new Error("No se pudo convertir la imagen");
   throw new Error("No se pudo reducir la imagen por debajo de 50KB");
 }
+
+/** Base64 for socket uploads (coordination id: special_menu_sections_image_state_v1). */
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}

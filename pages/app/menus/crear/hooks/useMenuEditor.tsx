@@ -13,6 +13,7 @@ import type {
 } from "../../../../../api/types";
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../../lib/dishImageCrop";
 import { processSpecialMenuFile } from "../../../../../lib/specialMenuUpload";
+import { arrayBufferToBase64 } from "../../../../../ui/lib/imageFile";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { normalizeWebPlacement } from "../../../../../ui/widgets/menus/webPlacement";
 import { WEEKDAYS, type WeekdayKey } from "../../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
@@ -1177,6 +1178,28 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
           applyBeverageOptions(payload);
           return;
         }
+        // Coordination id: special_menu_sections_image_state_v1 (background
+        // task state -> section media: skeleton / final image / default).
+        if (type === "special_section_image_started" || type === "special_section_image_ready" || type === "special_section_image_error") {
+          const sectionId = Number(payload.section_id ?? 0);
+          if (type === "special_section_image_error") {
+            pushToast({ kind: "error", title: "Error", message: String(payload.message ?? "No se pudo subir la imagen") });
+          }
+          if (sectionId) {
+            setSpecialMenuSections((prev) => prev.map((sec) => {
+              if (sec.id !== sectionId) return sec;
+              if (type === "special_section_image_ready") {
+                return { ...sec, image_state: "ready", image_url: String(payload.image_url ?? sec.image_url) };
+              }
+              if (type === "special_section_image_error") {
+                return { ...sec, image_state: "empty" };
+              }
+              return { ...sec, image_state: "uploading" };
+            }));
+          }
+          console.log(`[checkpoint] special_section_image_ws_frame type=${type} section_id=${sectionId}`);
+          return;
+        }
         if (type === "sync" || type === "ai_update" || type === "tracker_update"
           || type === "hello" || type === "snapshot"
           || type === "preview_image_completed" || type === "preview_image_failed") {
@@ -1991,6 +2014,10 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     }
   }, [api, menuId, pushToast]);
 
+  // Coordination id: special_menu_sections_image_state_v1 - uploads travel the
+  // group-menus-v2 socket ("socket method") and the server processes them in a
+  // background task, so closing the page never loses an upload. The row state
+  // (empty/uploading/ready) lives in the DB and drives skeleton / image / default.
   const uploadSpecialMenuSectionImage = useCallback(async (sectionId: number, file: File) => {
     if (!menuId) return;
     if (!isSupportedDishImageFile(file)) {
@@ -2001,27 +2028,37 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       pushToast({ kind: "error", title: "Error", message: "La imagen excede 15MB." });
       return;
     }
-    setSectionBusy(sectionId, true);
-    setSaveState("saving");
+    const ws = menuAIWSSocketRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      pushToast({ kind: "error", title: "Error", message: "Conexion no disponible. Intentalo de nuevo." });
+      return;
+    }
     try {
       const { file: prepared } = await processSpecialMenuFile(file);
-      const res = await api.menus.gruposV2.uploadSpecialSectionImage(menuId, sectionId, prepared);
-      if (!res.success) throw new Error(res.message || "No se pudo subir la imagen");
-      const url = String(res.image_url || "").trim();
-      if (!url) throw new Error("No se recibio la URL de la imagen subida");
-      setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_url: url } : sec)));
-      setSaveState("saved");
+      const data = arrayBufferToBase64(await prepared.arrayBuffer());
+      let correlationId = "";
+      try { correlationId = window.sessionStorage.getItem("vcCorrelationId") || ""; } catch { correlationId = ""; }
+      setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_state: "uploading" } : sec)));
+      ws.send(JSON.stringify({
+        type: "special_section_image_upload",
+        menu_id: menuId,
+        section_id: sectionId,
+        filename: prepared.name,
+        content_type: prepared.type,
+        data,
+        correlation_id: correlationId,
+      }));
+      // Named observation point: upload handed to the server-side background task.
+      console.log(`[checkpoint] special_section_image_ws_sent menu_id=${menuId} section_id=${sectionId}`);
     } catch (e) {
-      setSaveState("error");
+      setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_state: "empty" } : sec)));
       pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo subir la imagen" });
-    } finally {
-      setSectionBusy(sectionId, false);
     }
-  }, [api, menuId, pushToast, setSectionBusy]);
+  }, [menuId, pushToast]);
 
   const clearSpecialMenuSectionImage = useCallback(async (sectionId: number) => {
     if (!menuId) return;
-    setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_url: "" } : sec)));
+    setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_url: "", image_state: "empty" } : sec)));
     setSectionBusy(sectionId, true);
     try {
       const res = await api.menus.gruposV2.deleteSpecialSectionImage(menuId, sectionId);
