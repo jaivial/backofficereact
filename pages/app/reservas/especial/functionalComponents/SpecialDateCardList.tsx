@@ -44,14 +44,14 @@ export function SpecialDateCardList({
 
   return (
     <div className="bo-panel" data-testid={`${testId}-panel`}>
-      {/* Same surface as every other panel in the backoffice: the button
-          stack lives inside a `bo-panelBody`, so the container chrome
-          (radius, background, shadow, padding) matches the rest of the
-          app instead of a bespoke one-off card. */}
+      {/* The panel keeps the outer chrome; `bo-panelBody` now lives on each
+          card button instead of on this stack, so every card carries the
+          panel surface itself. Padding here only spaces the stack inside
+          the panel. */}
       <div
         data-testid={testId}
         aria-label="Fechas con menú especial"
-        className="bo-panelBody grid grid-cols-1 gap-3 pt-4"
+        className="grid grid-cols-1 gap-3 px-[18px] pt-4 pb-4"
         role="group"
       >
         {list.map((e) => (
@@ -113,7 +113,12 @@ function SpecialDateCard({
       onClick={() => onSelect(entry.date)}
       aria-label={`Ir a ${entry.date}: ${entry.title || menuSummary}`}
       className={cn(
-        // shadcn Card surface
+        // The card container carries the shared `bo-panelBody` chrome
+        // (its 0 18px 16px padding). Colours stay on the shadcn card
+        // tokens so this surface and its children keep using ONE token
+        // system, and the border is kept because it is what separates
+        // one card from the next inside the stack.
+        "bo-panelBody",
         "group relative block w-full cursor-pointer overflow-hidden rounded-lg",
         "border border-border bg-card text-card-foreground shadow-sm",
         "transition-[transform,box-shadow,border-color,background-color] duration-150 ease-out",
@@ -126,7 +131,7 @@ function SpecialDateCard({
       {/* Three vertical sections, each in its own div. The body is
           a flex column so the rows always stack the same way
           regardless of viewport. */}
-      <div className="flex flex-col px-4 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5">
+      <div className="flex flex-col pt-4 sm:pt-5" data-testid={`${testId}-body`}>
 
         {/* 1 — Header: date icon + date + prereserva badge. */}
         <div
