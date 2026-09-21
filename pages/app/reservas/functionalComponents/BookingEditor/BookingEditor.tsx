@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Minus, Plus, Trash2, Sparkles } from "lucide-react";
+import { Minus, Plus, Trash2, PartyPopper } from "lucide-react";
+import { useMobilityDay } from "../../../../../ui/hooks/useMobilityDay";
 import { ReactCountryFlag as CountryFlag } from "react-country-flag";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
@@ -200,6 +201,9 @@ export function BookingEditor({
   // same value and provides the data the special menu section needs.
   const specialDateCacheRef = React.useRef<Map<string, SpecialDateSettings | null>>(new Map());
   const [specialDate, setSpecialDate] = useState<SpecialDateSettings | null>(draft.specialDate ?? null);
+  // Effective mobility question for the edited date (day override wins over
+  // the global default). Coordination id: mobility_day_override_v1
+  const mobilityDay = useMobilityDay(api, draft.reservation_date);
   const [specialDateLoading, setSpecialDateLoading] = useState(false);
 
   const principalesItems = useMemo(() => principalesItemsFromMenu(menuDetail), [menuDetail]);
@@ -599,8 +603,8 @@ export function BookingEditor({
       special_menu: Boolean(draft.special_menu),
     };
 
-    // Coordination id: mobility_issues_v1 — only sent when the date asks.
-    if (specialDate?.mobility_enabled) {
+    // Coordination id: mobility_day_override_v1 — only sent when the date asks.
+    if (mobilityDay.enabled) {
       const hasMobility = Boolean(draft.has_mobility_issues);
       payload.has_mobility_issues = hasMobility;
       payload.mobility_people = hasMobility
@@ -759,12 +763,12 @@ export function BookingEditor({
                   special date (SPEC §5.5). Skipped during initial load. */}
               {specialDate ? (
                 <div className="bo-bookingEditorSpecialBadge" data-slot="booking-editor-special-badge" data-testid="booking-editor-special-badge">
-                  <StatusBadge variant="warning" data-testid="booking-editor-special-badge-pill">
-                    <Sparkles size={12} strokeWidth={2} aria-hidden="true" style={{ marginRight: 4, verticalAlign: -2 }} />
-                    Fecha especial
+                  <StatusBadge variant="outline" className="gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium" data-testid="booking-editor-special-badge-pill">
+                    <PartyPopper size={12} strokeWidth={2} aria-hidden="true" />
+                    Día festivo
                   </StatusBadge>
                   <div className="bo-bookingEditorSpecialBadgeTitle" data-slot="booking-editor-special-badge-title" data-testid="booking-editor-special-badge-title">
-                    {specialDate.title || "Fecha especial"}
+                    {specialDate.title || "Día festivo"}
                   </div>
                 </div>
               ) : null}
@@ -865,7 +869,7 @@ export function BookingEditor({
         </div>
       </div>
 
-      {specialDate?.mobility_enabled ? (
+      {mobilityDay.enabled ? (
         <MobilityField
           busy={busy}
           partySize={Number(draft.party_size) || 1}

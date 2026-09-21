@@ -702,6 +702,15 @@ export type ConfigDefaults = {
   defaultHourPercentages: Record<string, number>;
   allowFloorReservation: boolean;
   allowSalonReservation: boolean;
+  /** Global "problemas de movilidad" question (coordination id mobility_day_override_v1). */
+  mobility_enabled: boolean;
+};
+
+/** Per-day mobility question override: `null` inherits the global default. */
+export type MobilityDayConfig = {
+  date: string;
+  mobility_enabled: boolean | null;
+  effective: boolean;
 };
 
 /** By-hour client split configuration for a date (effective flag + per-hour split). */
