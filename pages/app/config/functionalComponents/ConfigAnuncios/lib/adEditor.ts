@@ -127,6 +127,27 @@ export function buildCTAURL(website: string, cta: Pick<RestaurantAdCTA, "navigat
   return base ? `${base}${route === "/" ? "" : route}` : route;
 }
 
+/**
+ * Coordination id: ad_save_payload_v1. The one payload every save path sends
+ * (REST and WS). Autosave fires mid-typing, before the URL field blur runs
+ * normalizeButtonURL, so custom URLs are normalized here too: "ejemplo.com"
+ * or "/oferta" no longer reach the backend and come back as a 400.
+ */
+export function adSavePayload(ad: RestaurantAd, website = "") {
+  const ctas = (list: RestaurantAdCTA[] = []) =>
+    list.map((cta) => (asText(cta.navigation_mode) === "custom" ? { ...cta, custom_url: normalizeButtonURL(cta.custom_url, website) } : cta));
+  const layout = adLayout(ad);
+  return {
+    name: ad.name,
+    active: ad.active,
+    content: ad.content,
+    ctas: ctas(ad.ctas),
+    layout: layout.mode === "multiple" ? { ...layout, steps: layout.steps.map((step) => ({ ...step, buttons: ctas(step.buttons) })) } : layout,
+    starts_at: ad.starts_at ?? null,
+    ends_at: ad.ends_at ?? null,
+  };
+}
+
 export function createCTA(): RestaurantAdCTA {
   return { id: createClientID("cta"), text: "Más información", color: AD_DEFAULT_COLOR, navigation_mode: "route", route: "/reservas", custom_url: "" };
 }

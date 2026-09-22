@@ -61,6 +61,7 @@ import {
   setLayoutMode,
   STEP_BACKGROUND_OPTIONS,
   WEBSITE_ROUTE_OPTIONS,
+  adSavePayload,
   updateStep,
   WHATSAPP_DEFAULT_MESSAGE,
   type ButtonAction,
@@ -263,7 +264,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   const persistAd = useCallback(async (source: RestaurantAd): Promise<RestaurantAd | null> => {
     setSaveState("saving");
     try {
-      const payload: RestaurantAdInput = { name: source.name, active: source.active, content: source.content, ctas: source.ctas, layout: adLayout(source), starts_at: source.starts_at ?? null, ends_at: source.ends_at ?? null };
+      const payload: RestaurantAdInput = adSavePayload(source, website);
       const result = source.id > 0
         ? await api.updateAd(source.id, payload)
         : await api.createAd(payload);
@@ -281,7 +282,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
       setSaveState("error");
       return null;
     }
-  }, [api, notify, onSaved]);
+  }, [api, notify, onSaved, website]);
 
   const persistViaWS = useCallback((source: RestaurantAd): Promise<RestaurantAd | null> => {
     // The shared WS can be mid-reconnect (backoff grows to 30s) or stale after a
@@ -303,9 +304,9 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
         void persistAd(source).then(finish);
       }, 8000);
       pendingSavesRef.current.set(reqId, { resolve: finish, reject: fail, timer });
-      sendAdSave({ type: "ad_save", reqId, adId: source.id, payload: { name: source.name, active: source.active, content: source.content, ctas: source.ctas, layout: adLayout(source), starts_at: source.starts_at ?? null, ends_at: source.ends_at ?? null } });
+      sendAdSave({ type: "ad_save", reqId, adId: source.id, payload: adSavePayload(source, website) });
     });
-  }, [persistAd, sendAdSave, wsStatusRef]);
+  }, [persistAd, sendAdSave, website, wsStatusRef]);
 
   useEffect(() => {
     if (!subscribeAdEvents) return;
