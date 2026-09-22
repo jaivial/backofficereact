@@ -15,8 +15,11 @@ export type ImageBudgetOptions = {
   keepTypes?: readonly string[];
   /** Longest edge of the first attempt, in px. */
   maxEdge?: number;
-  /** Output file name (extension is derived from `type`). */
+  /** Output file name (extension is derived from the encoded type). */
   name?: string;
+  /** Allow JPEG when the browser cannot encode `type` (iOS Safari + WebP).
+   * Disable only for endpoints that accept nothing but `type`. */
+  allowFallback?: boolean;
 };
 
 const QUALITY_STEPS = [0.92, 0.84, 0.76, 0.68, 0.6, 0.52, 0.44, 0.36];
@@ -34,6 +37,29 @@ function canvasBlob(canvas: HTMLCanvasElement, type: string, quality: number): P
   );
 }
 
+// iOS Safari cannot encode WebP from a canvas: toBlob silently returns a PNG
+// and ignores quality, so the ladder never shrinks and the upload fails.
+// Probe once and fall back to JPEG, which every browser encodes with a real
+// quality knob; the backend re-encodes uploads to WebP (coord id image_budget_v1).
+const encoderCache = new Map<string, Promise<string>>();
+
+function resolveEncoder(type: string, allowFallback: boolean): Promise<string> {
+  if (!allowFallback) return Promise.resolve(type);
+  let cached = encoderCache.get(type);
+  if (!cached) {
+    cached = (async () => {
+      const probe = document.createElement("canvas");
+      probe.width = probe.height = 2;
+      const blob = await canvasBlob(probe, type, 0.9).catch(() => null);
+      if (blob?.type === type) return type;
+      console.warn("[image_budget_v1] encoder_fallback", { requested: type, got: blob?.type ?? "none", using: "image/jpeg" });
+      return "image/jpeg";
+    })();
+    encoderCache.set(type, cached);
+  }
+  return cached;
+}
+
 function outputName(name: string, type: string): string {
   const base = String(name || "imagen").replace(/\.[^.]+$/, "").trim().replace(/\s+/g, "-") || "imagen";
   return `${base}.${type.split("/")[1] || "webp"}`;
@@ -46,20 +72,22 @@ function outputName(name: string, type: string): string {
 export async function encodeUnderBytes(
   draw: (canvas: HTMLCanvasElement, scale: number) => void,
   maxBytes: number,
-  { type = "image/webp", name = "imagen" }: Pick<ImageBudgetOptions, "type" | "name"> = {},
+  { type = "image/webp", name = "imagen", allowFallback = true }: Pick<ImageBudgetOptions, "type" | "name" | "allowFallback"> = {},
 ): Promise<File> {
+  const encoder = await resolveEncoder(type, allowFallback);
   const canvas = document.createElement("canvas");
   let scale = 1;
   for (let attempt = 0; attempt < MAX_SCALE_ATTEMPTS; attempt += 1) {
     draw(canvas, scale);
     for (const quality of QUALITY_STEPS) {
-      const blob = await canvasBlob(canvas, type, quality);
-      if (blob.size <= maxBytes) return new File([blob], outputName(name, blob.type || type), { type: blob.type || type });
+      const blob = await canvasBlob(canvas, encoder, quality);
+      const mime = blob.type || encoder;
+      if (blob.size <= maxBytes) return new File([blob], outputName(name, mime), { type: mime });
     }
     if (Math.min(canvas.width, canvas.height) * SCALE_STEP < MIN_EDGE) break;
     scale *= SCALE_STEP;
   }
-  console.warn("[image_budget_v1] encode_over_budget", { maxBytes, width: canvas.width, height: canvas.height });
+  console.warn("[image_budget_v1] encode_over_budget", { maxBytes, encoder, width: canvas.width, height: canvas.height });
   throw new Error(`No se pudo reducir la imagen por debajo de ${formatBudget(maxBytes)}`);
 }
 
@@ -86,7 +114,7 @@ export async function fitImageToBytes(file: File, maxBytes: number, options: Ima
         ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
       },
       maxBytes,
-      { type, name: options.name ?? file.name },
+      { type, name: options.name ?? file.name, allowFallback: options.allowFallback },
     );
   } finally {
     bitmap.close?.();
