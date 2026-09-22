@@ -1290,6 +1290,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
         // Coordination id: special_menu_sections_v1 - special menus carry image
         // sections only, so the standalone hero never reaches the preview.
         specialMenuImage: null,
+        specialMenuSections,
         menuAITracker,
         sections,
         normalizeSectionAnnotations,
@@ -1321,6 +1322,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       menuPreviewImageUrl,
       menuPreviewAIRequested,
       menuPreviewAIGenerating,
+      specialMenuSections,
       subtitles,
       title,
     ],
