@@ -1309,6 +1309,15 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      async whatsappFlushQueue(): Promise<
+        import("./types").APISuccess<{ pending: number; failed: number }> | APIError
+      > {
+        return json("/api/admin/members/whatsapp/flush-queue", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
     },
     invitations: {
       async validate(token: string): Promise<APISuccess<{ invitation: MemberInvitationPreview }> | APIError> {
