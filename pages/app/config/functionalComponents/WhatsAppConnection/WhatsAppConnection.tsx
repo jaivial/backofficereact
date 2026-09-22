@@ -178,7 +178,28 @@ export function WhatsAppConnection({ onStateChange }: { onStateChange?: (state: 
         const res = await api.members.whatsappConnect(phone ? { phone } : {});
         if ("success" in res && res.success) {
           applyResult(res);
-          if (!res.connected) {
+          if (res.connected) {
+            // Fast-path queue drain: when the connect response itself reports
+            // connected (e.g. the device is back online), do not wait for the
+            // provider webhook to deliver the connection.update event.
+            try {
+              const flush = await api.members.whatsappFlushQueue();
+              if (
+                "success" in flush &&
+                flush.success &&
+                (flush.pending ?? 0) > 0
+              ) {
+                pushToast({
+                  kind: "info",
+                  title: "WhatsApp",
+                  message: `Conexión activa. ${flush.pending ?? 0} mensajes en cola se están enviando.`,
+                });
+              }
+            } catch {
+              // Non-fatal; the server-side webhook handler will still
+              // drain the queue within a few seconds.
+            }
+          } else {
             pushToast({
               kind: "info",
               title: phone ? "Código de vinculación" : "Escanea el QR",
