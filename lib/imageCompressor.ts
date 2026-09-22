@@ -1,89 +1,17 @@
+import { fitImageToBytes } from "./imageBudget";
+
 /**
  * Image compression utility for converting images to WebP format
  * with a maximum file size of 100KB.
  */
 
 /**
- * Compresses an image to WebP format with target max size of 100KB
- * @param file - The original image file
- * @param maxSizeKB - Maximum target size in KB (default: 100)
- * @returns Base64 encoded WebP image string
+ * Compresses an image to WebP under `maxSizeKB` and returns it as a data URL.
+ * WebP files already inside the budget are kept as-is (coord id image_budget_v1).
  */
 export async function compressImageToWebP(file: File, maxSizeKB: number = 100): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    if (!ctx) {
-      reject(new Error("Canvas context not available"));
-      return;
-    }
-
-    img.onload = () => {
-      // Start with original dimensions
-      let width = img.width;
-      let height = img.height;
-
-      // Calculate initial dimensions maintaining aspect ratio
-      const maxDimension = 1200;
-      if (width > maxDimension || height > maxDimension) {
-        if (width > height) {
-          height = Math.round((height / width) * maxDimension);
-          width = maxDimension;
-        } else {
-          width = Math.round((width / height) * maxDimension);
-          height = maxDimension;
-        }
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-
-      // Draw image with smoothing
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(img, 0, 0, width, height);
-
-      // Try different quality levels to get under max size
-      let quality = 0.92;
-      const minQuality = 0.5;
-      const targetSize = maxSizeKB * 1024;
-
-      const tryCompress = (): void => {
-        const dataUrl = canvas.toDataURL("image/webp", quality);
-
-        // Check size
-        const base64 = dataUrl.split(",")[1];
-        const size = Math.round((base64.length * 3) / 4);
-
-        if (size <= targetSize || quality <= minQuality) {
-          resolve(dataUrl);
-        } else {
-          // Reduce quality and try again
-          quality -= 0.1;
-          if (quality < minQuality) {
-            // If still too large, reduce dimensions
-            width = Math.round(width * 0.8);
-            height = Math.round(height * 0.8);
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
-            quality = 0.92;
-          }
-          tryCompress();
-        }
-      };
-
-      tryCompress();
-    };
-
-    img.onerror = () => {
-      reject(new Error("Failed to load image"));
-    };
-
-    img.src = URL.createObjectURL(file);
-  });
+  const fitted = await fitImageToBytes(file, maxSizeKB * 1024, { maxEdge: 1200 });
+  return fileToBase64(fitted);
 }
 
 /**

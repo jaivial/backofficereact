@@ -1,3 +1,4 @@
+import { fitImageToBytes } from "../../../../../lib/imageBudget";
 import type {
   EditorDish,
   EditorSection,
@@ -483,43 +484,7 @@ export async function preprocessDishImageToWebp(file: File, maxSizeKB = DISH_IMA
   if (!isSupportedDishImageFile(file)) {
     throw new Error("Formato no soportado. Usa JPG, PNG, WEBP o GIF.");
   }
-  const maxBytes = Math.max(1, Math.round(maxSizeKB * 1024));
-  const img = await fileToImage(file);
-  const naturalWidth = Math.max(1, img.naturalWidth || img.width || 1);
-  const naturalHeight = Math.max(1, img.naturalHeight || img.height || 1);
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("No se pudo preparar la imagen");
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-
-  const maxEdge = 1600;
-  const longest = Math.max(naturalWidth, naturalHeight);
-  const baseScale = longest > maxEdge ? maxEdge / longest : 1;
-  const scaleSteps = [1, 0.92, 0.84, 0.76, 0.68, 0.6, 0.52];
-  const qualitySteps = [0.92, 0.86, 0.8, 0.74, 0.68, 0.62, 0.56, 0.5, 0.44, 0.38, 0.32];
-
-  let bestBlob: Blob | null = null;
-  for (const scaleStep of scaleSteps) {
-    const scale = Math.max(0.15, baseScale * scaleStep);
-    const width = Math.max(1, Math.round(naturalWidth * scale));
-    const height = Math.max(1, Math.round(naturalHeight * scale));
-    canvas.width = width;
-    canvas.height = height;
-    ctx.clearRect(0, 0, width, height);
-    ctx.drawImage(img, 0, 0, width, height);
-
-    for (const quality of qualitySteps) {
-      const blob = await canvasToWebPBlob(canvas, quality);
-      bestBlob = blob;
-      if (blob.size <= maxBytes) {
-        return new File([blob], webpOutputName(file.name), { type: "image/webp" });
-      }
-    }
-  }
-
-  if (!bestBlob) throw new Error("No se pudo procesar la imagen");
-  throw new Error("No se pudo reducir la imagen por debajo de 150KB");
+  return fitImageToBytes(file, Math.round(maxSizeKB * 1024), { maxEdge: 1600, name: webpOutputName(file.name) });
 }
 
 export function clampDishCropValue(value: number, min: number, max: number): number {

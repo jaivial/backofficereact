@@ -1,3 +1,5 @@
+import { encodeUnderBytes } from "./imageBudget";
+
 const SUPPORTED_DISH_IMAGE_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -20,22 +22,6 @@ export type DishImageCropParams = {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("No se pudo codificar la imagen"));
-          return;
-        }
-        resolve(blob);
-      },
-      type,
-      quality,
-    );
-  });
 }
 
 function loadImage(file: File): Promise<HTMLImageElement> {
@@ -112,29 +98,19 @@ export async function cropSquareImageToWebp(file: File, params: DishImageCropPar
   const srcW = clamp(srcWRaw, 1, naturalWidth - srcX);
   const srcH = clamp(srcHRaw, 1, naturalHeight - srcY);
 
-  const canvas = document.createElement("canvas");
-  canvas.width = outputSize;
-  canvas.height = outputSize;
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("No se pudo preparar el recorte");
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.clearRect(0, 0, outputSize, outputSize);
-  ctx.drawImage(image, srcX, srcY, srcW, srcH, 0, 0, outputSize, outputSize);
-
-  const qualities = [0.92, 0.88, 0.84, 0.8, 0.76, 0.72, 0.68, 0.64, 0.6, 0.56, 0.52, 0.48, 0.44, 0.4, 0.36, 0.32];
-  let lastBlob: Blob | null = null;
-  for (const quality of qualities) {
-    const blob = await canvasToBlob(canvas, "image/webp", quality);
-    lastBlob = blob;
-    if (blob.size <= maxBytes) {
-      return new File([blob], outputName(file.name), { type: "image/webp" });
-    }
-  }
-
-  if (!lastBlob) {
-    throw new Error("No se pudo procesar la imagen");
-  }
-  throw new Error("No se pudo reducir la imagen por debajo de 150KB");
+  return encodeUnderBytes(
+    (canvas, scale) => {
+      const size = Math.max(1, Math.round(outputSize * scale));
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("No se pudo preparar el recorte");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.clearRect(0, 0, size, size);
+      ctx.drawImage(image, srcX, srcY, srcW, srcH, 0, 0, size, size);
+    },
+    maxBytes,
+    { name: outputName(file.name) },
+  );
 }
