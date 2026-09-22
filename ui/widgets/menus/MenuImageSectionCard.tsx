@@ -29,6 +29,10 @@ export type MenuImageSectionCardProps = {
   dragging?: boolean;
   dragOver?: boolean;
   onTitleChange: (value: string) => void;
+  /** Coordination id: special_menu_price_date_v1 - optional section price,
+   *  persisted on blur (empty clears it). Omit to hide the field. */
+  price?: number | null;
+  onPriceCommit?: (raw: string) => void;
   onPickImage: (file: File) => void;
   onClearImage: () => void;
   onDelete: () => void;
@@ -45,6 +49,8 @@ function MenuImageSectionCardImpl({
   dragging = false,
   dragOver = false,
   onTitleChange,
+  price,
+  onPriceCommit,
   onPickImage,
   onClearImage,
   onDelete,
@@ -97,6 +103,22 @@ function MenuImageSectionCardImpl({
           data-testid={`menu-image-section-card-title-${sectionId}`}
           data-slot="menu-image-section-card-title"
         />
+        {onPriceCommit ? (
+          <label className="bo-menuImageSectionCardPrice" data-slot="menu-image-section-card-price">
+            <input
+              key={`price-${price ?? ""}`}
+              className="bo-input"
+              defaultValue={price == null ? "" : String(price)}
+              onBlur={(e) => { if (e.currentTarget.value.trim() !== (price == null ? "" : String(price))) onPriceCommit(e.currentTarget.value); }}
+              inputMode="decimal"
+              placeholder="Precio"
+              aria-label="Precio de la seccion"
+              disabled={busy}
+              data-testid={`menu-image-section-card-price-${sectionId}`}
+            />
+            <span aria-hidden="true">€</span>
+          </label>
+        ) : null}
         <button
           type="button"
           className="bo-btn bo-btn--ghost bo-btn--danger"
