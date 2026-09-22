@@ -9,6 +9,7 @@ import { ForkyModal } from "../../ui/forky/ForkyModal";
 import { GlobalSocketProvider } from "../../ui/realtime/GlobalSocketProvider";
 import { Sidebar } from "../../ui/shell/Sidebar";
 import { Topbar } from "../../ui/shell/Topbar";
+import { PresencePageContext } from "../../ui/shell/PresencePageContext";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pageContext = usePageContext();
@@ -77,7 +78,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             transition={reduceMotion ? { duration: 0 } : { duration: 0.18, ease: "easeOut" }}
             style={{ display: "contents" }}
           >
-            {children}
+            <PresencePageContext>{children}</PresencePageContext>
           </motion.div>
         </AnimatePresence>
       </main>

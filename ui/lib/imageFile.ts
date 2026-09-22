@@ -1,34 +1,4 @@
-function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("No se pudo codificar la imagen"));
-          return;
-        }
-        resolve(blob);
-      },
-      type,
-      quality,
-    );
-  });
-}
-
-function loadImage(file: File): Promise<HTMLImageElement> {
-  const objectURL = URL.createObjectURL(file);
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(objectURL);
-      resolve(img);
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(objectURL);
-      reject(new Error("No se pudo leer la imagen"));
-    };
-    img.src = objectURL;
-  });
-}
+import { fitImageToBytes } from "../../lib/imageBudget";
 
 function baseName(fileName: string): string {
   const n = String(fileName || "avatar").trim();
@@ -37,98 +7,19 @@ function baseName(fileName: string): string {
   return raw || "avatar";
 }
 
+function assertImageInput(file: File): void {
+  if (!file || !file.type.startsWith("image/")) throw new Error("Selecciona un archivo de imagen");
+  if (file.size > 15 * 1024 * 1024) throw new Error("La imagen es demasiado grande (max 15MB)");
+}
+
 export async function imageToWebpMax200KB(file: File): Promise<File> {
-  if (!file || !file.type.startsWith("image/")) {
-    throw new Error("Selecciona un archivo de imagen");
-  }
-  if (file.size > 15 * 1024 * 1024) {
-    throw new Error("La imagen es demasiado grande (max 15MB)");
-  }
-
-  const img = await loadImage(file);
-  const maxBytes = 200 * 1024;
-  const maxSide = 1400;
-  const qualitySteps = [0.92, 0.88, 0.84, 0.8, 0.76, 0.72, 0.68, 0.64, 0.6, 0.56, 0.52, 0.48, 0.44];
-
-  let scale = Math.min(1, maxSide / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
-  let bestBlob: Blob | null = null;
-
-  for (let dimensionAttempt = 0; dimensionAttempt < 6; dimensionAttempt++) {
-    const width = Math.max(1, Math.round((img.naturalWidth || 1) * scale));
-    const height = Math.max(1, Math.round((img.naturalHeight || 1) * scale));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("No se pudo preparar el procesamiento de imagen");
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.clearRect(0, 0, width, height);
-    ctx.drawImage(img, 0, 0, width, height);
-
-    for (const quality of qualitySteps) {
-      const blob = await canvasToBlob(canvas, "image/webp", quality);
-      bestBlob = blob;
-      if (blob.size <= maxBytes) {
-        return new File([blob], `${baseName(file.name)}.webp`, { type: "image/webp" });
-      }
-    }
-
-    scale *= 0.82;
-  }
-
-  if (!bestBlob) throw new Error("No se pudo convertir la imagen");
-  throw new Error("No se pudo reducir la imagen por debajo de 200KB");
+  assertImageInput(file);
+  return fitImageToBytes(file, 200 * 1024, { maxEdge: 1400, name: `${baseName(file.name)}.webp` });
 }
 
 export async function imageToWebpMax50KB(file: File): Promise<File> {
-  if (!file || !file.type.startsWith("image/")) {
-    throw new Error("Selecciona un archivo de imagen");
-  }
-  if (file.size > 15 * 1024 * 1024) {
-    throw new Error("La imagen es demasiado grande (max 15MB)");
-  }
-
-  const img = await loadImage(file);
-  const maxBytes = 50 * 1024;
-  const maxSide = 800;
-  const qualitySteps = [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3];
-
-  let scale = Math.min(1, maxSide / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
-  let bestBlob: Blob | null = null;
-
-  for (let dimensionAttempt = 0; dimensionAttempt < 8; dimensionAttempt++) {
-    const width = Math.max(1, Math.round((img.naturalWidth || 1) * scale));
-    const height = Math.max(1, Math.round((img.naturalHeight || 1) * scale));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("No se pudo preparar el procesamiento de imagen");
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.clearRect(0, 0, width, height);
-    ctx.drawImage(img, 0, 0, width, height);
-
-    for (const quality of qualitySteps) {
-      const blob = await canvasToBlob(canvas, "image/webp", quality);
-      bestBlob = blob;
-      if (blob.size <= maxBytes) {
-        return new File([blob], `${baseName(file.name)}.webp`, { type: "image/webp" });
-      }
-    }
-
-    scale *= 0.75;
-  }
-
-  if (!bestBlob) throw new Error("No se pudo convertir la imagen");
-  throw new Error("No se pudo reducir la imagen por debajo de 50KB");
+  assertImageInput(file);
+  return fitImageToBytes(file, 50 * 1024, { maxEdge: 800, name: `${baseName(file.name)}.webp` });
 }
 
 /** Base64 for socket uploads (coordination id: special_menu_sections_image_state_v1). */
@@ -143,36 +34,9 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 /**
- * Re-encodes to WebP only when the file is bigger than `maxBytes`, shrinking
- * quality and scale until it fits. Small files are returned untouched.
- * Coordination id: special_menu_sections_image_state_v1
+ * Keeps any file that already fits `maxBytes` (whatever its type); larger ones
+ * are re-encoded to WebP. Coordination id: special_menu_sections_image_state_v1
  */
-export async function imageUnderBytes(file: File, maxBytes: number): Promise<File> {
-  if (file.size <= maxBytes) return file;
-  const bitmap = await createImageBitmap(file);
-  try {
-    let scale = 1;
-    for (let attempt = 0; attempt < 8; attempt += 1) {
-      const width = Math.max(1, Math.round(bitmap.width * scale));
-      const height = Math.max(1, Math.round(bitmap.height * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("No se pudo procesar la imagen");
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(bitmap, 0, 0, width, height);
-      for (const quality of [0.92, 0.8, 0.7]) {
-        const blob = await canvasToBlob(canvas, "image/webp", quality);
-        if (blob.size <= maxBytes) {
-          return new File([blob], `${baseName(file.name)}.webp`, { type: "image/webp" });
-        }
-      }
-      scale *= 0.8;
-    }
-  } finally {
-    bitmap.close?.();
-  }
-  throw new Error(`No se pudo reducir la imagen por debajo de ${Math.round(maxBytes / (1024 * 1024))}MB`);
+export function imageUnderBytes(file: File, maxBytes: number): Promise<File> {
+  return fitImageToBytes(file, maxBytes, { keepTypes: [file.type] });
 }
