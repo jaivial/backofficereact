@@ -141,3 +141,38 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
   }
   return btoa(binary);
 }
+
+/**
+ * Re-encodes to WebP only when the file is bigger than `maxBytes`, shrinking
+ * quality and scale until it fits. Small files are returned untouched.
+ * Coordination id: special_menu_sections_image_state_v1
+ */
+export async function imageUnderBytes(file: File, maxBytes: number): Promise<File> {
+  if (file.size <= maxBytes) return file;
+  const bitmap = await createImageBitmap(file);
+  try {
+    let scale = 1;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const width = Math.max(1, Math.round(bitmap.width * scale));
+      const height = Math.max(1, Math.round(bitmap.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("No se pudo procesar la imagen");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(bitmap, 0, 0, width, height);
+      for (const quality of [0.92, 0.8, 0.7]) {
+        const blob = await canvasToBlob(canvas, "image/webp", quality);
+        if (blob.size <= maxBytes) {
+          return new File([blob], `${baseName(file.name)}.webp`, { type: "image/webp" });
+        }
+      }
+      scale *= 0.8;
+    }
+  } finally {
+    bitmap.close?.();
+  }
+  throw new Error(`No se pudo reducir la imagen por debajo de ${Math.round(maxBytes / (1024 * 1024))}MB`);
+}
