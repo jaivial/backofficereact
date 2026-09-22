@@ -1562,6 +1562,13 @@ svg {
     padding-bottom: 72px;
 }
 
+/* Special menu: the hero already closes with its own bottom padding, so the
+   body starts flush. Mirrors preactvillacarmen (coordination id:
+   special_menu_sections_v1). */
+.menuPage--special .menuBody {
+    padding-top: 0;
+}
+
 .menuBody {
     padding: 14px 0 74px;
 }
@@ -1790,6 +1797,8 @@ svg {
 }
 
 .menuHeroSlider {
+    max-width: 960px;
+    margin: 0 auto;
     border-radius: var(--radius);
     overflow: hidden;
     border: 1px solid rgba(0, 0, 0, 0.12);
@@ -1916,7 +1925,7 @@ svg {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: var(--radius);
     box-shadow: var(--shadow-soft);
-    padding: 14px 14px 12px;
+    padding: 1rem;
     height: auto;
     position: relative;
     opacity: 0;
@@ -1958,8 +1967,8 @@ svg {
 }
 
 .dishCard.dishCard--withImage.dishCard--pickable {
-    padding-right: 0;
-    padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .dishCardMedia {
@@ -2036,9 +2045,27 @@ svg {
 }
 
 .dishCard.dishCard--pickable {
-    padding-right: 62px;
-    padding-bottom: 56px;
+    display: flex;
+    flex-direction: column;
     height: auto;
+}
+
+.dishCard.dishCard--pickable .dishCardMain {
+    align-items: center;
+}
+
+/* Reserve room for the absolutely-positioned add button, as the public site
+   does (coordination id: menu_preview_1to1_pickable_v1). */
+.dishCard--pickable .dishAllergenRow {
+    width: calc(100% - 44px - 0.5rem);
+}
+
+.dishCard--pickable .dishDescriptionExtra {
+    width: calc(100% - 44px);
+}
+
+.dishCard--pickable.dishCard--withImage .dishCardInfo {
+    padding-bottom: calc(44px + 0.5rem);
 }
 
 .dishCard.is-revealed {
@@ -2074,8 +2101,10 @@ svg {
 .dishAddBtn {
     appearance: none;
     position: absolute;
-    right: 12px;
-    bottom: 12px;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    pointer-events: auto;
+    transform: none;
     width: 44px;
     height: 44px;
     border-radius: 999px;
@@ -2098,7 +2127,7 @@ svg {
 }
 
 .dishAddBtn:active {
-    transform: translateY(0) scale(0.98);
+    transform: scale(0.98);
 }
 
 .dishAddIcon {
