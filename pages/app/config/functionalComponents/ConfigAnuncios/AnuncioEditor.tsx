@@ -67,6 +67,7 @@ import {
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
 import { AdBlockBar, AdBlockHover, AdMoveableBox, AdStudioShell } from "./AdEditorChrome";
+import { useMenuRouteOptions, type RouteOption } from "./hooks/useMenuRouteOptions";
 import {
   ELEMENT_MAX_HEIGHT_PX,
   ELEMENT_MAX_WIDTH_PCT,
@@ -183,6 +184,21 @@ function withImageContent(ad: RestaurantAd, url: string): RestaurantAd {
   const next = addContentItem(ad, "image");
   return { ...next, content: next.content.map((item) => (item.type === "image" && !item.value ? { ...item, value: url } : item)) };
 }
+
+/** Surfaces that belong to the current selection; pointer downs elsewhere deselect. */
+const SELECTION_KEEP_SELECTOR = [
+  "[data-node-id]",
+  ".bo-adBlockBar",
+  ".moveable-control-box",
+  ".bo-adNodeImagePick",
+  ".bo-adLayerRow",
+  ".bo-adStudioSide--props",
+  ".bo-adStudioDrawer",
+  "[role='listbox']",
+  "[role='dialog']",
+  ".bo-popover",
+  ".bo-modalOverlay",
+].join(", ");
 
 export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs, sendAdScheduleCheck }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
@@ -475,6 +491,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
     [activeStepId, layout.steps],
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const routeOptions = useMenuRouteOptions();
   const canvasRef = useRef<HTMLDivElement | null>(null);
   // In the multiple layout the cards column edits the card buttons of the
   // active step, while the opened announcement edits the step content plus
@@ -599,6 +616,20 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [deleteSelected, previewOpen, selectedId]);
+
+  // Coordination id: ads_selection_outside_v1 - any pointer down outside the
+  // selected block and its chrome (bar, handles, inspector, layers, overlays)
+  // clears the selection, not only clicks inside the canvas.
+  useEffect(() => {
+    if (!selectedId) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (!target?.isConnected || target.closest(SELECTION_KEEP_SELECTOR)) return;
+      setSelectedId(null);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [selectedId]);
 
   const addContent = useCallback((type: RestaurantAdContentType) => {
     insertContent(type);
@@ -852,10 +883,6 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               className="bo-anunciosCanvasCol"
               data-slot="ads-canvas-column"
               ref={canvasRef}
-              onPointerDown={(event) => {
-                // Clicking the card outside any block clears the selection.
-                if (!(event.target as Element).closest("[data-node-id], .bo-adBlockBar, .moveable-control-box, .bo-adNodeImagePick")) setSelectedId(null);
-              }}
             >
               {isMultiple ? (
                 <AdWizard
@@ -926,6 +953,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               cta={selectedButton}
               website={website}
               phone={restaurantPhone}
+              routeOptions={routeOptions}
               onChange={(patch) => patchTargetButtons(targetButtons.map((item) => (item.id === selectedButton.id ? { ...item, ...patch } : item)))}
               onDelete={deleteSelected}
               onClose={() => setSelectedId(null)}
@@ -1705,6 +1733,7 @@ export function ButtonInspector({
   cta,
   website,
   phone,
+  routeOptions = [...WEBSITE_ROUTE_OPTIONS],
   onChange,
   onDelete,
   onClose,
@@ -1712,6 +1741,7 @@ export function ButtonInspector({
   cta: RestaurantAd["ctas"][number];
   website: string;
   phone: string;
+  routeOptions?: RouteOption[];
   onChange: (patch: Partial<RestaurantAd["ctas"][number]>) => void;
   onDelete: () => void;
   onClose: () => void;
@@ -1768,7 +1798,7 @@ export function ButtonInspector({
 
         {action === "route" ? (
           <Field label="Pagina" testId={`ad-cta-${cta.id}-route`}>
-            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={[...WEBSITE_ROUTE_OPTIONS]} size="sm" ariaLabel="Pagina del boton" listMaxHeightPx={260} />
+            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={routeOptions} size="sm" ariaLabel="Pagina del boton" listMaxHeightPx={260} />
           </Field>
         ) : null}
 
