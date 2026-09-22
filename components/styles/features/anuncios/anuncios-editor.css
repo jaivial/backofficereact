@@ -1292,6 +1292,9 @@ button.bg-bo-accent { color: var(--bo-bg); }
 }
 
 .bo-adStudioSide {
+  /* Side panels sit above the canvas stacking layer (coord id ads_chrome_z_v1). */
+  position: relative;
+  z-index: 1;
   display: grid;
   align-content: start;
   gap: 10px;
@@ -1870,6 +1873,10 @@ button.bg-bo-accent { color: var(--bo-bg); }
      shell, drawers or dropdowns (coord id ads_chrome_z_v1). */
   isolation: isolate;
   z-index: 0;
+  /* Clip the chrome (handles, bar, hover) to the canvas: a block scrolled
+     past the edge must not leak its handles over the side panels. */
+  overflow: clip;
+  overflow-clip-margin: 12px;
 }
 
 /* Blocks: the public element plus a quiet outline and a pointer cursor. The
