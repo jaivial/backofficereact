@@ -12,26 +12,9 @@ import { InlineDateRangeCalendar } from "../../../../../ui/inputs/InlineDateRang
 import { Select } from "../../../../../ui/inputs/Select";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
 import { FadeSeparator } from "../../../../../ui/layout/FadeSeparator";
+import { emptySpecialDate } from "../hooks/useSpecialDateActivation";
 
 type EditableMenu = SpecialDateMenu & { _key: string };
-
-const EMPTY_SETTINGS: SpecialDateSettings = {
-  date: "",
-  is_active: false,
-  title: "",
-  description: "",
-  prereserva_enabled: false,
-  max_per_table_enabled: false,
-  max_per_table: null,
-  mobility_enabled: false,
-  requires_adelanto: false,
-  adelanto_payment_methods: [],
-  adelanto_unified: false,
-  adelanto_unified_amount: null,
-  prereserva_starts_on: null,
-  prereserva_ends_on: null,
-  menus: [],
-};
 
 /** Backend contract: max_per_table must be >= 1 when the limit is enabled. */
 const MAX_PER_TABLE_MIN = 1;
@@ -152,7 +135,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
 
-  const [draft, setDraft] = useState<SpecialDateSettings>(() => initial ?? { ...EMPTY_SETTINGS, date, is_active: false });
+  const [draft, setDraft] = useState<SpecialDateSettings>(() => initial ?? emptySpecialDate(date));
   const [editableMenus, setEditableMenus] = useState<EditableMenu[]>(() => withKeys(initial?.menus ?? []));
 
   // The adelanto is charged per menu, so the whole adelanto block has nothing
@@ -168,7 +151,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   );
 
   useEffect(() => {
-    setDraft(initial ?? { ...EMPTY_SETTINGS, date, is_active: false });
+    setDraft(initial ?? emptySpecialDate(date));
     setEditableMenus(withKeys(initial?.menus ?? []));
     setMaxPerTableDraft(initial?.max_per_table_enabled && initial?.max_per_table != null ? String(initial.max_per_table) : "");
     setUnifiedAmountDraft(initial?.adelanto_unified && initial?.adelanto_unified_amount != null ? String(initial?.adelanto_unified_amount) : "");
@@ -200,6 +183,12 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   // Coordination id: mobility_issues_v1
   const handleMobilityToggle = useCallback(
     (checked: boolean) => patch({ mobility_enabled: checked }),
+    [patch],
+  );
+
+  // Coordination id: reservation_self_modification_v1
+  const handleCustomerModificationToggle = useCallback(
+    (checked: boolean) => patch({ allow_customer_modification: checked }),
     [patch],
   );
 
@@ -859,6 +848,20 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
             onToggle={handleMobilityToggle}
             ariaLabel="Activar pregunta de problemas de movilidad"
             testId="special-date-mobility-row"
+          />
+
+          <FadeSeparator testId="special-date-sep-mobility-selfmodify" />
+
+          {/* Modificacion por el cliente — lets the guest fix a duplicate
+              booking on this date instead of creating a new one.
+              Coordination id: reservation_self_modification_v1 */}
+          <ToggleRow
+            title="Permitir modificacion por el cliente"
+            desc="El cliente podra modificar online su reserva si ya existe una para este dia"
+            checked={draft.allow_customer_modification}
+            onToggle={handleCustomerModificationToggle}
+            ariaLabel="Permitir que el cliente modifique su reserva en esta fecha"
+            testId="special-date-allow-customer-modification-row"
           />
 
           {/* Save row — last child of the form body. It is a plain sibling

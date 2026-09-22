@@ -13,6 +13,9 @@ import type {
   SpecialDateSettings,
 } from "../../../../../api/types";
 import { clampDailyLimit, mergeHoursByOpeningMode, sortServiceHours, toggleHour } from "../helpers/configHelpers";
+// Coordination id: reservation_self_modification_v1 - reuse the single blank
+// special-date row definition instead of duplicating its shape here.
+import { emptySpecialDate } from "../../especial/hooks/useSpecialDateActivation";
 import type { useToasts } from "../../../../../ui/feedback/useToasts";
 
 interface UseConfigDayOptions {
@@ -271,23 +274,7 @@ export function useConfigDay({
       // reflects the user's click without waiting for the POST roundtrip.
       // We reconcile with the server response below; on failure we revert.
       const previous = specialDate;
-      const defaults: SpecialDateSettings = {
-        date,
-        is_active: false,
-        title: "",
-        description: "",
-        prereserva_enabled: false,
-        max_per_table_enabled: false,
-        max_per_table: null,
-    mobility_enabled: false,
-        requires_adelanto: false,
-        adelanto_payment_methods: [],
-        adelanto_unified: false,
-        adelanto_unified_amount: null,
-        prereserva_starts_on: null,
-        prereserva_ends_on: null,
-        menus: [],
-      };
+      const defaults: SpecialDateSettings = emptySpecialDate(date);
       // Optimistic: when specialDate is null we MUST include `date` in the
       // optimistic object (the previous expression evaluated to
       // `{is_active: true}` only, which broke the switch on the next render).
@@ -295,23 +282,7 @@ export function useConfigDay({
         specialDate ? { ...specialDate, is_active: checked } : { ...defaults, is_active: checked }
       );
       try {
-        const base: SpecialDateSettings = specialDate ?? {
-          date,
-          is_active: false,
-          title: "",
-          description: "",
-          prereserva_enabled: false,
-          max_per_table_enabled: false,
-          max_per_table: null,
-    mobility_enabled: false,
-          requires_adelanto: false,
-          adelanto_payment_methods: [],
-          adelanto_unified: false,
-          adelanto_unified_amount: null,
-          prereserva_starts_on: null,
-          prereserva_ends_on: null,
-          menus: [],
-        };
+        const base: SpecialDateSettings = specialDate ?? emptySpecialDate(date);
         const res = await api.config.saveSpecialDate({ ...base, date, is_active: checked });
         if (!res.success) {
           // Revert the optimistic change so the switch snaps back.
