@@ -37,7 +37,14 @@ export async function data(pageContext: PageContextServer) {
     }
   }
 
-  // The editor/preview split is a per-user preference; the session REST carries
-  // it so the editor hydrates with the right split on first paint.
-  return { menu, slider, error, editorPreviewOpen: menuEditorPreviewOpenFromPrefs(pageContext.bo?.session?.preferences) };
+  // Coordination id: menu_editor_preview_open_v1 - the editor/preview split is
+  // per (user, restaurant, menu): the menu REST fetched above already carries it
+  // for this menu id, whatever its type. The generic session preference remains
+  // the fallback when the menu could not be loaded.
+  const editorPreviewOpen =
+    typeof menu?.editor_preview_open === "boolean"
+      ? menu.editor_preview_open
+      : menuEditorPreviewOpenFromPrefs(pageContext.bo?.session?.preferences);
+
+  return { menu, slider, error, editorPreviewOpen };
 }

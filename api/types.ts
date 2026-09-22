@@ -604,6 +604,10 @@ export type GroupMenuV2 = {
   // toggle scoped per menu.
   web_placement?: string;
   menu_public_active?: boolean;
+  // Coordination id: menu_editor_preview_open_v1 - per (user, restaurant, menu)
+  // editor/preview split of this menu id, hydrated from the menu REST and
+  // written only over the group-menus-v2 socket.
+  editor_preview_open?: boolean;
   settings: GroupMenuV2Settings;
   sections: GroupMenuV2Section[];
 };
