@@ -351,6 +351,8 @@ export function AdMoveableBox({
   return (
     <Moveable
       target={target}
+      container={containerRef.current}
+      rootContainer={containerRef.current}
       draggable={false}
       resizable
       keepRatio={false}
