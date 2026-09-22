@@ -2832,6 +2832,16 @@
   transform: scale(0.96);
 }
 
+/* Coordination id: special_menu_sections_order_v1 */
+.bo-menuImageSectionCard.is-dragging {
+  opacity: 0.55;
+}
+
+.bo-menuImageSectionCard.is-dragOver {
+  border-color: var(--bo-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bo-accent) 35%, transparent);
+}
+
 .bo-menuImageSectionCardTitle {
   border-radius: 10px;
 }
