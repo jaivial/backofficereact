@@ -260,7 +260,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
     // Coordination id: special_menu_sections_v1 + special_menu_visibility_v1
     specialMenuSections, specialMenuSectionBusy,
     addSpecialMenuSection, updateSpecialMenuSectionTitle, deleteSpecialMenuSection,
-    uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
+    reorderSpecialMenuSections, uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
     menuWebPlacement, menuPublicActive, menuVisibilityBusy,
     setMenuWebPlacement, setMenuPublicActive,
   } = H;
@@ -381,6 +381,33 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
   // image sections: the cards render directly under the panel title, with no
   // extra container, titles or subtitles. Shared by the wizard step and the
   // final editor.
+  // Coordination id: special_menu_sections_order_v1 - drag & drop of the image
+  // sections. The drop applies the new order to local state first (optimistic,
+  // so the HTML preview repaints immediately) and persists it to
+  // special_menu_sections.position through reorderSpecialMenuSections, which is
+  // the order preactvillacarmen reads back (ORDER BY position).
+  const [draggingSectionId, setDraggingSectionId] = useState<number | null>(null);
+  const [dragOverSectionId, setDragOverSectionId] = useState<number | null>(null);
+
+  const endSectionDrag = useCallback(() => {
+    setDraggingSectionId(null);
+    setDragOverSectionId(null);
+  }, []);
+
+  const moveSpecialMenuSection = useCallback(
+    (fromId: number, toId: number) => {
+      if (!fromId || !toId || fromId === toId) return;
+      const ids = specialMenuSections.map((section) => section.id);
+      const from = ids.indexOf(fromId);
+      const to = ids.indexOf(toId);
+      if (from < 0 || to < 0) return;
+      ids.splice(to, 0, ids.splice(from, 1)[0]);
+      console.log(`[checkpoint] special_section_reorder menu_id=${menuId ?? 0} from=${fromId} to=${toId}`);
+      void reorderSpecialMenuSections(ids);
+    },
+    [specialMenuSections, reorderSpecialMenuSections, menuId],
+  );
+
   const specialMenuSectionsBlock = (
     <div className="bo-menuImageSectionsList" data-slot="crear-menuImageSectionsList" data-coordination-id="special_menu_sections_v1" data-testid="menu-crear-special-sections-list">
       {specialMenuSections.map((section) => (
@@ -391,6 +418,38 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
           imageUrl={section.image_url}
           imageState={section.image_state ?? "empty"}
           busy={!!specialMenuSectionBusy[section.id]}
+          dragging={draggingSectionId === section.id}
+          dragOver={dragOverSectionId === section.id && draggingSectionId !== section.id}
+          rootProps={{
+            onDragOver: (event) => {
+              if (draggingSectionId == null) return;
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+              if (dragOverSectionId !== section.id) setDragOverSectionId(section.id);
+            },
+            onDragLeave: () => {
+              setDragOverSectionId((current) => (current === section.id ? null : current));
+            },
+            onDrop: (event) => {
+              event.preventDefault();
+              if (draggingSectionId != null) moveSpecialMenuSection(draggingSectionId, section.id);
+              endSectionDrag();
+            },
+          }}
+          dragHandleProps={{
+            draggable: true,
+            onDragStart: (event) => {
+              setDraggingSectionId(section.id);
+              event.dataTransfer.effectAllowed = "move";
+              try {
+                event.dataTransfer.setData("text/plain", String(section.id));
+              } catch {
+                /* ignore */
+              }
+              console.log(`[checkpoint] special_section_drag_started section=${section.id}`);
+            },
+            onDragEnd: endSectionDrag,
+          }}
           onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
           onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
           onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
