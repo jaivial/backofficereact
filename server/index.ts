@@ -695,10 +695,14 @@ async function start() {
   }
 
   const app = express();
-  const staticRoots = [
-    path.join(appRoot, "dist", "client"),
-    path.join(appRoot, "public"),
-  ];
+  // Coordination id: menu_preview_static_roots_v1
+  // Dev must read the live sources under public/; a stale dist/client from a
+  // previous build would shadow them and the menu-preview iframe would keep
+  // serving old CSS/JS (e.g. the special-menu section background). Production
+  // keeps dist/client, which the build fills from public/.
+  const staticRoots = isProd
+    ? [path.join(appRoot, "dist", "client")]
+    : [path.join(appRoot, "public"), path.join(appRoot, "dist", "client")];
 
   for (const root of staticRoots) {
     app.use("/media", express.static(path.join(root, "media"), { index: false, fallthrough: true }));
