@@ -1,3 +1,4 @@
+import { AutosaveInput } from "../../inputs/AutosaveInput";
 import React, { useCallback, useRef } from "react";
 import { GripVertical, Trash2, Upload } from "lucide-react";
 
@@ -78,7 +79,7 @@ function MenuImageSectionCardImpl({
         >
           <GripVertical size={16} />
         </button>
-        <input
+        <AutosaveInput
           className="bo-input bo-menuImageSectionCardTitle"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
@@ -148,7 +149,7 @@ function MenuImageSectionCardImpl({
         )}
       </div>
 
-      <input
+      <AutosaveInput
         ref={fileInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"

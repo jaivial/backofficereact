@@ -1,3 +1,4 @@
+import { AutosaveInput } from "../../../../../../../ui/inputs/AutosaveInput";
 import { type ProductionType } from "../../../../_components/TechnicalSheet/ProductionTypeToggle";
 import { ProductionTypeSection } from "../../../../_components/TechnicalSheet/ProductionTypeSection";
 import React, { useEffect, useState } from "react";
@@ -25,7 +26,7 @@ function DescripcionToggle({ value, onChange, disabled }: { value: string; onCha
         />
       </div>
       {show ? (
-        <textarea
+        <AutosaveInput multiline
           className="bo-textarea"
           rows={4}
           value={value}
@@ -136,7 +137,7 @@ export function FoodDetailQuickEditor({
         <div className="bo-foodDetailQuickGrid" data-ui="food-detail-quick-grid">
           <label className="bo-field bo-field--full" data-slot="food-detail-quick-name-field">
             <span className="bo-label" data-role="food-detail-quick-name-label">Nombre</span>
-            <input
+            <AutosaveInput
               type="text"
               className="bo-input"
               value={quickName}
@@ -188,7 +189,7 @@ export function FoodDetailQuickEditor({
           {/* Row: precio + suplemento toggle */}
           <label className="bo-field" data-slot="food-detail-quick-precio-field">
             <span className="bo-label" data-role="food-detail-quick-precio-label">Precio</span>
-            <input
+            <AutosaveInput
               type="number"
               min="0"
               step="0.01"
@@ -211,7 +212,7 @@ export function FoodDetailQuickEditor({
             </div>
             {quickHasSuplemento ? (
               <label className="bo-field bo-foodDetailQuickSupplementField" data-slot="food-detail-quick-supplement-field">
-                <input
+                <AutosaveInput
                   type="number"
                   min="0"
                   step="0.01"
