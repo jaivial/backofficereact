@@ -1,3 +1,4 @@
+import { AutosaveInput } from "../../../../ui/inputs/AutosaveInput";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Beer,
@@ -179,7 +180,7 @@ function DishImageCropModalComponent({
         </div>
         <div className="bo-dishCropControls" data-slot="crear-dishCropControls">
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom - 0.1)} disabled={busy} data-testid="menu-crear-zoom-out">-</button>
-          <input className="bo-dishCropRange" type="range" min={1} max={4} step={0.01} value={zoom} onChange={(event) => applyZoom(Number(event.target.value))} disabled={busy} aria-label="Control de zoom" data-testid="menu-crear-zoom-slider" />
+          <AutosaveInput className="bo-dishCropRange" type="range" min={1} max={4} step={0.01} value={zoom} onChange={(event) => applyZoom(Number(event.target.value))} disabled={busy} aria-label="Control de zoom" data-testid="menu-crear-zoom-slider" />
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom + 0.1)} disabled={busy} data-testid="menu-crear-zoom-in">+</button>
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => { setOffset({ x: 0, y: 0 }); setZoom(1); }} disabled={busy} data-testid="menu-crear-zoom-reset">Reset</button>
         </div>
@@ -482,12 +483,12 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
             <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`} data-slot="crear-div">
               <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title" data-slot="crear-menuBasicsField--title">
                 <div className="bo-label" data-slot="crear-label">Titulo</div>
-                <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-title-input" />
+                <AutosaveInput className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-title-input" />
               </div>
               {!isALaCarte && !isSpecial ? (
                 <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price" data-slot="crear-menuBasicsField--price">
                   <div className="bo-label" data-slot="crear-label">Precio</div>
-                  <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-price-input" />
+                  <AutosaveInput className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-price-input" />
                 </div>
               ) : null}
             </div>
@@ -498,7 +499,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                 <div className="bo-stackFields" data-slot="crear-stackFields">
                   {subtitles.map((line, idx) => (
                     <div key={`subtitle-${idx}`} className="bo-inlineField" data-slot="crear-inlineField">
-                      <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-subtitle-input-${idx}`} />
+                      <AutosaveInput className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-subtitle-input-${idx}`} />
                       <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))} data-testid={`menu-crear-subtitle-delete-${idx}`}>
                         <Trash2 size={14} />
                       </button>
@@ -575,7 +576,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                         <GripVertical size={18} />
                       </button>
                     </div>
-                    <input className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} data-testid={`menu-crear-section-title-input-${idx}`} />
+                    <AutosaveInput className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} data-testid={`menu-crear-section-title-input-${idx}`} />
                     <button className="bo-btn bo-btn--ghost" type="button" aria-label={`Eliminar seccion ${sec.title || idx + 1}`} disabled={sections.length <= 1} onClick={() => removeSection(sec.clientId)} data-testid={`menu-crear-section-delete-${idx}`}>
                       <Trash2 size={14} />
                     </button>
@@ -720,12 +721,12 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                   <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`} data-slot="crear-div">
                     <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title" data-slot="crear-menuBasicsField--title">
                       <div className="bo-label" data-slot="crear-label">Titulo</div>
-                      <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-final-title-input" />
+                      <AutosaveInput className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-final-title-input" />
                     </div>
                     {!isALaCarte && !isSpecial ? (
                       <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price" data-slot="crear-menuBasicsField--price">
                         <div className="bo-label" data-slot="crear-label">Precio</div>
-                        <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-final-price-input" />
+                        <AutosaveInput className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-final-price-input" />
                       </div>
                     ) : null}
                   </div>
@@ -735,7 +736,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       <div className="bo-stackFields" data-slot="crear-stackFields">
                         {subtitles.map((line, idx) => (
                           <div key={`subtitle-final-${idx}`} className="bo-inlineField" data-slot="crear-inlineField">
-                            <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-final-subtitle-input-${idx}`} />
+                            <AutosaveInput className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-final-subtitle-input-${idx}`} />
                             <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))} data-testid={`menu-crear-final-subtitle-delete-${idx}`}>
                               <Trash2 size={14} />
                             </button>
@@ -866,7 +867,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                     {beverageType !== "no_incluida" ? (
                       <div className="bo-field" data-slot="crear-field">
                         <div className="bo-label" data-slot="crear-label">Precio por persona</div>
-                        <input className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-price-input" />
+                        <AutosaveInput className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-price-input" />
                       </div>
                     ) : null}
                     {beverageType === "ilimitada" ? (
@@ -878,14 +879,14 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                         {beverageHasSupplement ? (
                           <div className="bo-field" data-slot="crear-field">
                             <div className="bo-label" data-slot="crear-label">Valor suplemento</div>
-                            <input className="bo-input" value={beverageSupplementPrice} onChange={(e) => setBeverageSupplementPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-supplement-price-input" />
+                            <AutosaveInput className="bo-input" value={beverageSupplementPrice} onChange={(e) => setBeverageSupplementPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-supplement-price-input" />
                           </div>
                         ) : null}
                       </>
                     ) : null}
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Minimo personas para reservar</div>
-                      <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" data-testid="menu-crear-min-party-size-input" />
+                      <AutosaveInput className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" data-testid="menu-crear-min-party-size-input" />
                     </div>
                     <div className="bo-field bo-mainLimitGroup" data-slot="crear-field-main-limit-group">
                       <div className="bo-field bo-field--inline" data-slot="crear-field--inline">
@@ -912,14 +913,14 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                     </div>
                     <div className="bo-field bo-field--full" data-slot="crear-field--full">
                       <div className="bo-label" data-slot="crear-label">Comentarios</div>
-                      <textarea className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n"))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
+                      <AutosaveInput multiline className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n"))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
                     </div>
                     <div className="bo-field bo-field--full" data-slot="crear-importantInfoField" data-coordination-id="menu_important_info_v1">
                       <div className="bo-label" data-slot="crear-importantInfoLabel">Informacion importante</div>
                       <div className="bo-stackFields" data-slot="crear-importantInfoStackFields">
                         {importantInfo.map((line, idx) => (
                           <div key={`important-info-${idx}`} className="bo-inlineField" data-slot="crear-importantInfoInlineField">
-                            <textarea
+                            <AutosaveInput multiline
                               className="bo-input bo-textarea"
                               value={line}
                               onChange={(e) => updateImportantInfoLine(idx, e.target.value)}
@@ -984,8 +985,8 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
       ) : null}
 
       {/* Hidden file inputs */}
-      <input ref={dishImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onDishImageFileSelected} data-testid="menu-crear-dish-image-input" />
-      <input ref={menuPreviewImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onMenuPreviewImageFileSelected} data-testid="menu-crear-preview-image-input" />
+      <AutosaveInput ref={dishImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onDishImageFileSelected} data-testid="menu-crear-dish-image-input" />
+      <AutosaveInput ref={menuPreviewImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onMenuPreviewImageFileSelected} data-testid="menu-crear-preview-image-input" />
 
       {/* Dish image advisor modal */}
       <DishImageAdvisorModalComponent
@@ -1215,7 +1216,7 @@ function BeverageCustomAdd({ onAdd }: { onAdd: (name: string) => void }) {
   const [value, setValue] = useState("");
   return (
     <div className="bo-beverageCustomAdd" data-testid="menu-crear-beverage-custom-add">
-      <input
+      <AutosaveInput
         className="bo-input"
         value={value}
         onChange={(e) => setValue(e.target.value)}

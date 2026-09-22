@@ -1,3 +1,4 @@
+import { AutosaveInput } from "../../../../../../ui/inputs/AutosaveInput";
 import React from "react";
 import { Beer, CupSoda, Droplets, Martini, Plus, Settings2, Wine } from "lucide-react";
 import type { BeverageOption } from "../../types/menuEditor.types";
@@ -75,7 +76,7 @@ export function MenuPricing({
         {beverageType !== "no_incluida" ? (
           <div className="bo-field" data-slot="menuPricing-field">
             <div className="bo-label" data-slot="menuPricing-label">Precio por persona</div>
-            <input className="bo-input" value={beveragePrice} onChange={(e) => onBeveragePriceChange(e.target.value)} inputMode="decimal" data-testid="menu-pricing-beverage-price-input" />
+            <AutosaveInput className="bo-input" value={beveragePrice} onChange={(e) => onBeveragePriceChange(e.target.value)} inputMode="decimal" data-testid="menu-pricing-beverage-price-input" />
           </div>
         ) : null}
 
@@ -118,7 +119,7 @@ export function MenuPricing({
             {beverageHasSupplement ? (
               <div className="bo-field" data-slot="menuPricing-field">
                 <div className="bo-label" data-slot="menuPricing-label">Valor suplemento</div>
-                <input
+                <AutosaveInput
                   className="bo-input"
                   value={beverageSupplementPrice}
                   onChange={(e) => onBeverageSupplementPriceChange(e.target.value)}
@@ -132,7 +133,7 @@ export function MenuPricing({
 
         <div className="bo-field" data-slot="menuPricing-field">
           <div className="bo-label" data-slot="menuPricing-label">Minimo personas para reservar</div>
-          <input className="bo-input" value={minPartySize} onChange={(e) => onMinPartySizeChange(e.target.value)} inputMode="numeric" data-testid="menu-pricing-min-party-size-input" />
+          <AutosaveInput className="bo-input" value={minPartySize} onChange={(e) => onMinPartySizeChange(e.target.value)} inputMode="numeric" data-testid="menu-pricing-min-party-size-input" />
         </div>
 
         <div className="bo-field bo-field--inline" data-slot="menuPricing-field--inline">
@@ -157,7 +158,7 @@ export function MenuPricing({
 
         <div className="bo-field bo-field--full" data-slot="menuPricing-field--full">
           <div className="bo-label" data-slot="menuPricing-label">Comentarios</div>
-          <textarea
+          <AutosaveInput multiline
             className="bo-input bo-textarea"
             value={comments.join("\n")}
             onChange={(e) => onCommentsChange(e.target.value.split("\n"))}
