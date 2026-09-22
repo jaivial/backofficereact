@@ -1,3 +1,4 @@
+import { AutosaveInput } from "../../../../../../ui/inputs/AutosaveInput";
 import React, { useCallback, useLayoutEffect, useRef } from "react";
 import { GripVertical, Trash2, Wheat } from "lucide-react";
 import { useDragControls } from "motion/react";
@@ -163,7 +164,7 @@ export function MenuItemEditor({
         >
           <div className="bo-dishEditorContent" data-slot="menuItemEditor-dishEditorContent">
             <div className="bo-dishFields" data-slot="menuItemEditor-dishFields">
-              <textarea
+              <AutosaveInput multiline
                 className="bo-input bo-textarea bo-dishTitleTextarea"
                 rows={1}
                 value={dish.title}
@@ -191,7 +192,7 @@ export function MenuItemEditor({
                 <span data-slot="menuItemEditor-ion">Descripcion</span>
               </label>
               {dish.description_enabled ? (
-                <textarea
+                <AutosaveInput multiline
                   className="bo-input bo-textarea"
                   value={dish.description}
                   onChange={(e) => updateDish(sectionClientId, dish.clientId, { description: e.target.value })}
@@ -203,7 +204,7 @@ export function MenuItemEditor({
               {isALaCarte ? (
                 <div className="bo-dishPriceRow" data-slot="menuItemEditor-dishPriceRow">
                   <label className="bo-label" data-slot="menuItemEditor-label">Precio</label>
-                  <input
+                  <AutosaveInput
                     className="bo-input bo-priceInput"
                     inputMode="decimal"
                     value={dish.price == null ? "" : String(dish.price)}
@@ -234,7 +235,7 @@ export function MenuItemEditor({
                       </label>
                       {dish.supplement_enabled ? (
                         <div className="bo-dishSupplementInputWrap" data-slot="menuItemEditor-supplementInputWrap">
-                          <input
+                          <AutosaveInput
                             className="bo-input bo-suppInput"
                             inputMode="decimal"
                             value={dish.supplement_price == null ? "" : String(dish.supplement_price)}

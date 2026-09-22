@@ -1,3 +1,4 @@
+import { AutosaveInput } from "../../../../../../ui/inputs/AutosaveInput";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Eye, EyeOff, GripVertical, IceCreamCone, MessageSquareText, Plus, Search, Settings2, Trash2 } from "lucide-react";
 import { AnimatePresence, motion, Reorder } from "motion/react";
@@ -234,7 +235,7 @@ export function MenuSectionEditor({
             >
               Titulo
             </span>
-            <input
+            <AutosaveInput
               className="bo-input"
               value={sec.title}
               onClick={(e) => e.stopPropagation()}
@@ -353,7 +354,7 @@ export function MenuSectionEditor({
               <div className="bo-dishAddRow" data-slot="menuSectionEditor-dishAddRow">
                 <div className="bo-dishSearchWrap" data-slot="menuSectionEditor-dishSearchWrap">
                   <Search size={14} aria-hidden="true" />
-                  <input
+                  <AutosaveInput
                     className="bo-input bo-dishSearch"
                     value={searchTerm}
                     onChange={(e) => handleSearch(sec.clientId, e.target.value)}
@@ -412,7 +413,7 @@ export function MenuSectionEditor({
                 <div className="bo-stackFields" data-slot="menuSectionEditor-stackFields">
                   {sec.annotations.map((line, idx) => (
                     <div key={`${sec.clientId}-annotation-${idx}`} className="bo-inlineField" data-slot="menuSectionEditor-inlineField">
-                      <textarea
+                      <AutosaveInput multiline
                         className="bo-input bo-textarea"
                         value={line}
                         onChange={(e) => updateSectionAnnotation(sec.clientId, idx, e.target.value)}
@@ -453,7 +454,7 @@ export function MenuSectionEditor({
                   >
                     Titulo a mostrar
                   </label>
-                  <input
+                  <AutosaveInput
                     id={`menu-section-editor-settings-display-title-${sec.clientId}`}
                     className="bo-input"
                     value={sec.displayTitle}
@@ -472,7 +473,7 @@ export function MenuSectionEditor({
                   >
                     Subtitulo
                   </label>
-                  <textarea
+                  <AutosaveInput multiline
                     id={`menu-section-editor-settings-subtitle-${sec.clientId}`}
                     className="bo-input bo-textarea"
                     value={sec.subtitle}
@@ -494,7 +495,7 @@ export function MenuSectionEditor({
                     >
                       Texto de la pestana
                     </label>
-                    <input
+                    <AutosaveInput
                       id={`menu-section-editor-settings-tab-label-${sec.clientId}`}
                       className="bo-input"
                       value={sec.tabLabel}

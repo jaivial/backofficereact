@@ -1,3 +1,4 @@
+import { AutosaveInput } from "../../../../../../../ui/inputs/AutosaveInput";
 import { type ProductionType } from "../../../../_components/TechnicalSheet/ProductionTypeToggle";
 import { ProductionTypeSection } from "../../../../_components/TechnicalSheet/ProductionTypeSection";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -200,7 +201,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               >
                 Nombre
               </span>
-              <input
+              <AutosaveInput
                 type="text"
                 className="bo-input"
                 value={form.nombre}
@@ -239,7 +240,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               >
                 Precio (EUR)
               </span>
-              <input
+              <AutosaveInput
                 type="number"
                 min="0"
                 step="0.01"
@@ -261,7 +262,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               >
                 Bodega
               </span>
-              <input
+              <AutosaveInput
                 type="text"
                 className="bo-input"
                 value={form.bodega}
@@ -281,7 +282,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               >
                 D.O.
               </span>
-              <input
+              <AutosaveInput
                 type="text"
                 className="bo-input"
                 value={form.denominacion_origen}
@@ -302,7 +303,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               >
                 Graduacion (% vol)
               </span>
-              <input
+              <AutosaveInput
                 type="number"
                 min="0"
                 max="100"
@@ -325,7 +326,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               >
                 Anyo
               </span>
-              <input
+              <AutosaveInput
                 type="text"
                 className="bo-input"
                 value={form.anyo}
@@ -363,7 +364,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               >
                 Descripcion
               </span>
-              <textarea
+              <AutosaveInput multiline
                 className="bo-textarea"
                 rows={4}
                 value={form.descripcion}
