@@ -1567,6 +1567,10 @@ button.bg-bo-accent { color: var(--bo-bg); }
 }
 
 /* Moveable control box: Figma-like handles over the selected element. */
+.bo-adMoveable.moveable-control-box {
+  /* Moveable ships z-index 3000; keep handles just above blocks, below the bar. */
+  z-index: 6 !important;
+}
 .bo-adMoveable .moveable-control {
   width: 12px !important;
   height: 12px !important;
@@ -1862,6 +1866,10 @@ button.bg-bo-accent { color: var(--bo-bg); }
  * ===================================================================== */
 .bo-anunciosCanvasCol {
   position: relative;
+  /* Own stacking context so the editor chrome never paints over the app
+     shell, drawers or dropdowns (coord id ads_chrome_z_v1). */
+  isolation: isolate;
+  z-index: 0;
 }
 
 /* Blocks: the public element plus a quiet outline and a pointer cursor. The

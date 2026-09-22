@@ -6,7 +6,7 @@
  * - Document inputs are sent as-is and converted server-side.
  */
 
-import { compressImageToWebP } from "./imageCompressor";
+import { fitImageToBytes } from "./imageBudget";
 
 export const SPECIAL_MENU_MAX_FILE_MB = 10;
 export const SPECIAL_MENU_MAX_FILE_BYTES = SPECIAL_MENU_MAX_FILE_MB * 1024 * 1024;
@@ -39,12 +39,6 @@ export function fileNeedsServerConversion(file: File): boolean {
   return conversionTypes.includes(file.type);
 }
 
-async function dataURLToFile(dataUrl: string, outputName: string): Promise<File> {
-  const response = await fetch(dataUrl);
-  const blob = await response.blob();
-  return new File([blob], outputName, { type: "image/webp" });
-}
-
 function outputWebPName(fileName: string): string {
   const base = String(fileName || "menu-especial").replace(/\.[^.]+$/, "").trim() || "menu-especial";
   return `${base.replace(/\s+/g, "-")}.webp`;
@@ -63,17 +57,7 @@ export async function processSpecialMenuFile(file: File): Promise<{ file: File; 
     return { file, needsServerConversion: true };
   }
 
-  const alreadyWebP = file.type === "image/webp";
-  if (alreadyWebP && file.size <= SPECIAL_MENU_MAX_WEBP_KB * 1024) {
-    return { file, needsServerConversion: false };
-  }
-
-  const compressed = await compressImageToWebP(file, SPECIAL_MENU_MAX_WEBP_KB);
-  const webpFile = await dataURLToFile(compressed, outputWebPName(file.name));
-  if (webpFile.size > SPECIAL_MENU_MAX_WEBP_KB * 1024) {
-    throw new Error("No se pudo reducir la imagen por debajo de 150KB");
-  }
-
+  const webpFile = await fitImageToBytes(file, SPECIAL_MENU_MAX_WEBP_KB * 1024, { maxEdge: 1200, name: outputWebPName(file.name) });
   return { file: webpFile, needsServerConversion: false };
 }
 
