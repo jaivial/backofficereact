@@ -23,6 +23,11 @@ export type MenuImageSectionCardProps = {
   imageState?: "empty" | "uploading" | "ready";
   busy?: boolean;
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+  /** Root drop target for the drag & drop reorder (dragOver / drop handlers).
+   *  Coordination id: special_menu_sections_order_v1 */
+  rootProps?: React.HTMLAttributes<HTMLElement>;
+  dragging?: boolean;
+  dragOver?: boolean;
   onTitleChange: (value: string) => void;
   onPickImage: (file: File) => void;
   onClearImage: () => void;
@@ -36,6 +41,9 @@ function MenuImageSectionCardImpl({
   imageState = "empty",
   busy = false,
   dragHandleProps,
+  rootProps,
+  dragging = false,
+  dragOver = false,
   onTitleChange,
   onPickImage,
   onClearImage,
@@ -64,7 +72,8 @@ function MenuImageSectionCardImpl({
 
   return (
     <article
-      className="bo-menuImageSectionCard"
+      {...rootProps}
+      className={`bo-menuImageSectionCard${dragging ? " is-dragging" : ""}${dragOver ? " is-dragOver" : ""}`}
       data-testid={`menu-image-section-card-${sectionId}`}
       data-slot="menu-image-section-card"
     >
