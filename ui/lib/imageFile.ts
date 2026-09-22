@@ -14,12 +14,12 @@ function assertImageInput(file: File): void {
 
 export async function imageToWebpMax200KB(file: File): Promise<File> {
   assertImageInput(file);
-  return fitImageToBytes(file, 200 * 1024, { maxEdge: 1400, name: `${baseName(file.name)}.webp` });
+  return fitImageToBytes(file, 200 * 1024, { maxEdge: 1400, name: `${baseName(file.name)}.webp`, allowFallback: false });
 }
 
 export async function imageToWebpMax50KB(file: File): Promise<File> {
   assertImageInput(file);
-  return fitImageToBytes(file, 50 * 1024, { maxEdge: 800, name: `${baseName(file.name)}.webp` });
+  return fitImageToBytes(file, 50 * 1024, { maxEdge: 800, name: `${baseName(file.name)}.webp`, allowFallback: false });
 }
 
 /** Base64 for socket uploads (coordination id: special_menu_sections_image_state_v1). */
