@@ -599,6 +599,7 @@ export type GroupMenuV2 = {
   // Coordination id: special_menu_sections_v1 - ordered list of image sections
   // (title + image) editable from /app/comida/menus/crear?menuId= step 4.
   special_menu_sections?: SpecialMenuSection[];
+  special_date?: MenuSpecialDate | null;
   // Coordination id: special_menu_visibility_v1 - same dropdown the food-type
   // settings already use (inside_menus | independent_section) plus an on/off
   // toggle scoped per menu.
@@ -625,6 +626,18 @@ export type SpecialMenuSection = {
   image_state?: "empty" | "uploading" | "ready";
   position: number;
   created_at?: string;
+  // Coordination id: special_menu_price_date_v1 - null means "no price".
+  price?: number | null;
+};
+
+// Coordination id: special_menu_price_date_v1 - special day a special menu
+// belongs to (drives the reservas date query and the prereserva notice).
+export type MenuSpecialDate = {
+  id: number;
+  date: string;
+  title: string;
+  is_active: boolean;
+  prereserva_enabled: boolean;
 };
 
 export type DishCatalogItem = {
@@ -2297,6 +2310,7 @@ export type SpecialDateSettings = {
 export type SpecialDateSavePayload = Partial<Omit<SpecialDateSettings, "date">> & { date: string };
 
 export type SpecialDateListEntry = {
+  id: number;
   date: string;
   title: string;
   is_active: boolean;

@@ -1939,7 +1939,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         async patchSpecialSection(
           menuId: number,
           sectionId: number,
-          input: { title: string },
+          input: { title?: string; price?: number | null },
         ): Promise<APISuccess<Record<string, never>> | APIError> {
           return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}`, {
             method: "PATCH",
@@ -1976,7 +1976,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         // dropdown the FoodPageSettings component already uses.
         async setSpecialMenuVisibility(
           menuId: number,
-          patch: { web_placement?: string; menu_public_active?: boolean },
+          patch: { web_placement?: string; menu_public_active?: boolean; special_date_id?: number },
         ): Promise<APISuccess<{ web_placement: string; menu_public_active?: boolean }> | APIError> {
           return json(`/api/admin/group-menus-v2/${menuId}/visibility`, {
             method: "PATCH",

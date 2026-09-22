@@ -39,7 +39,9 @@ export type BuildPreviewMenuPayloadInput = {
   importantInfo: string[]
   specialMenuImage: string | null
   // Coordination id: special_menu_sections_v1
-  specialMenuSections?: Array<{ id?: number | string | null; title?: string | null; image_url?: string | null; position?: number | null }>
+  specialMenuSections?: Array<{ id?: number | string | null; title?: string | null; image_url?: string | null; position?: number | null; price?: number | null }>
+  // Coordination id: special_menu_price_date_v1
+  specialDate?: { id: number; date: string; title: string; is_active: boolean; prereserva_enabled: boolean } | null
   menuAITracker: unknown
   sections: Array<{
     id?: number | string | null
@@ -100,6 +102,7 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
     importantInfo,
     specialMenuImage,
     specialMenuSections,
+    specialDate,
     menuAITracker,
     sections,
     normalizeSectionAnnotations,
@@ -177,5 +180,6 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
     })),
     special_menu_image_url: specialMenuImage || '',
     special_menu_sections: Array.isArray(specialMenuSections) ? specialMenuSections : [],
+    special_date: specialDate ?? null,
   }
 }

@@ -261,6 +261,8 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
     specialMenuSections, specialMenuSectionBusy,
     addSpecialMenuSection, updateSpecialMenuSectionTitle, deleteSpecialMenuSection,
     reorderSpecialMenuSections, uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
+    // Coordination id: special_menu_price_date_v1
+    updateSpecialMenuSectionPrice, menuSpecialDate, setMenuSpecialDate, specialDateOptions,
     menuWebPlacement, menuPublicActive, menuVisibilityBusy,
     setMenuWebPlacement, setMenuPublicActive,
   } = H;
@@ -451,6 +453,8 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
             onDragEnd: endSectionDrag,
           }}
           onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
+          price={section.price ?? null}
+          onPriceCommit={(raw) => void updateSpecialMenuSectionPrice(section.id, raw)}
           onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
           onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
           onDelete={() => void deleteSpecialMenuSection(section.id)}
@@ -825,6 +829,24 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                     <Select className="bo-menuSettingSelect" value={showMenuPreviewImage ? "with_preview" : "without_preview"} onChange={(value) => setShowMenuPreviewImage(value === "with_preview")} options={menuPreviewVisibilityOptions} size="sm" ariaLabel="Visibilidad de foto preview en editor final" />
                   </div>
                   {renderMenuPreviewUploadArea()}
+                  {isSpecial ? (
+                    <div className="bo-field" data-slot="crear-field" data-coordination-id="special_menu_price_date_v1">
+                      <div className="bo-label" data-slot="crear-label">Fecha especial</div>
+                      <Select
+                        className="bo-menuSettingSelect"
+                        value={String(menuSpecialDate?.id ?? 0)}
+                        onChange={(value) => void setMenuSpecialDate(Number(value))}
+                        options={[
+                          { value: "0", label: "Sin fecha especial" },
+                          ...specialDateOptions.map((entry) => ({ value: String(entry.id), label: `${entry.date}${entry.title ? ` · ${entry.title}` : ""}${entry.prereserva_enabled ? " · prereserva" : ""}` })),
+                        ]}
+                        size="sm"
+                        ariaLabel="Fecha especial del menu"
+                        data-testid="menu-crear-special-date-select"
+                      />
+                      {menuSpecialDate?.prereserva_enabled ? <p className="bo-menuSpecialDateHint" data-testid="menu-crear-special-date-prereserva">Esta fecha requiere prereserva.</p> : null}
+                    </div>
+                  ) : null}
                   {!isSpecial ? (
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Cambiar tipo de menu</div>
