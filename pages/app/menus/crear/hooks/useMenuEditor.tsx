@@ -400,8 +400,9 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
-  // Coordination id: menu_editor_preview_open_v1 - seeded from the user
-  // preference the page's initial REST carries; saved over the socket below.
+  // Coordination id: menu_editor_preview_open_v1 - seeded from the per-menu
+  // preference the page's initial menu REST carries (user + restaurant + menu
+  // id); saved over the socket below.
   const [desktopPreviewOpen, setDesktopPreviewOpenState] = useState(data.editorPreviewOpen ?? true);
   const [desktopPreviewDocked, setDesktopPreviewDocked] = useState(true);
   const [previewThemeConfig, setPreviewThemeConfig] = useState<PreviewThemeConfig | null>(null);
