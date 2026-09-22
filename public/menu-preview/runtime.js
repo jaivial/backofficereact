@@ -1117,6 +1117,9 @@
         var sectionTitle = String((section && section.title) || "").trim();
         var sectionImageURL = resolveMediaURL(String((section && section.image_url) || "").trim());
         var titleBlock = sectionTitle ? '<h3 class="specialMenuSectionTitle">' + escapeHtml(sectionTitle) + '</h3>' : "";
+        // Coordination id: special_menu_price_date_v1 - per-section price.
+        var sectionPrice = section && section.price != null && section.price !== "" ? Number(section.price) : NaN;
+        if (Number.isFinite(sectionPrice)) titleBlock += '<p class="specialMenuSectionPrice">' + escapeHtml(formatEuro(sectionPrice) + " / pax") + '</p>';
         var mediaBlock = sectionImageURL
           ? '<img class="specialMenuSectionImage" src="' + escapeHtml(sectionImageURL) + '" alt="' + escapeHtml(sectionTitle || menu.menu_title || "") + '" loading="lazy" decoding="async" />'
           : '<div class="specialMenuSectionEmpty">Sin imagen para esta seccion.</div>';
@@ -1139,6 +1142,17 @@
 
       var subtitle = Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle.filter(function (s) { return s && s.trim(); })[0] : "";
       var subtitleBlock = '<p class="page-subtitle">' + escapeHtml(subtitle || "Menú especial (temporada)") + '</p>';
+      // Coordination id: special_menu_price_date_v1 - linked special day:
+      // date, prereserva notice and a reservas button preset to that date.
+      var specialDate = menu.special_date && menu.special_date.date ? menu.special_date : null;
+      if (specialDate) {
+        var dayLabel = new Date(specialDate.date + "T12:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        subtitleBlock += '<div class="specialMenuDay">'
+          + '<p class="specialMenuDayDate">' + escapeHtml((specialDate.title ? specialDate.title + " · " : "") + dayLabel) + '</p>'
+          + (specialDate.prereserva_enabled ? '<p class="specialMenuDayPrereserva">Es necesaria prereserva para esta fecha.</p>' : "")
+          + '<a class="btn btn--primary specialMenuDayBook" href="/reservas?date=' + encodeURIComponent(specialDate.date) + '" onclick="return false">Reservar para esta fecha</a>'
+          + '</div>';
+      }
       var tokens = {
         MENU_TITLE: escapeHtml(menu.menu_title || "Menu sin titulo"),
         MENU_SUBTITLE_BLOCK: subtitleBlock,

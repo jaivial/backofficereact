@@ -2846,6 +2846,22 @@
   border-radius: 10px;
 }
 
+/* Coordination id: special_menu_price_date_v1 */
+.bo-menuImageSectionCardPrice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  width: 110px;
+}
+
+.bo-menuSpecialDateHint {
+  margin: 6px 0 0;
+  color: var(--bo-warning, #c48c2c);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .bo-menuImageSectionCardMedia {
   border-radius: 10px;
   overflow: hidden;

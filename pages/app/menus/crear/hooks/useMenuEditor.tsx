@@ -10,6 +10,8 @@ import type {
   GroupMenuV2Section,
   MenuSlider,
   SpecialMenuSection,
+  MenuSpecialDate,
+  SpecialDateListEntry,
 } from "../../../../../api/types";
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../../lib/dishImageCrop";
 import { arrayBufferToBase64, imageUnderBytes } from "../../../../../ui/lib/imageFile";
@@ -259,6 +261,11 @@ export type UseMenuEditorReturn = {
   menuVisibilityBusy: boolean;
   setMenuWebPlacement: (value: string) => Promise<void>;
   setMenuPublicActive: (value: boolean) => Promise<void>;
+  // Coordination id: special_menu_price_date_v1
+  updateSpecialMenuSectionPrice: (sectionId: number, raw: string) => Promise<void>;
+  menuSpecialDate: MenuSpecialDate | null;
+  setMenuSpecialDate: (specialDateId: number) => Promise<void>;
+  specialDateOptions: SpecialDateListEntry[];
   setSaveState: React.Dispatch<React.SetStateAction<SaveState>>;
   setBusy: (v: boolean) => void;
   setHydrated: (v: boolean) => void;
@@ -392,6 +399,8 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   const [menuWebPlacement, setMenuWebPlacementState] = useState<string>(normalizeWebPlacement(data.menu?.web_placement));
   const [menuPublicActive, setMenuPublicActiveState] = useState<boolean>(data.menu?.menu_public_active ?? true);
   const [menuVisibilityBusy, setMenuVisibilityBusy] = useState<boolean>(false);
+  const [menuSpecialDate, setMenuSpecialDateState] = useState<MenuSpecialDate | null>(data.menu?.special_date ?? null);
+  const [specialDateOptions, setSpecialDateOptions] = useState<SpecialDateListEntry[]>([]);
   const [menuPreviewImageUrl, setMenuPreviewImageUrl] = useState<string>(initialMenuPreviewState.menuPreviewImageUrl);
   const [menuPreviewAIRequested, setMenuPreviewAIRequested] = useState<boolean>(initialMenuPreviewState.menuPreviewAIRequested);
   const [menuPreviewAIGenerating, setMenuPreviewAIGenerating] = useState<boolean>(initialMenuPreviewState.menuPreviewAIGenerating);
@@ -1292,6 +1301,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
         // sections only, so the standalone hero never reaches the preview.
         specialMenuImage: null,
         specialMenuSections,
+        specialDate: menuSpecialDate,
         menuAITracker,
         sections,
         normalizeSectionAnnotations,
@@ -1324,6 +1334,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       menuPreviewAIRequested,
       menuPreviewAIGenerating,
       specialMenuSections,
+      menuSpecialDate,
       subtitles,
       title,
     ],
@@ -2107,6 +2118,54 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     }
   }, [api, menuId, pushToast]);
 
+  // Coordination id: special_menu_price_date_v1 - special days the menu can
+  // be linked to; loaded once for special menus only.
+  useEffect(() => {
+    if (menuType !== "special") return;
+    let cancelled = false;
+    void api.config.listSpecialDates().then((res) => {
+      if (!cancelled && res.success) setSpecialDateOptions(res.special_dates);
+    }).catch(() => console.warn("[special_menu_price_date_v1] special dates unavailable"));
+    return () => { cancelled = true; };
+  }, [api, menuType]);
+
+  const setMenuSpecialDate = useCallback(async (specialDateId: number) => {
+    const option = specialDateOptions.find((entry) => entry.id === specialDateId) ?? null;
+    setMenuSpecialDateState(option ? { id: option.id, date: option.date, title: option.title, is_active: option.is_active, prereserva_enabled: option.prereserva_enabled } : null);
+    if (!menuId) return;
+    setMenuVisibilityBusy(true);
+    try {
+      const res = await api.menus.gruposV2.setSpecialMenuVisibility(menuId, { special_date_id: option ? option.id : 0 });
+      if (!res.success) throw new Error(res.message || "No se pudo guardar la fecha especial");
+      console.log("[checkpoint] special_menu_date_persisted", `special_date_id=${option?.id ?? 0}`);
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar la fecha especial" });
+    } finally {
+      setMenuVisibilityBusy(false);
+    }
+  }, [api, menuId, pushToast, specialDateOptions]);
+
+  const updateSpecialMenuSectionPrice = useCallback(async (sectionId: number, raw: string) => {
+    const text = raw.trim().replace(",", ".");
+    const price = text === "" ? null : Number(text);
+    if (price !== null && (!Number.isFinite(price) || price < 0)) {
+      pushToast({ kind: "error", title: "Precio", message: "Introduce un precio valido" });
+      return;
+    }
+    setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, price } : sec)));
+    if (!menuId) return;
+    setSectionBusy(sectionId, true);
+    try {
+      const res = await api.menus.gruposV2.patchSpecialSection(menuId, sectionId, { price });
+      if (!res.success) throw new Error(res.message || "No se pudo guardar el precio");
+      console.log("[checkpoint] special_section_price_persisted", `section=${sectionId}`);
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar el precio" });
+    } finally {
+      setSectionBusy(sectionId, false);
+    }
+  }, [api, menuId, pushToast, setSectionBusy]);
+
   // --- openMenuPreviewImagePicker ---
   const openMenuPreviewImagePicker = useCallback(() => {
     const input = menuPreviewImageInputRef.current;
@@ -2620,6 +2679,8 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     // Coordination id: special_menu_visibility_v1
     menuWebPlacement, menuPublicActive, menuVisibilityBusy,
     setMenuWebPlacement, setMenuPublicActive,
+    // Coordination id: special_menu_price_date_v1
+    updateSpecialMenuSectionPrice, menuSpecialDate, setMenuSpecialDate, specialDateOptions,
     // Render helpers
     renderMenuPreviewUploadArea,
   };
