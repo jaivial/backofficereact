@@ -2278,6 +2278,13 @@ export type SpecialDateSettings = {
    * Coordination id: mobility_issues_v1
    */
   mobility_enabled: boolean;
+  /**
+   * Allow the guest to self-modify a booking that already exists on this
+   * special date (the public duplicate guard offers "modify instead of
+   * rebook"). Off by default: pre-reserva menus make edits risky.
+   * Coordination id: reservation_self_modification_v1
+   */
+  allow_customer_modification: boolean;
   requires_adelanto: boolean;
   adelanto_payment_methods: SpecialDatePaymentMethod[];
   adelanto_unified: boolean;
