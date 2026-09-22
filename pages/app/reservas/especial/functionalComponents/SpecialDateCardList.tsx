@@ -48,7 +48,7 @@ export function SpecialDateCardList({
        inside another and double the chrome. */
     <div
       data-testid={testId}
-      aria-label="Fechas con menú especial"
+      aria-label="Fechas festivas"
       className="grid grid-cols-1 gap-3"
       role="group"
     >

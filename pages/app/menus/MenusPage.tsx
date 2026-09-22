@@ -460,8 +460,10 @@ export default function Page() {
 
       <FloatingActionButton aria-label="Crear menu" onClick={openCreateModal} data-testid="menus-page-create-button" />
 
-      <Modal open={createModalOpen} title="Crear menu" onClose={closeCreateModal} widthPx={1400}>
-        <CrearPage onClose={closeCreateModal} />
+      {/* Coordination id: menu_add_modal_chrome_v1 - flush dialog padding so the
+          wizard gets the whole modal surface. */}
+      <Modal open={createModalOpen} title="Crear menu" onClose={closeCreateModal} widthPx={1400} className="bo-modal--flush">
+        <CrearPage onClose={closeCreateModal} embedded />
       </Modal>
 
       <ConfirmDialog

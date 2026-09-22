@@ -12,7 +12,7 @@ import type {
   SpecialMenuSection,
 } from "../../../../../api/types";
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../../lib/dishImageCrop";
-import { processSpecialMenuFile } from "../../../../../lib/specialMenuUpload";
+import { arrayBufferToBase64, imageUnderBytes } from "../../../../../ui/lib/imageFile";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { normalizeWebPlacement } from "../../../../../ui/widgets/menus/webPlacement";
 import { WEEKDAYS, type WeekdayKey } from "../../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
@@ -157,9 +157,7 @@ export type UseMenuEditorReturn = {
   mainLimitNum: string;
   comments: string[];
   importantInfo: string[];
-  specialMenuImage: string | null;
   menuPreviewImageBusy: boolean;
-  specialMenuImageBusy: boolean;
   saveState: SaveState;
   busy: boolean;
   hydrated: boolean;
@@ -207,7 +205,6 @@ export type UseMenuEditorReturn = {
   previewFrameRef: React.MutableRefObject<HTMLIFrameElement | null>;
   dishImageInputRef: React.MutableRefObject<HTMLInputElement | null>;
   menuPreviewImageInputRef: React.MutableRefObject<HTMLInputElement | null>;
-  specialMenuImageInputRef: React.MutableRefObject<HTMLInputElement | null>;
 
   // Setters
   setMenuId: (id: number | null) => void;
@@ -243,7 +240,6 @@ export type UseMenuEditorReturn = {
   setMainLimitNum: (num: string) => void;
   setComments: (comments: string[]) => void;
   setImportantInfo: React.Dispatch<React.SetStateAction<string[]>>;
-  setSpecialMenuImage: (img: string | null) => void;
   // Coordination id: special_menu_sections_v1 - one special menu can hold
   // several image sections. The editor mirrors the persisted list in state
   // and exposes the CRUD/reorder actions the UI needs.
@@ -285,7 +281,6 @@ export type UseMenuEditorReturn = {
   setSectionLoadingState: React.Dispatch<React.SetStateAction<Record<string, "loading" | "error" | null>>>;
   setSectionLoadedDishes: React.Dispatch<React.SetStateAction<Set<string>>>;
   setMenuPreviewImageBusy: React.Dispatch<React.SetStateAction<boolean>>;
-  setSpecialMenuImageBusy: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Actions
   patchBasics: (opts: { payload: BasicsPayload; fingerprint: string; force?: boolean }) => Promise<void>;
@@ -319,8 +314,6 @@ export type UseMenuEditorReturn = {
   onDishImageAdvisorImprove: () => Promise<void>;
   onDishImageCropConfirm: (crop: DishImageCropConfirm) => Promise<void>;
   onPublish: () => Promise<void>;
-  openSpecialMenuImagePicker: () => void;
-  onSpecialMenuImageFileSelected: (event: React.ChangeEvent<HTMLInputElement>) => void;
   openMenuPreviewImagePicker: () => void;
   onMenuPreviewImageFileSelected: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onMenuPreviewImageAdvisorImprove: () => Promise<void>;
@@ -343,12 +336,12 @@ export type UseMenuEditorReturn = {
 
   // Render helpers (defined inside the hook for access to state)
   renderMenuPreviewUploadArea: () => React.ReactNode;
-  renderSpecialMenuImageUploadArea: () => React.ReactNode;
 };
 
-export function useMenuEditor(): UseMenuEditorReturn {
+export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEditorReturn {
+  const embedded = !!options.embedded;
   const pageContext = usePageContext();
-  const data = pageContext.data as { menu: GroupMenuV2 | null; slider?: MenuSlider | null; error: string | null };
+  const data = pageContext.data as { menu: GroupMenuV2 | null; slider?: MenuSlider | null; error: string | null; editorPreviewOpen?: boolean };
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const initialSlider = data.slider ?? null;
@@ -357,7 +350,16 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [error, setError] = useState<string | null>(data.error);
   const [menuId, setMenuId] = useState<number | null>(data.menu?.id ?? null);
   const [isDraft, setIsDraft] = useState<boolean>(data.menu?.is_draft ?? false);
-  const [step, setStep] = useState<number>(data.menu ? 3 : 0);
+  const [step, setStepState] = useState<number>(data.menu ? 3 : 0);
+  // Coordination id: menu_add_modal_cancel_v1 - a draft created by this wizard
+  // is provisional until the operator reaches the editor (step 3); cancelling
+  // before that must leave no menu behind.
+  const createdDraftRef = useRef<number | null>(null);
+  const wizardFinishedRef = useRef(false);
+  const setStep = useCallback((next: number) => {
+    if (next >= 3) wizardFinishedRef.current = true;
+    setStepState(next);
+  }, []);
   const [menuType, setMenuType] = useState<string>(data.menu?.menu_type || "closed_conventional");
   const [title, setTitle] = useState<string>(data.menu?.menu_title || "");
   const [price, setPrice] = useState<string>(data.menu?.price || "0");
@@ -383,7 +385,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [mainLimitNum, setMainLimitNum] = useState<string>("1");
   const [comments, setComments] = useState<string[]>([""]);
   const [importantInfo, setImportantInfo] = useState<string[]>([""]);
-  const [specialMenuImage, setSpecialMenuImage] = useState<string | null>(data.menu?.special_menu_image_url || null);
   // Coordination id: special_menu_sections_v1
   const [specialMenuSections, setSpecialMenuSections] = useState<SpecialMenuSection[]>(() => data.menu?.special_menu_sections ? [...data.menu.special_menu_sections].sort((a, b) => a.position - b.position) : []);
   const [specialMenuSectionBusy, setSpecialMenuSectionBusy] = useState<Record<number, boolean>>({});
@@ -395,12 +396,14 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const [menuPreviewAIRequested, setMenuPreviewAIRequested] = useState<boolean>(initialMenuPreviewState.menuPreviewAIRequested);
   const [menuPreviewAIGenerating, setMenuPreviewAIGenerating] = useState<boolean>(initialMenuPreviewState.menuPreviewAIGenerating);
   const [menuPreviewImageBusy, setMenuPreviewImageBusy] = useState(false);
-  const [specialMenuImageBusy, setSpecialMenuImageBusy] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "preview">("editor");
-  const [desktopPreviewOpen, setDesktopPreviewOpen] = useState(data.menu?.editor_preview_open !== false);
+  // Coordination id: menu_editor_preview_open_v1 - seeded from the per-menu
+  // preference the page's initial menu REST carries (user + restaurant + menu
+  // id); saved over the socket below.
+  const [desktopPreviewOpen, setDesktopPreviewOpenState] = useState(data.editorPreviewOpen ?? true);
   const [desktopPreviewDocked, setDesktopPreviewDocked] = useState(true);
   const [previewThemeConfig, setPreviewThemeConfig] = useState<PreviewThemeConfig | null>(null);
   const [previewThemeLoading, setPreviewThemeLoading] = useState(true);
@@ -428,7 +431,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
   const searchTimerRef = useRef<Record<string, number>>({});
   const dishImageInputRef = useRef<HTMLInputElement | null>(null);
   const menuPreviewImageInputRef = useRef<HTMLInputElement | null>(null);
-  const specialMenuImageInputRef = useRef<HTMLInputElement | null>(null);
   const previewDockTimerRef = useRef<number | null>(null);
   const previewFrameRef = useRef<HTMLIFrameElement | null>(null);
   const syncTimerRef = useRef<number | null>(null);
@@ -477,7 +479,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
       showDishImages,
       showSectionTabs,
       showMenuPreviewImage,
-      desktopPreviewOpen,
       includedCoffee,
       beverageType,
       beveragePrice,
@@ -489,7 +490,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       mainLimit,
       mainLimitNum,
     }),
-    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, importantInfo, desktopPreviewOpen, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showSectionTabs, showMenuPreviewImage, subtitles, title],
+    [active, beverageHasSupplement, beveragePrice, beverageSupplementPrice, beverageType, comments, importantInfo, includedCoffee, mainLimit, mainLimitNum, menuType, minPartySize, price, showDishImages, showSectionTabs, showMenuPreviewImage, subtitles, title],
   );
   const basicsPayload = useMemo(() => buildBasicsPayload(basicsDraft), [basicsDraft]);
   const basicsFingerprint = useMemo(() => JSON.stringify(basicsPayload), [basicsPayload]);
@@ -1177,6 +1178,28 @@ export function useMenuEditor(): UseMenuEditorReturn {
           applyBeverageOptions(payload);
           return;
         }
+        // Coordination id: special_menu_sections_image_state_v1 (background
+        // task state -> section media: skeleton / final image / default).
+        if (type === "special_section_image_started" || type === "special_section_image_ready" || type === "special_section_image_error") {
+          const sectionId = Number(payload.section_id ?? 0);
+          if (type === "special_section_image_error") {
+            pushToast({ kind: "error", title: "Error", message: String(payload.message ?? "No se pudo subir la imagen") });
+          }
+          if (sectionId) {
+            setSpecialMenuSections((prev) => prev.map((sec) => {
+              if (sec.id !== sectionId) return sec;
+              if (type === "special_section_image_ready") {
+                return { ...sec, image_state: "ready", image_url: String(payload.image_url ?? sec.image_url) };
+              }
+              if (type === "special_section_image_error") {
+                return { ...sec, image_state: "empty" };
+              }
+              return { ...sec, image_state: "uploading" };
+            }));
+          }
+          console.log(`[checkpoint] special_section_image_ws_frame type=${type} section_id=${sectionId}`);
+          return;
+        }
         if (type === "sync" || type === "ai_update" || type === "tracker_update"
           || type === "hello" || type === "snapshot"
           || type === "preview_image_completed" || type === "preview_image_failed") {
@@ -1265,7 +1288,10 @@ export function useMenuEditor(): UseMenuEditorReturn {
         mainLimitNum,
         comments,
         importantInfo,
-        specialMenuImage,
+        // Coordination id: special_menu_sections_v1 - special menus carry image
+        // sections only, so the standalone hero never reaches the preview.
+        specialMenuImage: null,
+        specialMenuSections,
         menuAITracker,
         sections,
         normalizeSectionAnnotations,
@@ -1297,7 +1323,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       menuPreviewImageUrl,
       menuPreviewAIRequested,
       menuPreviewAIGenerating,
-      specialMenuImage,
+      specialMenuSections,
       subtitles,
       title,
     ],
@@ -1338,6 +1364,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     try {
       const created = await api.menus.gruposV2.createDraft({ menu_type: menuType });
       if (!created.success) throw new Error(created.message || "No se pudo crear borrador");
+      createdDraftRef.current = created.menu_id;
       const loaded = await api.menus.gruposV2.get(created.menu_id);
       if (!loaded.success) throw new Error(loaded.message || "No se pudo cargar borrador");
       const mapped = mapApiMenu(loaded.menu);
@@ -1351,7 +1378,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
       setShowDishImages(mapped.showDishImages);
       setShowSectionTabs(mapped.showSectionTabs);
       setShowMenuPreviewImage(mapped.showMenuPreviewImage);
-      setDesktopPreviewOpen(mapped.desktopPreviewOpen);
       setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
       setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
       setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
@@ -1370,7 +1396,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
       const mappedBasicsPayload = buildBasicsPayload({
         title: mapped.title, price: mapped.price || "0", active: mapped.active, menuType: mapped.menuType,
         subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages, showSectionTabs: mapped.showSectionTabs,
-        showMenuPreviewImage: mapped.showMenuPreviewImage, desktopPreviewOpen: mapped.desktopPreviewOpen,
+        showMenuPreviewImage: mapped.showMenuPreviewImage,
         includedCoffee: mapped.settings.included_coffee,
         beverageType: mapped.settings.beverage.type,
         beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
@@ -1393,14 +1419,27 @@ export function useMenuEditor(): UseMenuEditorReturn {
       inFlightSectionAnnotationsRef.current = {};
       syncRequestSeqRef.current = 0;
       setSaveState("idle");
-      window.history.replaceState({}, "", `/app/comida/menus/crear?menuId=${created.menu_id}`);
+      // Coordination id: menu_add_modal_cancel_v1 - the add-menu modal never
+      // hijacks the page URL; only the standalone wizard page does.
+      if (!embedded) {
+        window.history.replaceState({}, "", `/app/comida/menus/crear?menuId=${created.menu_id}`);
+      }
       setStep(1);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo crear borrador");
     } finally {
       setBusy(false);
     }
-  }, [api, menuType]);
+  }, [api, embedded, menuType]);
+
+  // Coordination id: menu_add_modal_cancel_v1 - closing the wizard before the
+  // editor discards the draft it created, so a cancelled creation never leaves
+  // a menu behind and the operator stays where they were.
+  useEffect(() => () => {
+    const draftId = createdDraftRef.current;
+    if (!draftId || wizardFinishedRef.current) return;
+    void api.menus.gruposV2.delete(draftId).catch(() => undefined);
+  }, [api]);
 
   // --- addSection ---
   // Coordination id: menu_section_kind_presets_v1 - the "Anadir seccion" modal
@@ -1900,45 +1939,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
     }
   }, [api, basicsFingerprint, basicsPayload, menuId, patchBasics, pushToast, sections, sectionsFingerprint, syncSectionsAndDishes]);
 
-  // --- openSpecialMenuImagePicker ---
-  const openSpecialMenuImagePicker = useCallback(() => {
-    if (!menuId || specialMenuImageBusy || busy) return;
-    const input = specialMenuImageInputRef.current;
-    if (!input) return;
-    input.value = "";
-    input.click();
-  }, [busy, menuId, specialMenuImageBusy]);
-
-  // --- onSpecialMenuImageFileSelected ---
-  const onSpecialMenuImageFileSelected = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const selectedFile = event.target.files?.[0];
-      event.currentTarget.value = "";
-      if (!selectedFile) return;
-      if (!menuId) { pushToast({ kind: "error", title: "Error", message: "Guarda primero el menu para subir imagen." }); return; }
-      setSpecialMenuImageBusy(true);
-      setSaveState("saving");
-      void (async () => {
-        try {
-          const { file } = await processSpecialMenuFile(selectedFile);
-          const res = await api.menus.gruposV2.uploadSpecialMenuImage(menuId, file);
-          if (!res.success) throw new Error(res.message || "No se pudo subir la imagen del menu especial");
-          const imageUrl = String(res.imageUrl || "").trim();
-          if (!imageUrl) throw new Error("No se recibio la URL de la imagen subida");
-          setSpecialMenuImage(imageUrl);
-          setSaveState("saved");
-          pushToast({ kind: "success", title: "Imagen actualizada", message: "Imagen del menu especial subida correctamente." });
-        } catch (error) {
-          setSaveState("error");
-          pushToast({ kind: "error", title: "Error", message: error instanceof Error ? error.message : "No se pudo subir la imagen del menu especial" });
-        } finally {
-          setSpecialMenuImageBusy(false);
-        }
-      })();
-    },
-    [api, menuId, pushToast],
-  );
-
   // --- special menu sections (CRUD + reorder + image upload) ---
   // Coordination id: special_menu_sections_v1
   const setSectionBusy = useCallback((sectionId: number, busy: boolean) => {
@@ -2016,6 +2016,10 @@ export function useMenuEditor(): UseMenuEditorReturn {
     }
   }, [api, menuId, pushToast]);
 
+  // Coordination id: special_menu_sections_image_state_v1 - uploads travel the
+  // group-menus-v2 socket ("socket method") and the server processes them in a
+  // background task, so closing the page never loses an upload. The row state
+  // (empty/uploading/ready) lives in the DB and drives skeleton / image / default.
   const uploadSpecialMenuSectionImage = useCallback(async (sectionId: number, file: File) => {
     if (!menuId) return;
     if (!isSupportedDishImageFile(file)) {
@@ -2026,27 +2030,39 @@ export function useMenuEditor(): UseMenuEditorReturn {
       pushToast({ kind: "error", title: "Error", message: "La imagen excede 15MB." });
       return;
     }
-    setSectionBusy(sectionId, true);
-    setSaveState("saving");
-    try {
-      const { file: prepared } = await processSpecialMenuFile(file);
-      const res = await api.menus.gruposV2.uploadSpecialSectionImage(menuId, sectionId, prepared);
-      if (!res.success) throw new Error(res.message || "No se pudo subir la imagen");
-      const url = String(res.image_url || "").trim();
-      if (!url) throw new Error("No se recibio la URL de la imagen subida");
-      setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_url: url } : sec)));
-      setSaveState("saved");
-    } catch (e) {
-      setSaveState("error");
-      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo subir la imagen" });
-    } finally {
-      setSectionBusy(sectionId, false);
+    const ws = menuAIWSSocketRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      pushToast({ kind: "error", title: "Error", message: "Conexion no disponible. Intentalo de nuevo." });
+      return;
     }
-  }, [api, menuId, pushToast, setSectionBusy]);
+    try {
+      // Coordination id: special_menu_sections_image_state_v1 - images under
+      // 5MB are uploaded untouched; only bigger ones get re-encoded down to 5MB.
+      const prepared = await imageUnderBytes(file, 5 * 1024 * 1024);
+      const data = arrayBufferToBase64(await prepared.arrayBuffer());
+      let correlationId = "";
+      try { correlationId = window.sessionStorage.getItem("vcCorrelationId") || ""; } catch { correlationId = ""; }
+      setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_state: "uploading" } : sec)));
+      ws.send(JSON.stringify({
+        type: "special_section_image_upload",
+        menu_id: menuId,
+        section_id: sectionId,
+        filename: prepared.name,
+        content_type: prepared.type,
+        data,
+        correlation_id: correlationId,
+      }));
+      // Named observation point: upload handed to the server-side background task.
+      console.log(`[checkpoint] special_section_image_ws_sent menu_id=${menuId} section_id=${sectionId}`);
+    } catch (e) {
+      setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_state: "empty" } : sec)));
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo subir la imagen" });
+    }
+  }, [menuId, pushToast]);
 
   const clearSpecialMenuSectionImage = useCallback(async (sectionId: number) => {
     if (!menuId) return;
-    setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_url: "" } : sec)));
+    setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, image_url: "", image_state: "empty" } : sec)));
     setSectionBusy(sectionId, true);
     try {
       const res = await api.menus.gruposV2.deleteSpecialSectionImage(menuId, sectionId);
@@ -2253,6 +2269,25 @@ export function useMenuEditor(): UseMenuEditorReturn {
     window.setTimeout(() => setMenuWeekdayBusy(false), 3000);
   }, [menuId, pushToast]);
 
+  // --- Editor/preview split: WS-only mutation (no REST) ---
+  // Coordination id: menu_editor_preview_open_v1 (toggle -> editor_preview_set ->
+  // user_preferences(user_id, restaurant_id) -> session REST on next load).
+  const setDesktopPreviewOpen = (open: boolean) => {
+    setDesktopPreviewOpenState(open);
+    const ws = menuAIWSSocketRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      pushToast({ kind: "error", title: "Error", message: "Conexion no disponible. Intentalo de nuevo." });
+      return;
+    }
+    let correlationId = "";
+    try { correlationId = window.sessionStorage.getItem("vcCorrelationId") || ""; } catch { correlationId = ""; }
+    try {
+      ws.send(JSON.stringify({ type: "editor_preview_set", menu_id: menuId, open, correlation_id: correlationId }));
+    } catch { /* ignore */ }
+    // Named observation point: frontend sent a websocket mutation.
+    console.log(`[checkpoint] editor_preview_ws_sent menu_id=${menuId ?? 0} open=${open}`);
+  };
+
   const refreshBeverageOptions = useCallback(() => {
     setBeverageModalOpen(true);
     sendBeverageMessage({ type: "beverage_refresh" });
@@ -2387,7 +2422,6 @@ export function useMenuEditor(): UseMenuEditorReturn {
       inFlightSectionAnnotationsRef.current = {};
       syncRequestSeqRef.current = 0;
       setMenuAITracker({ dishes: [] });
-      setSpecialMenuImage(null);
       setMenuPreviewImageUrl("");
       setMenuPreviewAIRequested(false);
       setMenuPreviewAIGenerating(false);
@@ -2404,11 +2438,9 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setShowDishImages(mapped.showDishImages);
     setShowSectionTabs(mapped.showSectionTabs);
     setShowMenuPreviewImage(mapped.showMenuPreviewImage);
-    setDesktopPreviewOpen(mapped.desktopPreviewOpen);
     setMenuPreviewImageUrl(mapped.menuPreviewImageUrl);
     setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
     setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
-    setSpecialMenuImage(mapped.specialMenuImageUrl || null);
     setSpecialMenuSections(data.menu?.special_menu_sections ? [...data.menu.special_menu_sections].sort((a, b) => a.position - b.position) : []);
     setSpecialMenuSectionBusy({});
     setSections(mapped.sections);
@@ -2426,7 +2458,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     const mappedBasicsPayload = buildBasicsPayload({
       title: mapped.title, price: mapped.price, active: mapped.active, menuType: mapped.menuType,
       subtitles: mapped.subtitles.length ? mapped.subtitles : [""], showDishImages: mapped.showDishImages, showSectionTabs: mapped.showSectionTabs,
-      showMenuPreviewImage: mapped.showMenuPreviewImage, desktopPreviewOpen: mapped.desktopPreviewOpen,
+      showMenuPreviewImage: mapped.showMenuPreviewImage,
       includedCoffee: mapped.settings.included_coffee,
       beverageType: mapped.settings.beverage.type,
       beveragePrice: mapped.settings.beverage.price_per_person == null ? "" : String(mapped.settings.beverage.price_per_person),
@@ -2536,45 +2568,14 @@ export function useMenuEditor(): UseMenuEditorReturn {
     );
   };
 
-  // --- renderSpecialMenuImageUploadArea ---
-  const renderSpecialMenuImageUploadArea = () => {
-    const specialMenuUploadDisabled = !menuId || specialMenuImageBusy || busy;
-    return (
-      <div className="bo-specialImageUpload" data-slot="useMenuEditor-specialImageUpload">
-        {specialMenuImage ? (
-          <div className="bo-specialImagePreview" data-slot="useMenuEditor-specialImagePreview">
-            <img src={specialMenuImage} alt="Menu especial" />
-            <div className="bo-menuPreviewActions" data-slot="useMenuEditor-menuPreviewActions">
-              <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={specialMenuUploadDisabled} onClick={openSpecialMenuImagePicker} data-testid="menu-editor-change-special-image-btn">
-                <Upload size={14} /> {specialMenuImageBusy ? "Procesando..." : "Cambiar imagen"}
-              </button>
-              <button className="bo-btn bo-btn--ghost bo-btn--danger" type="button" disabled={specialMenuUploadDisabled} onClick={() => setSpecialMenuImage(null)} data-testid="menu-editor-delete-special-image-btn">
-                <Trash2 size={14} /> Eliminar
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="bo-specialImageDropzone" data-slot="useMenuEditor-specialImageDropzone">
-            <Upload size={48} />
-            <p data-slot="useMenuEditor-ial">Sube la imagen del menu especial</p>
-            <p className="bo-mutedText" data-slot="useMenuEditor-mutedText">PDF, Word, TXT, PNG, JPG, WEBP o GIF hasta 10MB</p>
-            <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" disabled={specialMenuUploadDisabled} onClick={openSpecialMenuImagePicker} data-testid="menu-editor-upload-special-image-btn">
-              <Upload size={14} /> {specialMenuImageBusy ? "Procesando..." : "Subir imagen"}
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return {
     // State
     error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages, showSectionTabs,
     showMenuPreviewImage, menuPreviewImageUrl, menuPreviewAIRequested, menuPreviewAIGenerating,
     sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement, beverageSupplementPrice,
     beverageOptions, menuWeekdays, menuWeekdayBusy, beverageModalOpen, beverageDeleteTarget,
-    minPartySize, mainLimit, mainLimitNum, comments, importantInfo, specialMenuImage, menuPreviewImageBusy,
-    specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen, desktopPreviewDocked,
+    minPartySize, mainLimit, mainLimitNum, comments, importantInfo, menuPreviewImageBusy,
+    saveState, busy, hydrated, mobileTab, desktopPreviewOpen, desktopPreviewDocked,
     previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
     sectionLoadingState, menuAITracker, dishImageTarget, dishImageAdvisorDraft, dishImageAdvisorBusy,
     dishImageCropDraft, dishImageBusy, menuPreviewImageAdvisorDraft, menuPreviewImageAdvisorBusy,
@@ -2585,7 +2586,7 @@ export function useMenuEditor(): UseMenuEditorReturn {
     dishImageAdvisorPreviewKB, menuPreviewImageAdvisorPreviewKB, loadingSectionTitles,
     previewThemeId, previewThemeLabel, previewNeedsUpgrade, previewMenuPayload, previewUrl,
     // Refs
-    previewFrameRef, dishImageInputRef, menuPreviewImageInputRef, specialMenuImageInputRef,
+    previewFrameRef, dishImageInputRef, menuPreviewImageInputRef,
     // Setters
     setMenuId, setIsDraft, setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
     setShowDishImages, setShowSectionTabs, setShowMenuPreviewImage, setMenuPreviewImageUrl, setMenuPreviewAIRequested,
@@ -2593,19 +2594,19 @@ export function useMenuEditor(): UseMenuEditorReturn {
     refreshBeverageOptions, setBeverageOptionSelected, setMenuWeekday, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize, setMainLimit, setMainLimitNum,
-    setComments, setImportantInfo, setSpecialMenuImage, setSaveState, setBusy, setHydrated, setMobileTab,
+    setComments, setImportantInfo, setSaveState, setBusy, setHydrated, setMobileTab,
     setDesktopPreviewOpen, setDesktopPreviewDocked, setAllergenModal, setMenuAITracker,
     setDishImageTarget, setDishImageAdvisorDraft, setDishImageAdvisorBusy, setDishImageCropDraft,
     setDishImageBusy, setMenuPreviewImageAdvisorDraft, setMenuPreviewImageAdvisorBusy,
     setMenuPreviewImageCropDraft, setMenuPreviewImageCropBusy, setSearchTerms, setSearchResults,
-    setSectionLoadingState, setSectionLoadedDishes, setMenuPreviewImageBusy, setSpecialMenuImageBusy,
+    setSectionLoadingState, setSectionLoadedDishes, setMenuPreviewImageBusy,
     // Actions
     patchBasics, syncSectionsAndDishes, applyDishAIState, applyMenuPreviewAIState,
     applyAITrackerSnapshot, createDraftAndContinue, addSection, setSectionDessertSource, removeSection, updateSection,
     fetchSectionDishes, handleSectionToggle, updateSectionAnnotation, addSectionAnnotation,
     removeSectionAnnotation, setSectionDescriptionsEnabled, moveSection, reorderSections, addDish, updateDish, removeDish,
     reorderDishes, handleSearch, pickDishImage, onDishImageFileSelected, onDishImageAdvisorImprove,
-    onDishImageCropConfirm, onPublish, openSpecialMenuImagePicker, onSpecialMenuImageFileSelected,
+    onDishImageCropConfirm, onPublish,
     openMenuPreviewImagePicker, onMenuPreviewImageFileSelected, onMenuPreviewImageAdvisorImprove,
     onMenuPreviewImageCropConfirm, resolvePersistedDishTarget, moveDishImageAdvisorToCrop,
     moveMenuPreviewImageAdvisorToCrop, requestMenuAITrackerSync, closeDishImageAdvisor,
@@ -2621,6 +2622,5 @@ export function useMenuEditor(): UseMenuEditorReturn {
     setMenuWebPlacement, setMenuPublicActive,
     // Render helpers
     renderMenuPreviewUploadArea,
-    renderSpecialMenuImageUploadArea,
   };
 }

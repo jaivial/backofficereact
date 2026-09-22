@@ -9,7 +9,11 @@ export type SpecialDateTabId = "ajustes" | "fechas";
 /**
  * Tab strip shown only for days that ARE special-menu days: one tab for
  * the "Reservas especiales" settings form, one for the list of every
- * date with a special menu.
+ * fecha festiva.
+ *
+ * Observation point: `especial.tabs.fecha_festiva` — label + icon of the
+ * festive-dates tab, coordinated with the "fecha festiva" wording used by
+ * the empty state and the list headings.
  *
  * Rendered in `mode="button"` so switching tabs is local state - no
  * navigation, no remount, which is what keeps the post-activation
@@ -33,7 +37,7 @@ export function SpecialDateTabs({
     },
     {
       id: "fechas",
-      label: "Fechas con menú especial",
+      label: "Fechas festivas",
       href: "#",
       icon: <CalendarDays size={16} strokeWidth={1.8} />,
     },

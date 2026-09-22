@@ -3,6 +3,8 @@ import { useConfig } from "vike-react/useConfig";
 
 import { createClient } from "../../../../../api/client";
 import type { GroupMenuV2, MenuSlider } from "../../../../../api/types";
+// Coordination id: menu_editor_preview_open_v1
+import { menuEditorPreviewOpenFromPrefs } from "../../../../../lib/menuEditorPreferences";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -35,5 +37,14 @@ export async function data(pageContext: PageContextServer) {
     }
   }
 
-  return { menu, slider, error };
+  // Coordination id: menu_editor_preview_open_v1 - the editor/preview split is
+  // per (user, restaurant, menu): the menu REST fetched above already carries it
+  // for this menu id, whatever its type. The generic session preference remains
+  // the fallback when the menu could not be loaded.
+  const editorPreviewOpen =
+    typeof menu?.editor_preview_open === "boolean"
+      ? menu.editor_preview_open
+      : menuEditorPreviewOpenFromPrefs(pageContext.bo?.session?.preferences);
+
+  return { menu, slider, error, editorPreviewOpen };
 }

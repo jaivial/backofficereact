@@ -10,6 +10,7 @@ import type {
   ModifiedBookingItem,
   BOSession,
   ConfigDefaults,
+  MobilityDayConfig,
   ConfigDailyLimit,
   ConfigDayStatus,
   ConfigDayRangeResult,
@@ -1308,6 +1309,15 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      async whatsappFlushQueue(): Promise<
+        import("./types").APISuccess<{ pending: number; failed: number }> | APIError
+      > {
+        return json("/api/admin/members/whatsapp/flush-queue", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
     },
     invitations: {
       async validate(token: string): Promise<APISuccess<{ invitation: MemberInvitationPreview }> | APIError> {
@@ -1696,7 +1706,6 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             show_dish_images: boolean;
             show_section_tabs: boolean;
             show_menu_preview_image: boolean;
-            editor_preview_open: boolean;
             beverage: {
               type: string;
               price_per_person?: number | null;
@@ -1954,18 +1963,8 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             body: JSON.stringify({ ids }),
           });
         },
-        async uploadSpecialSectionImage(
-          menuId: number,
-          sectionId: number,
-          file: File,
-        ): Promise<APISuccess<{ image_url: string }> | APIError> {
-          const form = new FormData();
-          form.append("image", file, file.name || `section-${sectionId}.webp`);
-          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}/image`, {
-            method: "POST",
-            body: form,
-          });
-        },
+        // Coordination id: special_menu_sections_image_state_v1 - section image
+        // uploads travel the group-menus-v2 socket; only the clear stays REST.
         async deleteSpecialSectionImage(
           menuId: number,
           sectionId: number,
@@ -2039,11 +2038,24 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         mesasDeTresLimit: string;
         allowFloorReservation?: boolean;
         allowSalonReservation?: boolean;
+        mobility_enabled?: boolean;
       }>): Promise<APISuccess<ConfigDefaults> | APIError> {
         return json("/api/admin/config/defaults", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
+        });
+      },
+      /** Per-day mobility question override (coordination id mobility_day_override_v1). */
+      async getMobilityDay(date: string): Promise<APISuccess<MobilityDayConfig> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/mobility-day?${q.toString()}`, { method: "GET" });
+      },
+      async setMobilityDay(date: string, mobility_enabled: boolean): Promise<APISuccess<MobilityDayConfig> | APIError> {
+        return json("/api/admin/config/mobility-day", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ date, mobility_enabled }),
         });
       },
       async getDay(date: string): Promise<APISuccess<ConfigDayStatus> | APIError> {

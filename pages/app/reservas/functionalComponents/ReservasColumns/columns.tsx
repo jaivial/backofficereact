@@ -138,8 +138,9 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
   { id: "comment", label: "Comentario", thClass: "col-comment", cellClass: "col-comment", hideBelowWidth: 1680, render: (b) => b.commentary || "" },
   // ─── Special booking columns (SPEC §5.4) — null-dash for non-special rows.
   // Only `adelantoEstado` is visible by default; the rest stay opt-in.
-  // ─── Mobility (coordination id: mobility_issues_v1). Only meaningful on
-  // special-date bookings, so non-special rows fall back to the dash.
+  // ─── Mobility (coordination id: mobility_day_override_v1). Answers exist
+  // for every day whose question is active, not just special dates: rows
+  // without data fall back to the dash.
   {
     id: "movilidad",
     label: "Problemas movilidad",
@@ -147,8 +148,8 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
     cellClass: "col-movilidad",
     hideBelowWidth: 1480,
     render: (b) => {
-      if (!isSpecial(b)) return DASH;
       const has = Boolean(b.has_mobility_issues);
+      if (!isSpecial(b) && !has && !Number(b.mobility_people || 0)) return DASH;
       return (
         <span
           className="bo-reservasColIcon"
@@ -172,7 +173,7 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
     cellClass: "col-movilidad-pax num",
     hideBelowWidth: 1680,
     render: (b) => {
-      if (!isSpecial(b) || !b.has_mobility_issues) return DASH;
+      if (!b.has_mobility_issues) return DASH;
       return b.mobility_people ?? 0;
     },
   },

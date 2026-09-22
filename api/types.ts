@@ -587,7 +587,6 @@ export type GroupMenuV2 = {
   show_dish_images: boolean;
   show_section_tabs: boolean;
   show_menu_preview_image?: boolean;
-  editor_preview_open?: boolean;
   ai_images?: GroupMenuV2AIImages | GroupMenuV2AIDish[] | null;
   menu_preview_image_url?: string;
   menu_preview_ai_requested?: boolean;
@@ -605,6 +604,10 @@ export type GroupMenuV2 = {
   // toggle scoped per menu.
   web_placement?: string;
   menu_public_active?: boolean;
+  // Coordination id: menu_editor_preview_open_v1 - per (user, restaurant, menu)
+  // editor/preview split of this menu id, hydrated from the menu REST and
+  // written only over the group-menus-v2 socket.
+  editor_preview_open?: boolean;
   settings: GroupMenuV2Settings;
   sections: GroupMenuV2Section[];
 };
@@ -617,6 +620,9 @@ export type SpecialMenuSection = {
   id: number;
   title: string;
   image_url: string;
+  // Coordination id: special_menu_sections_image_state_v1 - upload state the
+  // editor hydrates from: skeleton (uploading), image (ready) or default (empty).
+  image_state?: "empty" | "uploading" | "ready";
   position: number;
   created_at?: string;
 };
@@ -702,6 +708,15 @@ export type ConfigDefaults = {
   defaultHourPercentages: Record<string, number>;
   allowFloorReservation: boolean;
   allowSalonReservation: boolean;
+  /** Global "problemas de movilidad" question (coordination id mobility_day_override_v1). */
+  mobility_enabled: boolean;
+};
+
+/** Per-day mobility question override: `null` inherits the global default. */
+export type MobilityDayConfig = {
+  date: string;
+  mobility_enabled: boolean | null;
+  effective: boolean;
 };
 
 /** By-hour client split configuration for a date (effective flag + per-hour split). */
@@ -2263,6 +2278,13 @@ export type SpecialDateSettings = {
    * Coordination id: mobility_issues_v1
    */
   mobility_enabled: boolean;
+  /**
+   * Allow the guest to self-modify a booking that already exists on this
+   * special date (the public duplicate guard offers "modify instead of
+   * rebook"). Off by default: pre-reserva menus make edits risky.
+   * Coordination id: reservation_self_modification_v1
+   */
+  allow_customer_modification: boolean;
   requires_adelanto: boolean;
   adelanto_payment_methods: SpecialDatePaymentMethod[];
   adelanto_unified: boolean;

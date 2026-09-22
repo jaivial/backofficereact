@@ -130,3 +130,49 @@ export async function imageToWebpMax50KB(file: File): Promise<File> {
   if (!bestBlob) throw new Error("No se pudo convertir la imagen");
   throw new Error("No se pudo reducir la imagen por debajo de 50KB");
 }
+
+/** Base64 for socket uploads (coordination id: special_menu_sections_image_state_v1). */
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+/**
+ * Re-encodes to WebP only when the file is bigger than `maxBytes`, shrinking
+ * quality and scale until it fits. Small files are returned untouched.
+ * Coordination id: special_menu_sections_image_state_v1
+ */
+export async function imageUnderBytes(file: File, maxBytes: number): Promise<File> {
+  if (file.size <= maxBytes) return file;
+  const bitmap = await createImageBitmap(file);
+  try {
+    let scale = 1;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const width = Math.max(1, Math.round(bitmap.width * scale));
+      const height = Math.max(1, Math.round(bitmap.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("No se pudo procesar la imagen");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(bitmap, 0, 0, width, height);
+      for (const quality of [0.92, 0.8, 0.7]) {
+        const blob = await canvasToBlob(canvas, "image/webp", quality);
+        if (blob.size <= maxBytes) {
+          return new File([blob], `${baseName(file.name)}.webp`, { type: "image/webp" });
+        }
+      }
+      scale *= 0.8;
+    }
+  } finally {
+    bitmap.close?.();
+  }
+  throw new Error(`No se pudo reducir la imagen por debajo de ${Math.round(maxBytes / (1024 * 1024))}MB`);
+}

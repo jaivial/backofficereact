@@ -69,7 +69,15 @@ export function MonthCalendarDatePicker({
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
   const reduceMotion = useReducedMotion();
-  const root = useMemo(() => (typeof document !== "undefined" ? portalEl() : null), []);
+  // Portal target resolved at render time (and re-checked against the live
+  // DOM) so a popover can never mount into a detached node after a layout
+  // re-render — which left `open=true` with no visible calendar ("the date
+  // picker does not open"). Coordination id: date_picker_portal_v1
+  const root = (() => {
+    if (typeof document === "undefined") return null;
+    const target = portalEl();
+    return target && document.contains(target) ? target : document.body;
+  })();
   const selected = useMemo(() => parseISODate(value) ?? new Date(), [value]);
 
   // The button is rendered by SSR with the calendar icon, but the
@@ -190,8 +198,8 @@ export function MonthCalendarDatePicker({
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label="Select date"
-        aria-disabled={disabled || !hydrated}
-        disabled={disabled || !hydrated}
+        aria-disabled={disabled}
+        disabled={disabled}
         data-ui="date-picker-btn"
         data-hydrated={hydrated ? "true" : "false"}
         data-testid={dataTestId}

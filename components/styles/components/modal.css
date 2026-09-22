@@ -38,6 +38,12 @@
   padding: 14px;
 }
 
+/* Coordination id: menu_add_modal_chrome_v1 - dialogs that render their own
+   inner chrome (the add-menu wizard) drop the dialog padding to save space. */
+.bo-modal.bo-modal--flush {
+  padding: 0;
+}
+
 @media (max-width: 640px) {
   .bo-modalOverlay,
   .bo-modal-overlay {

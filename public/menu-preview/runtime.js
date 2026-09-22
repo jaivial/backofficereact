@@ -1110,6 +1110,19 @@
     }
 
     if (state.menuType === "special") {
+      // Coordination id: special_menu_sections_v1 - each image section renders
+      // its title and, below it, a large image with no container chrome.
+      var specialSections = Array.isArray(menu.special_menu_sections) ? menu.special_menu_sections : [];
+      var sectionsHtml = specialSections.map(function (section) {
+        var sectionTitle = String((section && section.title) || "").trim();
+        var sectionImageURL = resolveMediaURL(String((section && section.image_url) || "").trim());
+        var titleBlock = sectionTitle ? '<h3 class="specialMenuSectionTitle">' + escapeHtml(sectionTitle) + '</h3>' : "";
+        var mediaBlock = sectionImageURL
+          ? '<img class="specialMenuSectionImage" src="' + escapeHtml(sectionImageURL) + '" alt="' + escapeHtml(sectionTitle || menu.menu_title || "") + '" loading="lazy" decoding="async" />'
+          : '<div class="specialMenuSectionEmpty">Sin imagen para esta seccion.</div>';
+        return '<section class="specialMenuSection">' + titleBlock + mediaBlock + '</section>';
+      }).join("");
+
       var resolvedUrl = "";
       if (parseLooseBool(menu.show_menu_preview_image, false)) {
         var previewUrl = String(menu.menu_preview_image_url || "").trim();
@@ -1119,9 +1132,10 @@
         resolvedUrl = resolveMediaURL(menu.special_menu_image_url || "");
       }
       var hasSpecialImage = Boolean(resolvedUrl);
-      var imageSection = hasSpecialImage
+      var legacyHero = hasSpecialImage
         ? '<div class="specialMenuImageContainer"><img class="specialMenuImage" src="' + escapeHtml(resolvedUrl) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div>'
         : '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay imagen subida para este menú especial.</p></div>';
+      var imageSection = sectionsHtml ? '<div class="specialMenuSections">' + sectionsHtml + '</div>' : legacyHero;
 
       var subtitle = Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle.filter(function (s) { return s && s.trim(); })[0] : "";
       var subtitleBlock = '<p class="page-subtitle">' + escapeHtml(subtitle || "Menú especial (temporada)") + '</p>';

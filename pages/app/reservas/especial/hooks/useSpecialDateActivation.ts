@@ -20,6 +20,8 @@ export function emptySpecialDate(date: string): SpecialDateSettings {
     max_per_table_enabled: false,
     max_per_table: null,
     mobility_enabled: false,
+    // Coordination id: reservation_self_modification_v1
+    allow_customer_modification: false,
     requires_adelanto: false,
     adelanto_payment_methods: [],
     adelanto_unified: false,
@@ -87,7 +89,7 @@ export function useSpecialDateActivation({
       const res = await api.config.saveSpecialDate(next);
       if (!res.success) {
         onRevert(previous);
-        setError(res.message || "No se pudo activar el menú especial");
+        setError(res.message || "No se pudo activar la fecha festiva");
         return;
       }
       // The row now exists server-side. Let the caller reconcile any

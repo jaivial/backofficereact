@@ -1,3 +1,4 @@
+import { AutosaveInput } from "../../../../ui/inputs/AutosaveInput";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Beer,
@@ -179,7 +180,7 @@ function DishImageCropModalComponent({
         </div>
         <div className="bo-dishCropControls" data-slot="crear-dishCropControls">
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom - 0.1)} disabled={busy} data-testid="menu-crear-zoom-out">-</button>
-          <input className="bo-dishCropRange" type="range" min={1} max={4} step={0.01} value={zoom} onChange={(event) => applyZoom(Number(event.target.value))} disabled={busy} aria-label="Control de zoom" data-testid="menu-crear-zoom-slider" />
+          <AutosaveInput className="bo-dishCropRange" type="range" min={1} max={4} step={0.01} value={zoom} onChange={(event) => applyZoom(Number(event.target.value))} disabled={busy} aria-label="Control de zoom" data-testid="menu-crear-zoom-slider" />
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => applyZoom(zoom + 0.1)} disabled={busy} data-testid="menu-crear-zoom-in">+</button>
           <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={() => { setOffset({ x: 0, y: 0 }); setZoom(1); }} disabled={busy} data-testid="menu-crear-zoom-reset">Reset</button>
         </div>
@@ -213,16 +214,16 @@ function ReorderSectionDragWrapper({ value, className, children }: { value: stri
   );
 }
 
-export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
-  const H = useMenuEditor();
+export function CrearPage({ onClose, embedded = false }: { onClose?: () => void; embedded?: boolean } = {}) {
+  const H = useMenuEditor({ embedded });
   useErrorToast(H.error);
 
   const {
     error, initialSlider, menuId, isDraft, step, menuType, title, price, subtitles, active, showDishImages, showSectionTabs,
     showMenuPreviewImage, sections, includedCoffee, beverageType, beveragePrice, beverageHasSupplement,
     beverageOptions, menuWeekdays, menuWeekdayBusy, beverageModalOpen, beverageDeleteTarget,
-    beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, importantInfo, specialMenuImage,
-    menuPreviewImageBusy, specialMenuImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen,
+    beverageSupplementPrice, minPartySize, mainLimit, mainLimitNum, comments, importantInfo,
+    menuPreviewImageBusy, saveState, busy, hydrated, mobileTab, desktopPreviewOpen,
     desktopPreviewDocked, previewThemeConfig, previewThemeLoading, allergenModal, searchTerms, searchResults,
     sectionLoadingState, menuAITracker, dishImageTarget, dishImageAdvisorDraft, dishImageAdvisorBusy,
     dishImageCropDraft, dishImageBusy, menuPreviewImageAdvisorDraft, menuPreviewImageAdvisorBusy,
@@ -231,35 +232,35 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
     shouldReduceMotion, sectionOrder,
     dishImageAdvisorPreviewKB, menuPreviewImageAdvisorPreviewKB,
     previewThemeId, previewThemeLabel, previewNeedsUpgrade, previewMenuPayload, previewUrl,
-    previewFrameRef, dishImageInputRef, menuPreviewImageInputRef, specialMenuImageInputRef,
+    previewFrameRef, dishImageInputRef, menuPreviewImageInputRef,
     setStep, setMenuType, setTitle, setPrice, setSubtitles, setActive,
     setShowDishImages, setShowSectionTabs, setShowMenuPreviewImage, setSections, setIncludedCoffee, setBeverageType,
     refreshBeverageOptions, setBeverageOptionSelected, setMenuWeekday, createBeverageOption,
     requestBeverageOptionDelete, confirmBeverageOptionDelete, cancelBeverageOptionDelete, closeBeverageModal,
     setBeveragePrice, setBeverageHasSupplement, setBeverageSupplementPrice, setMinPartySize,
-    setMainLimit, setMainLimitNum, setComments, setImportantInfo, setSpecialMenuImage, setSaveState, setBusy,
+    setMainLimit, setMainLimitNum, setComments, setImportantInfo, setSaveState, setBusy,
     setHydrated, setMobileTab, setDesktopPreviewOpen,
     setAllergenModal, setMenuAITracker, setDishImageTarget, setDishImageAdvisorDraft,
     setDishImageAdvisorBusy, setDishImageCropDraft, setDishImageBusy,
     setMenuPreviewImageAdvisorDraft, setMenuPreviewImageAdvisorBusy,
     setMenuPreviewImageCropDraft, setMenuPreviewImageCropBusy, setSearchTerms, setSearchResults,
-    setSectionLoadingState, setMenuPreviewImageBusy, setSpecialMenuImageBusy,
+    setSectionLoadingState, setMenuPreviewImageBusy,
     patchBasics, syncSectionsAndDishes, createDraftAndContinue, addSection, setSectionDessertSource, removeSection,
     updateSection, handleSectionToggle, updateSectionAnnotation, addSectionAnnotation,
     removeSectionAnnotation, setSectionDescriptionsEnabled, moveSection, reorderSections, addDish, updateDish, removeDish,
     reorderDishes, handleSearch, pickDishImage, onDishImageFileSelected, onDishImageAdvisorImprove,
-    onDishImageCropConfirm, onPublish, openSpecialMenuImagePicker, onSpecialMenuImageFileSelected,
+    onDishImageCropConfirm, onPublish,
     openMenuPreviewImagePicker, onMenuPreviewImageFileSelected, onMenuPreviewImageAdvisorImprove,
     onMenuPreviewImageCropConfirm, resolvePersistedDishTarget, moveDishImageAdvisorToCrop,
     moveMenuPreviewImageAdvisorToCrop, closeDishImageAdvisor, closeDishImageCropper,
     closeMenuPreviewImageAdvisor, closeMenuPreviewImageCropper, renderMenuPreviewUploadArea,
-    renderSpecialMenuImageUploadArea, basicsFingerprint, basicsPayload, sectionsFingerprint,
+    basicsFingerprint, basicsPayload, sectionsFingerprint,
     menuAIDishesById, loadingSectionTitles, toggleSameDayBooking,
     dessertSyncConfirm, confirmDessertSync, cancelDessertSync,
     // Coordination id: special_menu_sections_v1 + special_menu_visibility_v1
     specialMenuSections, specialMenuSectionBusy,
     addSpecialMenuSection, updateSpecialMenuSectionTitle, deleteSpecialMenuSection,
-    uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
+    reorderSpecialMenuSections, uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
     menuWebPlacement, menuPublicActive, menuVisibilityBusy,
     setMenuWebPlacement, setMenuPublicActive,
   } = H;
@@ -375,21 +376,116 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
   };
 
   const menuPreviewUploadDisabled = !menuId || menuPreviewImageBusy || menuPreviewImageAdvisorBusy || menuPreviewImageCropBusy || H.menuPreviewAIGenerating;
-  const specialMenuUploadDisabled = !menuId || specialMenuImageBusy || busy;
+
+  // Coordination id: special_menu_sections_v1 - a "menu especial" is only its
+  // image sections: the cards render directly under the panel title, with no
+  // extra container, titles or subtitles. Shared by the wizard step and the
+  // final editor.
+  // Coordination id: special_menu_sections_order_v1 - drag & drop of the image
+  // sections. The drop applies the new order to local state first (optimistic,
+  // so the HTML preview repaints immediately) and persists it to
+  // special_menu_sections.position through reorderSpecialMenuSections, which is
+  // the order preactvillacarmen reads back (ORDER BY position).
+  const [draggingSectionId, setDraggingSectionId] = useState<number | null>(null);
+  const [dragOverSectionId, setDragOverSectionId] = useState<number | null>(null);
+
+  const endSectionDrag = useCallback(() => {
+    setDraggingSectionId(null);
+    setDragOverSectionId(null);
+  }, []);
+
+  const moveSpecialMenuSection = useCallback(
+    (fromId: number, toId: number) => {
+      if (!fromId || !toId || fromId === toId) return;
+      const ids = specialMenuSections.map((section) => section.id);
+      const from = ids.indexOf(fromId);
+      const to = ids.indexOf(toId);
+      if (from < 0 || to < 0) return;
+      ids.splice(to, 0, ids.splice(from, 1)[0]);
+      console.log(`[checkpoint] special_section_reorder menu_id=${menuId ?? 0} from=${fromId} to=${toId}`);
+      void reorderSpecialMenuSections(ids);
+    },
+    [specialMenuSections, reorderSpecialMenuSections, menuId],
+  );
+
+  const specialMenuSectionsBlock = (
+    <div className="bo-menuImageSectionsList" data-slot="crear-menuImageSectionsList" data-coordination-id="special_menu_sections_v1" data-testid="menu-crear-special-sections-list">
+      {specialMenuSections.map((section) => (
+        <MenuImageSectionCard
+          key={section.id}
+          sectionId={section.id}
+          title={section.title}
+          imageUrl={section.image_url}
+          imageState={section.image_state ?? "empty"}
+          busy={!!specialMenuSectionBusy[section.id]}
+          dragging={draggingSectionId === section.id}
+          dragOver={dragOverSectionId === section.id && draggingSectionId !== section.id}
+          rootProps={{
+            onDragOver: (event) => {
+              if (draggingSectionId == null) return;
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+              if (dragOverSectionId !== section.id) setDragOverSectionId(section.id);
+            },
+            onDragLeave: () => {
+              setDragOverSectionId((current) => (current === section.id ? null : current));
+            },
+            onDrop: (event) => {
+              event.preventDefault();
+              if (draggingSectionId != null) moveSpecialMenuSection(draggingSectionId, section.id);
+              endSectionDrag();
+            },
+          }}
+          dragHandleProps={{
+            draggable: true,
+            onDragStart: (event) => {
+              setDraggingSectionId(section.id);
+              event.dataTransfer.effectAllowed = "move";
+              try {
+                event.dataTransfer.setData("text/plain", String(section.id));
+              } catch {
+                /* ignore */
+              }
+              console.log(`[checkpoint] special_section_drag_started section=${section.id}`);
+            },
+            onDragEnd: endSectionDrag,
+          }}
+          onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
+          onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
+          onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
+          onDelete={() => void deleteSpecialMenuSection(section.id)}
+        />
+      ))}
+      <button
+        type="button"
+        className="bo-btn bo-btn--ghost bo-btn--sm bo-menuImageSectionsAdd"
+        onClick={() => void addSpecialMenuSection()}
+        disabled={!menuId}
+        data-testid="menu-crear-add-special-section"
+        data-slot="crear-menuImageSectionsAdd"
+      >
+        <Plus size={14} /> Anadir seccion
+      </button>
+    </div>
+  );
 
   return (
-    <section className="bo-menuWizardPage" aria-label="Editor de menu" data-testid="menu-crear-page">
-      <Breadcrumbs
-        items={[
-          { label: "Menus", href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
-          { label: menuTypeFullLabel(menuType), href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
-          { label: title.trim() || "Nuevo menu" },
-        ]}
-        className="bo-menuWizardBreadcrumbs"
-      />
+    <section className={`bo-menuWizardPage${embedded ? " bo-menuWizardPage--embedded" : ""}`} aria-label="Editor de menu" data-testid="menu-crear-page">
+      {/* Coordination id: menu_add_modal_chrome_v1 - inside the add-menu modal
+          the wizard carries no breadcrumb and no step tracker. */}
+      {!embedded ? (
+        <Breadcrumbs
+          items={[
+            { label: "Menus", href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
+            { label: menuTypeFullLabel(menuType), href: `/app/comida/menus?menutype=${encodeURIComponent(menuTypeQuerySlug(menuType))}` },
+            { label: title.trim() || "Nuevo menu" },
+          ]}
+          className="bo-menuWizardBreadcrumbs"
+        />
+      ) : null}
       <AutosaveToast state={saveState} />
 
-      {step !== 3 || isDraft ? (
+      {!embedded && (step !== 3 || isDraft) ? (
         <div className="bo-stepBars" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step + 1} data-testid="menu-crear-step-progress">
           {[0, 1, 2, 3].map((idx) => (
             <div key={idx} className={`bo-stepBar ${idx === step ? "is-active" : ""} ${idx < step ? "is-done" : ""}`} data-testid={`menu-crear-step-bar-${idx}`} />
@@ -426,7 +522,6 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                   </div>
                   <div className="bo-typeTitle" data-slot="crear-typeTitle">{opt.label}</div>
                   <div className="bo-typeDesc" data-slot="crear-typeDesc">{optData.description}</div>
-                  <div className="bo-typeHint" data-slot="crear-typeHint">{optData.hint}</div>
                 </button>
               );
             })}
@@ -447,12 +542,12 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
             <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`} data-slot="crear-div">
               <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title" data-slot="crear-menuBasicsField--title">
                 <div className="bo-label" data-slot="crear-label">Titulo</div>
-                <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-title-input" />
+                <AutosaveInput className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-title-input" />
               </div>
               {!isALaCarte && !isSpecial ? (
                 <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price" data-slot="crear-menuBasicsField--price">
                   <div className="bo-label" data-slot="crear-label">Precio</div>
-                  <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-price-input" />
+                  <AutosaveInput className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-price-input" />
                 </div>
               ) : null}
             </div>
@@ -463,7 +558,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                 <div className="bo-stackFields" data-slot="crear-stackFields">
                   {subtitles.map((line, idx) => (
                     <div key={`subtitle-${idx}`} className="bo-inlineField" data-slot="crear-inlineField">
-                      <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-subtitle-input-${idx}`} />
+                      <AutosaveInput className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-subtitle-input-${idx}`} />
                       <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))} data-testid={`menu-crear-subtitle-delete-${idx}`}>
                         <Trash2 size={14} />
                       </button>
@@ -540,7 +635,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                         <GripVertical size={18} />
                       </button>
                     </div>
-                    <input className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} data-testid={`menu-crear-section-title-input-${idx}`} />
+                    <AutosaveInput className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} data-testid={`menu-crear-section-title-input-${idx}`} />
                     <button className="bo-btn bo-btn--ghost" type="button" aria-label={`Eliminar seccion ${sec.title || idx + 1}`} disabled={sections.length <= 1} onClick={() => removeSection(sec.clientId)} data-testid={`menu-crear-section-delete-${idx}`}>
                       <Trash2 size={14} />
                     </button>
@@ -606,7 +701,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
           <motion.div layout transition={paneLayoutTransition} className={`bo-editorPane bo-editorPane--platos ${mobileTab === "editor" ? "is-mobileActive" : ""}`} data-testid="menu-crear-editor-pane">
             {isSpecial ? (
               <Panel className="bo-accordionSection bo-sectionsEditor" data-slot="crear-sectionsEditor" title="Contenido del menu especial">
-                {renderSpecialMenuImageUploadArea()}
+                {specialMenuSectionsBlock}
               </Panel>
             ) : !hydrated ? (
               <div className="bo-sectionsEditor" aria-live="polite" aria-busy="true" data-slot="crear-sectionsEditor">
@@ -685,12 +780,12 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                   <div className={`bo-menuBasicsMainRow ${hasSecondaryBasicsField ? "" : "is-single"}`} data-slot="crear-div">
                     <div className="bo-field bo-menuBasicsField bo-menuBasicsField--title" data-slot="crear-menuBasicsField--title">
                       <div className="bo-label" data-slot="crear-label">Titulo</div>
-                      <input className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-final-title-input" />
+                      <AutosaveInput className="bo-input" value={title} onChange={(e) => setTitle(e.target.value)} data-testid="menu-crear-final-title-input" />
                     </div>
                     {!isALaCarte && !isSpecial ? (
                       <div className="bo-field bo-menuBasicsField bo-menuBasicsField--price" data-slot="crear-menuBasicsField--price">
                         <div className="bo-label" data-slot="crear-label">Precio</div>
-                        <input className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-final-price-input" />
+                        <AutosaveInput className="bo-input" value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-final-price-input" />
                       </div>
                     ) : null}
                   </div>
@@ -700,7 +795,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                       <div className="bo-stackFields" data-slot="crear-stackFields">
                         {subtitles.map((line, idx) => (
                           <div key={`subtitle-final-${idx}`} className="bo-inlineField" data-slot="crear-inlineField">
-                            <input className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-final-subtitle-input-${idx}`} />
+                            <AutosaveInput className="bo-input" value={line} onChange={(e) => { const next = [...subtitles]; next[idx] = e.target.value; setSubtitles(next); }} data-testid={`menu-crear-final-subtitle-input-${idx}`} />
                             <button className="bo-btn bo-btn--ghost bo-inlineFieldIconBtn" type="button" aria-label={`Eliminar subtitulo ${idx + 1}`} disabled={subtitles.length <= 1} onClick={() => setSubtitles((prev) => prev.filter((_, i) => i !== idx))} data-testid={`menu-crear-final-subtitle-delete-${idx}`}>
                               <Trash2 size={14} />
                             </button>
@@ -831,7 +926,7 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     {beverageType !== "no_incluida" ? (
                       <div className="bo-field" data-slot="crear-field">
                         <div className="bo-label" data-slot="crear-label">Precio por persona</div>
-                        <input className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-price-input" />
+                        <AutosaveInput className="bo-input" value={beveragePrice} onChange={(e) => setBeveragePrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-price-input" />
                       </div>
                     ) : null}
                     {beverageType === "ilimitada" ? (
@@ -843,14 +938,14 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                         {beverageHasSupplement ? (
                           <div className="bo-field" data-slot="crear-field">
                             <div className="bo-label" data-slot="crear-label">Valor suplemento</div>
-                            <input className="bo-input" value={beverageSupplementPrice} onChange={(e) => setBeverageSupplementPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-supplement-price-input" />
+                            <AutosaveInput className="bo-input" value={beverageSupplementPrice} onChange={(e) => setBeverageSupplementPrice(e.target.value)} inputMode="decimal" data-testid="menu-crear-beverage-supplement-price-input" />
                           </div>
                         ) : null}
                       </>
                     ) : null}
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Minimo personas para reservar</div>
-                      <input className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" data-testid="menu-crear-min-party-size-input" />
+                      <AutosaveInput className="bo-input" value={minPartySize} onChange={(e) => setMinPartySize(e.target.value)} inputMode="numeric" data-testid="menu-crear-min-party-size-input" />
                     </div>
                     <div className="bo-field bo-mainLimitGroup" data-slot="crear-field-main-limit-group">
                       <div className="bo-field bo-field--inline" data-slot="crear-field--inline">
@@ -877,14 +972,14 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
                     </div>
                     <div className="bo-field bo-field--full" data-slot="crear-field--full">
                       <div className="bo-label" data-slot="crear-label">Comentarios</div>
-                      <textarea className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n"))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
+                      <AutosaveInput multiline className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n"))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
                     </div>
                     <div className="bo-field bo-field--full" data-slot="crear-importantInfoField" data-coordination-id="menu_important_info_v1">
                       <div className="bo-label" data-slot="crear-importantInfoLabel">Informacion importante</div>
                       <div className="bo-stackFields" data-slot="crear-importantInfoStackFields">
                         {importantInfo.map((line, idx) => (
                           <div key={`important-info-${idx}`} className="bo-inlineField" data-slot="crear-importantInfoInlineField">
-                            <textarea
+                            <AutosaveInput multiline
                               className="bo-input bo-textarea"
                               value={line}
                               onChange={(e) => updateImportantInfoLine(idx, e.target.value)}
@@ -935,49 +1030,11 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
         </div>
       ) : null}
 
-      {/* Step 4: Special Menu Image */}
+      {/* Step 4: Special Menu Image Sections */}
       {step === 4 && isSpecial ? (
         <div className="bo-menuWizardPanel" data-slot="crear-menuWizardPanel">
-          <h2 className="bo-sectionTitle" data-slot="menu-crear-imagen-menu">Imagen del menu</h2>
-          <p className="bo-mutedText" style={{ marginBottom: 16 }} data-slot="crear-mutedText">
-            Sube una imagen del menu especial para mostrarla en la plantilla web.
-          </p>
-          {renderSpecialMenuImageUploadArea()}
-
-          {/* Coordination id: special_menu_sections_v1 - one menu can carry
-              several image sections. The list renders one card per section
-              and the "Anadir seccion" button appends a new one. */}
-          <div className="bo-menuImageSections" data-slot="crear-menuImageSections" data-coordination-id="special_menu_sections_v1">
-            <h3 className="bo-menuImageSectionsTitle" data-slot="crear-menuImageSectionsTitle">Secciones con imagen</h3>
-            <p className="bo-mutedText" data-slot="crear-menuImageSectionsHelp">
-              Cada seccion lleva un titulo opcional y una imagen. Puedes anadir tantas como necesites.
-            </p>
-            <div className="bo-menuImageSectionsList" data-slot="crear-menuImageSectionsList">
-              {specialMenuSections.map((section) => (
-                <MenuImageSectionCard
-                  key={section.id}
-                  sectionId={section.id}
-                  title={section.title}
-                  imageUrl={section.image_url}
-                  busy={!!specialMenuSectionBusy[section.id]}
-                  onTitleChange={(value) => void updateSpecialMenuSectionTitle(section.id, value)}
-                  onPickImage={(file) => void uploadSpecialMenuSectionImage(section.id, file)}
-                  onClearImage={() => void clearSpecialMenuSectionImage(section.id)}
-                  onDelete={() => void deleteSpecialMenuSection(section.id)}
-                />
-              ))}
-            </div>
-            <button
-              type="button"
-              className="bo-btn bo-btn--ghost bo-btn--sm bo-menuImageSectionsAdd"
-              onClick={() => void addSpecialMenuSection()}
-              disabled={!menuId}
-              data-testid="menu-crear-add-special-section"
-              data-slot="crear-menuImageSectionsAdd"
-            >
-              <Plus size={14} /> Anadir seccion
-            </button>
-          </div>
+          <h2 className="bo-sectionTitle" data-slot="menu-crear-contenido-menu-especial">Contenido del menu especial</h2>
+          {specialMenuSectionsBlock}
 
           <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} data-testid="menu-crear-step4-back">Volver</button>
@@ -987,9 +1044,8 @@ export function CrearPage({ onClose }: { onClose?: () => void } = {}) {
       ) : null}
 
       {/* Hidden file inputs */}
-      <input ref={dishImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onDishImageFileSelected} data-testid="menu-crear-dish-image-input" />
-      <input ref={menuPreviewImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onMenuPreviewImageFileSelected} data-testid="menu-crear-preview-image-input" />
-      <input ref={specialMenuImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" className="bo-hiddenFileInput" onChange={onSpecialMenuImageFileSelected} data-testid="menu-crear-special-menu-image-input" />
+      <AutosaveInput ref={dishImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onDishImageFileSelected} data-testid="menu-crear-dish-image-input" />
+      <AutosaveInput ref={menuPreviewImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="bo-hiddenFileInput" onChange={onMenuPreviewImageFileSelected} data-testid="menu-crear-preview-image-input" />
 
       {/* Dish image advisor modal */}
       <DishImageAdvisorModalComponent
@@ -1219,7 +1275,7 @@ function BeverageCustomAdd({ onAdd }: { onAdd: (name: string) => void }) {
   const [value, setValue] = useState("");
   return (
     <div className="bo-beverageCustomAdd" data-testid="menu-crear-beverage-custom-add">
-      <input
+      <AutosaveInput
         className="bo-input"
         value={value}
         onChange={(e) => setValue(e.target.value)}
