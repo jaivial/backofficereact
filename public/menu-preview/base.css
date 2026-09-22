@@ -314,6 +314,10 @@ body {
 .specialMenuSection {
   display: grid;
   gap: 10px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
 }
 
 .specialMenuSectionTitle {
