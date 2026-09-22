@@ -12,8 +12,7 @@ import type {
   SpecialMenuSection,
 } from "../../../../../api/types";
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../../lib/dishImageCrop";
-import { processSpecialMenuFile } from "../../../../../lib/specialMenuUpload";
-import { arrayBufferToBase64 } from "../../../../../ui/lib/imageFile";
+import { arrayBufferToBase64, imageUnderBytes } from "../../../../../ui/lib/imageFile";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { normalizeWebPlacement } from "../../../../../ui/widgets/menus/webPlacement";
 import { WEEKDAYS, type WeekdayKey } from "../../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
@@ -2034,7 +2033,9 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       return;
     }
     try {
-      const { file: prepared } = await processSpecialMenuFile(file);
+      // Coordination id: special_menu_sections_image_state_v1 - images under
+      // 5MB are uploaded untouched; only bigger ones get re-encoded down to 5MB.
+      const prepared = await imageUnderBytes(file, 5 * 1024 * 1024);
       const data = arrayBufferToBase64(await prepared.arrayBuffer());
       let correlationId = "";
       try { correlationId = window.sessionStorage.getItem("vcCorrelationId") || ""; } catch { correlationId = ""; }
