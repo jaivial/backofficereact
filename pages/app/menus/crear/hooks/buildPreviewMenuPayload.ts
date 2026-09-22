@@ -38,6 +38,8 @@ export type BuildPreviewMenuPayloadInput = {
   comments: string[]
   importantInfo: string[]
   specialMenuImage: string | null
+  // Coordination id: special_menu_sections_v1
+  specialMenuSections?: Array<{ id?: number | string | null; title?: string | null; image_url?: string | null; position?: number | null }>
   menuAITracker: unknown
   sections: Array<{
     id?: number | string | null
@@ -97,6 +99,7 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
     comments,
     importantInfo,
     specialMenuImage,
+    specialMenuSections,
     menuAITracker,
     sections,
     normalizeSectionAnnotations,
@@ -173,5 +176,6 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
       }),
     })),
     special_menu_image_url: specialMenuImage || '',
+    special_menu_sections: Array.isArray(specialMenuSections) ? specialMenuSections : [],
   }
 }
