@@ -124,6 +124,8 @@ export function specialMenusFromBooking(special: BookingSpecial | null | undefin
         items: Array.isArray(m.items)
           ? m.items.map((it) => ({ dish_id: Number(it.dish_id || 0), name: String(it.name || "") }))
           : [],
+        // Coordination id: special_date_section_menus_v1
+        section_id: m.section_id ? Number(m.section_id) : null,
       }))
     : [];
   // The server stores adelantos_paid under `special_json.adelantos_paid` but

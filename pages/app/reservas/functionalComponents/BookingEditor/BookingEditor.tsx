@@ -35,11 +35,18 @@ import {
   computeSpecialTotals,
   draftMenusFromSettings,
   principalesMatchCounter,
+  specialMenusPayload,
   type DraftAdelantoPaid,
   type DraftSpecialMenu,
 } from "../../../../../api/specialBookingHelpers";
 
 type API = ReturnType<typeof createClient>;
+
+// Coordination id: special_date_section_menus_v1 - unique per draft entry:
+// sections of one special menu share special_date_menu_id.
+function specialEntryKey(m: { special_date_menu_id: number; section_id?: number | null }): string {
+  return m.section_id ? `s${m.section_id}` : String(m.special_date_menu_id);
+}
 
 function onlyDigits(s: string): string {
   return String(s || "").replace(/[^0-9]/g, "");
@@ -234,9 +241,23 @@ export function BookingEditor({
       const emptyDraft = !Array.isArray(p.specialMenus) || p.specialMenus.length === 0;
       if (hasSnapshot && emptyDraft) {
         const { menus, adelantos_paid } = specialMenusFromBooking(p.specialInitialSnapshot);
+        // Coordination id: special_date_section_menus_v1 - booked sections get
+        // their principales from the settings, and unbooked sections of the
+        // same special menus are listed (count 0) so guests can be moved.
+        const settingsSections = draftMenusFromSettings(specialDate.menus).filter((d) => d.section_id);
+        // section_id is stable across date re-saves (special_date_menus rows
+        // are re-inserted), so it also re-links the entry to the current
+        // special_date_menu_id.
+        const booked = menus.map((m) => {
+          const sec = m.section_id ? settingsSections.find((d) => d.section_id === m.section_id) : undefined;
+          return sec ? { ...m, special_date_menu_id: sec.special_date_menu_id, section_principales: sec.section_principales } : m;
+        });
+        const bookedSections = new Set(booked.map((m) => m.section_id).filter(Boolean));
+        const bookedSpecialMenus = new Set(booked.filter((m) => m.section_id).map((m) => m.special_date_menu_id));
+        const extra = settingsSections.filter((d) => bookedSpecialMenus.has(d.special_date_menu_id) && !bookedSections.has(d.section_id));
         return {
           ...p,
-          specialMenus: menus,
+          specialMenus: [...booked, ...extra],
           specialAdelantosPaid: adelantos_paid,
           specialInitialSnapshot: null,
         };
@@ -246,7 +267,14 @@ export function BookingEditor({
       }
       // Keep user-edited draft intact, just sync labels/prices from settings.
       const map = new Map((specialDate.menus || []).map((m) => [Number(m.id || 0), m]));
+      // Coordination id: special_date_section_menus_v1 - section entries sync
+      // with their section settings (title, price, adelanto, principales).
+      const sectionCfg = new Map(draftMenusFromSettings(specialDate.menus).filter((d) => d.section_id).map((d) => [d.section_id!, d]));
       const next = (p.specialMenus || []).map((m) => {
+        if (m.section_id) {
+          const sec = sectionCfg.get(m.section_id);
+          return sec ? { ...m, label: sec.label, adelanto_per_unit: sec.adelanto_per_unit, section_principales: sec.section_principales } : m;
+        }
         const cfg = map.get(Number(m.special_date_menu_id || 0));
         if (!cfg) return m;
         const isCustom = !cfg.menu_id;
@@ -647,22 +675,9 @@ export function BookingEditor({
           return setFormError(`Selecciona el método de pago del menú "${m.label || "especial"}"`);
         }
       }
-      const specialMenus = menus
-        .filter((m) => Number(m.count || 0) > 0)
-        .map((m) => ({
-          special_date_menu_id: Number(m.special_date_menu_id || 0),
-          count: Number(m.count || 0),
-          adelanto_payment_method: m.adelanto_payment_method || undefined,
-          // Custom menus have no principales rows — the user picks later.
-          // Non-custom menus submit {dish_id, name} when both are known, or
-          // fall back to {dish_id: 0, name} for legacy menus whose API only
-          // exposes dish names (the server can match by name in that case).
-          items: Array.isArray(m.items)
-            ? m.items
-                .filter((it) => it && (Number(it.dish_id || 0) > 0 || String(it.name || "").trim()))
-                .map((it) => ({ dish_id: Number(it.dish_id || 0), name: String(it.name || "").trim() }))
-            : [],
-        }));
+      // Coordination id: special_date_section_menus_v1 - section entries of
+      // a special menu are grouped under its special_date_menu_id.
+      const specialMenus = specialMenusPayload(menus);
       const adelantos_paid = (Array.isArray(draft.specialAdelantosPaid) ? draft.specialAdelantosPaid : [])
         .filter((p) => p && p.method && Number(p.amount) > 0)
         .map((p) => ({ method: p.method, amount: Number(p.amount) }));
@@ -1310,7 +1325,7 @@ function SpecialBookingSection({
         <div style={{ marginTop: 10, display: "grid", gap: 12 }} data-slot="booking-editor-special-menus-list">
           {menus.map((menu, menuIdx) => (
             <SpecialMenuSubSection
-              key={menu.special_date_menu_id || menuIdx}
+              key={menu.section_id ? `s-${menu.section_id}` : menu.special_date_menu_id || menuIdx}
               api={api}
               busy={busy}
               menu={menu}
@@ -1350,10 +1365,10 @@ function SpecialBookingSection({
               const rowTotal = Number(m.adelanto_per_unit || 0) * Number(m.count || 0);
               return (
                 <div
-                  key={`row-${m.special_date_menu_id || idx}`}
+                  key={`row-${m.section_id ? `s-${m.section_id}` : m.special_date_menu_id || idx}`}
                   className="bo-bookingEditorSpecialAdelantoRow"
-                  data-slot={`booking-editor-special-adelanto-row-${m.special_date_menu_id}`}
-                  data-testid={`booking-editor-special-adelanto-row-${m.special_date_menu_id}`}
+                  data-slot={`booking-editor-special-adelanto-row-${specialEntryKey(m)}`}
+                  data-testid={`booking-editor-special-adelanto-row-${specialEntryKey(m)}`}
                   style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}
                 >
                   <div data-slot="booking-editor-special-adelanto-row-label" style={{ display: "grid" }}>
@@ -1370,7 +1385,7 @@ function SpecialBookingSection({
                     searchPlaceholder="Buscar método…"
                     emptyText="Sin métodos"
                     ariaLabel="Método de pago del adelanto"
-                    data-testid={`booking-editor-special-adelanto-method-${m.special_date_menu_id}`}
+                    data-testid={`booking-editor-special-adelanto-method-${specialEntryKey(m)}`}
                   />
                   <div data-slot="booking-editor-special-adelanto-row-total" style={{ minWidth: 80, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
                     {rowTotal.toFixed(2)}€
@@ -1485,7 +1500,9 @@ function SpecialMenuSubSection({
   const [loadingMenu, setLoadingMenu] = useState(false);
 
   useEffect(() => {
-    if (menu.is_custom || !menu.menu_id) {
+    // Coordination id: special_date_section_menus_v1 - section entries use
+    // the section principales, never the menu-level principales list.
+    if (menu.is_custom || !menu.menu_id || menu.section_id) {
       setMenuDetail(null);
       return;
     }
@@ -1500,9 +1517,12 @@ function SpecialMenuSubSection({
       .catch(() => undefined)
       .finally(() => { if (!cancelled) setLoadingMenu(false); });
     return () => { cancelled = true; };
-  }, [api.menus.grupos, menu.is_custom, menu.menu_id]);
+  }, [api.menus.grupos, menu.is_custom, menu.menu_id, menu.section_id]);
 
-  const dishItems = useMemo(() => principalesItemsFromMenu(menuDetail), [menuDetail]);
+  const dishItems = useMemo(
+    () => (menu.section_id ? (menu.section_principales ?? []).map((p) => p.title) : principalesItemsFromMenu(menuDetail)),
+    [menu.section_id, menu.section_principales, menuDetail],
+  );
   const dishOptions = useMemo(() => dishItems.map((it) => ({ value: it, label: it })), [dishItems]);
   const items = Array.isArray(menu.items) ? menu.items : [];
   const filledCount = items.filter((it) => it && it.name).length;
@@ -1511,16 +1531,16 @@ function SpecialMenuSubSection({
   return (
     <div
       className="bo-bookingEditorSpecialMenuRow"
-      data-slot={`booking-editor-special-menu-row-${menu.special_date_menu_id}`}
-      data-testid={`booking-editor-special-menu-row-${menu.special_date_menu_id}`}
+      data-slot={`booking-editor-special-menu-row-${specialEntryKey(menu)}`}
+      data-testid={`booking-editor-special-menu-row-${specialEntryKey(menu)}`}
       style={{ display: "grid", gap: 8, padding: 10, border: "1px solid var(--bo-border)", borderRadius: 8 }}
     >
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-        <strong data-slot={`booking-editor-special-menu-label-${menu.special_date_menu_id}`}>
+        <strong data-slot={`booking-editor-special-menu-label-${specialEntryKey(menu)}`}>
           {menu.label || `Menú #${menu.special_date_menu_id}`}
         </strong>
         {menu.is_custom ? (
-          <span className="bo-mutedText" style={{ fontSize: 12 }} data-slot={`booking-editor-special-menu-custom-${menu.special_date_menu_id}`}>
+          <span className="bo-mutedText" style={{ fontSize: 12 }} data-slot={`booking-editor-special-menu-custom-${specialEntryKey(menu)}`}>
             Menú personalizado
           </span>
         ) : null}
@@ -1537,7 +1557,7 @@ function SpecialMenuSubSection({
       </div>
 
       {menu.is_custom ? (
-        <div className="bo-mutedText" data-slot={`booking-editor-special-menu-later-${menu.special_date_menu_id}`}>
+        <div className="bo-mutedText" data-slot={`booking-editor-special-menu-later-${specialEntryKey(menu)}`}>
           Los principales se decidirán más tarde.
         </div>
       ) : (
@@ -1547,18 +1567,18 @@ function SpecialMenuSubSection({
               key={itemIdx}
               className="bo-row bo-bookingChoiceRow"
               style={{ gap: 8 }}
-              data-slot={`booking-editor-special-menu-principal-row-${menu.special_date_menu_id}-${itemIdx}`}
+              data-slot={`booking-editor-special-menu-principal-row-${specialEntryKey(menu)}-${itemIdx}`}
             >
               <SearchableSelect
                 value={row.name}
-                onChange={(v) => onUpdatePrincipal(itemIdx, { name: v, dish_id: 0 })}
+                onChange={(v) => onUpdatePrincipal(itemIdx, { name: v, dish_id: menu.section_principales?.find((p) => p.title === v)?.dish_id ?? 0 })}
                 options={dishOptions}
                 placeholder={dishOptions.length ? "Selecciona principal…" : "Sin principales"}
                 searchPlaceholder="Buscar principal…"
                 emptyText="Sin principales"
                 disabled={loadingMenu || busy}
                 ariaLabel={`Principal del menú ${menu.label || menu.special_date_menu_id}`}
-                data-testid={`booking-editor-special-menu-principal-select-${menu.special_date_menu_id}-${itemIdx}`}
+                data-testid={`booking-editor-special-menu-principal-select-${specialEntryKey(menu)}-${itemIdx}`}
               />
               <button
                 type="button"
@@ -1566,7 +1586,7 @@ function SpecialMenuSubSection({
                 onClick={() => onRemovePrincipal(itemIdx)}
                 aria-label="Quitar principal"
                 disabled={busy}
-                data-slot={`booking-editor-special-menu-principal-remove-${menu.special_date_menu_id}-${itemIdx}`}
+                data-slot={`booking-editor-special-menu-principal-remove-${specialEntryKey(menu)}-${itemIdx}`}
               >
                 <Trash2 size={18} strokeWidth={1.8} />
               </button>
@@ -1578,19 +1598,19 @@ function SpecialMenuSubSection({
               className="bo-btn bo-btn--ghost"
               onClick={onAddPrincipal}
               disabled={busy || !dishOptions.length}
-              data-slot={`booking-editor-special-menu-principal-add-${menu.special_date_menu_id}`}
-              data-testid={`booking-editor-special-menu-principal-add-${menu.special_date_menu_id}`}
+              data-slot={`booking-editor-special-menu-principal-add-${specialEntryKey(menu)}`}
+              data-testid={`booking-editor-special-menu-principal-add-${specialEntryKey(menu)}`}
             >
               <Plus size={18} strokeWidth={1.8} /> Añadir principal
             </button>
           ) : null}
           {!dishOptions.length ? (
-            <div className="bo-mutedText" data-slot={`booking-editor-special-menu-no-principales-${menu.special_date_menu_id}`}>
+            <div className="bo-mutedText" data-slot={`booking-editor-special-menu-no-principales-${specialEntryKey(menu)}`}>
               Este menú no tiene lista de principales.
             </div>
           ) : null}
           {rowsRemaining > 0 && dishOptions.length > 0 ? (
-            <div className="bo-mutedText" style={{ fontSize: 12 }} data-slot={`booking-editor-special-menu-remaining-${menu.special_date_menu_id}`}>
+            <div className="bo-mutedText" style={{ fontSize: 12 }} data-slot={`booking-editor-special-menu-remaining-${specialEntryKey(menu)}`}>
               Faltan {rowsRemaining} principal(es) por seleccionar.
             </div>
           ) : null}

@@ -1,3 +1,4 @@
+import { toSpecialDateSavePayload } from "../../../../../api/specialBookingHelpers";
 import { useCallback, useState } from "react";
 
 import type { SpecialDateSettings } from "../../../../../api/types";
@@ -86,7 +87,7 @@ export function useSpecialDateActivation({
 
     try {
       const api = createClient({ baseUrl: "" });
-      const res = await api.config.saveSpecialDate(next);
+      const res = await api.config.saveSpecialDate(toSpecialDateSavePayload(next));
       if (!res.success) {
         onRevert(previous);
         setError(res.message || "No se pudo activar la fecha festiva");

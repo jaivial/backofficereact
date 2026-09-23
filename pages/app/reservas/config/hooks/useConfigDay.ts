@@ -1,3 +1,4 @@
+import { toSpecialDateSavePayload } from "../../../../../api/specialBookingHelpers";
 import { useCallback } from "react";
 import type {
   ConfigDailyLimit,
@@ -283,7 +284,8 @@ export function useConfigDay({
       );
       try {
         const base: SpecialDateSettings = specialDate ?? emptySpecialDate(date);
-        const res = await api.config.saveSpecialDate({ ...base, date, is_active: checked });
+        // Coordination id: special_date_section_menus_v1 - lean save shape.
+        const res = await api.config.saveSpecialDate(toSpecialDateSavePayload({ ...base, date, is_active: checked }));
         if (!res.success) {
           // Revert the optimistic change so the switch snaps back.
           if (previous !== undefined) setSpecialDate(previous);
