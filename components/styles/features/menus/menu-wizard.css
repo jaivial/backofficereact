@@ -2940,3 +2940,56 @@
   display: grid;
   gap: 10px;
 }
+
+/* =============================================================================
+ * Special menu principales (coordination id: special_menu_principales_v1)
+ * ============================================================================= */
+.bo-specialPrincipalesSections {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-specialPrincipalesSection {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-specialPrincipalesSection .bo-dishAddRow {
+  margin: 0;
+}
+
+.bo-specialPrincipalesList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bo-specialPrincipalesRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-surface) 90%, transparent);
+}
+
+.bo-specialPrincipalesRowTitle {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.bo-specialPrincipalesRow > .bo-btn {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.bo-dishSearchResultItem--create .bo-dishSearchResultTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bo-accent);
+}

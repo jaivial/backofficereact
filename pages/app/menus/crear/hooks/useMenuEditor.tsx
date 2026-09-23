@@ -281,6 +281,15 @@ export type UseMenuEditorReturn = {
   specialDateOptions: SpecialDateListEntry[];
   // Coordination id: special_menu_cta_v1
   specialCta: SpecialMenuCta;
+  // Coordination id: special_menu_principales_v1
+  specialPrincipalesEnabled: boolean;
+  specialPrincipalesBusy: boolean;
+  specialPrincipalesSearchTerms: Record<number, string>;
+  specialPrincipalesSearchResults: Record<number, DishCatalogItem[]>;
+  setSpecialPrincipalesEnabled: (enabled: boolean) => Promise<void>;
+  searchSpecialPrincipal: (sectionId: number, term: string) => void;
+  addSpecialPrincipal: (sectionId: number, dishId: number) => Promise<void>;
+  removeSpecialPrincipal: (sectionId: number, dishId: number) => Promise<void>;
   specialCtaBusy: boolean;
   updateSpecialCta: (patch: Partial<SpecialMenuCtaConfig>) => void;
   ctaMenuOptions: GroupMenuV2Summary[];
@@ -421,6 +430,12 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   const [specialDateOptions, setSpecialDateOptions] = useState<SpecialDateListEntry[]>([]);
   // Coordination id: special_menu_cta_v1
   const [specialCta, setSpecialCta] = useState<SpecialMenuCta>(() => withSpecialCtaDefaults(data.menu?.special_cta));
+  // Coordination id: special_menu_principales_v1
+  const [specialPrincipalesEnabled, setSpecialPrincipalesEnabledState] = useState<boolean>(!!data.menu?.special_principales_enabled);
+  const [specialPrincipalesBusy, setSpecialPrincipalesBusy] = useState(false);
+  const [specialPrincipalesSearchTerms, setSpecialPrincipalesSearchTerms] = useState<Record<number, string>>({});
+  const [specialPrincipalesSearchResults, setSpecialPrincipalesSearchResults] = useState<Record<number, DishCatalogItem[]>>({});
+  const specialPrincipalesTimerRef = useRef<Record<number, number>>({});
   const [specialCtaBusy, setSpecialCtaBusy] = useState(false);
   const [ctaMenuOptions, setCtaMenuOptions] = useState<GroupMenuV2Summary[]>([]);
   const [menuPreviewImageUrl, setMenuPreviewImageUrl] = useState<string>(initialMenuPreviewState.menuPreviewImageUrl);
@@ -2169,6 +2184,73 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     }
   }, [api, menuId, pushToast, specialDateOptions]);
 
+  // Coordination id: special_menu_principales_v1 - toggle + per-section
+  // dishes. The section list is the single source of truth: add/remove
+  // replace that section's principales with the server's answer.
+  const setSpecialPrincipalesEnabled = useCallback(async (enabled: boolean) => {
+    setSpecialPrincipalesEnabledState(enabled);
+    if (!menuId) return;
+    setSpecialPrincipalesBusy(true);
+    try {
+      const res = await api.menus.gruposV2.setSpecialPrincipalesEnabled(menuId, enabled);
+      if (!res.success) throw new Error(res.message || "No se pudo guardar");
+      console.log("[checkpoint] special_menu_principales_toggled", `enabled=${enabled}`);
+    } catch (e) {
+      setSpecialPrincipalesEnabledState(!enabled);
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar" });
+    } finally {
+      setSpecialPrincipalesBusy(false);
+    }
+  }, [api, menuId, pushToast]);
+
+  const searchSpecialPrincipal = useCallback((sectionId: number, term: string) => {
+    setSpecialPrincipalesSearchTerms((prev) => ({ ...prev, [sectionId]: term }));
+    const existing = specialPrincipalesTimerRef.current[sectionId];
+    if (existing) window.clearTimeout(existing);
+    if (term.trim().length < 2) { setSpecialPrincipalesSearchResults((prev) => ({ ...prev, [sectionId]: [] })); return; }
+    specialPrincipalesTimerRef.current[sectionId] = window.setTimeout(() => {
+      void api.menus.dishesCatalog.search(term.trim(), 8).then((res) => {
+        if (res.success) setSpecialPrincipalesSearchResults((prev) => ({ ...prev, [sectionId]: res.items }));
+      });
+    }, 240);
+  }, [api]);
+
+  const applySectionPrincipales = useCallback((sectionId: number, principales: SpecialMenuSection["principales"]) => {
+    setSpecialMenuSections((prev) => prev.map((sec) => (sec.id === sectionId ? { ...sec, principales } : sec)));
+  }, []);
+
+  const addSpecialPrincipal = useCallback(async (sectionId: number, dishId: number) => {
+    if (!menuId) return;
+    setSpecialPrincipalesBusy(true);
+    try {
+      const res = await api.menus.gruposV2.addSpecialSectionPrincipal(menuId, sectionId, dishId);
+      if (!res.success) throw new Error(res.message || "No se pudo añadir el plato");
+      applySectionPrincipales(sectionId, res.principales);
+      setSpecialPrincipalesSearchTerms((prev) => ({ ...prev, [sectionId]: "" }));
+      setSpecialPrincipalesSearchResults((prev) => ({ ...prev, [sectionId]: [] }));
+      console.log("[checkpoint] special_section_principal_added", `section=${sectionId}`, `dish=${dishId}`);
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo añadir el plato" });
+    } finally {
+      setSpecialPrincipalesBusy(false);
+    }
+  }, [api, applySectionPrincipales, menuId, pushToast]);
+
+  const removeSpecialPrincipal = useCallback(async (sectionId: number, dishId: number) => {
+    if (!menuId) return;
+    setSpecialPrincipalesBusy(true);
+    try {
+      const res = await api.menus.gruposV2.removeSpecialSectionPrincipal(menuId, sectionId, dishId);
+      if (!res.success) throw new Error(res.message || "No se pudo eliminar el plato");
+      applySectionPrincipales(sectionId, res.principales);
+      console.log("[checkpoint] special_section_principal_removed", `section=${sectionId}`, `dish=${dishId}`);
+    } catch (e) {
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo eliminar el plato" });
+    } finally {
+      setSpecialPrincipalesBusy(false);
+    }
+  }, [api, applySectionPrincipales, menuId, pushToast]);
+
   // Coordination id: special_menu_cta_v1 - active menus the button can open.
   useEffect(() => {
     if (menuType !== "special") return;
@@ -2563,6 +2645,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     setMenuPreviewAIRequested(mapped.menuPreviewAIRequested);
     setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
     setSpecialMenuSections(data.menu?.special_menu_sections ? [...data.menu.special_menu_sections].sort((a, b) => a.position - b.position) : []);
+    setSpecialPrincipalesEnabledState(!!data.menu?.special_principales_enabled);
     setSpecialMenuSectionBusy({});
     setSections(mapped.sections);
     setMenuAITracker(buildMenuAITracker(data.menu, mapped.sections));
@@ -2745,6 +2828,9 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     updateSpecialMenuSectionPrice, menuSpecialDate, setMenuSpecialDate, specialDateOptions,
     // Coordination id: special_menu_cta_v1
     specialCta, specialCtaBusy, updateSpecialCta, ctaMenuOptions,
+    // Coordination id: special_menu_principales_v1
+    specialPrincipalesEnabled, specialPrincipalesBusy, specialPrincipalesSearchTerms, specialPrincipalesSearchResults,
+    setSpecialPrincipalesEnabled, searchSpecialPrincipal, addSpecialPrincipal, removeSpecialPrincipal,
     // Render helpers
     renderMenuPreviewUploadArea,
   };

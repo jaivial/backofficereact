@@ -41,6 +41,8 @@ import { MenuImageSectionCard } from "../../../../ui/widgets/menus/MenuImageSect
 import { MenuVisibilityPanel } from "../../../../ui/widgets/menus/MenuVisibilityPanel";
 import { SpecialMenuCtaSettings } from "../../../../ui/widgets/menus/SpecialMenuCtaSettings";
 import { FadeSeparator } from "../../../../ui/layout/FadeSeparator";
+import { SpecialMenuPrincipalesSettings } from "../../../../ui/widgets/menus/SpecialMenuPrincipalesSettings";
+import { FoodItemModal } from "../../comida/_components/FoodItemModal";
 import { normalizeWebPlacement } from "../../../../ui/widgets/menus/webPlacement";
 import WeekdayGrid, { WEEKDAYS } from "../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 import type { AddSectionSelection } from "../../../../ui/widgets/menus/AddSectionModal";
@@ -263,6 +265,9 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
     specialMenuSections, specialMenuSectionBusy,
     // Coordination id: special_menu_cta_v1
     specialCta, specialCtaBusy, updateSpecialCta, ctaMenuOptions,
+    // Coordination id: special_menu_principales_v1
+    specialPrincipalesEnabled, specialPrincipalesBusy, specialPrincipalesSearchTerms, specialPrincipalesSearchResults,
+    setSpecialPrincipalesEnabled, searchSpecialPrincipal, addSpecialPrincipal, removeSpecialPrincipal,
     addSpecialMenuSection, updateSpecialMenuSectionTitle, deleteSpecialMenuSection,
     reorderSpecialMenuSections, uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
     // Coordination id: special_menu_price_date_v1
@@ -339,6 +344,10 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
     console.log("[checkpoint] section_delete_persisted", `section=${target?.id ?? "unsaved"}`);
     pushToast({ kind: "success", title: "Seccion eliminada" });
   }, [api, menuId, pendingSectionDelete, pushToast, removeSection, sections]);
+
+  // Coordination id: special_menu_principales_v1 - section waiting for the
+  // regular create-dish modal; the new dish is linked to it on save.
+  const [principalCreateSectionId, setPrincipalCreateSectionId] = useState<number | null>(null);
 
   const [sliderPreview, setSliderPreview] = useState<SliderPreviewState>(() => deriveSliderPreview(initialSlider));
   const sliderPreviewMenuPayload = useMemo(
@@ -863,6 +872,21 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       onChange={updateSpecialCta}
                     />
                   ) : null}
+                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-cta-principales" /> : null}
+                  {isSpecial ? (
+                    <SpecialMenuPrincipalesSettings
+                      enabled={specialPrincipalesEnabled}
+                      busy={specialPrincipalesBusy || !menuId}
+                      sections={specialMenuSections.map((sec) => ({ id: sec.id, title: sec.title, principales: sec.principales ?? [] }))}
+                      searchTerms={specialPrincipalesSearchTerms}
+                      searchResults={specialPrincipalesSearchResults}
+                      onToggle={(enabled) => void setSpecialPrincipalesEnabled(enabled)}
+                      onSearch={searchSpecialPrincipal}
+                      onPick={(sectionId, item) => void addSpecialPrincipal(sectionId, item.id)}
+                      onRemove={(sectionId, dishId) => void removeSpecialPrincipal(sectionId, dishId)}
+                      onCreateDish={setPrincipalCreateSectionId}
+                    />
+                  ) : null}
                   {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-cta-active" /> : null}
                   {!isSpecial ? (
                     <div className="bo-field" data-slot="crear-field">
@@ -1286,6 +1310,21 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
           setPendingDishDelete(null);
         }}
       />
+      {/* Coordination id: special_menu_principales_v1 - regular create-dish
+          flow; the saved dish is attached to the section that opened it. */}
+      {principalCreateSectionId != null ? (
+        <FoodItemModal
+          open
+          item={null}
+          foodType="platos"
+          onClose={() => setPrincipalCreateSectionId(null)}
+          onSave={(saved) => {
+            const sectionId = principalCreateSectionId;
+            setPrincipalCreateSectionId(null);
+            if (saved.num > 0) void addSpecialPrincipal(sectionId, saved.num);
+          }}
+        />
+      ) : null}
     </section>
   );
 }

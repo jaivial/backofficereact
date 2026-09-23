@@ -1974,6 +1974,32 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         // Coordination id: special_menu_visibility_v1
         // Same shape as the food-type settings, so the editor can reuse the
         // dropdown the FoodPageSettings component already uses.
+        // Coordination id: special_menu_principales_v1
+        async setSpecialPrincipalesEnabled(menuId: number, enabled: boolean): Promise<APISuccess<{ enabled: boolean }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-principales`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ enabled }),
+          });
+        },
+        async addSpecialSectionPrincipal(
+          menuId: number,
+          sectionId: number,
+          dishId: number,
+        ): Promise<APISuccess<{ section_id: number; principales: import("./types").SpecialMenuPrincipal[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}/principales`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ dish_id: dishId }),
+          });
+        },
+        async removeSpecialSectionPrincipal(
+          menuId: number,
+          sectionId: number,
+          dishId: number,
+        ): Promise<APISuccess<{ section_id: number; principales: import("./types").SpecialMenuPrincipal[] }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-sections/${sectionId}/principales/${dishId}`, { method: "DELETE" });
+        },
         // Coordination id: special_menu_cta_v1
         async putSpecialMenuCta(
           menuId: number,

@@ -602,6 +602,8 @@ export type GroupMenuV2 = {
   special_date?: MenuSpecialDate | null;
   // Coordination id: special_menu_cta_v1
   special_cta?: SpecialMenuCta | null;
+  // Coordination id: special_menu_principales_v1 - "Anadir platos principales".
+  special_principales_enabled?: boolean;
   // Coordination id: special_menu_visibility_v1 - same dropdown the food-type
   // settings already use (inside_menus | independent_section) plus an on/off
   // toggle scoped per menu.
@@ -630,10 +632,22 @@ export type SpecialMenuSection = {
   created_at?: string;
   // Coordination id: special_menu_price_date_v1 - null means "no price".
   price?: number | null;
+  // Coordination id: special_menu_principales_v1 - dishes guests pick from.
+  principales?: SpecialMenuPrincipal[];
 };
 
 // Coordination id: special_menu_price_date_v1 - special day a special menu
 // belongs to (drives the reservas date query and the prereserva notice).
+// Coordination id: special_menu_principales_v1 - one dish of a section.
+export type SpecialMenuPrincipal = {
+  id: number;
+  dish_id: number;
+  title: string;
+  description: string;
+  allergens: string[];
+  position: number;
+};
+
 // Coordination id: special_menu_cta_v1 - "Mostrar boton reservar" config.
 export type SpecialMenuCtaAction = "menu" | "whatsapp" | "reservas";
 
