@@ -1,4 +1,5 @@
 import type {
+  SpecialDateSavePayload,
   BookingSpecial,
   BookingSpecialAdelantoByMethod,
   BookingSpecialMenu,
@@ -30,6 +31,13 @@ export type DraftSpecialMenu = {
   adelanto_payment_method: SpecialDatePaymentMethod | null;
   /** Selected principal dishes with their servings (non-custom menus only). */
   items: Array<{ dish_id: number; name: string }>;
+  /**
+   * Coordination id: special_date_section_menus_v1 - set when this entry is
+   * one section of a special-type menu (booked per section).
+   */
+  section_id?: number | null;
+  /** Principales offered by that section (from the menu configuracion tab). */
+  section_principales?: Array<{ dish_id: number; title: string }>;
 };
 
 export type DraftAdelantoPaid = {
@@ -166,7 +174,29 @@ export function draftMenusFromSettings(menus: SpecialDateMenu[] | undefined): Dr
   return menus
     .slice()
     .sort((a, b) => Number(a.position ?? 0) - Number(b.position ?? 0))
-    .map((m) => ({
+    .flatMap((m): DraftSpecialMenu[] => {
+      // Coordination id: special_date_section_menus_v1 - one entry per section.
+      if (m.is_special_menu && Array.isArray(m.sections) && m.sections.length > 0) {
+        return m.sections.map((sec) => ({
+          special_date_menu_id: Number(m.id || 0),
+          menu_id: m.menu_id ? Number(m.menu_id) : null,
+          is_custom: false,
+          label: sec.title || `Sección ${sec.position + 1}`,
+          unit_price: Number(sec.price || 0),
+          count: 0,
+          adelanto_per_unit: Number(sec.adelanto_amount || 0),
+          adelanto_payment_method: null,
+          items: [],
+          section_id: sec.id,
+          section_principales: (sec.principales ?? []).map((p) => ({ dish_id: p.dish_id, title: p.title })),
+        }));
+      }
+      return [draftMenuFromSetting(m)];
+    });
+}
+
+function draftMenuFromSetting(m: SpecialDateMenu): DraftSpecialMenu {
+  return ({
       special_date_menu_id: Number(m.id || 0),
       menu_id: m.menu_id ? Number(m.menu_id) : null,
       is_custom: !m.menu_id,
@@ -176,7 +206,46 @@ export function draftMenusFromSettings(menus: SpecialDateMenu[] | undefined): Dr
       adelanto_per_unit: Number(m.adelanto_amount || 0),
       adelanto_payment_method: null,
       items: [],
-    }));
+    });
+}
+
+/**
+ * Coordination id: special_date_section_menus_v1 - build the `special.menus`
+ * payload: section entries of the same special menu are grouped under their
+ * special_date_menu_id with one `sections[]` row each.
+ */
+export function specialMenusPayload(menus: DraftSpecialMenu[]) {
+  type Item = { dish_id: number; name: string };
+  type Line = {
+    special_date_menu_id: number;
+    count: number;
+    adelanto_payment_method?: SpecialDatePaymentMethod;
+    items: Item[];
+    sections?: Array<{ section_id: number; count: number; items: Item[] }>;
+  };
+  const items = (m: DraftSpecialMenu): Item[] =>
+    (Array.isArray(m.items) ? m.items : [])
+      .filter((it) => it && (Number(it.dish_id || 0) > 0 || String(it.name || "").trim()))
+      .map((it) => ({ dish_id: Number(it.dish_id || 0), name: String(it.name || "").trim() }));
+  const out: Line[] = [];
+  const grouped = new Map<number, Line>();
+  for (const m of menus) {
+    if (Number(m.count || 0) <= 0) continue;
+    const base = { special_date_menu_id: Number(m.special_date_menu_id || 0), adelanto_payment_method: m.adelanto_payment_method || undefined };
+    if (!m.section_id) {
+      out.push({ ...base, count: Number(m.count || 0), items: items(m) });
+      continue;
+    }
+    const line = grouped.get(base.special_date_menu_id) ?? { ...base, count: 0, items: [], sections: [] };
+    line.count += Number(m.count || 0);
+    line.adelanto_payment_method = line.adelanto_payment_method || base.adelanto_payment_method;
+    line.sections!.push({ section_id: m.section_id, count: Number(m.count || 0), items: items(m) });
+    if (!grouped.has(base.special_date_menu_id)) {
+      grouped.set(base.special_date_menu_id, line);
+      out.push(line);
+    }
+  }
+  return out;
 }
 
 /**
@@ -235,4 +304,22 @@ export function principalesMatchCounter(menuDraft: DraftSpecialMenu): boolean {
 export function availablePaymentMethods(settings: SpecialDateSettings | null | undefined): SpecialDatePaymentMethod[] {
   if (!settings) return [];
   return Array.isArray(settings.adelanto_payment_methods) ? settings.adelanto_payment_methods : [];
+}
+
+/**
+ * Coordination id: special_date_section_menus_v1 - map loaded settings to the
+ * save payload. Special-type menus send only { section_id, adelanto_amount }
+ * per section and no menu price (the endpoint rejects unknown fields).
+ */
+export function toSpecialDateSavePayload(settings: SpecialDateSettings & { date: string }): SpecialDateSavePayload {
+  return {
+    ...settings,
+    menus: (settings.menus ?? []).map(({ sections, is_special_menu, ...m }) => ({
+      ...m,
+      price: is_special_menu ? null : m.price ?? null,
+      sections: is_special_menu
+        ? (sections ?? []).map((sec) => ({ section_id: sec.id, adelanto_amount: sec.adelanto_amount }))
+        : undefined,
+    })),
+  };
 }
