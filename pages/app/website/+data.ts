@@ -1,7 +1,7 @@
 import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
-import { adminApiAuthHeader } from "../../../api/adminApiAuth";
+import { adminApiAuthHeaders } from "../../../api/adminApiAuth";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -26,13 +26,12 @@ export async function data(pageContext: PageContextServer) {
   // config into the first server-rendered HTML instead of a client spinner.
   try {
     const url = new URL("/api/admin/website", backendOrigin);
-    const adminAuth = adminApiAuthHeader();
     const res = await fetch(url, {
       method: "GET",
       headers: {
         cookie: cookieHeader,
         // Direct SSR call: the /api proxy cannot inject the shared secret here.
-        ...(adminAuth ? { authorization: adminAuth } : {}),
+        ...adminApiAuthHeaders(),
       },
       signal: AbortSignal.timeout(8000),
     });
