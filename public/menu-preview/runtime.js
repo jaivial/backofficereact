@@ -877,6 +877,17 @@
     }
   }
 
+  // Coordination id: special_menu_cta_v1 - mirror of preactvillacarmen's
+  // SpecialMenuCta: one link-styled button, href resolved by the backend on
+  // the tenant website. Navigation is disabled inside the preview iframe.
+  function renderSpecialMenuCta(cta) {
+    if (!cta || !String(cta.href || "").trim()) return "";
+    return '<div class="specialMenuCta" data-coordination-id="special_menu_cta_v1">'
+      + '<a class="btn primary specialMenuCtaButton" data-testid="preview-special-menu-cta" href="' + escapeHtml(cta.href) + '"'
+      + (cta.opens_new_tab ? ' target="_blank" rel="noreferrer"' : "")
+      + ' onclick="return false">' + escapeHtml(String(cta.label || "RESERVAR")) + '</a></div>';
+  }
+
   function mountVillaTemplate(tokens) {
     if (!state.templateHtml) return false;
     var applied = applyTokens(state.templateHtml, tokens || {});
@@ -1116,7 +1127,7 @@
       var sectionsHtml = specialSections.map(function (section) {
         var sectionTitle = String((section && section.title) || "").trim();
         var sectionImageURL = resolveMediaURL(String((section && section.image_url) || "").trim());
-        var titleBlock = sectionTitle ? '<h3 class="specialMenuSectionTitle">' + escapeHtml(sectionTitle) + '</h3>' : "";
+        var titleBlock = sectionTitle ? '<h2 class="specialMenuSectionTitle">' + escapeHtml(sectionTitle) + '</h2>' : "";
         // Coordination id: special_menu_price_date_v1 - per-section price.
         var sectionPrice = section && section.price != null && section.price !== "" ? Number(section.price) : NaN;
         if (Number.isFinite(sectionPrice)) titleBlock += '<p class="specialMenuSectionPrice">' + escapeHtml(formatEuro(sectionPrice) + " / pax") + '</p>';
@@ -1138,7 +1149,7 @@
       var legacyHero = hasSpecialImage
         ? '<div class="specialMenuImageContainer"><img class="specialMenuImage" src="' + escapeHtml(resolvedUrl) + '" alt="' + escapeHtml(menu.menu_title || "") + '" loading="eager" decoding="async" /></div>'
         : '<div class="menuEmptyState"><svg class="menuEmptyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p class="menuEmptyTitle">No hay imagen subida para este menú especial.</p></div>';
-      var imageSection = sectionsHtml ? '<div class="specialMenuSections">' + sectionsHtml + '</div>' : legacyHero;
+      var imageSection = (sectionsHtml ? '<div class="specialMenuSections">' + sectionsHtml + '</div>' : legacyHero) + renderSpecialMenuCta(menu.special_cta);
 
       var subtitle = Array.isArray(menu.menu_subtitle) ? menu.menu_subtitle.filter(function (s) { return s && s.trim(); })[0] : "";
       var subtitleBlock = '<p class="page-subtitle">' + escapeHtml(subtitle || "Menú especial (temporada)") + '</p>';
@@ -1244,15 +1255,25 @@
     attachSectionTabHandlers();
   }
 
+  // Coordination id: menu_preview_template_race_v1 - the boot applyTheme and
+  // the editor's vc_preview:init race; only the latest request may mount, so a
+  // slower stale template (e.g. closed_conventional) never overwrites special.
+  let templateRequestSeq = 0;
+
   async function loadTemplate() {
+    const seq = ++templateRequestSeq;
     const url = "/menu-preview/templates/" + encodeURIComponent(state.themeId) + "/menus/" + encodeURIComponent(state.menuType) + ".html";
+    let html = "";
     try {
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error("template not found");
-      state.templateHtml = await res.text();
+      html = await res.text();
     } catch (_err) {
-      state.templateHtml = "";
+      html = "";
     }
+    if (seq !== templateRequestSeq) return false;
+    state.templateHtml = html;
+    return true;
   }
 
   function previewSignature(themeId, menuType, menu) {
@@ -1269,8 +1290,7 @@
     if (themeLink) {
       themeLink.setAttribute("href", "/menu-preview/templates/" + encodeURIComponent(state.themeId) + "/theme.css");
     }
-    await loadTemplate();
-    render();
+    if (await loadTemplate()) render();
   }
 
   window.addEventListener("message", function (event) {
