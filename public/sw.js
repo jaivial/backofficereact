@@ -1,7 +1,8 @@
 // Villa Carmen Backoffice - Service Worker
 // Caches static assets for offline use and provides network-first API strategy.
 
-const CACHE_VERSION = "v2";
+// v3: drops caches that pinned a stale /menu-preview/ runtime.
+const CACHE_VERSION = "v3";
 const STATIC_CACHE = `vc-static-${CACHE_VERSION}`;
 const API_CACHE = `vc-api-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
@@ -51,6 +52,11 @@ self.addEventListener("fetch", (event) => {
   // SSR pages are session-dependent and may redirect (/ -> /login).
   // Let the browser follow them without service-worker interception.
   if (request.mode === "navigate") return;
+
+  // Coordination id: menu_preview_sw_bypass_v1 - the menu preview iframe is
+  // served no-store and redeployed in place (fixed file names), so a
+  // cache-first copy would keep an old runtime after every deploy.
+  if (url.pathname.startsWith("/menu-preview/")) return;
 
   // API responses: network-first, fallback to cache
   if (url.pathname.startsWith("/api/admin")) {
