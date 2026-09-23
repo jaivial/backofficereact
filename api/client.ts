@@ -2388,6 +2388,20 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // Coordination id: stripe_prereserva_adelanto_v1 - Stripe per restaurant (root-only).
+      async getStripeConfig(): Promise<APISuccess<{ config: import("./types").StripeConfig }> | APIError> {
+        return json("/api/admin/config/stripe", { method: "GET" });
+      },
+      async setStripeConfig(input: import("./types").StripeConfigInput): Promise<APISuccess<{ config: import("./types").StripeConfig }> | APIError> {
+        return json("/api/admin/config/stripe", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async testStripeConfig(): Promise<APISuccess<{ live_mode: boolean }> | APIError> {
+        return json("/api/admin/config/stripe/test", { method: "POST" });
+      },
       // MiniMax AI (forky chat + translations + stock) config per restaurant (root-only).
       async getMiniMaxConfig(): Promise<APISuccess<{ config: import("./types").MiniMaxConfig }> | APIError> {
         return json("/api/admin/config/minimax", { method: "GET" });
