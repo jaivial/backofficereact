@@ -2934,3 +2934,9 @@
 .bo-menuWizardPage .bo-foodPageVisibilityRow {
   background: color-mix(in srgb, var(--bo-surface) 96%, transparent);
 }
+
+/* Rows sit straight in the panel body, no extra card around them. */
+.bo-menuVisibilityRows {
+  display: grid;
+  gap: 10px;
+}
