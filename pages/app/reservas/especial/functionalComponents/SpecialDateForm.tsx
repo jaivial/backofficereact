@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, ImagePlus, Info, Plus, Trash2 } from "lucide-react";
 
-import type { MenuSelectorItem, SpecialDateMenu, SpecialDatePaymentMethod, SpecialDateSettings } from "../../../../../api/types";
+import type { MenuSelectorItem, SpecialDateMenu, SpecialDateMenuSection, SpecialDatePaymentMethod, SpecialDateSavePayload, SpecialDateSettings } from "../../../../../api/types";
 import { SPECIAL_DATE_PAYMENT_METHODS } from "../../../../../api/types";
 import { createClient } from "../../../../../api/client";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
@@ -25,6 +25,12 @@ function uid(): string {
 
 function withKeys(menus: SpecialDateMenu[]): EditableMenu[] {
   return menus.map((m) => ({ ...m, _key: uid() }));
+}
+
+// Coordination id: special_date_section_menus_v1 - "Todos iguales" also
+// applies to every section of a special-type menu.
+function withUnifiedAdelanto<T extends SpecialDateMenu>(m: T, amount: number): T {
+  return { ...m, adelanto_amount: amount, sections: m.sections?.map((sec) => ({ ...sec, adelanto_amount: amount })) };
 }
 
 function toNumberOrNull(v: string): number | null {
@@ -75,6 +81,38 @@ function ToggleRow({
       <span onClick={(e) => e.stopPropagation()}>
         <Switch checked={checked} onCheckedChange={onToggle} aria-label={ariaLabel} data-testid={`${testId}-switch`} />
       </span>
+    </div>
+  );
+}
+
+/**
+ * Read-only sections of a special-type menu: each section carries its own
+ * price (edited in the menu editor), so the date has no menu price input.
+ * Coordination id: special_date_section_menus_v1
+ */
+function SpecialMenuSectionsSummary({ rowIndex, sections }: { rowIndex: number; sections?: SpecialDateMenuSection[] }) {
+  const tid = `special-date-menu-row-${rowIndex}-sections`;
+  return (
+    <div className="grid gap-1" data-testid={tid}>
+      <div className="text-xs text-(--bo-muted)" data-testid={`${tid}-label`}>
+        Menú especial: precio por sección
+      </div>
+      {!sections ? (
+        <div className="text-xs text-(--bo-muted)" data-testid={`${tid}-loading`}>Cargando secciones…</div>
+      ) : sections.length === 0 ? (
+        <div className="text-xs text-(--bo-muted)" data-testid={`${tid}-empty`}>Este menú especial no tiene secciones todavía.</div>
+      ) : (
+        <ul className="grid gap-1" data-testid={`${tid}-list`}>
+          {sections.map((sec) => (
+            <li key={sec.id} className="flex items-center justify-between gap-3 text-sm" data-testid={`${tid}-item-${sec.id}`}>
+              <span data-testid={`${tid}-item-${sec.id}-title`}>{sec.title || `Sección ${sec.position + 1}`}</span>
+              <span className="tabular-nums text-(--bo-muted)" data-testid={`${tid}-item-${sec.id}-price`}>
+                {sec.price != null ? `${sec.price.toFixed(2)} € / persona` : "Sin precio"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -219,7 +257,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
       patch({
         adelanto_unified: checked,
         menus: checked
-          ? editableMenus.map((m) => ({ ...m, adelanto_amount: toNumberOrNull(unifiedAmountDraft) ?? m.adelanto_amount ?? 0 }))
+          ? editableMenus.map((m) => withUnifiedAdelanto(m, toNumberOrNull(unifiedAmountDraft) ?? m.adelanto_amount ?? 0))
           : editableMenus.map((m) => ({ ...m })),
       });
     },
@@ -228,7 +266,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   const handleUnifiedAmountCommit = useCallback(() => {
     const n = toNumberOrNull(unifiedAmountDraft);
     const safe = n != null && n >= 0 ? n : 0;
-    patch({ adelanto_unified_amount: safe, menus: editableMenus.map((m) => ({ ...m, adelanto_amount: safe })) });
+    patch({ adelanto_unified_amount: safe, menus: editableMenus.map((m) => withUnifiedAdelanto(m, safe)) });
     setUnifiedAmountDraft(String(safe));
   }, [editableMenus, patch, unifiedAmountDraft]);
 
@@ -267,6 +305,39 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     setEditableMenus((prev) => prev.map((m) => (m._key === key ? { ...m, ...patchRow } : m)));
   }, []);
 
+  // Coordination id: special_date_section_menus_v1 - a special-type menu is
+  // priced per image section, so it has no menu price input and its adelanto
+  // is set per section. Sections come with the saved date (GET) or are
+  // fetched when the operator picks the menu.
+  const isSpecialMenuId = useCallback(
+    (menuId: number | null | undefined) => menuId != null && availableMenus.find((am) => am.id === menuId)?.menu_type === "special",
+    [availableMenus],
+  );
+
+  useEffect(() => {
+    const missing = editableMenus.filter((m) => isSpecialMenuId(m.menu_id) && !m.sections);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    for (const row of missing) {
+      void api.menus.gruposV2.listSpecialSections(Number(row.menu_id)).then((res) => {
+        if (cancelled || !res.success) return;
+        const sections: SpecialDateMenuSection[] = res.sections.map((sec) => ({
+          id: sec.id, title: sec.title, price: sec.price ?? null, adelanto_amount: null, position: sec.position,
+        }));
+        setEditableMenus((prev) => prev.map((m) => (m._key === row._key && m.menu_id === row.menu_id ? { ...m, sections } : m)));
+        console.log("[checkpoint] special_date_menu_sections_loaded", `menu=${row.menu_id}`, `sections=${sections.length}`);
+      });
+    }
+    return () => { cancelled = true; };
+  }, [api, editableMenus, isSpecialMenuId]);
+
+  const updateSectionAdelanto = useCallback((key: string, sectionId: number, amount: number | null) => {
+    setEditableMenus((prev) => prev.map((m) => (m._key !== key ? m : {
+      ...m,
+      sections: (m.sections ?? []).map((sec) => (sec.id === sectionId ? { ...sec, adelanto_amount: amount } : sec)),
+    })));
+  }, []);
+
   // Row key whose custom image is uploading (coordination id: special_date_menu_image_v1)
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
 
@@ -292,7 +363,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
 
   const handleSave = useCallback(async () => {
     setSaving(true);
-    const payload: SpecialDateSettings & { date: string } = {
+    const payload: SpecialDateSavePayload = {
       ...draft,
       date,
       menus: editableMenus.map((m, idx) => ({
@@ -301,8 +372,11 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         custom_title: m.custom_title ?? null,
         custom_image_url: m.custom_image_url ?? null,
         adelanto_amount: m.adelanto_amount ?? null,
-        price: m.price ?? null,
+        price: isSpecialMenuId(m.menu_id) ? null : m.price ?? null,
         position: idx,
+        // Coordination id: special_date_section_menus_v1
+        // (lean shape: the endpoint rejects unknown fields)
+        sections: isSpecialMenuId(m.menu_id) ? (m.sections ?? []).map((sec) => ({ section_id: sec.id, adelanto_amount: sec.adelanto_amount })) : undefined,
       })),
     };
     try {
@@ -450,7 +524,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                           value={m.menu_id != null ? String(m.menu_id) : "__custom__"}
                           onChange={(v) => {
                             if (v === "__custom__") updateMenuRow(m._key, { menu_id: null });
-                            else updateMenuRow(m._key, { menu_id: Number(v), custom_title: null, custom_image_url: null });
+                            else updateMenuRow(m._key, { menu_id: Number(v), custom_title: null, custom_image_url: null, sections: undefined, price: null });
                           }}
                           options={menuOptions}
                           placeholder={selectedLabel}
@@ -538,28 +612,33 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
 
                     {/* Variable price per menu — used for total / adelanto
                         calculations in the booking wizard. Defaults to the
-                        catalogue price when menu_id is set. */}
-                    <div
-                      className="grid gap-1"
-                      data-testid={`special-date-menu-row-${idx + 1}-price-field`}
-                    >
+                        catalogue price when menu_id is set. Special-type menus
+                        are priced per section instead (special_date_section_menus_v1). */}
+                    {isSpecialMenuId(m.menu_id) ? (
+                      <SpecialMenuSectionsSummary rowIndex={idx + 1} sections={m.sections} />
+                    ) : (
                       <div
-                        className="text-xs text-(--bo-muted)"
-                        data-testid={`special-date-menu-row-${idx + 1}-price-label`}
+                        className="grid gap-1"
+                        data-testid={`special-date-menu-row-${idx + 1}-price-field`}
                       >
-                        Precio del menú (€ / persona)
+                        <div
+                          className="text-xs text-(--bo-muted)"
+                          data-testid={`special-date-menu-row-${idx + 1}-price-label`}
+                        >
+                          Precio del menú (€ / persona)
+                        </div>
+                        <EuroInput
+                          min={0}
+                          step={0.5}
+                          value={m.price != null ? String(m.price) : ""}
+                          onChange={(e) =>
+                            updateMenuRow(m._key, { price: toNumberOrNull(e.target.value) })
+                          }
+                          placeholder="0.00"
+                          data-testid={`special-date-menu-row-${idx + 1}-price-input`}
+                        />
                       </div>
-                      <EuroInput
-                        min={0}
-                        step={0.5}
-                        value={m.price != null ? String(m.price) : ""}
-                        onChange={(e) =>
-                          updateMenuRow(m._key, { price: toNumberOrNull(e.target.value) })
-                        }
-                        placeholder="0.00"
-                        data-testid={`special-date-menu-row-${idx + 1}-price-input`}
-                      />
-                    </div>
+                    )}
                   </div>
                 );
               })}
@@ -696,7 +775,31 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                             data-slot="perMenuAmountsList"
                             data-testid="special-date-per-menu-amounts-list"
                           >
-                            {editableMenus.map((m) => {
+                            {editableMenus.flatMap((m) => {
+                              // Coordination id: special_date_section_menus_v1
+                              if (isSpecialMenuId(m.menu_id)) {
+                                const menuTitle = availableMenus.find((am) => am.id === m.menu_id)?.menu_title ?? "Menú especial";
+                                return (m.sections ?? []).map((sec) => (
+                                  <div
+                                    key={`${m._key}-${sec.id}`}
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-bo-border bg-bo-surface-2 px-3 py-2"
+                                    data-testid={`special-date-per-section-amount-row-${m._key}-${sec.id}`}
+                                  >
+                                    <div className="text-sm" data-testid={`special-date-per-section-amount-row-${m._key}-${sec.id}-label`}>
+                                      {menuTitle} · {sec.title || `Sección ${sec.position + 1}`}
+                                    </div>
+                                    <EuroInput
+                                      wrapperStyle={{ maxWidth: 120 }}
+                                      min={0}
+                                      step={0.5}
+                                      value={sec.adelanto_amount != null ? String(sec.adelanto_amount) : ""}
+                                      onChange={(e) => updateSectionAdelanto(m._key, sec.id, toNumberOrNull(e.target.value))}
+                                      placeholder="0.00"
+                                      data-testid={`special-date-per-section-amount-row-${m._key}-${sec.id}-input`}
+                                    />
+                                  </div>
+                                ));
+                              }
                               const label =
                                 m.custom_title ||
                                 availableMenus.find((am) => am.id === m.menu_id)?.menu_title ||

@@ -99,6 +99,8 @@ export type BookingSpecialMenu = {
    *  the special date requires adelanto). */
   adelanto_payment_method: import("./types").SpecialDatePaymentMethod | null;
   items: BookingSpecialMenuItem[];
+  // Coordination id: special_date_section_menus_v1 - section of a special menu.
+  section_id?: number | null;
 };
 
 export type BookingSpecialAdelantoByMethod = {
@@ -2313,6 +2315,21 @@ export type SpecialDateMenu = {
   adelanto_amount?: number | null;
   price?: number | null;
   position?: number;
+  // Coordination id: special_date_section_menus_v1 - set when menu_id is a
+  // special-type menu: it is priced and charged per image section.
+  is_special_menu?: boolean;
+  sections?: SpecialDateMenuSection[];
+};
+
+// Coordination id: special_date_section_menus_v1 - one section of a special
+// menu on a special date (price comes from the menu, adelanto from the date).
+export type SpecialDateMenuSection = {
+  id: number;
+  title: string;
+  price: number | null;
+  adelanto_amount: number | null;
+  position: number;
+  principales?: SpecialMenuPrincipal[];
 };
 
 export type SpecialDateSettings = {
@@ -2345,7 +2362,17 @@ export type SpecialDateSettings = {
   menus: SpecialDateMenu[];
 };
 
-export type SpecialDateSavePayload = Partial<Omit<SpecialDateSettings, "date">> & { date: string };
+// Coordination id: special_date_section_menus_v1 - on save a special-type
+// menu sends only its per-section adelantos (the endpoint rejects unknown
+// fields), so the save payload's menus differ from the read shape.
+export type SpecialDateMenuSave = Omit<SpecialDateMenu, "sections" | "is_special_menu"> & {
+  sections?: Array<{ section_id: number; adelanto_amount: number | null }>;
+};
+
+export type SpecialDateSavePayload = Partial<Omit<SpecialDateSettings, "date" | "menus">> & {
+  date: string;
+  menus?: SpecialDateMenuSave[];
+};
 
 export type SpecialDateListEntry = {
   id: number;
