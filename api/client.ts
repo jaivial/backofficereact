@@ -1974,6 +1974,17 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         // Coordination id: special_menu_visibility_v1
         // Same shape as the food-type settings, so the editor can reuse the
         // dropdown the FoodPageSettings component already uses.
+        // Coordination id: special_menu_cta_v1
+        async putSpecialMenuCta(
+          menuId: number,
+          config: import("./types").SpecialMenuCtaConfig,
+        ): Promise<APISuccess<{ special_cta: import("./types").SpecialMenuCta }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-cta`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(config),
+          });
+        },
         async setSpecialMenuVisibility(
           menuId: number,
           patch: { web_placement?: string; menu_public_active?: boolean; special_date_id?: number },

@@ -2800,11 +2800,18 @@
   box-shadow: 0 1px 2px color-mix(in srgb, var(--bo-bg) 22%, transparent);
 }
 
+/* Drag, title, price and delete always share one row; the title stretches. */
 .bo-menuImageSectionCardHead {
-  display: grid;
-  grid-template-columns: 32px 1fr auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+
+.bo-menuImageSectionCardHead > * {
+  flex: 0 0 auto;
 }
 
 .bo-menuImageSectionCardDrag {
@@ -2842,7 +2849,10 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--bo-accent) 35%, transparent);
 }
 
-.bo-menuImageSectionCardTitle {
+.bo-menuImageSectionCardHead > .bo-menuImageSectionCardTitle {
+  flex: 1 1 0;
+  width: stretch;
+  min-width: 0;
   border-radius: 10px;
 }
 
@@ -2880,8 +2890,9 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 320px;
-  object-fit: cover;
+  /* Coordination id: special_menu_image_ratio_v1 - original ratio, full width, capped at 70vh. */
+  max-height: 70vh;
+  object-fit: contain;
   border-radius: 10px;
   outline: 1px solid oklch(0 0 0 / 0.1);
 }
@@ -2922,4 +2933,10 @@
 
 .bo-menuWizardPage .bo-foodPageVisibilityRow {
   background: color-mix(in srgb, var(--bo-surface) 96%, transparent);
+}
+
+/* Rows sit straight in the panel body, no extra card around them. */
+.bo-menuVisibilityRows {
+  display: grid;
+  gap: 10px;
 }

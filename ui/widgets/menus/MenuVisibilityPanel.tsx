@@ -30,7 +30,7 @@ export function MenuVisibilityPanel({
 }) {
   return (
     <div
-      className="bo-card"
+      className="bo-menuVisibilityRows"
       data-testid={`menu-visibility-panel-${menuId ?? "draft"}`}
       data-coordination-id="special-menu-visibility-v1"
     >
