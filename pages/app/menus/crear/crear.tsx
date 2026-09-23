@@ -40,6 +40,7 @@ import { AddSectionModal } from "../../../../ui/widgets/menus/AddSectionModal";
 import { MenuImageSectionCard } from "../../../../ui/widgets/menus/MenuImageSectionCard";
 import { MenuVisibilityPanel } from "../../../../ui/widgets/menus/MenuVisibilityPanel";
 import { SpecialMenuCtaSettings } from "../../../../ui/widgets/menus/SpecialMenuCtaSettings";
+import { FadeSeparator } from "../../../../ui/layout/FadeSeparator";
 import { normalizeWebPlacement } from "../../../../ui/widgets/menus/webPlacement";
 import WeekdayGrid, { WEEKDAYS } from "../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 import type { AddSectionSelection } from "../../../../ui/widgets/menus/AddSectionModal";
@@ -796,6 +797,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       </div>
                     ) : null}
                   </div>
+                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-title-preview" /> : null}
                   {!isSpecial ? (
                     <div className="bo-field bo-field--full" data-slot="crear-field--full">
                       <div className="bo-label" data-slot="crear-label">Subtitulos</div>
@@ -832,6 +834,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                     <Select className="bo-menuSettingSelect" value={showMenuPreviewImage ? "with_preview" : "without_preview"} onChange={(value) => setShowMenuPreviewImage(value === "with_preview")} options={menuPreviewVisibilityOptions} size="sm" ariaLabel="Visibilidad de foto preview en editor final" />
                   </div>
                   {renderMenuPreviewUploadArea()}
+                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-preview-date" /> : null}
                   {isSpecial ? (
                     <div className="bo-field" data-slot="crear-field" data-coordination-id="special_menu_price_date_v1">
                       <div className="bo-label" data-slot="crear-label">Fecha especial</div>
@@ -850,6 +853,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       {menuSpecialDate?.prereserva_enabled ? <p className="bo-menuSpecialDateHint" data-testid="menu-crear-special-date-prereserva">Esta fecha requiere prereserva.</p> : null}
                     </div>
                   ) : null}
+                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-date-cta" /> : null}
                   {isSpecial ? (
                     <SpecialMenuCtaSettings
                       config={specialCta}
@@ -859,6 +863,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       onChange={updateSpecialCta}
                     />
                   ) : null}
+                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-cta-active" /> : null}
                   {!isSpecial ? (
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Cambiar tipo de menu</div>
