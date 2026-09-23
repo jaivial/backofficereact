@@ -22,7 +22,7 @@ import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/Config
 import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
 import { ConfigMiniMax } from "./functionalComponents/ConfigMiniMax/ConfigMiniMax";
 import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
-import { ConfigStripe } from "./functionalComponents/ConfigStripe/ConfigStripe";
+import { ConfigCobrosOnline } from "./functionalComponents/ConfigCobrosOnline/ConfigCobrosOnline";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
 
 type PageData = {
@@ -225,7 +225,7 @@ export default function Page() {
           } as TabItem,
           {
             id: "stripe",
-            label: "Stripe",
+            label: "Cobros online",
             href: "#stripe",
             icon: <CreditCard className="bo-ico" />,
           } as TabItem]
@@ -345,7 +345,7 @@ export default function Page() {
           ) : contentTab === "cdn" ? (
             isRoot ? <ConfigBunnyStorage /> : null
           ) : contentTab === "stripe" ? (
-            isRoot ? <ConfigStripe /> : null
+            isRoot ? <ConfigCobrosOnline /> : null
           ) : contentTab === "restaurante" ? (
             <ConfigRestaurante
               defaults={defaults}

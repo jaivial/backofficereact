@@ -766,7 +766,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                         </div>
                         {draft.adelanto_payment_methods.includes("stripe") ? (
                           <p className="mt-2 text-xs text-(--bo-muted)" data-testid="special-date-payment-methods-stripe-hint">
-                            Con Stripe el cliente paga el adelanto online al terminar la prereserva, y la prereserva solo se registra cuando el pago se completa. Configúralo en Configuración → Stripe.
+                            Con Stripe el cliente paga el adelanto online al terminar la prereserva, y la prereserva solo se registra cuando el pago se completa. Actívalo en Configuración → Cobros online.
                           </p>
                         ) : null}
                       </div>

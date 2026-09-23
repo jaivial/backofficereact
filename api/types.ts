@@ -2819,26 +2819,17 @@ export type PageVisibility = {
   bebidas_web_placement: string;
 };
 
-// Coordination id: stripe_prereserva_adelanto_v1 - secrets are never sent back,
-// only masked hints.
-export type StripeConfig = {
-  configured: boolean;
-  demo_mode: boolean;
-  currency: string;
-  has_secret_key: boolean;
-  secret_key_hint: string;
-  has_webhook_secret: boolean;
-  webhook_secret_hint: string;
-  publishable_key: string;
-  live_mode: boolean;
-  webhook_url: string;
-};
-
-export type StripeConfigInput = {
-  secret_key?: string;
-  webhook_secret?: string;
-  publishable_key?: string;
-  demo_mode?: boolean;
-  clear_secret_key?: boolean;
-  clear_webhook_secret?: boolean;
+// Coordination id: stripe_connect_multitenant_v1 - connected account state of
+// the restaurant. No keys: the platform Stripe account does the charging.
+export type StripeConnectStatus = {
+  connected: boolean;
+  demo: boolean;
+  status: "not_connected" | "pending" | "restricted" | "active";
+  charges_enabled: boolean;
+  payouts_enabled: boolean;
+  details_submitted: boolean;
+  currently_due: string[];
+  bank_last4: string;
+  platform_ready: boolean;
+  fee_percent: number;
 };
