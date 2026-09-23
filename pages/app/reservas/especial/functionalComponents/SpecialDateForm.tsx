@@ -247,7 +247,13 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   const togglePaymentMethod = useCallback(
     (method: SpecialDatePaymentMethod) => {
       const cur = draft.adelanto_payment_methods;
-      const next = cur.includes(method) ? cur.filter((m: SpecialDatePaymentMethod) => m !== method) : [...cur, method];
+      // Coordination id: stripe_prereserva_adelanto_v1 - Stripe is exclusive:
+      // picking it drops the others, picking another drops Stripe.
+      const next = cur.includes(method)
+        ? cur.filter((m: SpecialDatePaymentMethod) => m !== method)
+        : method === "stripe"
+          ? ["stripe" as SpecialDatePaymentMethod]
+          : [...cur.filter((m: SpecialDatePaymentMethod) => m !== "stripe"), method];
       patch({ adelanto_payment_methods: next });
     },
     [draft.adelanto_payment_methods, patch],
@@ -758,6 +764,11 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                             />
                           ))}
                         </div>
+                        {draft.adelanto_payment_methods.includes("stripe") ? (
+                          <p className="mt-2 text-xs text-(--bo-muted)" data-testid="special-date-payment-methods-stripe-hint">
+                            Con Stripe el cliente paga el adelanto online al terminar la prereserva, y la prereserva solo se registra cuando el pago se completa. Configúralo en Configuración → Stripe.
+                          </p>
+                        ) : null}
                       </div>
 
                       {/* Per-menu adelanto amounts: the "lista de menús +

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud, CreditCard } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
@@ -22,6 +22,7 @@ import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/Config
 import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
 import { ConfigMiniMax } from "./functionalComponents/ConfigMiniMax/ConfigMiniMax";
 import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
+import { ConfigStripe } from "./functionalComponents/ConfigStripe/ConfigStripe";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
 
 type PageData = {
@@ -32,11 +33,11 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "cdn";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "cdn" | "stripe";
 
 function resolveContentTab(raw: unknown, isRoot: boolean): ContentTab {
   const value = String(raw ?? "").trim() as ContentTab;
-  if (value === "ia" || value === "cdn") return isRoot ? value : "restaurante";
+  if (value === "ia" || value === "cdn" || value === "stripe") return isRoot ? value : "restaurante";
   if (value === "contacto" || value === "booking" || value === "legal-pages" || value === "restaurante") return value;
   return "restaurante";
 }
@@ -221,6 +222,12 @@ export default function Page() {
             label: "CDN",
             href: "#cdn",
             icon: <Cloud className="bo-ico" />,
+          } as TabItem,
+          {
+            id: "stripe",
+            label: "Stripe",
+            href: "#stripe",
+            icon: <CreditCard className="bo-ico" />,
           } as TabItem]
         : []),
     ],
@@ -337,6 +344,8 @@ export default function Page() {
             ) : null
           ) : contentTab === "cdn" ? (
             isRoot ? <ConfigBunnyStorage /> : null
+          ) : contentTab === "stripe" ? (
+            isRoot ? <ConfigStripe /> : null
           ) : contentTab === "restaurante" ? (
             <ConfigRestaurante
               defaults={defaults}
