@@ -600,6 +600,8 @@ export type GroupMenuV2 = {
   // (title + image) editable from /app/comida/menus/crear?menuId= step 4.
   special_menu_sections?: SpecialMenuSection[];
   special_date?: MenuSpecialDate | null;
+  // Coordination id: special_menu_cta_v1
+  special_cta?: SpecialMenuCta | null;
   // Coordination id: special_menu_visibility_v1 - same dropdown the food-type
   // settings already use (inside_menus | independent_section) plus an on/off
   // toggle scoped per menu.
@@ -632,6 +634,28 @@ export type SpecialMenuSection = {
 
 // Coordination id: special_menu_price_date_v1 - special day a special menu
 // belongs to (drives the reservas date query and the prereserva notice).
+// Coordination id: special_menu_cta_v1 - "Mostrar boton reservar" config.
+export type SpecialMenuCtaAction = "menu" | "whatsapp" | "reservas";
+
+export type SpecialMenuCtaConfig = {
+  enabled: boolean;
+  label: string;
+  action: SpecialMenuCtaAction;
+  menu_id: number;
+  whatsapp_phone: string;
+  whatsapp_message: string;
+  special_date_id: number;
+};
+
+// Config + the absolute link the backend resolves on the tenant website.
+export type SpecialMenuCta = SpecialMenuCtaConfig & {
+  href: string;
+  opens_new_tab: boolean;
+  website_base_url: string;
+  target_date?: string;
+  default_whatsapp_phone: string;
+};
+
 export type MenuSpecialDate = {
   id: number;
   date: string;

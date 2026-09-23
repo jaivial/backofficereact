@@ -321,12 +321,12 @@ body {
   padding: 0;
 }
 
+/* Same font style as .page-title, scaled for an H2. */
 .specialMenuSectionTitle {
   margin: 0;
-  font-size: clamp(20px, 2.4vw, 28px);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(26px, 3vw, 40px);
 }
 
 /* Coordination id: special_menu_price_date_v1 */
@@ -364,7 +364,15 @@ body {
   display: block;
   width: 100%;
   height: auto;
+  max-height: 70vh;
   object-fit: contain;
+}
+
+/* Coordination id: special_menu_cta_v1 */
+.specialMenuCta {
+  display: flex;
+  justify-content: center;
+  padding: clamp(18px, 3vw, 32px) 0 8px;
 }
 
 .specialMenuSectionEmpty {
