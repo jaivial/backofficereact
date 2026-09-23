@@ -12,6 +12,9 @@ import type {
   SpecialMenuSection,
   MenuSpecialDate,
   SpecialDateListEntry,
+  SpecialMenuCta,
+  SpecialMenuCtaConfig,
+  GroupMenuV2Summary,
 } from "../../../../../api/types";
 import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_BYTES } from "../../../../../lib/dishImageCrop";
 import { arrayBufferToBase64, imageUnderBytes } from "../../../../../ui/lib/imageFile";
@@ -92,6 +95,16 @@ export function defaultMenuWeekdays(): Record<string, boolean> {
   const out: Record<string, boolean> = {};
   for (const day of WEEKDAYS) out[day.key] = false;
   return out;
+}
+
+// Coordination id: special_menu_cta_v1 - a menu without a stored config starts
+// disabled, labelled "RESERVAR" and pointing at the reservas page.
+function withSpecialCtaDefaults(raw: SpecialMenuCta | null | undefined): SpecialMenuCta {
+  return {
+    enabled: false, label: "RESERVAR", action: "reservas", menu_id: 0, whatsapp_phone: "", whatsapp_message: "", special_date_id: 0,
+    href: "", opens_new_tab: false, website_base_url: "", default_whatsapp_phone: "",
+    ...(raw ?? {}),
+  };
 }
 
 function normalizeMenuWeekdayValue(raw: unknown): boolean {
@@ -266,6 +279,11 @@ export type UseMenuEditorReturn = {
   menuSpecialDate: MenuSpecialDate | null;
   setMenuSpecialDate: (specialDateId: number) => Promise<void>;
   specialDateOptions: SpecialDateListEntry[];
+  // Coordination id: special_menu_cta_v1
+  specialCta: SpecialMenuCta;
+  specialCtaBusy: boolean;
+  updateSpecialCta: (patch: Partial<SpecialMenuCtaConfig>) => void;
+  ctaMenuOptions: GroupMenuV2Summary[];
   setSaveState: React.Dispatch<React.SetStateAction<SaveState>>;
   setBusy: (v: boolean) => void;
   setHydrated: (v: boolean) => void;
@@ -401,6 +419,10 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   const [menuVisibilityBusy, setMenuVisibilityBusy] = useState<boolean>(false);
   const [menuSpecialDate, setMenuSpecialDateState] = useState<MenuSpecialDate | null>(data.menu?.special_date ?? null);
   const [specialDateOptions, setSpecialDateOptions] = useState<SpecialDateListEntry[]>([]);
+  // Coordination id: special_menu_cta_v1
+  const [specialCta, setSpecialCta] = useState<SpecialMenuCta>(() => withSpecialCtaDefaults(data.menu?.special_cta));
+  const [specialCtaBusy, setSpecialCtaBusy] = useState(false);
+  const [ctaMenuOptions, setCtaMenuOptions] = useState<GroupMenuV2Summary[]>([]);
   const [menuPreviewImageUrl, setMenuPreviewImageUrl] = useState<string>(initialMenuPreviewState.menuPreviewImageUrl);
   const [menuPreviewAIRequested, setMenuPreviewAIRequested] = useState<boolean>(initialMenuPreviewState.menuPreviewAIRequested);
   const [menuPreviewAIGenerating, setMenuPreviewAIGenerating] = useState<boolean>(initialMenuPreviewState.menuPreviewAIGenerating);
@@ -1302,6 +1324,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
         specialMenuImage: null,
         specialMenuSections,
         specialDate: menuSpecialDate,
+        specialCta,
         menuAITracker,
         sections,
         normalizeSectionAnnotations,
@@ -1335,6 +1358,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       menuPreviewAIGenerating,
       specialMenuSections,
       menuSpecialDate,
+      specialCta,
       subtitles,
       title,
     ],
@@ -2145,6 +2169,44 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     }
   }, [api, menuId, pushToast, specialDateOptions]);
 
+  // Coordination id: special_menu_cta_v1 - active menus the button can open.
+  useEffect(() => {
+    if (menuType !== "special") return;
+    let cancelled = false;
+    void api.menus.gruposV2.list(false).then((res) => {
+      if (!cancelled && res.success) setCtaMenuOptions(res.menus.filter((m) => m.active && m.id !== menuId));
+    }).catch(() => console.warn("[special_menu_cta_v1] menus unavailable"));
+    return () => { cancelled = true; };
+  }, [api, menuId, menuType]);
+
+  // Optimistic local update (instant preview) + debounced PUT; the response
+  // carries the backend-resolved href on the tenant website.
+  const specialCtaSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const specialCtaRef = useRef(specialCta);
+  specialCtaRef.current = specialCta;
+  const updateSpecialCta = useCallback((patch: Partial<SpecialMenuCtaConfig>) => {
+    const prev = specialCtaRef.current;
+    const next = { ...prev, ...patch };
+    if ((patch.enabled || patch.action === "whatsapp") && !prev.whatsapp_phone && prev.default_whatsapp_phone) next.whatsapp_phone = prev.default_whatsapp_phone;
+    specialCtaRef.current = next;
+    setSpecialCta(next);
+    if (specialCtaSaveTimer.current) clearTimeout(specialCtaSaveTimer.current);
+    if (!menuId) return;
+    specialCtaSaveTimer.current = setTimeout(() => {
+      setSpecialCtaBusy(true);
+      const { enabled, label, action, menu_id, whatsapp_phone, whatsapp_message, special_date_id } = next;
+      void api.menus.gruposV2.putSpecialMenuCta(menuId, { enabled, label, action, menu_id, whatsapp_phone, whatsapp_message, special_date_id })
+        .then((res) => {
+          if (!res.success) throw new Error(res.message || "No se pudo guardar el boton reservar");
+          const { href, opens_new_tab, website_base_url, target_date } = res.special_cta;
+          setSpecialCta((cur) => ({ ...cur, href, opens_new_tab, website_base_url, target_date }));
+          console.log("[checkpoint] special_menu_cta_persisted", `action=${action}`, `enabled=${enabled}`);
+        })
+        .catch((e) => pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar el boton reservar" }))
+        .finally(() => setSpecialCtaBusy(false));
+    }, 600);
+  }, [api, menuId, pushToast]);
+
   const updateSpecialMenuSectionPrice = useCallback(async (sectionId: number, raw: string) => {
     const text = raw.trim().replace(",", ".");
     const price = text === "" ? null : Number(text);
@@ -2681,6 +2743,8 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     setMenuWebPlacement, setMenuPublicActive,
     // Coordination id: special_menu_price_date_v1
     updateSpecialMenuSectionPrice, menuSpecialDate, setMenuSpecialDate, specialDateOptions,
+    // Coordination id: special_menu_cta_v1
+    specialCta, specialCtaBusy, updateSpecialCta, ctaMenuOptions,
     // Render helpers
     renderMenuPreviewUploadArea,
   };

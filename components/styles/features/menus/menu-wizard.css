@@ -2880,8 +2880,9 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 320px;
-  object-fit: cover;
+  /* Coordination id: special_menu_image_ratio_v1 - original ratio, full width, capped at 70vh. */
+  max-height: 70vh;
+  object-fit: contain;
   border-radius: 10px;
   outline: 1px solid oklch(0 0 0 / 0.1);
 }

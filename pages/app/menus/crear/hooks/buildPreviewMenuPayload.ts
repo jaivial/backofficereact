@@ -42,6 +42,8 @@ export type BuildPreviewMenuPayloadInput = {
   specialMenuSections?: Array<{ id?: number | string | null; title?: string | null; image_url?: string | null; position?: number | null; price?: number | null }>
   // Coordination id: special_menu_price_date_v1
   specialDate?: { id: number; date: string; title: string; is_active: boolean; prereserva_enabled: boolean } | null
+  // Coordination id: special_menu_cta_v1 - "Mostrar boton reservar" button.
+  specialCta?: { enabled: boolean; label: string; href: string; opens_new_tab: boolean } | null
   menuAITracker: unknown
   sections: Array<{
     id?: number | string | null
@@ -103,6 +105,7 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
     specialMenuImage,
     specialMenuSections,
     specialDate,
+    specialCta,
     menuAITracker,
     sections,
     normalizeSectionAnnotations,
@@ -181,5 +184,6 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
     special_menu_image_url: specialMenuImage || '',
     special_menu_sections: Array.isArray(specialMenuSections) ? specialMenuSections : [],
     special_date: specialDate ?? null,
+    special_cta: specialCta?.enabled ? { label: specialCta.label, href: specialCta.href, opens_new_tab: specialCta.opens_new_tab } : null,
   }
 }
