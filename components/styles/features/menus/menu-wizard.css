@@ -2800,11 +2800,18 @@
   box-shadow: 0 1px 2px color-mix(in srgb, var(--bo-bg) 22%, transparent);
 }
 
+/* Drag, title, price and delete always share one row; the title stretches. */
 .bo-menuImageSectionCardHead {
-  display: grid;
-  grid-template-columns: 32px 1fr auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+
+.bo-menuImageSectionCardHead > * {
+  flex: 0 0 auto;
 }
 
 .bo-menuImageSectionCardDrag {
@@ -2842,7 +2849,10 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--bo-accent) 35%, transparent);
 }
 
-.bo-menuImageSectionCardTitle {
+.bo-menuImageSectionCardHead > .bo-menuImageSectionCardTitle {
+  flex: 1 1 0;
+  width: stretch;
+  min-width: 0;
   border-radius: 10px;
 }
 
