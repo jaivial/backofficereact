@@ -2293,13 +2293,15 @@ export type MandatoryMenuConfig = {
 
 // Special Dates (reservas especiales)
 // Coordination id: special_dates_v1 (crosses FE/BE).
-export type SpecialDatePaymentMethod = "card" | "bizum" | "transferencia" | "efectivo";
+export type SpecialDatePaymentMethod = "card" | "bizum" | "transferencia" | "efectivo" | "stripe";
 
 export const SPECIAL_DATE_PAYMENT_METHODS: ReadonlyArray<{ value: SpecialDatePaymentMethod; label: string }> = [
   { value: "card", label: "Tarjeta" },
   { value: "bizum", label: "Bizum" },
   { value: "transferencia", label: "Transferencia" },
   { value: "efectivo", label: "Efectivo" },
+  // Coordination id: stripe_prereserva_adelanto_v1 - online, exclusive.
+  { value: "stripe", label: "Stripe (pago online)" },
 ];
 
 export const SPECIAL_DATE_PAYMENT_METHOD_LABELS: Record<SpecialDatePaymentMethod, string> = SPECIAL_DATE_PAYMENT_METHODS.reduce(
@@ -2815,4 +2817,28 @@ export type PageVisibility = {
   cafes_web_placement: string;
   vinos_web_placement: string;
   bebidas_web_placement: string;
+};
+
+// Coordination id: stripe_prereserva_adelanto_v1 - secrets are never sent back,
+// only masked hints.
+export type StripeConfig = {
+  configured: boolean;
+  demo_mode: boolean;
+  currency: string;
+  has_secret_key: boolean;
+  secret_key_hint: string;
+  has_webhook_secret: boolean;
+  webhook_secret_hint: string;
+  publishable_key: string;
+  live_mode: boolean;
+  webhook_url: string;
+};
+
+export type StripeConfigInput = {
+  secret_key?: string;
+  webhook_secret?: string;
+  publishable_key?: string;
+  demo_mode?: boolean;
+  clear_secret_key?: boolean;
+  clear_webhook_secret?: boolean;
 };
