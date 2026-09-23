@@ -1157,9 +1157,7 @@
       // date, prereserva notice and a reservas button preset to that date.
       var specialDate = menu.special_date && menu.special_date.date ? menu.special_date : null;
       if (specialDate) {
-        var dayLabel = new Date(specialDate.date + "T12:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
         subtitleBlock += '<div class="specialMenuDay">'
-          + '<p class="specialMenuDayDate">' + escapeHtml((specialDate.title ? specialDate.title + " · " : "") + dayLabel) + '</p>'
           + (specialDate.prereserva_enabled ? '<p class="specialMenuDayPrereserva">Es necesaria prereserva para esta fecha.</p>' : "")
           + '<a class="btn btn--primary specialMenuDayBook" href="/reservas?date=' + encodeURIComponent(specialDate.date) + '" onclick="return false">Reservar para esta fecha</a>'
           + '</div>';

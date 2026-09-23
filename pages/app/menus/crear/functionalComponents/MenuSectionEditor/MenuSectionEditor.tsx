@@ -1,13 +1,13 @@
 import { AutosaveInput } from "../../../../../../ui/inputs/AutosaveInput";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Eye, EyeOff, GripVertical, IceCreamCone, MessageSquareText, Plus, Search, Settings2, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Eye, EyeOff, GripVertical, IceCreamCone, MessageSquareText, Plus, Settings2, Trash2 } from "lucide-react";
 import { AnimatePresence, motion, Reorder } from "motion/react";
 import type { EditorSection } from "../../types/menuEditor.types";
 import type { DishCatalogItem } from "../../../../../../api/types";
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
 import { Switch } from "../../../../../../ui/shadcn/Switch";
 import { MenuItemEditor } from "../MenuItemEditor/MenuItemEditor";
-import { ALLERGENS } from "../../constants/menuEditor.constants";
+import { DishCatalogSearch, DishCatalogSearchAddButton } from "../../../../../../ui/widgets/menus/DishCatalogSearch";
 // Coordination id: dessert_section_source_v1
 import { Select } from "../../../../../../ui/inputs/Select";
 import {
@@ -21,11 +21,6 @@ import {
 import { useDragControls } from "motion/react";
 
 export type SectionDishTab = "active" | "inactive" | "annotations" | "settings";
-
-const ALLERGEN_ALIASES: Record<string, string> = {
-  lacteos: "leche",
-  frutos_secos: "frutos de cascara",
-};
 
 export type MenuSectionEditorProps = {
   sec: EditorSection;
@@ -351,61 +346,20 @@ export function MenuSectionEditor({
             }
           >
             {dishTab === "active" || dishTab === "inactive" ? (
-              <div className="bo-dishAddRow" data-slot="menuSectionEditor-dishAddRow">
-                <div className="bo-dishSearchWrap" data-slot="menuSectionEditor-dishSearchWrap">
-                  <Search size={14} aria-hidden="true" />
-                  <AutosaveInput
-                    className="bo-input bo-dishSearch"
-                    value={searchTerm}
-                    onChange={(e) => handleSearch(sec.clientId, e.target.value)}
-                    placeholder="Buscar en catalogo..."
-                    aria-label={`Buscar plato en catalogo para ${sectionLabel}`}
-                    data-testid={`menu-section-editor-dish-search-${sec.clientId}`}
-                  />
-                </div>
-                {searchTerm.trim().length >= 2 && searchItems.length > 0 ? (
-                  <div
-                    className="bo-dishSearchResults"
-                    role="listbox"
-                    aria-label="Resultados de busqueda"
-                    data-testid={`menu-section-editor-search-results-${sec.clientId}`}
-                  >
-                    {searchItems.map((item) => (
-                      <button
-                        key={item.id}
-                        className="bo-dishSearchResultItem"
-                        type="button"
-                        onClick={() => handleAddDishFromCatalog(item)}
-                        role="option"
-                        aria-selected={false}
-                        data-testid={`menu-section-editor-search-result-${item.id}`}
-                      >
-                        <span className="bo-dishSearchResultTitle" data-slot="menuSectionEditor-dishSearchResultTitle">{item.title}</span>
-                        {item.allergens && item.allergens.length > 0 ? (
-                          <span className="bo-dishSearchResultAllergens" aria-label="Alergenos" data-slot="menuSectionEditor-dishSearchResultAllergens">
-                            {item.allergens.map((allergen) => {
-                              const key = allergen.trim().toLowerCase();
-                              const entry = ALLERGENS.find((item) => item.key.toLowerCase() === (ALLERGEN_ALIASES[key] ?? key));
-                              if (!entry) return null;
-                              const Icon = entry.icon;
-                              return <span key={`${entry.key}-${allergen}`} className="bo-dishSearchResultAllergenIcon" title={entry.key}><Icon size={14} aria-hidden="true" /></span>;
-                            })}
-                          </span>
-                        ) : null}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-                <button
-                  className="bo-btn bo-btn--ghost bo-btn--sm"
-                  type="button"
-                  onClick={handleAddDish}
-                  aria-label={`Añadir plato a ${sectionLabel}`}
-                  data-testid={`menu-section-editor-add-dish-${sec.clientId}`}
-                >
-                  <Plus size={14} /> Añadir plato
-                </button>
-              </div>
+              <DishCatalogSearch
+                testIds={{
+                  row: `menu-section-editor-dish-add-row-${sec.clientId}`,
+                  input: `menu-section-editor-dish-search-${sec.clientId}`,
+                  results: `menu-section-editor-search-results-${sec.clientId}`,
+                  result: (id) => `menu-section-editor-search-result-${id}`,
+                }}
+                term={searchTerm}
+                items={searchItems}
+                onTermChange={(term) => handleSearch(sec.clientId, term)}
+                onPick={handleAddDishFromCatalog}
+                ariaLabel={`Buscar plato en catalogo para ${sectionLabel}`}
+                action={<DishCatalogSearchAddButton label="Añadir plato" ariaLabel={`Añadir plato a ${sectionLabel}`} onClick={handleAddDish} testId={`menu-section-editor-add-dish-${sec.clientId}`} />}
+              />
             ) : null}
 
             {dishTab === "annotations" ? (
