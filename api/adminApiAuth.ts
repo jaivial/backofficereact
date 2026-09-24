@@ -32,3 +32,23 @@ export function adminApiAuthHeader(): string | null {
   const value = registry()[REGISTRY_KEY];
   return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
 }
+
+// Coordination id: stripe_connect_multitenant_v1 - second server-only secret
+// (BEARER_TOKEN_KEY) sent as X-Bearer-Token on every backend request.
+const BEARER_REGISTRY_KEY = "__vc_admin_api_bearer_token__";
+
+export function registerAdminApiBearerToken(token: string | null): void {
+  const value = typeof token === "string" ? token.trim() : "";
+  registry()[BEARER_REGISTRY_KEY] = value || null;
+}
+
+// adminApiAuthHeaders returns every server-side auth header for the Go admin
+// API. Single source for SSR fetches, the /api proxy and the WS proxy.
+export function adminApiAuthHeaders(): Record<string, string> {
+  const out: Record<string, string> = {};
+  const auth = adminApiAuthHeader();
+  if (auth) out.authorization = auth;
+  const bearer = registry()[BEARER_REGISTRY_KEY];
+  if (typeof bearer === "string" && bearer.trim() !== "") out["x-bearer-token"] = bearer.trim();
+  return out;
+}

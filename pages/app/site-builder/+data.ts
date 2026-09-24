@@ -1,7 +1,7 @@
 import type { PageContextServer } from "vike/types";
 import { useConfig } from "vike-react/useConfig";
 
-import { adminApiAuthHeader } from "../../../api/adminApiAuth";
+import { adminApiAuthHeaders } from "../../../api/adminApiAuth";
 
 /**
  * Server-side hydration for the site-builder editor. Fetches the restaurant's
@@ -24,13 +24,12 @@ export async function data(pageContext: PageContextServer): Promise<Data> {
   const cookieHeader = pageContext.boRequest?.cookieHeader ?? "";
 
   const api = async (path: string): Promise<any> => {
-    const adminAuth = adminApiAuthHeader();
     const res = await fetch(`${backendOrigin}/admin${path}`, {
       headers: {
         cookie: cookieHeader,
         "content-type": "application/json",
         // Direct SSR call: the /api proxy cannot inject the shared secret here.
-        ...(adminAuth ? { authorization: adminAuth } : {}),
+        ...adminApiAuthHeaders(),
       },
     });
     if (!res.ok) throw new Error(`SSR fetch ${path}: ${res.status}`);

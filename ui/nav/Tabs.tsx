@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { cn } from "../shadcn/utils";
 
@@ -32,10 +32,25 @@ export function Tabs({
     ? { duration: 0 }
     : { type: "spring" as const, stiffness: 520, damping: 42, mass: 0.9 };
 
+  // When the strip scrolls (narrower than its tabs), keep the active tab in
+  // view inside it. Only the strip scrolls; the page never moves.
+  const navRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || nav.scrollWidth <= nav.clientWidth) return;
+    const el = nav.querySelector<HTMLElement>(".bo-tab.is-active");
+    if (!el) return;
+    const left = el.offsetLeft - nav.offsetLeft;
+    if (left < nav.scrollLeft || left + el.offsetWidth > nav.scrollLeft + nav.clientWidth) {
+      nav.scrollTo({ left: Math.max(0, left - (nav.clientWidth - el.offsetWidth) / 2), behavior: reduceMotion ? "auto" : "smooth" });
+    }
+  }, [activeId, reduceMotion]);
+
   // In button mode, onNavigate is optional but onChange is the alternative via onClick on role=tab.
   // We use onNavigate(id) with just id in button mode — the href param will be "#".
   return (
     <nav
+      ref={navRef}
       className={cn("bo-tabs", "bo-tabs--glass", className)}
       aria-label={ariaLabel}
       data-testid="tabs"

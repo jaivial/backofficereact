@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 // vike reads VIKE_CRAWL at config-resolution time, so set it before any
 // renderPage/dev-middleware runs. Only set when absent: an explicit VIKE_CRAWL
 // (docker-compose, CI) is respected as-is.
-import { registerAdminApiAuth } from "../api/adminApiAuth";
+import { adminApiAuthHeaders, registerAdminApiAuth, registerAdminApiBearerToken } from "../api/adminApiAuth";
 import { defaultVikeCrawl } from "./vikeCrawl";
 
 if (!process.env.VIKE_CRAWL) {
@@ -299,8 +299,7 @@ async function fetchSession(
       cookie: `bo_session=${sessionToken}`,
       "x-forwarded-proto": publicScheme,
     };
-    const vaultAuth = vaultAuthHeader();
-    if (vaultAuth) headers.authorization = vaultAuth;
+    Object.assign(headers, adminApiAuthHeaders());
     if (typeof pagePath === "string" && pagePath.trim() !== "") {
       headers["x-bo-page-path"] = pagePath.trim();
     }
@@ -574,7 +573,7 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/reservas/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws")) return;
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/reservas/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws") && !pathname.startsWith("/api/admin/config/stripe-connect/ws")) return;
 
     if (pathname.startsWith("/api/admin/assistant/ws")) {
       // Keep diagnostic logging safe: upgrade headers include the session cookie.
@@ -616,9 +615,9 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       const sessionCookie = filterBOSessionCookie(headers.cookie);
       if (sessionCookie) headers.cookie = sessionCookie;
       else delete headers.cookie;
-      const vaultAuth = vaultAuthHeader();
-      if (vaultAuth) headers.authorization = vaultAuth;
-      else delete headers.authorization;
+      delete headers.authorization;
+      delete headers["x-bearer-token"];
+      Object.assign(headers, adminApiAuthHeaders());
       headers.host = new URL(backendOrigin).host;
       headers["x-forwarded-host"] = req.headers.host || "";
 
@@ -689,6 +688,8 @@ async function start() {
   // the shared admin-API secret as well. Register it once here: this entry is
   // the only server-side owner of VAULT_KEY, and the value stays in memory.
   registerAdminApiAuth(vaultAuthHeader());
+  // Coordination id: stripe_connect_multitenant_v1
+  registerAdminApiBearerToken(process.env.BEARER_TOKEN_KEY ?? null);
 
   if (!isProd && !(await isBackendReachable(backendOrigin))) {
     logBackendUnavailable("startup", backendOrigin);
@@ -737,9 +738,9 @@ async function start() {
       else headers.delete("cookie");
 
       // Trusted server-side identity for the Go admin API: the shared vault key.
-      const vaultAuth = vaultAuthHeader();
-      if (vaultAuth) headers.set("authorization", vaultAuth);
-      else headers.delete("authorization");
+      headers.delete("authorization");
+      headers.delete("x-bearer-token");
+      for (const [k, v] of Object.entries(adminApiAuthHeaders())) headers.set(k, v);
 
       // A preference write changes session.preferences, which the SSR session
       // cache would otherwise keep serving stale for up to SESSION_CACHE_TTL_MS.

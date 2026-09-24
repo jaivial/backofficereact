@@ -2293,13 +2293,15 @@ export type MandatoryMenuConfig = {
 
 // Special Dates (reservas especiales)
 // Coordination id: special_dates_v1 (crosses FE/BE).
-export type SpecialDatePaymentMethod = "card" | "bizum" | "transferencia" | "efectivo";
+export type SpecialDatePaymentMethod = "card" | "bizum" | "transferencia" | "efectivo" | "stripe";
 
 export const SPECIAL_DATE_PAYMENT_METHODS: ReadonlyArray<{ value: SpecialDatePaymentMethod; label: string }> = [
   { value: "card", label: "Tarjeta" },
   { value: "bizum", label: "Bizum" },
   { value: "transferencia", label: "Transferencia" },
   { value: "efectivo", label: "Efectivo" },
+  // Coordination id: stripe_prereserva_adelanto_v1 - online, exclusive.
+  { value: "stripe", label: "Stripe (pago online)" },
 ];
 
 export const SPECIAL_DATE_PAYMENT_METHOD_LABELS: Record<SpecialDatePaymentMethod, string> = SPECIAL_DATE_PAYMENT_METHODS.reduce(
@@ -2815,4 +2817,38 @@ export type PageVisibility = {
   cafes_web_placement: string;
   vinos_web_placement: string;
   bebidas_web_placement: string;
+};
+
+// Coordination id: stripe_connect_multitenant_v1 - connected account state of
+// the restaurant. No keys: the platform Stripe account does the charging.
+export type StripeConnectStatus = {
+  connected: boolean;
+  demo: boolean;
+  status: "not_connected" | "pending" | "verifying" | "restricted" | "active";
+  charges_enabled: boolean;
+  payouts_enabled: boolean;
+  details_submitted: boolean;
+  currently_due: string[];
+  pending_verification: string[];
+  disabled_reason: string;
+  bank_last4: string;
+  platform_ready: boolean;
+  fee_percent: number;
+  // stripe_connect_fees_v1: Stripe base + platform commission for this restaurant.
+  fee: {
+    platform_fee_percent: number;
+    stripe_base_percent: number;
+    stripe_base_fixed_cents: number;
+    override: boolean;
+    total_percent: number;
+  };
+};
+
+// stripe_connect_multitenant_v1.delete: why a real payment account cannot be deleted yet.
+export type StripeConnectDeleteBlocker = {
+  code: "CHECKOUTS_OPEN" | "BALANCE_NOT_ZERO" | "BALANCE_UNKNOWN";
+  message: string;
+  open_checkouts?: number;
+  available_cents?: number;
+  pending_cents?: number;
 };

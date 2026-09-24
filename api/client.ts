@@ -1,5 +1,5 @@
 import { createPOSModule } from "./modules/pos";
-import { adminApiAuthHeader } from "./adminApiAuth";
+import { adminApiAuthHeaders } from "./adminApiAuth";
 import type {
   APIError,
   APISuccess,
@@ -156,8 +156,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       if (normalizedOpts.cookieHeader) headers.set("cookie", normalizedOpts.cookieHeader);
       // SSR data hooks reach the Go backend directly, so they must present the
       // shared admin-API secret themselves (the /api proxy only covers browsers).
-      const adminAuth = adminApiAuthHeader();
-      if (adminAuth) headers.set("authorization", adminAuth);
+      for (const [k, v] of Object.entries(adminApiAuthHeaders())) headers.set(k, v);
     } else if (!headers.has("x-correlation-id")) {
       const cid = currentCorrelationId();
       if (cid) headers.set("x-correlation-id", cid);
@@ -2386,6 +2385,35 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
+        });
+      },
+      // Coordination id: stripe_connect_multitenant_v1 - "Cobros online":
+      // the platform Stripe account + one connected account per restaurant.
+      async getStripeConnect(): Promise<APISuccess<{ connect: import("./types").StripeConnectStatus }> | APIError> {
+        return json("/api/admin/config/stripe-connect", { method: "GET" });
+      },
+      async startStripeConnectOnboarding(input: { demo?: boolean } = {}): Promise<APISuccess<{ onboarding_url?: string; connect?: import("./types").StripeConnectStatus }> | APIError> {
+        return json("/api/admin/config/stripe-connect/onboard", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async openStripeConnectDashboard(): Promise<APISuccess<{ dashboard_url: string }> | APIError> {
+        return json("/api/admin/config/stripe-connect/dashboard", { method: "POST" });
+      },
+      async disconnectStripeConnectDemo(): Promise<APISuccess<Record<string, never>> | APIError> {
+        return json("/api/admin/config/stripe-connect/disconnect", { method: "POST" });
+      },
+      async stripeConnectDeletePrecheck(): Promise<APISuccess<{ can_delete: boolean; blockers: import("./types").StripeConnectDeleteBlocker[] }> | APIError> {
+        return json("/api/admin/config/stripe-connect/delete-precheck", { method: "GET" });
+      },
+      // stripe_connect_multitenant_v1.delete: removes the real connected account (Stripe + local).
+      async deleteStripeConnectAccount(confirm: string): Promise<APISuccess<{ connect?: import("./types").StripeConnectStatus }> | APIError> {
+        return json("/api/admin/config/stripe-connect/disconnect", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ confirm }),
         });
       },
       // MiniMax AI (forky chat + translations + stock) config per restaurant (root-only).

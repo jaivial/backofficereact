@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud, CreditCard } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
@@ -22,6 +22,7 @@ import { ConfigLegalPages } from "./functionalComponents/ConfigLegalPages/Config
 import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImage";
 import { ConfigMiniMax } from "./functionalComponents/ConfigMiniMax/ConfigMiniMax";
 import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
+import { ConfigCobrosOnline } from "./functionalComponents/ConfigCobrosOnline/ConfigCobrosOnline";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
 
 type PageData = {
@@ -32,11 +33,11 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "cdn";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "cdn" | "stripe";
 
 function resolveContentTab(raw: unknown, isRoot: boolean): ContentTab {
   const value = String(raw ?? "").trim() as ContentTab;
-  if (value === "ia" || value === "cdn") return isRoot ? value : "restaurante";
+  if (value === "ia" || value === "cdn" || value === "stripe") return isRoot ? value : "restaurante";
   if (value === "contacto" || value === "booking" || value === "legal-pages" || value === "restaurante") return value;
   return "restaurante";
 }
@@ -221,6 +222,12 @@ export default function Page() {
             label: "CDN",
             href: "#cdn",
             icon: <Cloud className="bo-ico" />,
+          } as TabItem,
+          {
+            id: "stripe",
+            label: "Cobros online",
+            href: "#stripe",
+            icon: <CreditCard className="bo-ico" />,
           } as TabItem]
         : []),
     ],
@@ -305,15 +312,19 @@ export default function Page() {
   return (
     <>
       <style>{`@media (max-width: 640px) { .bo-main:has([data-testid="config-section"]) { padding: 0 1rem 2rem !important } .bo-install-code, .bo-install-code code { white-space: pre-wrap !important; word-break: break-all !important; overflow-x: auto !important; max-width: 100% !important } }`}</style>
-    <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 max-w-3xl`} data-testid="config-section">
+    {/* Tabs are a direct child of app-layout-main (not of the 768px column) so
+        they center on the main area and may be wider than the content. */}
+    <div className="bo-configTabsWrap" data-testid="config-tabs-wrap">
       <Tabs
         tabs={contentTabs}
         activeId={contentTab}
         ariaLabel="Secciones de configuración"
-        className="bo-tabs--reservas mx-auto mb-6"
+        className="bo-tabs--reservas bo-configTabs"
         onNavigate={onNavigateContentTab}
         layoutId="boContentTabIndicator"
       />
+    </div>
+    <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 max-w-3xl`} data-testid="config-section">
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -337,6 +348,8 @@ export default function Page() {
             ) : null
           ) : contentTab === "cdn" ? (
             isRoot ? <ConfigBunnyStorage /> : null
+          ) : contentTab === "stripe" ? (
+            isRoot ? <ConfigCobrosOnline /> : null
           ) : contentTab === "restaurante" ? (
             <ConfigRestaurante
               defaults={defaults}
