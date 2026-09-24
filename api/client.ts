@@ -2405,6 +2405,14 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async disconnectStripeConnectDemo(): Promise<APISuccess<Record<string, never>> | APIError> {
         return json("/api/admin/config/stripe-connect/disconnect", { method: "POST" });
       },
+      // stripe_connect_multitenant_v1.delete: removes the real connected account (Stripe + local).
+      async deleteStripeConnectAccount(confirm: string): Promise<APISuccess<{ connect?: import("./types").StripeConnectStatus }> | APIError> {
+        return json("/api/admin/config/stripe-connect/disconnect", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ confirm }),
+        });
+      },
       // MiniMax AI (forky chat + translations + stock) config per restaurant (root-only).
       async getMiniMaxConfig(): Promise<APISuccess<{ config: import("./types").MiniMaxConfig }> | APIError> {
         return json("/api/admin/config/minimax", { method: "GET" });

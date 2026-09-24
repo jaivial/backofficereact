@@ -14,13 +14,16 @@ import {
   Percent,
   PlugZap,
   RefreshCw,
+  PencilLine,
   ShieldCheck,
+  Trash2,
   Wallet,
 } from "lucide-react";
 
 import { createClient } from "../../../../../api/client";
 import type { StripeConnectStatus } from "../../../../../api/types";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
+import { ConfirmDialog } from "../../../../../ui/overlays";
 import { feeCents, formatEuros, formatPercent, formatTotalFee } from "../../../../../lib/payments/connectFees";
 
 /**
@@ -123,7 +126,9 @@ export function ConfigCobrosOnline() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const [connect, setConnect] = useState<StripeConnectStatus | null>(null);
-  const [busy, setBusy] = useState<"onboard" | "demo" | "demo-off" | "dashboard" | null>(null);
+  const [busy, setBusy] = useState<"onboard" | "demo" | "demo-off" | "dashboard" | "delete" | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteText, setDeleteText] = useState("");
   const [checking, setChecking] = useState(false);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const lastStatus = useRef<Status | null>(null);
@@ -218,6 +223,26 @@ export function ConfigCobrosOnline() {
       await load();
     });
 
+  // Edit = Stripe-hosted onboarding link again: on Express accounts it lets the
+  // owner review and change the data already submitted (IBAN, address, ID...).
+  const edit = () => {
+    console.log("[checkpoint] stripe_connect_edit_open");
+    onboard();
+  };
+
+  const removeAccount = () =>
+    run("delete", async () => {
+      console.log("[checkpoint] stripe_connect_delete_confirmed");
+      const res = await api.config.deleteStripeConnectAccount(deleteText);
+      if (!res.success) throw new Error(res.message || "No se pudo eliminar la cuenta de cobros");
+      setDeleteOpen(false);
+      setDeleteText("");
+      lastStatus.current = null;
+      if (res.connect) setConnect(res.connect);
+      else await load();
+      pushToast({ kind: "success", title: "Cuenta de cobros eliminada", message: "Puedes volver a activar los cobros online cuando quieras." });
+    });
+
   const dashboard = () =>
     run("dashboard", async () => {
       const res = await api.config.openStripeConnectDashboard();
@@ -307,6 +332,11 @@ export function ConfigCobrosOnline() {
             {live && connect.details_submitted ? (
               <button type="button" className={`bo-btn ${connect.status === "active" ? "bo-btn--primary" : "bo-btn--ghost"}`} onClick={dashboard} disabled={!!busy} data-testid="config-cobros-dashboard">
                 {spin("dashboard") ?? <ArrowUpRight size={16} aria-hidden="true" />} Ver pagos y transferencias
+              </button>
+            ) : null}
+            {live && connect.details_submitted ? (
+              <button type="button" className="bo-btn bo-btn--ghost" onClick={edit} disabled={!!busy || !connect.platform_ready} data-testid="config-cobros-edit">
+                {spin("onboard") ?? <PencilLine size={16} aria-hidden="true" />} Editar datos
               </button>
             ) : null}
             {!connect.connected ? (
@@ -445,6 +475,66 @@ export function ConfigCobrosOnline() {
             </p>
           </section>
         ) : null}
+
+        {live ? (
+          <section className="bo-cobrosDanger" data-testid="config-cobros-danger" aria-labelledby="config-cobros-danger-title">
+            <div className="min-w-0" data-testid="config-cobros-danger-copy">
+              <h4 className="bo-cobrosDangerTitle" id="config-cobros-danger-title" data-testid="config-cobros-danger-title">Eliminar cuenta de cobros</h4>
+              <p className="bo-cobrosDangerText" data-testid="config-cobros-danger-text">
+                Desconecta este restaurante de Stripe para empezar el alta de nuevo con otros datos o con otra titularidad. Los cobros online se desactivan
+                al momento. Solo es posible sin pagos en curso ni saldo pendiente de transferir.
+              </p>
+            </div>
+            <button type="button" className="bo-btn bo-btn--danger" onClick={() => setDeleteOpen(true)} disabled={!!busy} data-testid="config-cobros-delete">
+              <Trash2 size={16} aria-hidden="true" /> Eliminar cuenta
+            </button>
+          </section>
+        ) : null}
+
+        <ConfirmDialog
+          open={deleteOpen}
+          danger
+          busy={busy === "delete"}
+          title="¿Eliminar la cuenta de cobros?"
+          confirmText="Eliminar definitivamente"
+          cancelText="Cancelar"
+          onClose={() => {
+            if (busy === "delete") return;
+            setDeleteOpen(false);
+            setDeleteText("");
+          }}
+          onConfirm={() => {
+            if (deleteText.trim().toUpperCase() !== "ELIMINAR") {
+              pushToast({ kind: "error", title: "Confirmación necesaria", message: "Escribe ELIMINAR para confirmar." });
+              return;
+            }
+            void removeAccount();
+          }}
+          message={
+            <div className="flex flex-col gap-3 text-sm" data-testid="config-cobros-delete-dialog">
+              <ul className="bo-cobrosDeleteList" data-testid="config-cobros-delete-consequences">
+                <li data-testid="config-cobros-delete-c1">Se desactivan al momento los cobros online de las prereservas.</li>
+                <li data-testid="config-cobros-delete-c2">La cuenta se elimina en Stripe y no se puede recuperar.</li>
+                <li data-testid="config-cobros-delete-c3">Los cobros ya transferidos a tu banco no se ven afectados.</li>
+                <li data-testid="config-cobros-delete-c4">Después podrás activar los cobros otra vez desde cero.</li>
+              </ul>
+              <label className="flex flex-col gap-1" data-testid="config-cobros-delete-confirm-label">
+                <span>
+                  Escribe <strong>ELIMINAR</strong> para confirmar
+                </span>
+                <input
+                  className="bo-input"
+                  value={deleteText}
+                  onChange={(e) => setDeleteText(e.target.value)}
+                  autoComplete="off"
+                  autoFocus
+                  aria-label="Escribe ELIMINAR para confirmar"
+                  data-testid="config-cobros-delete-confirm-input"
+                />
+              </label>
+            </div>
+          }
+        />
 
         <p className="bo-cobrosFoot" data-testid="config-cobros-foot">
           <Lock size={12} aria-hidden="true" /> Pagos procesados por Stripe. Tus datos personales y bancarios nunca se guardan en esta aplicación.
