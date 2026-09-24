@@ -12,8 +12,9 @@ import type {
   PlatformUAZAPIServer,
 } from "../../../api/platform-client";
 import type { Data } from "./+data";
+import { StripeConnectTab } from "./StripeConnectTab/StripeConnectTab";
 
-type Tab = "dashboard" | "restaurants" | "users" | "subscriptions" | "whatsapp" | "stripe" | "domains" | "servers";
+type Tab = "dashboard" | "restaurants" | "users" | "subscriptions" | "whatsapp" | "stripe" | "stripe-connect" | "domains" | "servers";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "dashboard", label: "Dashboard" },
@@ -22,6 +23,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "subscriptions", label: "Suscripciones" },
   { key: "whatsapp", label: "WhatsApp / QR" },
   { key: "stripe", label: "Stripe" },
+  { key: "stripe-connect", label: "Stripe Connect" },
   { key: "domains", label: "Dominios" },
   { key: "servers", label: "Servidores" },
 ];
@@ -60,6 +62,7 @@ export default function Page() {
         {tab === "subscriptions" && <SubscriptionsTab />}
         {tab === "whatsapp" && <WhatsAppTab />}
         {tab === "stripe" && <StripeTab />}
+        {tab === "stripe-connect" && <StripeConnectTab />}
         {tab === "domains" && <DomainsTab />}
         {tab === "servers" && <ServersTab />}
       </div>
