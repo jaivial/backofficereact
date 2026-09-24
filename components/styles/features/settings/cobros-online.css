@@ -78,11 +78,7 @@
   align-items: center;
   gap: 8px;
 }
-.bo-cobrosHeroChecked {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--bo-faint);
-}
+
 
 /* Due requirements */
 .bo-cobrosDueBox {
@@ -251,19 +247,6 @@
 [data-ui="config-cobros-online"] .bo-cobrosAdvanced .bo-accordionTrigger:hover { color: var(--bo-muted); }
 [data-ui="config-cobros-online"] .bo-cobrosAdvanced .bo-cobrosDanger { margin-top: 8px; }
 
-/* Realtime dot */
-.bo-cobrosLive {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 6px;
-  border-radius: 999px;
-  vertical-align: middle;
-  background: var(--bo-faint);
-}
-.bo-cobrosLive.is-open { background: var(--bo-color-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bo-color-success) 20%, transparent); }
-.bo-cobrosLive.is-connecting { background: var(--bo-color-warning); }
-
 /* Delete blocked modal */
 .bo-cobrosBlockedItem {
   padding: 12px 14px;
@@ -291,7 +274,6 @@
   .bo-cobrosHero { grid-template-columns: 1fr; padding: 18px; }
   .bo-cobrosHeroTitle { font-size: 18px; }
   .bo-cobrosHeroActions .bo-btn { flex: 1 1 100%; justify-content: center; }
-  .bo-cobrosHeroChecked { margin-left: 0; width: 100%; text-align: center; }
   [data-ui="config-cobros-online"] .bo-stepperTrigger { flex-direction: row; text-align: left; gap: 12px; }
   [data-ui="config-cobros-online"] .bo-stepperDescription { max-width: none; }
   [data-ui="config-cobros-online"] .bo-stepper { gap: 10px; }
