@@ -2843,3 +2843,12 @@ export type StripeConnectStatus = {
     total_percent: number;
   };
 };
+
+// stripe_connect_multitenant_v1.delete: why a real payment account cannot be deleted yet.
+export type StripeConnectDeleteBlocker = {
+  code: "CHECKOUTS_OPEN" | "BALANCE_NOT_ZERO" | "BALANCE_UNKNOWN";
+  message: string;
+  open_checkouts?: number;
+  available_cents?: number;
+  pending_cents?: number;
+};
