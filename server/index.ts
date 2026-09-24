@@ -573,7 +573,18 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/reservas/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws") && !pathname.startsWith("/api/admin/config/stripe-connect/ws")) return;
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/reservas/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws") && !pathname.startsWith("/api/admin/config/stripe-connect/ws")) {
+      // Unknown /api WS path: close it now. Leaving it half-open kept the
+      // browser's single CONNECTING slot per host busy, so every other socket
+      // (fichaje, Cobros online…) waited forever behind it. Non-/api upgrades
+      // (Vite HMR in dev) are left to their own handlers.
+      if (pathname.startsWith("/api/")) {
+        console.warn("[backoffice] ws proxy: rejecting unknown path", pathname);
+        socket.write("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n");
+        socket.destroy();
+      }
+      return;
+    }
 
     if (pathname.startsWith("/api/admin/assistant/ws")) {
       // Keep diagnostic logging safe: upgrade headers include the session cookie.
