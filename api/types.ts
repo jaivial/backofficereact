@@ -2824,11 +2824,13 @@ export type PageVisibility = {
 export type StripeConnectStatus = {
   connected: boolean;
   demo: boolean;
-  status: "not_connected" | "pending" | "restricted" | "active";
+  status: "not_connected" | "pending" | "verifying" | "restricted" | "active";
   charges_enabled: boolean;
   payouts_enabled: boolean;
   details_submitted: boolean;
   currently_due: string[];
+  pending_verification: string[];
+  disabled_reason: string;
   bank_last4: string;
   platform_ready: boolean;
   fee_percent: number;
