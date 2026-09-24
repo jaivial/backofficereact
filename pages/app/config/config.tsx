@@ -312,15 +312,19 @@ export default function Page() {
   return (
     <>
       <style>{`@media (max-width: 640px) { .bo-main:has([data-testid="config-section"]) { padding: 0 1rem 2rem !important } .bo-install-code, .bo-install-code code { white-space: pre-wrap !important; word-break: break-all !important; overflow-x: auto !important; max-width: 100% !important } }`}</style>
-    <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 max-w-3xl`} data-testid="config-section">
+    {/* Tabs are a direct child of app-layout-main (not of the 768px column) so
+        they center on the main area and may be wider than the content. */}
+    <div className="bo-configTabsWrap" data-testid="config-tabs-wrap">
       <Tabs
         tabs={contentTabs}
         activeId={contentTab}
         ariaLabel="Secciones de configuración"
-        className="bo-tabs--reservas mx-auto mb-6"
+        className="bo-tabs--reservas bo-configTabs"
         onNavigate={onNavigateContentTab}
         layoutId="boContentTabIndicator"
       />
+    </div>
+    <section aria-label="Configuración" className={`w-full mx-auto max-sm:mx-0 max-sm:px-0 max-w-3xl`} data-testid="config-section">
 
       <AnimatePresence mode="wait">
         <motion.div
