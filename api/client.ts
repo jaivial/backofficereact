@@ -2405,6 +2405,9 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async disconnectStripeConnectDemo(): Promise<APISuccess<Record<string, never>> | APIError> {
         return json("/api/admin/config/stripe-connect/disconnect", { method: "POST" });
       },
+      async stripeConnectDeletePrecheck(): Promise<APISuccess<{ can_delete: boolean; blockers: import("./types").StripeConnectDeleteBlocker[] }> | APIError> {
+        return json("/api/admin/config/stripe-connect/delete-precheck", { method: "GET" });
+      },
       // stripe_connect_multitenant_v1.delete: removes the real connected account (Stripe + local).
       async deleteStripeConnectAccount(confirm: string): Promise<APISuccess<{ connect?: import("./types").StripeConnectStatus }> | APIError> {
         return json("/api/admin/config/stripe-connect/disconnect", {
