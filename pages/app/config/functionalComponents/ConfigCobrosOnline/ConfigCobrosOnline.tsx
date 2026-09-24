@@ -15,7 +15,6 @@ import {
   Lock,
   Percent,
   PlugZap,
-  RefreshCw,
   PencilLine,
   ShieldCheck,
   Trash2,
@@ -122,7 +121,6 @@ const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-const timeFmt = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
 export function ConfigCobrosOnline() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
@@ -132,72 +130,41 @@ export function ConfigCobrosOnline() {
   const [blockers, setBlockers] = useState<StripeConnectDeleteBlocker[] | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteText, setDeleteText] = useState("");
-  const [checking, setChecking] = useState(false);
-  const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const lastStatus = useRef<Status | null>(null);
 
-  // Single entry point for every fresh status (REST load or socket push).
+  // Single entry point for every status: the socket's hello and its pushes.
   const apply = useCallback(
-    (next: StripeConnectStatus, notifyManual = false) => {
+    (next: StripeConnectStatus) => {
       const prev = lastStatus.current;
       lastStatus.current = next.status;
       setConnect(next);
-      setCheckedAt(new Date());
       if (prev && prev !== "active" && next.status === "active" && !next.demo) {
         pushToast({ kind: "success", title: "Cobros activados", message: "Stripe ha verificado la cuenta. Ya puedes cobrar adelantos con tarjeta." });
-      } else if (notifyManual) {
-        pushToast({ kind: "info", title: "Estado actualizado", message: VIEWS[next.demo ? "demo" : next.status].eyebrow });
       }
     },
     [pushToast],
   );
 
-  // REST refresh: first paint, manual "Comprobar ahora" and after actions. It
-  // also re-reads the account from Stripe, which pushes to other open tabs.
-  const load = useCallback(
-    async (manual = false) => {
-      setChecking(true);
-      try {
-        const res = await api.config.getStripeConnect();
-        if (!res.success) {
-          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo cargar el estado de cobros" });
-          return;
-        }
-        console.log("[checkpoint] stripe_connect_status_loaded", res.connect.status);
-        apply(res.connect, manual);
-      } finally {
-        setChecking(false);
-      }
-    },
-    [api, pushToast, apply],
-  );
-
-  // First load + coming back from Stripe (?onboarding=return|refresh).
+  // Coming back from Stripe (?onboarding=return|refresh): the socket's hello
+  // already brings the fresh status; only clean the URL and explain expiry.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const back = params.get("onboarding");
-    void load();
-    if (back) {
-      console.log("[checkpoint] stripe_connect_onboarding_back", back);
-      if (back === "refresh") {
-        pushToast({ kind: "info", title: "El enlace de Stripe caducó", message: "Pulsa «Continuar el alta» para seguir donde lo dejaste." });
-      }
-      params.delete("onboarding");
-      const qs = params.toString();
-      window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+    if (!back) return;
+    console.log("[checkpoint] stripe_connect_onboarding_back", back);
+    if (back === "refresh") {
+      pushToast({ kind: "info", title: "El enlace de Stripe caducó", message: "Pulsa «Continuar el alta» para seguir donde lo dejaste." });
     }
-  }, [load, pushToast]);
+    params.delete("onboarding");
+    const qs = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+  }, [pushToast]);
 
-  // Realtime: the backend pushes every status change (webhook account.updated,
-  // onboarding, demo, delete) over one WebSocket; no polling.
+  // Realtime only: one WebSocket; hello carries the full current status (read
+  // from Stripe) and the backend pushes every change (webhook account.updated,
+  // onboarding, demo, delete). No REST polling, no manual refresh.
   const waiting = !!connect && !connect.demo && (connect.status === "pending" || connect.status === "verifying");
-  const socket = useStripeConnectSocket(
-    useCallback((next: StripeConnectStatus, source: "hello" | "push") => {
-      // hello repeats what REST already showed; only pushes are news.
-      if (source === "hello" && lastStatus.current === next.status) return;
-      apply(next);
-    }, [apply]),
-  );
+  const socket = useStripeConnectSocket(useCallback((next: StripeConnectStatus) => apply(next), [apply]));
 
   const run = async (kind: NonNullable<typeof busy>, fn: () => Promise<void>) => {
     setBusy(kind);
@@ -233,8 +200,7 @@ export function ConfigCobrosOnline() {
     run("demo-off", async () => {
       const res = await api.config.disconnectStripeConnectDemo();
       if (!res.success) throw new Error(res.message || "No se pudo desactivar el modo demo");
-      lastStatus.current = null;
-      await load();
+      lastStatus.current = null; // backend pushes the new status over the socket
     });
 
   // Edit = Stripe-hosted onboarding link again: on Express accounts it lets the
@@ -276,8 +242,7 @@ export function ConfigCobrosOnline() {
       setDeleteOpen(false);
       setDeleteText("");
       lastStatus.current = null;
-      if (res.connect) setConnect(res.connect);
-      else await load();
+      if (res.connect) setConnect(res.connect); // the socket push arrives too
       pushToast({ kind: "success", title: "Cuenta de cobros eliminada", message: "Puedes volver a activar los cobros online cuando quieras." });
     });
 
@@ -287,6 +252,14 @@ export function ConfigCobrosOnline() {
       if (!res.success) throw new Error(res.message || "Stripe no pudo abrir el panel");
       window.open(res.dashboard_url, "_blank", "noopener,noreferrer");
     });
+
+  if (!connect && socket === "closed") {
+    return (
+      <div className="bo-panel flex items-center gap-2 p-6 text-sm text-[var(--bo-muted)]" data-testid="config-cobros-offline" role="status">
+        <Loader2 size={16} className="animate-spin" aria-hidden="true" /> No se pudo conectar con el servidor de cobros. Reintentando…
+      </div>
+    );
+  }
 
   if (!connect) {
     return (
@@ -386,17 +359,6 @@ export function ConfigCobrosOnline() {
               <button type="button" className="bo-btn bo-btn--ghost" onClick={leaveDemo} disabled={!!busy} data-testid="config-cobros-demo-off">
                 {spin("demo-off")} Salir del modo demo
               </button>
-            ) : null}
-            {live && connect.status !== "active" ? (
-              <button type="button" className="bo-btn bo-btn--ghost" onClick={() => void load(true)} disabled={checking} data-testid="config-cobros-refresh">
-                <RefreshCw size={16} className={checking ? "animate-spin" : ""} aria-hidden="true" /> Comprobar ahora
-              </button>
-            ) : null}
-            {live && checkedAt ? (
-              <span className="bo-cobrosHeroChecked" data-testid="config-cobros-checked-at">
-                <span className={`bo-cobrosLive is-${socket}`} data-testid="config-cobros-live" data-state={socket} aria-hidden="true" />
-                {socket === "open" ? "En directo" : socket === "connecting" ? "Conectando…" : "Sin conexión en directo"} · Actualizado {timeFmt.format(checkedAt)}
-              </span>
             ) : null}
           </div>
         </section>
