@@ -457,7 +457,7 @@ export function ConfigCobrosOnline() {
             </h4>
             <dl className="bo-cobrosFeesRows" data-testid="config-cobros-fees-rows">
               <div className="bo-cobrosFeesRow" data-testid="config-cobros-fees-stripe">
-                <dt>Tarifa de Stripe (procesamiento de tarjeta)</dt>
+                <dt>Tarifa de Stripe (la cobra Stripe directamente)</dt>
                 <dd>{formatPercent(fee.stripe_base_percent)} + {formatEuros(fee.stripe_base_fixed_cents)}</dd>
               </div>
               <div className="bo-cobrosFeesRow" data-testid="config-cobros-fees-platform">
@@ -472,7 +472,8 @@ export function ConfigCobrosOnline() {
             <p className="bo-cobrosFeesExample" data-testid="config-cobros-fees-example">
               Ejemplo: en un adelanto de {formatEuros(5000)} se descuentan {formatEuros(feeCents(fee, fee.platform_fee_percent, 5000))} y recibes{" "}
               <strong>{formatEuros(5000 - feeCents(fee, fee.platform_fee_percent, 5000))}</strong>. Se descuenta automáticamente de cada cobro;
-              no hay cuotas mensuales ni coste si no cobras. La tarifa de Stripe corresponde a tarjetas estándar del Espacio Económico Europeo.
+              no hay cuotas mensuales ni coste si no cobras. La tarifa de Stripe corresponde a tarjetas estándar del Espacio Económico Europeo; con
+              otras tarjetas Stripe puede aplicar la suya y la verás en tu panel de Stripe. Stripe gestiona el riesgo y las disputas de la cuenta.
             </p>
           </section>
         ) : null}
