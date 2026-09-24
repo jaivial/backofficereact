@@ -196,6 +196,28 @@
   color: var(--bo-muted);
 }
 
+/* Fee breakdown (stripe_connect_fees_v1) */
+.bo-cobrosFees {
+  padding: 16px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+}
+.bo-cobrosFeesTitle { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: var(--bo-text); }
+.bo-cobrosFeesRows { margin: 0; display: flex; flex-direction: column; }
+.bo-cobrosFeesRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--bo-muted);
+  border-bottom: 1px dashed var(--bo-border-2);
+}
+.bo-cobrosFeesRow dd { margin: 0; color: var(--bo-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bo-cobrosFeesRow.is-total { border-bottom: 0; font-weight: 700; color: var(--bo-text); }
+.bo-cobrosFeesExample { margin: 8px 0 0; font-size: 12px; line-height: 1.55; color: var(--bo-muted); }
+
 /* Skeleton */
 .bo-cobrosSkeleton {
   height: 168px;
