@@ -237,6 +237,19 @@
   .bo-cobrosDanger .bo-btn { justify-content: center; }
 }
 
+/* Delete blocked modal */
+.bo-cobrosBlockedItem {
+  padding: 12px 14px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid color-mix(in srgb, var(--bo-color-warning) 30%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-color-warning) 7%, transparent);
+}
+.bo-cobrosBlockedTitle { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--bo-text); }
+.bo-cobrosBlockedTitle svg { color: var(--bo-on-surface-warning); flex-shrink: 0; }
+.bo-cobrosBlockedHint { display: flex; gap: 6px; align-items: flex-start; margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: var(--bo-muted); }
+.bo-cobrosBlockedHint svg { margin-top: 2px; flex-shrink: 0; }
+.bo-cobrosBlocked .bo-cobrosFeesRow dt { padding-right: 8px; }
+
 /* Skeleton */
 .bo-cobrosSkeleton {
   height: 168px;

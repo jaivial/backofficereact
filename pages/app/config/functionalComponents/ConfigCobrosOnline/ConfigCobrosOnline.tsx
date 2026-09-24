@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   AlertTriangle,
   ArrowUpRight,
+  Ban,
+  Clock,
   BadgeCheck,
   Banknote,
   Check,
@@ -21,9 +23,9 @@ import {
 } from "lucide-react";
 
 import { createClient } from "../../../../../api/client";
-import type { StripeConnectStatus } from "../../../../../api/types";
+import type { StripeConnectDeleteBlocker, StripeConnectStatus } from "../../../../../api/types";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
-import { ConfirmDialog } from "../../../../../ui/overlays";
+import { ConfirmDialog, Modal } from "../../../../../ui/overlays";
 import { feeCents, formatEuros, formatPercent, formatTotalFee } from "../../../../../lib/payments/connectFees";
 
 /**
@@ -126,7 +128,8 @@ export function ConfigCobrosOnline() {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
   const [connect, setConnect] = useState<StripeConnectStatus | null>(null);
-  const [busy, setBusy] = useState<"onboard" | "demo" | "demo-off" | "dashboard" | "delete" | null>(null);
+  const [busy, setBusy] = useState<"onboard" | "demo" | "demo-off" | "dashboard" | "delete" | "precheck" | null>(null);
+  const [blockers, setBlockers] = useState<StripeConnectDeleteBlocker[] | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteText, setDeleteText] = useState("");
   const [checking, setChecking] = useState(false);
@@ -230,10 +233,34 @@ export function ConfigCobrosOnline() {
     onboard();
   };
 
+  // Before asking for ELIMINAR, check the same rules the backend enforces
+  // (payments in flight, money not yet paid out). Blocked -> explain, no delete.
+  const askDelete = () =>
+    run("precheck", async () => {
+      const res = await api.config.stripeConnectDeletePrecheck();
+      if (!res.success) throw new Error(res.message || "No se pudo comprobar la cuenta");
+      console.log("[checkpoint] stripe_connect_delete_precheck", res.can_delete, res.blockers.map((b) => b.code).join(","));
+      if (res.can_delete) setDeleteOpen(true);
+      else setBlockers(res.blockers);
+    });
+
   const removeAccount = () =>
     run("delete", async () => {
       console.log("[checkpoint] stripe_connect_delete_confirmed");
-      const res = await api.config.deleteStripeConnectAccount(deleteText);
+      let res;
+      try {
+        res = await api.config.deleteStripeConnectAccount(deleteText);
+      } catch (e) {
+        // A payment may have started between the precheck and the confirm.
+        const again = await api.config.stripeConnectDeletePrecheck().catch(() => null);
+        if (again && again.success && !again.can_delete) {
+          setDeleteOpen(false);
+          setDeleteText("");
+          setBlockers(again.blockers);
+          return;
+        }
+        throw e;
+      }
       if (!res.success) throw new Error(res.message || "No se pudo eliminar la cuenta de cobros");
       setDeleteOpen(false);
       setDeleteText("");
@@ -485,11 +512,13 @@ export function ConfigCobrosOnline() {
                 al momento. Solo es posible sin pagos en curso ni saldo pendiente de transferir.
               </p>
             </div>
-            <button type="button" className="bo-btn bo-btn--danger" onClick={() => setDeleteOpen(true)} disabled={!!busy} data-testid="config-cobros-delete">
-              <Trash2 size={16} aria-hidden="true" /> Eliminar cuenta
+            <button type="button" className="bo-btn bo-btn--danger" onClick={askDelete} disabled={!!busy} data-testid="config-cobros-delete">
+              {spin("precheck") ?? <Trash2 size={16} aria-hidden="true" />} Eliminar cuenta
             </button>
           </section>
         ) : null}
+
+        <DeleteBlockedModal blockers={blockers} onClose={() => setBlockers(null)} onDashboard={connect.details_submitted ? dashboard : undefined} />
 
         <ConfirmDialog
           open={deleteOpen}
@@ -541,5 +570,98 @@ export function ConfigCobrosOnline() {
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Shown instead of the delete confirmation while the account cannot be
+ * deleted: guest payments in progress or money not yet paid out to the bank.
+ * Coordination id: stripe_connect_multitenant_v1.delete
+ */
+function DeleteBlockedModal({
+  blockers,
+  onClose,
+  onDashboard,
+}: {
+  blockers: StripeConnectDeleteBlocker[] | null;
+  onClose: () => void;
+  onDashboard?: () => void;
+}) {
+  const open = !!blockers && blockers.length > 0;
+  const balance = blockers?.find((b) => b.code === "BALANCE_NOT_ZERO");
+  const checkouts = blockers?.find((b) => b.code === "CHECKOUTS_OPEN");
+  const unknown = blockers?.find((b) => b.code === "BALANCE_UNKNOWN");
+  return (
+    <Modal open={open} title="Todavía no puedes eliminar la cuenta" onClose={onClose} className="bo-modal--confirm bo-cobrosBlocked">
+      <div data-slot="modal-head" className="bo-modalHead" data-testid="config-cobros-blocked-head">
+        <div data-ui="modal-title" className="bo-modalTitle flex items-center gap-2" data-testid="config-cobros-blocked-title">
+          <Ban size={18} className="text-[var(--bo-on-surface-danger)]" aria-hidden="true" /> Todavía no puedes eliminar la cuenta
+        </div>
+        <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" data-testid="config-cobros-blocked-x">
+          ×
+        </button>
+      </div>
+      <div data-slot="modal-body" className="bo-modalBody flex flex-col gap-3 text-sm" data-testid="config-cobros-blocked" role="alertdialog" aria-describedby="config-cobros-blocked-intro">
+        <p id="config-cobros-blocked-intro" className="text-[var(--bo-muted)]" data-testid="config-cobros-blocked-intro">
+          Para proteger tu dinero, Stripe solo permite eliminar la cuenta de cobros cuando no queda nada pendiente. No se ha eliminado nada.
+        </p>
+
+        {balance ? (
+          <section className="bo-cobrosBlockedItem" data-testid="config-cobros-blocked-balance">
+            <h5 className="bo-cobrosBlockedTitle" data-testid="config-cobros-blocked-balance-title">
+              <Banknote size={16} aria-hidden="true" /> Tienes saldo pendiente de transferir
+            </h5>
+            <dl className="bo-cobrosFeesRows" data-testid="config-cobros-blocked-balance-rows">
+              <div className="bo-cobrosFeesRow" data-testid="config-cobros-blocked-available">
+                <dt>Disponible, en camino a tu banco</dt>
+                <dd>{formatEuros(balance.available_cents ?? 0)}</dd>
+              </div>
+              <div className="bo-cobrosFeesRow" data-testid="config-cobros-blocked-pending">
+                <dt>Pendiente (cobros recientes que Stripe aún retiene)</dt>
+                <dd>{formatEuros(balance.pending_cents ?? 0)}</dd>
+              </div>
+              <div className="bo-cobrosFeesRow is-total" data-testid="config-cobros-blocked-total">
+                <dt>Total</dt>
+                <dd>{formatEuros((balance.available_cents ?? 0) + (balance.pending_cents ?? 0))}</dd>
+              </div>
+            </dl>
+            <p className="bo-cobrosBlockedHint" data-testid="config-cobros-blocked-balance-hint">
+              <Clock size={14} aria-hidden="true" /> Stripe lo transfiere automáticamente a tu cuenta bancaria cada día; los cobros nuevos suelen tardar unos días
+              en estar disponibles. Cuando el saldo sea 0 € podrás eliminar la cuenta.
+            </p>
+          </section>
+        ) : null}
+
+        {checkouts ? (
+          <section className="bo-cobrosBlockedItem" data-testid="config-cobros-blocked-checkouts">
+            <h5 className="bo-cobrosBlockedTitle" data-testid="config-cobros-blocked-checkouts-title">
+              <Loader2 size={16} aria-hidden="true" /> {checkouts.open_checkouts === 1 ? "Hay 1 pago de un cliente en curso" : `Hay ${checkouts.open_checkouts ?? ""} pagos de clientes en curso`}
+            </h5>
+            <p className="bo-cobrosBlockedHint" data-testid="config-cobros-blocked-checkouts-hint">
+              Un cliente está pagando el adelanto de una prereserva. Los pagos sin terminar caducan solos en 30 minutos; inténtalo de nuevo después.
+            </p>
+          </section>
+        ) : null}
+
+        {unknown ? (
+          <section className="bo-cobrosBlockedItem" data-testid="config-cobros-blocked-unknown">
+            <h5 className="bo-cobrosBlockedTitle" data-testid="config-cobros-blocked-unknown-title">
+              <AlertTriangle size={16} aria-hidden="true" /> No hemos podido comprobar tu saldo
+            </h5>
+            <p className="bo-cobrosBlockedHint" data-testid="config-cobros-blocked-unknown-hint">{unknown.message}</p>
+          </section>
+        ) : null}
+      </div>
+      <div data-slot="modal-actions" className="bo-modalActions" data-testid="config-cobros-blocked-actions">
+        {balance && onDashboard ? (
+          <button type="button" className="bo-btn bo-btn--ghost" onClick={onDashboard} data-testid="config-cobros-blocked-dashboard">
+            <ArrowUpRight size={16} aria-hidden="true" /> Ver saldo en Stripe
+          </button>
+        ) : null}
+        <button type="button" className="bo-btn bo-btn--primary" onClick={onClose} autoFocus data-testid="config-cobros-blocked-ok">
+          Entendido
+        </button>
+      </div>
+    </Modal>
   );
 }
