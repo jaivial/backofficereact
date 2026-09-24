@@ -21,6 +21,7 @@ import {
 import { createClient } from "../../../../../api/client";
 import type { StripeConnectStatus } from "../../../../../api/types";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
+import { feeCents, formatEuros, formatPercent, formatTotalFee } from "../../../../../lib/payments/connectFees";
 
 /**
  * "Cobros online" of the active restaurant (admin/config?content=stripe).
@@ -233,6 +234,8 @@ export function ConfigCobrosOnline() {
   }
 
   const live = connect.connected && !connect.demo;
+  // Older backends omit `fee`: fall back to Stripe EEA standard + fee_percent.
+  const fee = connect.fee ?? { platform_fee_percent: connect.fee_percent, stripe_base_percent: 1.25, stripe_base_fixed_cents: 25, override: false, total_percent: 1.25 + connect.fee_percent };
   const key: Status | "demo" = connect.demo ? "demo" : connect.status;
   const view = VIEWS[key];
   const due = describeRequirements(connect.currently_due);
@@ -394,8 +397,8 @@ export function ConfigCobrosOnline() {
             <div className="bo-cobrosMetric" data-on="true" data-testid="config-cobros-fee">
               <span className="bo-cobrosMetricIcon"><Percent size={18} aria-hidden="true" /></span>
               <div>
-                <dt className="bo-cobrosMetricLabel">Comisión de la plataforma</dt>
-                <dd className="bo-cobrosMetricValue" data-testid="config-cobros-fee-value">{connect.fee_percent > 0 ? `${connect.fee_percent}% por cobro` : "Sin comisión"}</dd>
+                <dt className="bo-cobrosMetricLabel">Comisión por cobro</dt>
+                <dd className="bo-cobrosMetricValue" data-testid="config-cobros-fee-value">{formatTotalFee(fee, fee.platform_fee_percent)}</dd>
               </div>
             </div>
           </dl>
@@ -415,6 +418,33 @@ export function ConfigCobrosOnline() {
             </li>
           </ul>
         )}
+
+        {!connect.demo ? (
+          <section className="bo-cobrosFees" data-testid="config-cobros-fees" aria-labelledby="config-cobros-fees-title">
+            <h4 className="bo-cobrosFeesTitle" id="config-cobros-fees-title" data-testid="config-cobros-fees-title">
+              Comisiones
+            </h4>
+            <dl className="bo-cobrosFeesRows" data-testid="config-cobros-fees-rows">
+              <div className="bo-cobrosFeesRow" data-testid="config-cobros-fees-stripe">
+                <dt>Tarifa de Stripe (procesamiento de tarjeta)</dt>
+                <dd>{formatPercent(fee.stripe_base_percent)} + {formatEuros(fee.stripe_base_fixed_cents)}</dd>
+              </div>
+              <div className="bo-cobrosFeesRow" data-testid="config-cobros-fees-platform">
+                <dt>Comisión de la plataforma</dt>
+                <dd>{fee.platform_fee_percent > 0 ? formatPercent(fee.platform_fee_percent) : "0 %"}</dd>
+              </div>
+              <div className="bo-cobrosFeesRow is-total" data-testid="config-cobros-fees-total">
+                <dt>Total por transacción</dt>
+                <dd>{formatTotalFee(fee, fee.platform_fee_percent)}</dd>
+              </div>
+            </dl>
+            <p className="bo-cobrosFeesExample" data-testid="config-cobros-fees-example">
+              Ejemplo: en un adelanto de {formatEuros(5000)} se descuentan {formatEuros(feeCents(fee, fee.platform_fee_percent, 5000))} y recibes{" "}
+              <strong>{formatEuros(5000 - feeCents(fee, fee.platform_fee_percent, 5000))}</strong>. Se descuenta automáticamente de cada cobro;
+              no hay cuotas mensuales ni coste si no cobras. La tarifa de Stripe corresponde a tarjetas estándar del Espacio Económico Europeo.
+            </p>
+          </section>
+        ) : null}
 
         <p className="bo-cobrosFoot" data-testid="config-cobros-foot">
           <Lock size={12} aria-hidden="true" /> Pagos procesados por Stripe. Tus datos personales y bancarios nunca se guardan en esta aplicación.

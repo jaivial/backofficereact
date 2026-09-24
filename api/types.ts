@@ -2834,4 +2834,12 @@ export type StripeConnectStatus = {
   bank_last4: string;
   platform_ready: boolean;
   fee_percent: number;
+  // stripe_connect_fees_v1: Stripe base + platform commission for this restaurant.
+  fee: {
+    platform_fee_percent: number;
+    stripe_base_percent: number;
+    stripe_base_fixed_cents: number;
+    override: boolean;
+    total_percent: number;
+  };
 };

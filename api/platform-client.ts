@@ -101,10 +101,42 @@ export type PlatformUAZAPIServer = {
   isActive: boolean;
 };
 
+// Stripe Connect fees (stripe_connect_fees_v1)
+export type ConnectFeeSettings = {
+  platform_fee_percent: number;
+  stripe_base_percent: number;
+  stripe_base_fixed_cents: number;
+};
+
+export type PlatformConnectAccount = {
+  restaurant_id: number;
+  name: string;
+  slug: string;
+  connected: boolean;
+  demo: boolean;
+  status: "not_connected" | "pending" | "verifying" | "restricted" | "active";
+  charges_enabled: boolean;
+  payouts_enabled: boolean;
+  fee_override: number | null;
+  effective_fee_percent: number;
+  total_percent: number;
+  connected_at: string;
+};
+
 // ---- API ----
 
 async function platformGet<T>(path: string): Promise<T> {
   const res = await fetch(`/api${path}`, { credentials: "include" });
+  return res.json();
+}
+
+async function platformPut<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`/api${path}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   return res.json();
 }
 
@@ -185,4 +217,12 @@ export const platformAPI = {
   listStripePayments: () => platformGet<{ success: boolean; localEvents: unknown[]; livePayments: unknown[] }>("/admin/platform/stripe/payments"),
   refundStripe: (data: { chargeId?: string; paymentIntentId?: string; amount?: number; reason?: string }) =>
     platformPost<{ success: boolean; refund?: unknown; message?: string }>("/admin/platform/stripe/refund", data),
+
+  // Stripe Connect: connected accounts + commissions
+  listStripeConnect: () =>
+    platformGet<{ success: boolean; settings: ConnectFeeSettings; accounts: PlatformConnectAccount[]; message?: string }>("/admin/platform/stripe-connect"),
+  saveStripeConnectSettings: (data: ConnectFeeSettings) =>
+    platformPut<{ success: boolean; settings?: ConnectFeeSettings; message?: string }>("/admin/platform/stripe-connect/settings", data),
+  setStripeConnectRestaurantFee: (restaurantId: number, feePercent: number | null) =>
+    platformPut<{ success: boolean; message?: string }>(`/admin/platform/stripe-connect/restaurants/${restaurantId}/fee`, { fee_percent: feePercent }),
 };
