@@ -237,6 +237,33 @@
   .bo-cobrosDanger .bo-btn { justify-content: center; }
 }
 
+/* Advanced options accordion (collapsed by default) */
+[data-ui="config-cobros-online"] .bo-cobrosAdvanced {
+  border: 0;
+  background: transparent;
+}
+[data-ui="config-cobros-online"] .bo-cobrosAdvanced .bo-accordionTrigger {
+  padding: 6px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-faint);
+}
+[data-ui="config-cobros-online"] .bo-cobrosAdvanced .bo-accordionTrigger:hover { color: var(--bo-muted); }
+[data-ui="config-cobros-online"] .bo-cobrosAdvanced .bo-cobrosDanger { margin-top: 8px; }
+
+/* Realtime dot */
+.bo-cobrosLive {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+  background: var(--bo-faint);
+}
+.bo-cobrosLive.is-open { background: var(--bo-color-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bo-color-success) 20%, transparent); }
+.bo-cobrosLive.is-connecting { background: var(--bo-color-warning); }
+
 /* Delete blocked modal */
 .bo-cobrosBlockedItem {
   padding: 12px 14px;

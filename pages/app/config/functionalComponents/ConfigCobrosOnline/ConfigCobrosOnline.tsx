@@ -25,7 +25,8 @@ import {
 import { createClient } from "../../../../../api/client";
 import type { StripeConnectDeleteBlocker, StripeConnectStatus } from "../../../../../api/types";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
-import { ConfirmDialog, Modal } from "../../../../../ui/overlays";
+import { useStripeConnectSocket } from "../../../../../lib/payments/useStripeConnectSocket";
+import { Accordion, ConfirmDialog, Modal } from "../../../../../ui/overlays";
 import { feeCents, formatEuros, formatPercent, formatTotalFee } from "../../../../../lib/payments/connectFees";
 
 /**
@@ -121,7 +122,6 @@ const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-const POLL_MS = 8000;
 const timeFmt = new Intl.DateTimeFormat("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
 export function ConfigCobrosOnline() {
@@ -136,6 +136,24 @@ export function ConfigCobrosOnline() {
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const lastStatus = useRef<Status | null>(null);
 
+  // Single entry point for every fresh status (REST load or socket push).
+  const apply = useCallback(
+    (next: StripeConnectStatus, notifyManual = false) => {
+      const prev = lastStatus.current;
+      lastStatus.current = next.status;
+      setConnect(next);
+      setCheckedAt(new Date());
+      if (prev && prev !== "active" && next.status === "active" && !next.demo) {
+        pushToast({ kind: "success", title: "Cobros activados", message: "Stripe ha verificado la cuenta. Ya puedes cobrar adelantos con tarjeta." });
+      } else if (notifyManual) {
+        pushToast({ kind: "info", title: "Estado actualizado", message: VIEWS[next.demo ? "demo" : next.status].eyebrow });
+      }
+    },
+    [pushToast],
+  );
+
+  // REST refresh: first paint, manual "Comprobar ahora" and after actions. It
+  // also re-reads the account from Stripe, which pushes to other open tabs.
   const load = useCallback(
     async (manual = false) => {
       setChecking(true);
@@ -145,21 +163,13 @@ export function ConfigCobrosOnline() {
           pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo cargar el estado de cobros" });
           return;
         }
-        const prev = lastStatus.current;
-        lastStatus.current = res.connect.status;
-        setConnect(res.connect);
-        setCheckedAt(new Date());
         console.log("[checkpoint] stripe_connect_status_loaded", res.connect.status);
-        if (prev && prev !== "active" && res.connect.status === "active" && !res.connect.demo) {
-          pushToast({ kind: "success", title: "Cobros activados", message: "Stripe ha verificado la cuenta. Ya puedes cobrar adelantos con tarjeta." });
-        } else if (manual) {
-          pushToast({ kind: "info", title: "Estado actualizado", message: VIEWS[res.connect.demo ? "demo" : res.connect.status].eyebrow });
-        }
+        apply(res.connect, manual);
       } finally {
         setChecking(false);
       }
     },
-    [api, pushToast],
+    [api, pushToast, apply],
   );
 
   // First load + coming back from Stripe (?onboarding=return|refresh).
@@ -178,15 +188,16 @@ export function ConfigCobrosOnline() {
     }
   }, [load, pushToast]);
 
-  // Poll while Stripe still has to decide; stop once active/restricted.
+  // Realtime: the backend pushes every status change (webhook account.updated,
+  // onboarding, demo, delete) over one WebSocket; no polling.
   const waiting = !!connect && !connect.demo && (connect.status === "pending" || connect.status === "verifying");
-  useEffect(() => {
-    if (!waiting) return;
-    const t = window.setInterval(() => {
-      if (document.visibilityState === "visible") void load();
-    }, POLL_MS);
-    return () => window.clearInterval(t);
-  }, [waiting, load]);
+  const socket = useStripeConnectSocket(
+    useCallback((next: StripeConnectStatus, source: "hello" | "push") => {
+      // hello repeats what REST already showed; only pushes are news.
+      if (source === "hello" && lastStatus.current === next.status) return;
+      apply(next);
+    }, [apply]),
+  );
 
   const run = async (kind: NonNullable<typeof busy>, fn: () => Promise<void>) => {
     setBusy(kind);
@@ -383,7 +394,8 @@ export function ConfigCobrosOnline() {
             ) : null}
             {live && checkedAt ? (
               <span className="bo-cobrosHeroChecked" data-testid="config-cobros-checked-at">
-                {waiting ? "Comprobando cada 8 s · " : ""}Actualizado {timeFmt.format(checkedAt)}
+                <span className={`bo-cobrosLive is-${socket}`} data-testid="config-cobros-live" data-state={socket} aria-hidden="true" />
+                {socket === "open" ? "En directo" : socket === "connecting" ? "Conectando…" : "Sin conexión en directo"} · Actualizado {timeFmt.format(checkedAt)}
               </span>
             ) : null}
           </div>
@@ -504,18 +516,20 @@ export function ConfigCobrosOnline() {
         ) : null}
 
         {live ? (
-          <section className="bo-cobrosDanger" data-testid="config-cobros-danger" aria-labelledby="config-cobros-danger-title">
-            <div className="min-w-0" data-testid="config-cobros-danger-copy">
-              <h4 className="bo-cobrosDangerTitle" id="config-cobros-danger-title" data-testid="config-cobros-danger-title">Eliminar cuenta de cobros</h4>
-              <p className="bo-cobrosDangerText" data-testid="config-cobros-danger-text">
-                Desconecta este restaurante de Stripe para empezar el alta de nuevo con otros datos o con otra titularidad. Los cobros online se desactivan
-                al momento. Solo es posible sin pagos en curso ni saldo pendiente de transferir.
-              </p>
-            </div>
-            <button type="button" className="bo-btn bo-btn--danger" onClick={askDelete} disabled={!!busy} data-testid="config-cobros-delete">
-              {spin("precheck") ?? <Trash2 size={16} aria-hidden="true" />} Eliminar cuenta
-            </button>
-          </section>
+          <Accordion title="Opciones avanzadas" testId="config-cobros-advanced" className="bo-cobrosAdvanced">
+            <section className="bo-cobrosDanger" data-testid="config-cobros-danger" aria-labelledby="config-cobros-danger-title">
+              <div className="min-w-0" data-testid="config-cobros-danger-copy">
+                <h4 className="bo-cobrosDangerTitle" id="config-cobros-danger-title" data-testid="config-cobros-danger-title">Eliminar cuenta de cobros</h4>
+                <p className="bo-cobrosDangerText" data-testid="config-cobros-danger-text">
+                  Desconecta este restaurante de Stripe para empezar el alta de nuevo con otros datos o con otra titularidad. Los cobros online se desactivan
+                  al momento. Solo es posible sin pagos en curso ni saldo pendiente de transferir.
+                </p>
+              </div>
+              <button type="button" className="bo-btn bo-btn--danger" onClick={askDelete} disabled={!!busy} data-testid="config-cobros-delete">
+                {spin("precheck") ?? <Trash2 size={16} aria-hidden="true" />} Eliminar cuenta
+              </button>
+            </section>
+          </Accordion>
         ) : null}
 
         <DeleteBlockedModal blockers={blockers} onClose={() => setBlockers(null)} onDashboard={connect.details_submitted ? dashboard : undefined} />
