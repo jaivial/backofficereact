@@ -38,6 +38,20 @@
   }
 }
 
+/* Config > section tabs, centered on app-layout-main. The wrapper is a
+   full-width flex child of .bo-main; the strip keeps its natural width and
+   scrolls horizontally only when main is narrower than it. */
+.bo-configTabsWrap {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+.bo-tabs.bo-configTabs {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .bo-tabs::-webkit-scrollbar {
   height: 0;
 }
