@@ -573,7 +573,7 @@ function attachFichajeWSProxy(server: http.Server | https.Server, backendOrigin:
       socket.destroy();
       return;
     }
-    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/reservas/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws") && !pathname.startsWith("/api/admin/config/stripe-connect/ws")) {
+    if (!pathname.startsWith("/api/admin/fichaje/ws") && !pathname.startsWith("/api/admin/group-menus-v2/ws") && !pathname.startsWith("/api/admin/tables/ws") && !pathname.startsWith("/api/admin/reservas/ws") && !pathname.startsWith("/api/admin/vinos/ws") && !pathname.startsWith("/api/admin/comida/ws") && !pathname.startsWith("/api/admin/members/whatsapp/ws") && !pathname.startsWith("/api/admin/site-builder/ws") && !pathname.startsWith("/api/admin/assistant/ws") && !pathname.startsWith("/api/admin/config/stripe-connect/ws") && pathname !== "/api/admin/ws") {
       // Unknown /api WS path: close it now. Leaving it half-open kept the
       // browser's single CONNECTING slot per host busy, so every other socket
       // (fichaje, Cobros online…) waited forever behind it. Non-/api upgrades
