@@ -1,0 +1,221 @@
+/* Config > Cobros online (Stripe Connect). Coordination id: stripe_connect_multitenant_v1 */
+[data-ui="config-cobros-online"] {
+  --cobros-tone: var(--bo-muted);
+  --cobros-ink: var(--bo-muted);
+  --cobros-tone-bg: color-mix(in srgb, var(--bo-muted) 10%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+[data-ui="config-cobros-online"][data-tone="success"] { --cobros-tone: var(--bo-color-success); --cobros-ink: var(--bo-on-surface-success); --cobros-tone-bg: color-mix(in srgb, var(--bo-color-success) 12%, transparent); }
+[data-ui="config-cobros-online"][data-tone="info"] { --cobros-tone: var(--bo-color-info); --cobros-ink: var(--bo-on-surface-info); --cobros-tone-bg: color-mix(in srgb, var(--bo-color-info) 12%, transparent); }
+[data-ui="config-cobros-online"][data-tone="warning"] { --cobros-tone: var(--bo-color-warning); --cobros-ink: var(--bo-on-surface-warning); --cobros-tone-bg: color-mix(in srgb, var(--bo-color-warning) 12%, transparent); }
+[data-ui="config-cobros-online"][data-tone="danger"] { --cobros-tone: var(--bo-color-danger); --cobros-ink: var(--bo-on-surface-danger); --cobros-tone-bg: color-mix(in srgb, var(--bo-color-danger) 12%, transparent); }
+[data-ui="config-cobros-online"][data-tone="demo"] { --cobros-tone: var(--bo-accent); --cobros-ink: var(--bo-accent); --cobros-tone-bg: color-mix(in srgb, var(--bo-accent) 12%, transparent); }
+
+/* Hero: big status icon + headline + primary actions */
+.bo-cobrosHero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px 18px;
+  align-items: start;
+  padding: 22px;
+  border-radius: var(--bo-radius-lg);
+  border: 1px solid color-mix(in srgb, var(--cobros-tone) 28%, var(--bo-border));
+  background:
+    radial-gradient(520px 200px at 0% 0%, var(--cobros-tone-bg), transparent 70%),
+    var(--bo-surface);
+}
+.bo-cobrosHeroIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--cobros-ink);
+  background: var(--cobros-tone-bg);
+  border: 1px solid color-mix(in srgb, var(--cobros-tone) 30%, transparent);
+}
+.bo-cobrosHeroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--cobros-ink);
+}
+.bo-cobrosHeroDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 18%, transparent);
+}
+[data-ui="config-cobros-online"][data-waiting="true"] .bo-cobrosHeroDot { animation: bo-cobros-pulse 1.6s ease-in-out infinite; }
+@keyframes bo-cobros-pulse { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, currentColor 6%, transparent); } }
+.bo-cobrosHeroTitle {
+  margin: 4px 0 0;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 720;
+  color: var(--bo-text);
+}
+.bo-cobrosHeroText {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--bo-muted);
+  max-width: 62ch;
+}
+.bo-cobrosHeroActions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.bo-cobrosHeroChecked {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--bo-faint);
+}
+
+/* Due requirements */
+.bo-cobrosDueBox {
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  border-radius: var(--bo-radius-md);
+  background: color-mix(in srgb, var(--bo-color-danger) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bo-color-danger) 24%, transparent);
+}
+.bo-cobrosDueTitle { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: var(--bo-on-surface-danger); }
+.bo-cobrosDue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bo-cobrosDueItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bo-text);
+  background: var(--bo-surface-2);
+  border: 1px solid var(--bo-border-2);
+}
+.bo-cobrosDueItem svg { color: var(--bo-on-surface-danger);
+}
+
+/* Progress: reuses .bo-stepper; compact horizontal on desktop */
+[data-ui="config-cobros-online"] .bo-stepper { padding: 4px 2px; margin: 0; list-style: none; }
+[data-ui="config-cobros-online"] .bo-stepperItem,
+[data-ui="config-cobros-online"] .bo-stepperItem:last-child { flex: 0 0 auto; min-width: 96px; justify-content: center; }
+[data-ui="config-cobros-online"] .bo-stepperTrigger { cursor: default; text-align: center; }
+[data-ui="config-cobros-online"] .bo-stepperIndicator { width: 34px; height: 34px; }
+[data-ui="config-cobros-online"] .bo-stepperDivider { margin: 16px 6px; }
+[data-ui="config-cobros-online"] .bo-stepperLabel { font-size: 12px; white-space: normal; }
+[data-ui="config-cobros-online"] .bo-stepperDescription { font-size: 11px; white-space: normal; max-width: 16ch; }
+[data-ui="config-cobros-online"] .bo-stepperItem.is-completed .bo-stepperIndicator { color: #111218; }
+
+/* Metrics */
+.bo-cobrosMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+@media (max-width: 900px) { .bo-cobrosMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .bo-cobrosMetrics { grid-template-columns: 1fr; } }
+.bo-cobrosMetric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  min-width: 0;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface-2);
+}
+.bo-cobrosMetricIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--bo-muted);
+  background: var(--bo-surface-3);
+}
+.bo-cobrosMetric[data-on="true"] .bo-cobrosMetricIcon {
+  color: var(--bo-color-success);
+  background: color-mix(in srgb, var(--bo-color-success) 14%, transparent);
+}
+.bo-cobrosMetricLabel { font-size: 11px; color: var(--bo-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bo-cobrosMetricValue { margin: 2px 0 0; font-size: 14px; font-weight: 650; color: var(--bo-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 480px) { .bo-cobrosMetric { flex-direction: row; align-items: center; } }
+
+/* How it works */
+.bo-cobrosHow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: cobros-how;
+}
+.bo-cobrosHowItem {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--bo-radius-md);
+  border: 1px dashed var(--bo-border-2);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--bo-muted);
+}
+.bo-cobrosHowItem strong { display: block; color: var(--bo-text); font-size: 13px; margin-bottom: 2px; }
+.bo-cobrosHowIcon { flex-shrink: 0; color: var(--bo-accent); margin-top: 1px; }
+
+.bo-cobrosFoot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--bo-muted);
+}
+
+/* Skeleton */
+.bo-cobrosSkeleton {
+  height: 168px;
+  border-radius: var(--bo-radius-lg);
+  background: linear-gradient(90deg, var(--bo-surface) 0%, var(--bo-surface-2) 50%, var(--bo-surface) 100%);
+  background-size: 200% 100%;
+  animation: bo-cobros-shimmer 1.4s linear infinite;
+}
+@keyframes bo-cobros-shimmer { to { background-position: -200% 0; } }
+
+@media (max-width: 640px) {
+  .bo-cobrosHero { grid-template-columns: 1fr; padding: 18px; }
+  .bo-cobrosHeroTitle { font-size: 18px; }
+  .bo-cobrosHeroActions .bo-btn { flex: 1 1 100%; justify-content: center; }
+  .bo-cobrosHeroChecked { margin-left: 0; width: 100%; text-align: center; }
+  [data-ui="config-cobros-online"] .bo-stepperTrigger { flex-direction: row; text-align: left; gap: 12px; }
+  [data-ui="config-cobros-online"] .bo-stepperDescription { max-width: none; }
+  [data-ui="config-cobros-online"] .bo-stepper { gap: 10px; }
+  [data-ui="config-cobros-online"] .bo-stepperItem { justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-ui="config-cobros-online"] *, .bo-cobrosSkeleton { animation: none !important; }
+}
