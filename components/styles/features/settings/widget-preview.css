@@ -223,6 +223,17 @@
   border-top: 1px solid var(--bo-border);
 }
 
+/* Narrow screens: long action labels wrap instead of pushing buttons off-screen. */
+@media (max-width: 480px) {
+  .bo-modal--confirm .bo-modalActions {
+    flex-wrap: wrap-reverse;
+  }
+  .bo-modal--confirm .bo-modalActions > .bo-btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
 .bo-modalActions--reservas {
   opacity: 1;
   padding-bottom: 0;
