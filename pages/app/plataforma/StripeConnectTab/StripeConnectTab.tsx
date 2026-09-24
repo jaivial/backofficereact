@@ -151,7 +151,8 @@ export function StripeConnectTab() {
       <div className="bo-platformCard" data-testid="platform-connect-global">
         <h3 className="bo-platformCardTitle" data-testid="platform-connect-global-title">Comisión global</h3>
         <p className="bo-platformSub" data-testid="platform-connect-global-help">
-          Se cobra a cada negocio encima de la tarifa base de Stripe. Con 0 % el negocio solo paga la tarifa de Stripe y la plataforma no gana nada.
+          Se cobra a cada negocio encima de la tarifa de Stripe (Managed Risk: Stripe cobra su tarifa directamente al negocio y asume pérdidas y
+          disputas). Con 0 % el negocio solo paga la tarifa de Stripe y la plataforma no cobra nada.
           Los negocios con comisión propia no se ven afectados.
         </p>
         <div className="bo-platformForm" data-testid="platform-connect-global-form">
