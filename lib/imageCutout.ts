@@ -48,13 +48,37 @@ export async function trimTransparent(blob: Blob, name: string): Promise<File> {
   return new File([png], name, { type: "image/png" });
 }
 
+// MIT-licensed segmentation model run by @huggingface/transformers
+// (Apache-2.0). fp16 keeps the one-time, browser-cached download ~115MB.
+const CUTOUT_MODEL = "onnx-community/BiRefNet_lite-ONNX";
+
+type Segmenter = (image: string) => Promise<{ toBlob: (type?: string) => Promise<Blob> }>;
+let segmenterPromise: Promise<Segmenter> | null = null;
+
+function loadSegmenter(): Promise<Segmenter> {
+  if (!segmenterPromise) {
+    segmenterPromise = import("@huggingface/transformers")
+      .then(({ pipeline }) => pipeline("background-removal", CUTOUT_MODEL, { dtype: "fp16" }) as unknown as Promise<Segmenter>)
+      .catch((e) => {
+        segmenterPromise = null;
+        throw e;
+      });
+  }
+  return segmenterPromise;
+}
+
 /** Background removal + auto-crop to the object bounds. */
 export async function cutoutProduct(file: File): Promise<File> {
-  const { removeBackground } = await import("@imgly/background-removal");
   const started = performance.now();
-  const noBg = await removeBackground(file, { output: { format: "image/png" } });
-  const base = (file.name || "image").replace(/\.[^.]+$/, "") || "image";
-  const result = await trimTransparent(noBg, `${base}-cutout.png`);
-  console.info("[wine_image_cutout_v1] done", { ms: Math.round(performance.now() - started), bytes: result.size });
-  return result;
+  const segment = await loadSegmenter();
+  const src = URL.createObjectURL(file);
+  try {
+    const noBg = await (await segment(src)).toBlob("image/png");
+    const base = (file.name || "image").replace(/\.[^.]+$/, "") || "image";
+    const result = await trimTransparent(noBg, `${base}-cutout.png`);
+    console.info("[wine_image_cutout_v1] done", { model: CUTOUT_MODEL, ms: Math.round(performance.now() - started), bytes: result.size });
+    return result;
+  } finally {
+    URL.revokeObjectURL(src);
+  }
 }
