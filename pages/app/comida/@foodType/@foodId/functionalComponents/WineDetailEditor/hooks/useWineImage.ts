@@ -43,6 +43,32 @@ export function useWineImage(vino: Vino | null) {
     [vino, pushToast],
   );
 
+  // Coordination id: wine_image_cutout_v2 - background removal + auto-crop run
+  // server-side (WaveSpeed API); the result becomes the wine photo.
+  const cutoutImage = useCallback(
+    async (file: File): Promise<string | null> => {
+      if (!vino) return null;
+      setUploading(true);
+      try {
+        const res = await api.current.comida.vinos.cutoutImage(vino.num, file);
+        if (!res.success) {
+          pushToast({ kind: "error", title: "Error", message: res.message || "No se pudo quitar el fondo" });
+          return null;
+        }
+        const url = (res as any).foto_url as string;
+        setImageUrl(url);
+        pushToast({ kind: "success", title: "Fondo eliminado" });
+        return url;
+      } catch {
+        pushToast({ kind: "error", title: "Error", message: "Error quitando el fondo" });
+        return null;
+      } finally {
+        setUploading(false);
+      }
+    },
+    [vino, pushToast],
+  );
+
   const uploadImageAI = useCallback(
     async (file: File): Promise<boolean> => {
       if (!vino) return false;
@@ -85,6 +111,7 @@ export function useWineImage(vino: Vino | null) {
     imageUrl,
     uploadImage,
     uploadImageAI,
+    cutoutImage,
     updateFromWS,
     setGeneratingFromWS,
     setImageUrl,

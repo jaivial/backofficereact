@@ -32,6 +32,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
     imageUrl,
     uploadImage,
     uploadImageAI,
+    cutoutImage,
     updateFromWS,
     setGeneratingFromWS,
   } = useWineImage(vino);
@@ -136,6 +137,7 @@ export function WineDetailEditor({ vino, isNew, onSave }: WineDetailEditorProps)
               disabled={saving}
               onUpload={uploadImage}
               onGenerateAI={uploadImageAI}
+              onCutout={cutoutImage}
               fileInputRef={fileInputRef}
             />
           ) : (
