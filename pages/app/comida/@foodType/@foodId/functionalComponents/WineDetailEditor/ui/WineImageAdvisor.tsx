@@ -1,12 +1,6 @@
 import React, { useCallback, useRef, useState, type RefObject } from "react";
 import { Eraser, ImagePlus, Loader2, Sparkles, Upload, X } from "lucide-react";
 
-import { cutoutProduct } from "../../../../../../../../lib/imageCutout";
-import { fitImageToBytes } from "../../../../../../../../lib/imageBudget";
-
-// Backend multipart cap for wine images (openAIInputMaxBytes default).
-const WINE_UPLOAD_MAX_BYTES = 8 * 1024 * 1024;
-
 type WineImageAdvisorProps = {
   imageUrl: string | null;
   uploading: boolean;
@@ -15,6 +9,7 @@ type WineImageAdvisorProps = {
   fileInputRef?: RefObject<HTMLInputElement | null>;
   onUpload: (file: File) => Promise<string | null>;
   onGenerateAI: (file: File) => Promise<boolean>;
+  onCutout: (file: File) => Promise<string | null>;
 };
 
 export function WineImageAdvisor({
@@ -25,6 +20,7 @@ export function WineImageAdvisor({
   fileInputRef: externalInputRef,
   onUpload,
   onGenerateAI,
+  onCutout,
 }: WineImageAdvisorProps) {
   const internalInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = externalInputRef ?? internalInputRef;
@@ -43,28 +39,20 @@ export function WineImageAdvisor({
     setAdvisorOpen(true);
   }, []);
 
-  // Coordination id: wine_image_cutout_v1 - background removal + auto-crop
-  // happen client-side; the resulting transparent PNG then goes through the
-  // same upload / AI endpoints as any other file.
+  // Coordination id: wine_image_cutout_v2 - the backend removes the
+  // background (WaveSpeed API) and crops to the object, then saves it.
   const handleCutout = useCallback(async () => {
     if (!selectedFile) return;
     setCutting(true);
     setCutoutError(null);
     try {
-      const cut = await cutoutProduct(selectedFile);
-      const fitted = await fitImageToBytes(cut, WINE_UPLOAD_MAX_BYTES, { type: "image/webp", keepTypes: ["image/png"] });
-      setSelectedFile(fitted);
-      setPreviewUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return URL.createObjectURL(fitted);
-      });
-    } catch (e) {
-      console.warn("[wine_image_cutout_v1] failed", e);
-      setCutoutError(e instanceof Error ? e.message : "No se pudo quitar el fondo");
+      const url = await onCutout(selectedFile);
+      if (url) closeAdvisor();
+      else setCutoutError("No se pudo quitar el fondo");
     } finally {
       setCutting(false);
     }
-  }, [selectedFile]);
+  }, [selectedFile, onCutout]);
 
   const handleUploadOnly = useCallback(async () => {
     if (!selectedFile) return;
