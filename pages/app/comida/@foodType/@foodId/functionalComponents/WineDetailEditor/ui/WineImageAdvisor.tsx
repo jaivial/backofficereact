@@ -1,5 +1,11 @@
 import React, { useCallback, useRef, useState, type RefObject } from "react";
-import { ImagePlus, Loader2, Sparkles, Upload, X } from "lucide-react";
+import { Eraser, ImagePlus, Loader2, Sparkles, Upload, X } from "lucide-react";
+
+import { cutoutProduct } from "../../../../../../../../lib/imageCutout";
+import { fitImageToBytes } from "../../../../../../../../lib/imageBudget";
+
+// Backend multipart cap for wine images (openAIInputMaxBytes default).
+const WINE_UPLOAD_MAX_BYTES = 8 * 1024 * 1024;
 
 type WineImageAdvisorProps = {
   imageUrl: string | null;
@@ -25,6 +31,8 @@ export function WineImageAdvisor({
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [cutting, setCutting] = useState(false);
+  const [cutoutError, setCutoutError] = useState<string | null>(null);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,6 +42,29 @@ export function WineImageAdvisor({
     setPreviewUrl(url);
     setAdvisorOpen(true);
   }, []);
+
+  // Coordination id: wine_image_cutout_v1 - background removal + auto-crop
+  // happen client-side; the resulting transparent PNG then goes through the
+  // same upload / AI endpoints as any other file.
+  const handleCutout = useCallback(async () => {
+    if (!selectedFile) return;
+    setCutting(true);
+    setCutoutError(null);
+    try {
+      const cut = await cutoutProduct(selectedFile);
+      const fitted = await fitImageToBytes(cut, WINE_UPLOAD_MAX_BYTES, { type: "image/webp", keepTypes: ["image/png"] });
+      setSelectedFile(fitted);
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(fitted);
+      });
+    } catch (e) {
+      console.warn("[wine_image_cutout_v1] failed", e);
+      setCutoutError(e instanceof Error ? e.message : "No se pudo quitar el fondo");
+    } finally {
+      setCutting(false);
+    }
+  }, [selectedFile]);
 
   const handleUploadOnly = useCallback(async () => {
     if (!selectedFile) return;
@@ -52,10 +83,11 @@ export function WineImageAdvisor({
     setSelectedFile(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
+    setCutoutError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, [previewUrl]);
 
-  const busy = uploading || generating;
+  const busy = uploading || generating || cutting;
 
   return (
     <div data-ui="wine-image-advisor" className="flex flex-col items-center">
@@ -125,8 +157,31 @@ export function WineImageAdvisor({
                 src={previewUrl}
                 alt="Vista previa"
                 data-role="wine-image-advisor-preview-img"
-                className="w-full aspect-square object-cover rounded-xl"
+                className="w-full aspect-square object-contain rounded-xl bg-[repeating-conic-gradient(var(--bo-surface-2)_0%_25%,transparent_0%_50%)] bg-[length:16px_16px]"
               />
+              <button
+                type="button"
+                onClick={handleCutout}
+                disabled={busy}
+                data-role="wine-image-advisor-cutout-btn"
+                data-testid="wine-image-advisor-cutout-btn"
+                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
+                  bg-[var(--bo-surface-2)] text-[var(--bo-text)] border border-[var(--bo-border)]
+                  hover:bg-[var(--bo-surface-3)] transition-colors duration-150
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {cutting ? (
+                  <Loader2 size={14} className="animate-spin" data-slot="wine-image-cutout-spinner" data-testid="wine-image-advisor-cutout-spinner" />
+                ) : (
+                  <Eraser size={14} data-slot="wine-image-cutout-icon" data-testid="wine-image-advisor-cutout-icon" />
+                )}
+                {cutting ? "Quitando fondo..." : "Quitar fondo y recortar"}
+              </button>
+              {cutoutError ? (
+                <p data-role="wine-image-advisor-cutout-error" data-testid="wine-image-advisor-cutout-error" className="mt-2 text-xs text-[var(--bo-danger,#ef4444)]">
+                  {cutoutError}
+                </p>
+              ) : null}
             </div>
 
             <div data-slot="wine-image-advisor-actions" className="flex gap-3 p-4 border-t border-[var(--bo-border)]">
