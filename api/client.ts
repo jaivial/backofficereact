@@ -639,6 +639,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         form.append("image", file, file.name || "wine-image.webp");
         return json(`/api/admin/vinos/${id}/image`, { method: "POST", body: form });
       },
+      async cutoutImage(id: number, file: File): Promise<APISuccess<{ foto_url: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "wine-cutout.png");
+        return json(`/api/admin/vinos/${id}/image/cutout`, { method: "POST", body: form });
+      },
       async uploadImageAI(id: number, file: File): Promise<APISuccess<{ wine_num: number; message?: string }> | APIError> {
         const form = new FormData();
         form.append("image", file, file.name || "wine-ai.webp");
