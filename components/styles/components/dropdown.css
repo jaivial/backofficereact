@@ -298,18 +298,24 @@
    MonthCalendar (booking occupancy per day) instead of a bare day grid. */
 .bo-datePop--mcal {
   width: min(344px, 95vw);
-  /* 1:1 square so the day grid stays proportional and the popover never
-     overflows narrow viewports. A 6-row month may push height slightly past
-     width; that stays on-screen and within the 95vw cap. */
-  aspect-ratio: 1 / 1;
-  padding: 10px;
+  /* Coordination id: date_picker_bg_fit_v1 - the popover background hugs
+     the calendar: height follows content (no forced square leaving empty
+     background), uniform padding and no inherited calendar margins. */
+  height: auto;
+  padding: 12px;
+  box-sizing: border-box;
 }
 
-.bo-datePop--mcal .bo-mcal {
+.bo-datePop--mcal .bo-mcal,
+.bo-datePop--mcal .bo-mcal.bo-mcal--glass {
   border: none;
   background: transparent;
   box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   padding: 0;
+  margin: 0 !important;
+  width: 100%;
 }
 
 .bo-datePop--mcal .bo-mcalHead {
