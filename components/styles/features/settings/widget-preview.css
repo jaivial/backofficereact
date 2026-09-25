@@ -454,8 +454,12 @@
    add-reservation page drops every stacked gutter (main pane side padding,
    editor body margin + padding) so the form spans the full viewport width. */
 @media (max-width: 720px) {
-  main[data-testid="app-layout-main"]:has(> .bo-reservaAddPage) {
+  main[data-testid="app-layout-main"]:has(.bo-reservaAddPage) {
     padding-inline: 0;
+  }
+
+  main[data-testid="app-layout-main"]:has(.bo-reservaAddPage) > .bo-topbar {
+    padding-inline: 16px;
   }
 
   .bo-reservaAddPage .bo-bookingEditorBody {
