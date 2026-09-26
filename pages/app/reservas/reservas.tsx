@@ -232,12 +232,15 @@ const DownloadButton = React.memo(function DownloadButton({
   return (
     <button
       type="button"
-      className={`bo-btn bo-btn--primary bo-btn--download${className ? ` ${className}` : ""}`}
+      className={`bo-btn bo-btn--primary bo-btn--download bo-btn--iconOnMobile${className ? ` ${className}` : ""}`}
       onClick={onDownload}
       disabled={disabled}
+      aria-label="Descargar"
+      title="Descargar"
       data-testid={testId}
     >
-      <Download className="bo-ico" /> Descargar
+      <Download className="bo-ico" aria-hidden="true" />
+      <span className="bo-btnLabel--mobileHidden" data-slot="reservas-download-label">Descargar</span>
     </button>
   );
 });
@@ -853,11 +856,14 @@ export default function Page() {
                         {specialDate?.is_active ? (
                           <button
                             type="button"
-                            className="bo-btn bo-btn--ghost bo-btn--downloadRight"
+                            className="bo-btn bo-btn--ghost bo-btn--downloadRight bo-btn--iconOnMobile"
                             onClick={() => setScannerOpen(true)}
+                            aria-label="Escanear QR"
+                            title="Escanear QR"
                             data-testid="reservas-qr-scan-open"
                           >
-                            <ScanLine className="bo-ico" /> Escanear QR
+                            <ScanLine className="bo-ico" aria-hidden="true" />
+                            <span className="bo-btnLabel--mobileHidden" data-slot="reservas-qr-scan-label">Escanear QR</span>
                           </button>
                         ) : null}
                         <DownloadButton
