@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createClient } from "../../../../../api/client";
 import { SPECIAL_DATE_PAYMENT_METHOD_LABELS, type SpecialDatePaymentMethod, type SpecialDateStats } from "../../../../../api/types";
@@ -27,7 +27,15 @@ export function SpecialDateStatsPanel({ date }: { date: string }) {
   }, [api, date]);
 
   useEffect(() => { void load(); }, [load]);
-  useGlobalSocketTopic("booking", () => { void load(); });
+
+  // Debounced + stable handler: a burst of booking events triggers one refetch.
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const onBooking = useCallback(() => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => { void load(); }, 500);
+  }, [load]);
+  useGlobalSocketTopic("booking", onBooking);
 
   if (error) return <InlineAlert kind="error" title="Estadísticas" message={error} testId="especial-stats-error" />;
   if (!stats) return <p className="bo-muted text-center" data-testid="especial-stats-loading">Cargando estadísticas…</p>;
