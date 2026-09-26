@@ -759,6 +759,43 @@
   margin-left: auto;
 }
 
+/* Descargar / Escanear QR: icon + label on desktop, icon only on mobile.
+   The label stays in the DOM (visually hidden) and the button carries an
+   aria-label, so screen readers still announce the action. The icon-only
+   state is a square 40px tap target. Coordination id: reservas_mobile_icon_buttons_v1 */
+.bo-btn--iconOnMobile {
+  position: relative;
+  gap: 6px;
+}
+
+@media (max-width: 579px) {
+  .bo-btn--iconOnMobile {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .bo-btn--iconOnMobile .bo-btnLabel--mobileHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .bo-btn--iconOnMobile .bo-ico {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 /* Below the reservations pagination. */
 .bo-reservasPagerDownload {
   display: flex;
