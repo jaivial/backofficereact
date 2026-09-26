@@ -403,6 +403,33 @@
   min-width: 180px;
 }
 
+/* Special-date breakdown columns: one readable line per menu / method.
+   Coordination id: special_booking_v1 */
+.bo-table--reservas th.col-adelanto-desglose,
+.bo-table--reservas td.col-adelanto-desglose,
+.bo-table--reservas th.col-menus-especiales,
+.bo-table--reservas td.col-menus-especiales {
+  min-width: 300px;
+}
+
+.bo-table--reservas th.col-adelanto-metodos,
+.bo-table--reservas td.col-adelanto-metodos {
+  min-width: 190px;
+}
+
+.bo-table--reservas .bo-reservasColLines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+}
+
+.bo-table--reservas .bo-reservasColLine {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .bo-table--reservas th.col-status,
 .bo-table--reservas td.col-status {
   width: 120px;
