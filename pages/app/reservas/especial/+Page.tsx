@@ -12,6 +12,7 @@ import { SpecialDateCardList } from "./functionalComponents/SpecialDateCardList"
 import { useGlobalSocketTopic } from "../../../../ui/realtime/GlobalSocketProvider";
 import { SpecialDateActivateEmpty } from "./functionalComponents/SpecialDateActivateEmpty";
 import { SpecialDateTabs } from "./functionalComponents/SpecialDateTabs";
+import { SpecialDateStatsPanel } from "./functionalComponents/SpecialDateStatsPanel";
 import type { SpecialDateTabId } from "./functionalComponents/SpecialDateTabs";
 import { useSpecialDateActivation } from "./hooks/useSpecialDateActivation";
 
@@ -299,6 +300,8 @@ export default function Page() {
                 availableMenus={availableMenus}
               />
             </section>
+          ) : tab === "estadisticas" ? (
+            <SpecialDateStatsPanel date={date} />
           ) : (
             <section
               data-testid="especial-page-list-section"

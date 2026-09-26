@@ -1,10 +1,10 @@
 import React from "react";
-import { CalendarDays, Settings2 } from "lucide-react";
+import { BarChart3, CalendarDays, Settings2 } from "lucide-react";
 
 import { Tabs } from "../../../../../ui/nav/Tabs";
 import type { TabItem } from "../../../../../ui/nav/Tabs";
 
-export type SpecialDateTabId = "ajustes" | "fechas";
+export type SpecialDateTabId = "ajustes" | "estadisticas" | "fechas";
 
 /**
  * Tab strip shown only for days that ARE special-menu days: one tab for
@@ -34,6 +34,13 @@ export function SpecialDateTabs({
       label: "Reservas especiales",
       href: "#",
       icon: <Settings2 size={16} strokeWidth={1.8} />,
+    },
+    {
+      // Coordination id: special_date_stats_v1
+      id: "estadisticas",
+      label: "Estadísticas",
+      href: "#",
+      icon: <BarChart3 size={16} strokeWidth={1.8} />,
     },
     {
       id: "fechas",
