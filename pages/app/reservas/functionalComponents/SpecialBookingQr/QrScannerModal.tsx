@@ -5,6 +5,8 @@ import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
 
 const SCANNER_ELEMENT_ID = "bo-reservas-qr-scanner";
 
+type ScannerHandle = { stop: () => Promise<void>; clear: () => void; isScanning: boolean };
+
 /**
  * Opens the device camera (rear camera on mobile) and navigates to the booking
  * page encoded in a special-date QR. Only same-origin backoffice booking URLs
@@ -12,7 +14,7 @@ const SCANNER_ELEMENT_ID = "bo-reservas-qr-scanner";
  */
 export function QrScannerModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
-  const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void; isScanning: boolean } | null>(null);
+  const scannerRef = useRef<ScannerHandle | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -21,7 +23,7 @@ export function QrScannerModal({ open, onClose }: { open: boolean; onClose: () =
     void import("html5-qrcode").then(async ({ Html5Qrcode }) => {
       if (!alive) return;
       const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
-      scannerRef.current = scanner as any;
+      scannerRef.current = scanner;
       try {
         await scanner.start(
           { facingMode: "environment" },
@@ -30,7 +32,8 @@ export function QrScannerModal({ open, onClose }: { open: boolean; onClose: () =
             const target = bookingPathFromQr(text);
             if (!target) { setError("QR no válido para una reserva."); return; }
             console.info("[special_booking_qr_v1] scanned", target);
-            void scanner.stop().finally(() => { window.location.assign(target); });
+            scannerRef.current = null; // cleanup must not stop it a second time
+            void scanner.stop().catch(() => undefined).finally(() => { window.location.assign(target); });
           },
           () => undefined,
         );
