@@ -13,6 +13,10 @@ export function SpecialBookingQrPanel({ bookingId, info, error, testId }: { book
   if (error) return <p className="bo-muted" data-testid={`${testId}-error`}>{error}</p>;
   if (!info) return <p className="bo-muted" data-testid={`${testId}-loading`}>Cargando…</p>;
   const hasPdf = Boolean(info.receipt_url);
+  // BunnyCDN serves PDFs without CORS, so pdf.js reads the receipt through the
+  // same-origin backend proxy; `v` changes when the receipt is regenerated.
+  // Coordination id: special_booking_receipt_proxy_v1
+  const pdfURL = hasPdf ? `/api/admin/bookings/${bookingId}/receipt.pdf?v=${encodeURIComponent(info.receipt_url.split("/").pop() || "")}` : "";
   return (
     <div className="bo-specialQrPanel" data-testid={testId}>
       <div className="bo-displayToggle" role="tablist" aria-label="QR o comprobante" data-slot="special-qr-tabs">
@@ -32,10 +36,10 @@ export function SpecialBookingQrPanel({ bookingId, info, error, testId }: { book
         )
       ) : hasPdf ? (
         <div className="bo-specialQrPdf" data-slot="special-qr-pdf">
-          <a className="bo-btn bo-btn--primary" href={info.receipt_url} download target="_blank" rel="noreferrer" data-testid={`${testId}-pdf-download`}>
+          <a className="bo-btn bo-btn--primary" href={pdfURL} download={`comprobante-reserva-${bookingId}.pdf`} target="_blank" rel="noreferrer" data-testid={`${testId}-pdf-download`}>
             <Download className="bo-ico" /> Descargar comprobante
           </a>
-          <PdfPreview url={info.receipt_url} testId={`${testId}-pdf-preview`} />
+          <PdfPreview url={pdfURL} testId={`${testId}-pdf-preview`} />
         </div>
       ) : null}
     </div>
