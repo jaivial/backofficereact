@@ -76,6 +76,9 @@ export type Booking = {
    * Coordination id: special_booking_v1 (crosses FE/BE).
    */
   special?: BookingSpecial | null;
+  /** BunnyCDN QR PNG + Stripe receipt PDF. Coordination id: special_booking_qr_v1 */
+  qr_url?: string | null;
+  receipt_url?: string | null;
 };
 
 /**
@@ -108,6 +111,16 @@ export type BookingSpecialAdelantoByMethod = {
   required: number;
   paid: number;
   pending: number;
+};
+
+/** Coordination id: special_date_stats_v1 */
+export type SpecialDateStats = {
+  date: string;
+  bookings: number;
+  people: number;
+  menus: { label: string; count: number; principales: { name: string; count: number }[] }[];
+  adelanto_paid_total: number;
+  adelanto_by_method: { method: string; amount: number }[];
 };
 
 export type BookingSpecial = {

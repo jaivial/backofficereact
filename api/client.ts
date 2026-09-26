@@ -932,6 +932,10 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async get(id: number): Promise<APISuccess<{ booking: Booking }> | APIError> {
         return json(`/api/admin/bookings/${id}`, { method: "GET" });
       },
+      // Coordination id: special_booking_qr_v1
+      async qr(id: number): Promise<APISuccess<{ booking_id: number; qr_url: string; receipt_url: string; target_url: string }> | APIError> {
+        return json(`/api/admin/bookings/${id}/qr`, { method: "GET" });
+      },
       async create(input: any): Promise<APISuccess<{ booking: Booking }> | APIError> {
         return json(`/api/admin/bookings`, {
           method: "POST",
@@ -2466,6 +2470,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async getSpecialDate(date: string): Promise<APISuccess<{ special_date: import("./types").SpecialDateSettings | null }> | APIError> {
         const q = new URLSearchParams({ date });
         return json(`/api/admin/config/special-dates?${q.toString()}`, { method: "GET" });
+      },
+      // Coordination id: special_date_stats_v1
+      async getSpecialDateStats(date: string): Promise<APISuccess<{ stats: import("./types").SpecialDateStats }> | APIError> {
+        const q = new URLSearchParams({ date });
+        return json(`/api/admin/config/special-dates/stats?${q.toString()}`, { method: "GET" });
       },
       async listSpecialDates(): Promise<import("./types").SpecialDateListResponse | APIError> {
         return json("/api/admin/config/special-dates", { method: "GET" });

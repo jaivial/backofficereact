@@ -50,7 +50,8 @@ export type ReservasColumnId =
   | "menusEspeciales"
   | "movilidad"
   | "movilidadPax"
-  | "pendiente";
+  | "pendiente"
+  | "qrPdf";
 
 export type ReservasColumnCtx = {
   added: string;
@@ -59,6 +60,8 @@ export type ReservasColumnCtx = {
   onDraftMesaChange: (value: string) => void;
   onMesaBlur: () => void;
   mesaDisabled: boolean;
+  /** Opens the QR / receipt modal. Coordination id: special_booking_qr_v1 */
+  onOpenQr: () => void;
 };
 
 export type ReservasColumnDef = {
@@ -273,6 +276,20 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
     cellClass: "col-pendiente num",
     hideBelowWidth: 1480,
     render: (b) => (isSpecial(b) ? formatEUR(b.special.amount_left) : DASH),
+  },
+  {
+    // Coordination id: special_booking_qr_v1 - QR + Stripe receipt of a
+    // special-date booking, opened in a modal (image / PDF preview).
+    id: "qrPdf",
+    label: "QR / PDF",
+    thClass: "col-qr-pdf",
+    cellClass: "col-qr-pdf",
+    stopPropagation: true,
+    render: (b, c) => (isSpecial(b) ? (
+      <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={c.onOpenQr} data-testid={`reservas-qr-open-${b.id}`}>
+        Ver qr/pdf
+      </button>
+    ) : DASH),
   },
 ];
 

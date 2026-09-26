@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical, Sparkles } from "lucide-react";
+import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical, Sparkles, ScanLine } from "lucide-react";
 import { createClient } from "../../../api/client";
 import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics, SpecialDateSettings } from "../../../api/types";
 import { StatusBadge } from "../../../ui/feedback/StatusBadge";
@@ -30,6 +30,8 @@ import { SearchResultsTable } from "./functionalComponents/SearchResultsTable";
 import { BookingsViewTabs, type ViewTabId } from "./functionalComponents/BookingsViewTabs/BookingsViewTabs";
 import { BookingCardGrid } from "./functionalComponents/BookingCardGrid/BookingCardGrid";
 import { ReservasColumnsModal } from "./functionalComponents/ReservasColumns/ReservasColumnsModal";
+import { SpecialBookingQrModal } from "./functionalComponents/SpecialBookingQr/SpecialBookingQrModal";
+import { QrScannerModal } from "./functionalComponents/SpecialBookingQr/QrScannerModal";
 import { useReservasColumnsRealtime } from "./functionalComponents/ReservasColumns/useReservasColumnsRealtime";
 import {
   RESERVAS_COLUMNS,
@@ -132,10 +134,12 @@ const BookingRow = React.memo(function BookingRow({
   onEdit,
   onOpenDetails,
   onSaveTable,
+  onOpenQr,
   busy,
 }: {
   booking: Booking;
   columns: ReservasColumnDef[];
+  onOpenQr: (b: Booking) => void;
   onCancel: (b: Booking) => void;
   onEdit: (b: Booking) => void;
   onOpenDetails: (b: Booking) => void;
@@ -175,6 +179,7 @@ const BookingRow = React.memo(function BookingRow({
     onDraftMesaChange: setDraftMesa,
     onMesaBlur: () => void save(),
     mesaDisabled: busy || saving,
+    onOpenQr: () => onOpenQr(booking),
   };
 
   return (
@@ -292,6 +297,10 @@ export default function Page() {
   // Coordination id: special_dates_v1 - active special-date settings for the
   // currently selected date. Null when the date is not configured.
   const [specialDate, setSpecialDate] = useState<SpecialDateSettings | null>(null);
+
+  // Coordination id: special_booking_qr_v1 - QR/PDF modal + camera scanner.
+  const [qrBooking, setQrBooking] = useState<Booking | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const [confirm, setConfirm] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
   const [details, setDetails] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
@@ -841,11 +850,21 @@ export default function Page() {
                             <MoreVertical size={18} strokeWidth={1.8} />
                           </button>
                         ) : null}
+                        {specialDate?.is_active ? (
+                          <button
+                            type="button"
+                            className="bo-btn bo-btn--ghost bo-btn--downloadRight"
+                            onClick={() => setScannerOpen(true)}
+                            data-testid="reservas-qr-scan-open"
+                          >
+                            <ScanLine className="bo-ico" /> Escanear QR
+                          </button>
+                        ) : null}
                         <DownloadButton
                           onDownload={onDownloadPDF}
                           disabled={pdfBusy || busy}
                           testId="reservas-page-download-display-row"
-                          className="bo-btn--downloadRight"
+                          className={specialDate?.is_active ? undefined : "bo-btn--downloadRight"}
                         />
                       </div>
                       {displayMode === "tabla" ? (
@@ -862,7 +881,7 @@ export default function Page() {
                               </thead>
                               <tbody data-slot="reservas-tbody">
                                 {rows.map((b) => (
-                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
+                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onOpenQr={setQrBooking} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
                                 ))}
                                 {!rows.length ? (
                                   <tr data-slot="reservas-tro"><td colSpan={tableColumns.length + 1} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
@@ -923,6 +942,9 @@ export default function Page() {
       </AnimatePresence>
 
       <ConfirmDialog open={confirm.open} title="Cancelar reserva" message={confirm.booking ? `Cancelar la reserva #${confirm.booking.id} de ${confirm.booking.customer_name}?` : ""} confirmText="Cancelar" danger onClose={() => setConfirm({ open: false, booking: null })} onConfirm={doCancel} />
+
+      <SpecialBookingQrModal booking={qrBooking} onClose={() => setQrBooking(null)} />
+      <QrScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} />
 
       <ReservasColumnsModal
         open={columnsModalOpen}
