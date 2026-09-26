@@ -166,9 +166,13 @@
   color: var(--bo-text);
 }
 
-.bo-mcalCell.is-today {
-  outline: 2px solid rgba(147, 239, 231, 0.28);
-  outline-offset: 2px;
+/* Coordination id: mcal_selected_only_v1 - "today" carries no visual marker
+   (its green-ish outline was confused with the selection). Only the selected
+   date is highlighted: fill colour + an extra green border. */
+.bo-mcalCell.is-selected,
+.bo-mcal--glass .bo-mcalCell.is-selected {
+  border: 2px solid rgb(34 197 94);
+  box-shadow: 0 0 0 1px rgb(34 197 94 / 45%);
 }
 
 .bo-mcalNum {
