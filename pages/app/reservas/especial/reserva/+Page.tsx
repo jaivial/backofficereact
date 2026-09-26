@@ -43,13 +43,14 @@ export default function Page() {
 
   useEffect(() => { void load(); }, [load]);
 
-  useGlobalSocketTopic<BookingEvent>("booking", (payload) => {
+  const onBookingEvent = useCallback((payload: BookingEvent) => {
     if (!payload || payload.booking_id !== data.bookingId) return;
     console.info("[special_booking_qr_v1] live", payload.type, payload.booking_id);
     if (payload.type === "booking_cancelled") { setCancelled(true); return; }
     void load();
     void reloadQr();
-  });
+  }, [data.bookingId, load, reloadQr]);
+  useGlobalSocketTopic<BookingEvent>("booking", onBookingEvent);
 
   const date = booking?.reservation_date || data.date;
   const wrongRestaurant = Boolean(data.restaurantId && session?.activeRestaurantId && data.restaurantId !== session.activeRestaurantId);
