@@ -2865,3 +2865,48 @@ export type StripeConnectDeleteBlocker = {
   available_cents?: number;
   pending_cents?: number;
 };
+
+// WhatsApp bot AI routing + provider keys + RAG knowledge (wa_bot_ai_providers_v1).
+export type BotAIProvider = { id: string; label: string; models: string[] };
+export type BotAIKeyStatus = { provider: string; hasApiKey: boolean; mask: string };
+export type BotKnowledgeChunk = { id: string; title: string; body: string; tags: string[] };
+export type BotAIConfig = {
+  restaurantId: number;
+  primaryModel: string;
+  fallbackModel: string;
+  providers: BotAIProvider[];
+  keys: BotAIKeyStatus[];
+  knowledge: BotKnowledgeChunk[];
+};
+export type BotAIConfigInput = {
+  primaryModel: string;
+  fallbackModel: string;
+  knowledge: BotKnowledgeChunk[];
+  apiKeys: Record<string, string>;
+};
+
+// DSPy decision pipeline graph + stored decisions (wa_bot_dspy_pipeline_v1).
+export type BotPipelineNode = { id: string; label: string; kind: "start" | "classifier" | "decision" | "handoff" | "agent" | "enrich" };
+export type BotPipelineEdge = { from: string; to: string; label?: string };
+export type BotPipelineDecision = {
+  intent: string;
+  confidence: number;
+  classifier: string;
+  node: string;
+  routes: string[];
+  path: string[];
+  elapsed_ms: number;
+};
+export type BotPipelineDecisionRecord = {
+  id: number;
+  userPhone: string;
+  message: string;
+  decision: BotPipelineDecision;
+  modelUsed: string;
+  createdAtMs: number;
+};
+export type BotPipelineResponse = {
+  online: boolean;
+  graph: { nodes: BotPipelineNode[]; edges: BotPipelineEdge[] } | null;
+  decisions: BotPipelineDecisionRecord[];
+};

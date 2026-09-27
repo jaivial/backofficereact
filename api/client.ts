@@ -2436,6 +2436,21 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // WhatsApp bot AI routing, encrypted provider keys and RAG knowledge (wa_bot_ai_providers_v1).
+      async getBotAIConfig(restaurantId: number): Promise<(APISuccess<import("./types").BotAIConfig>) | APIError> {
+        return json(`/api/admin/bot/ai/${restaurantId}`, { method: "GET" });
+      },
+      async setBotAIConfig(restaurantId: number, input: import("./types").BotAIConfigInput): Promise<(APISuccess<import("./types").BotAIConfig>) | APIError> {
+        return json(`/api/admin/bot/ai/${restaurantId}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      // DSPy decision pipeline graph + recent decisions (wa_bot_dspy_pipeline_v1).
+      async getBotPipeline(restaurantId: number): Promise<(APISuccess<import("./types").BotPipelineResponse>) | APIError> {
+        return json(`/api/admin/bot/pipeline/${restaurantId}`, { method: "GET" });
+      },
       // WhatsApp bot settings per restaurant (root-only, IA tab).
       async getBotSettings(restaurantId: number): Promise<APISuccess<import("./types").BotSettingsResponse> | APIError> {
         return json(`/api/admin/bot/settings/${restaurantId}`, { method: "GET" });
