@@ -2894,9 +2894,41 @@ export type BotPipelineNode = {
   kind: "start" | "classifier" | "decision" | "handoff" | "agent" | "enrich";
   /** Human explanation of the node (wa_bot_pipeline_visual_v2). */
   help?: string;
+  /** Structured detail for the inspector (wa_bot_dspy_compiled_v4). */
+  detail?: BotPipelineNodeDetail;
+};
+export type BotPipelineNodeDetail = {
+  engine?: string;
+  jev?: { question: string; type: string }[];
+  facts?: string[];
+  dspy?: string;
+  condition?: string;
+  outcome?: string;
+  latency?: string;
+  examples?: string[];
+  directive?: string;
+  tools?: string[];
+};
+export type BotPipelineDspyRun = {
+  provider: string;
+  model: string;
+  guess: string;
+  reasoning?: string;
+  jev_top3?: [string, number][];
+  demos?: { message: string; intent: string }[];
+};
+export type BotPipelineDspyInfo = {
+  version: string;
+  program: string;
+  modules: { name: string; type: string; what: string }[];
+  signature: { name: string; instructions: string; inputs: Record<string, string>; outputs: Record<string, string>; adapter: string };
+  trigger: { confidence_min: number };
+  demos: { count: number; source: string; by_intent: Record<string, number>; sample: { message: string; intent: string }[] };
+  lm_settings: Record<string, string | number | boolean>;
 };
 export type BotPipelineEdge = { from: string; to: string; label?: string };
 export type BotPipelineJev = {
+  intent_top3?: [string, number][];
   intent?: string;
   confidence?: number;
   anger?: number;
@@ -2943,6 +2975,7 @@ export type BotPipelineDecision = {
   booking_op?: string;
   missing_slots?: string[];
   jev?: BotPipelineJev;
+  dspy?: BotPipelineDspyRun;
   turn?: { total_ms?: number; iterations?: number; tools?: string[]; burst?: number; transcribed?: boolean };
 };
 export type BotPipelineDecisionRecord = {
@@ -2979,4 +3012,5 @@ export type BotPipelineResponse = {
   decisions: BotPipelineDecisionRecord[];
   stats?: BotPipelineStats;
   management?: BotPipelineManagement;
+  dspy?: BotPipelineDspyInfo | null;
 };
