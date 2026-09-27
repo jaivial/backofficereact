@@ -191,3 +191,18 @@
 @media (prefers-reduced-motion: reduce) {
   .bo-pressable:active:not(:disabled) { scale: 1; }
 }
+
+/* Booking editor "Reserva de evento" switch (booking_is_event_v1). */
+.bo-bookingEventToggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.bo-bookingEventToggleText {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--bo-muted);
+  text-wrap: pretty;
+}

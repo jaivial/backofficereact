@@ -28,6 +28,7 @@ import { Panel } from "../../../../../ui/shell/Panel";
 import { ScrollArea } from "../../../../../ui/layout/ScrollArea";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { OptionsSwitchList, OptionsToggleModal } from "../../../../../ui/widgets/OptionsToggle/OptionsToggle";
+import { Switch } from "../../../../../ui/shadcn/Switch";
 
 import { principalesItemsFromMenu, specialMenusFromBooking, type PrincipalesRow, type RiceRow } from "./bookingDraft";
 import {
@@ -136,6 +137,12 @@ export type BookingEditorDraft = {
    */
   has_mobility_issues?: boolean;
   mobility_people?: number;
+
+  /**
+   * Event / big-negotiation booking. The WhatsApp bot never negotiates these
+   * and always hands over to management. Coordination id: booking_is_event_v1
+   */
+  is_event?: boolean;
 };
 
 export function BookingEditor({
@@ -149,6 +156,7 @@ export function BookingEditor({
   floors = [],
   bodyClassName,
   footerContainerRef,
+  showEventToggle = false,
 }: {
   api: API;
   initial: BookingEditorDraft;
@@ -164,6 +172,8 @@ export function BookingEditor({
    *  this container so the parent can place it at the modal level for
    *  full-width spanning. */
   footerContainerRef?: React.RefObject<HTMLDivElement | null>;
+  /** Shows the "Reserva de evento" switch (only /app/reservas/anadir). booking_is_event_v1 */
+  showEventToggle?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const [draft, setDraft] = useState<BookingEditorDraft>(() => ({ extras: [], ...initial }));
@@ -631,6 +641,9 @@ export function BookingEditor({
       special_menu: Boolean(draft.special_menu),
     };
 
+    // Coordination id: booking_is_event_v1 — only sent from the page that shows it.
+    if (showEventToggle) payload.is_event = Boolean(draft.is_event);
+
     // Coordination id: mobility_day_override_v1 — only sent when the date asks.
     if (mobilityDay.enabled) {
       const hasMobility = Boolean(draft.has_mobility_issues);
@@ -883,6 +896,14 @@ export function BookingEditor({
           </div>
         </div>
       </div>
+
+      {showEventToggle ? (
+        <EventToggleField
+          busy={busy}
+          checked={Boolean(draft.is_event)}
+          onChange={(v) => setDraft((p) => ({ ...p, is_event: v }))}
+        />
+      ) : null}
 
       {mobilityDay.enabled ? (
         <MobilityField
@@ -1630,6 +1651,35 @@ function SpecialMenuSubSection({
  *
  * Coordination id: mobility_issues_v1
  */
+/**
+ * "Reserva de evento" switch. Event bookings (bautizos, comuniones, empresas,
+ * negotiations...) are handed to management by the WhatsApp bot.
+ * Coordination id: booking_is_event_v1
+ */
+function EventToggleField({ busy, checked, onChange }: { busy?: boolean; checked: boolean; onChange: (next: boolean) => void }) {
+  return (
+    <Panel
+      className="bo-bookingPanel--menu"
+      data-slot="booking-editor-event-panel"
+      title="Reserva de evento"
+      meta={checked ? "Sí" : "No"}
+    >
+      <label className="bo-bookingEventToggle" data-testid="booking-editor-event-toggle-label">
+        <Switch
+          checked={checked}
+          onCheckedChange={onChange}
+          disabled={busy}
+          aria-label="Reserva de evento"
+          data-testid="booking-editor-event-toggle"
+        />
+        <span className="bo-bookingEventToggleText" data-testid="booking-editor-event-toggle-text">
+          Evento o negociación importante: el asistente de WhatsApp no gestionará cambios y derivará siempre a la gestión del restaurante.
+        </span>
+      </label>
+    </Panel>
+  );
+}
+
 function MobilityField({
   busy,
   partySize,
