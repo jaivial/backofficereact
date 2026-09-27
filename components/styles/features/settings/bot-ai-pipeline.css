@@ -206,3 +206,191 @@
   color: var(--bo-muted);
   text-wrap: pretty;
 }
+
+/* ---- pipeline visualization v2 (wa_bot_pipeline_visual_v2) ---- */
+
+.bo-pipelineKpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.bo-pipelineKpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-bg-subtle);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-text) 6%, transparent);
+}
+
+.bo-pipelineKpiValue { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.bo-pipelineKpiLabel { font-size: 12px; color: var(--bo-muted); }
+.bo-pipelineKpiHint { font-size: 11px; color: var(--bo-muted); font-variant-numeric: tabular-nums; }
+
+.bo-pipelineBreakdown,
+.bo-pipelineBreakdownRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bo-pipelineBreakdown > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.bo-pipelineChip {
+  padding: 2px 8px;
+  border-radius: var(--bo-radius-full);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--bo-accent) 10%, transparent);
+}
+
+.bo-pipelineLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--bo-muted);
+}
+
+.bo-pipelineLegendItem::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 3px;
+  vertical-align: -1px;
+  background: var(--bo-surface);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-text) 20%, transparent);
+}
+
+.bo-pipelineLegendItem--decision::before { background: color-mix(in srgb, var(--bo-accent) 30%, var(--bo-surface)); }
+.bo-pipelineLegendItem--classifier::before { background: color-mix(in srgb, #8b5cf6 40%, var(--bo-surface)); }
+.bo-pipelineLegendItem--handoff::before { background: color-mix(in srgb, #f59e0b 40%, var(--bo-surface)); }
+.bo-pipelineLegendItem--agent::before { background: color-mix(in srgb, var(--bo-success) 35%, var(--bo-surface)); }
+.bo-pipelineLegendItem--enrich::before { background: color-mix(in srgb, #06b6d4 35%, var(--bo-surface)); }
+.bo-pipelineLegendItem--heat::before { box-shadow: 0 0 0 3px color-mix(in srgb, var(--bo-text) 30%, transparent); }
+
+.bo-pipelineCanvas .react-flow__node.bo-pipelineNode { white-space: pre-line; cursor: pointer; }
+
+/* Traffic heat: ring thickness (not colour only). */
+.bo-pipelineCanvas .react-flow__node.bo-pipelineHeat--1 { box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--bo-text) 22%, transparent), 0 1px 3px rgb(0 0 0 / 0.18); }
+.bo-pipelineCanvas .react-flow__node.bo-pipelineHeat--2 { box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--bo-text) 30%, transparent), 0 1px 3px rgb(0 0 0 / 0.18); }
+.bo-pipelineCanvas .react-flow__node.bo-pipelineHeat--3 { box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--bo-text) 40%, transparent), 0 2px 6px rgb(0 0 0 / 0.22); }
+.bo-pipelineCanvas .react-flow__node.bo-pipelineHeat--0 { opacity: 0.7; }
+
+.bo-pipelineCanvas .react-flow__node.bo-pipelineNode.is-inspected {
+  box-shadow: 0 0 0 3px #f59e0b, 0 2px 8px rgb(0 0 0 / 0.25);
+}
+
+.bo-pipelineMiniMap { border-radius: var(--bo-radius-sm); overflow: hidden; }
+
+.bo-pipelineInspector,
+.bo-pipelineDetail,
+.bo-pipelineManagement {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--bo-radius-lg);
+  background: var(--bo-bg-subtle);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-text) 6%, transparent);
+}
+
+.bo-pipelineKind {
+  display: inline-block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bo-muted);
+}
+
+.bo-pipelineInspectorHelp { margin: 0; font-size: 13px; line-height: 1.45; text-wrap: pretty; }
+.bo-pipelineInspectorStats { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.bo-pipelineInspectorFilter { font-size: 11px; color: var(--bo-muted); }
+
+.bo-pipelineDetailHead { display: flex; flex-direction: column; gap: 2px; }
+.bo-pipelineDetailMsg { font-size: 14px; font-weight: 600; text-wrap: pretty; }
+.bo-pipelineDetailMeta { font-size: 12px; color: var(--bo-muted); font-variant-numeric: tabular-nums; }
+
+.bo-pipelineDetailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.bo-pipelineFacts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.bo-pipelineFacts dt { color: var(--bo-muted); }
+.bo-pipelineFacts dd { margin: 0; overflow-wrap: anywhere; }
+
+.bo-pipelineMeters { display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+.bo-pipelineMeterHead { display: flex; justify-content: space-between; gap: 8px; }
+.bo-pipelineMeterValue { font-variant-numeric: tabular-nums; }
+
+.bo-pipelineMeterTrack {
+  height: 6px;
+  border-radius: var(--bo-radius-full);
+  background: color-mix(in srgb, var(--bo-text) 10%, transparent);
+  overflow: hidden;
+}
+
+.bo-pipelineMeterFill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--bo-accent);
+  transition-property: width;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+.bo-pipelineMeterFill.is-hot { background: #f59e0b; }
+
+.bo-pipelineSteps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.bo-pipelineStep {
+  counter-increment: step;
+  padding: 2px 8px;
+  border-radius: var(--bo-radius-full);
+  font-size: 11px;
+  background: var(--bo-surface);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-text) 10%, transparent);
+}
+
+.bo-pipelineStep::before { content: counter(step) ". "; color: var(--bo-muted); font-variant-numeric: tabular-nums; }
+.bo-pipelineStep--handoff { background: color-mix(in srgb, #f59e0b 14%, var(--bo-surface)); }
+.bo-pipelineStep--agent { background: color-mix(in srgb, var(--bo-success) 12%, var(--bo-surface)); }
+
+.bo-pipelineDirective { margin: 0; font-size: 12px; line-height: 1.45; color: var(--bo-muted); text-wrap: pretty; }
+
+.bo-pipelineSearch { display: flex; align-items: center; gap: 8px; }
+.bo-pipelineSearch .bo-input { flex: 1; }
+.bo-pipelineSearchCount { font-size: 12px; color: var(--bo-muted); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+  .bo-pipelineDetailGrid { grid-template-columns: 1fr; }
+}
