@@ -2909,6 +2909,17 @@ export type BotPipelineJev = {
   special_date_confidence?: number;
   same_topic?: number;
   same_request?: number;
+  // v3 (wa_bot_dspy_pipeline_v3)
+  stage?: string;
+  booking_op?: string;
+  has_date?: number;
+  has_time?: number;
+  has_people?: number;
+  multi_request?: number;
+  injection?: number;
+  off_topic?: number;
+  urgency?: number;
+  formal?: number;
 };
 export type BotPipelineDecision = {
   intent: string;
@@ -2928,6 +2939,9 @@ export type BotPipelineDecision = {
   language?: string;
   special_date?: string;
   duplicate_request?: boolean;
+  stage?: string;
+  booking_op?: string;
+  missing_slots?: string[];
   jev?: BotPipelineJev;
   turn?: { total_ms?: number; iterations?: number; tools?: string[]; burst?: number; transcribed?: boolean };
 };
