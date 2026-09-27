@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud, CreditCard } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud, CreditCard, GitBranch } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
@@ -24,6 +24,8 @@ import { ConfigMiniMax } from "./functionalComponents/ConfigMiniMax/ConfigMiniMa
 import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
 import { ConfigCobrosOnline } from "./functionalComponents/ConfigCobrosOnline/ConfigCobrosOnline";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
+import { ConfigBotAI } from "./functionalComponents/ConfigBotAI/ConfigBotAI";
+import { ConfigBotPipeline } from "./functionalComponents/ConfigBotPipeline/ConfigBotPipeline";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -33,11 +35,11 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "cdn" | "stripe";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "pipeline" | "cdn" | "stripe";
 
 function resolveContentTab(raw: unknown, isRoot: boolean): ContentTab {
   const value = String(raw ?? "").trim() as ContentTab;
-  if (value === "ia" || value === "cdn" || value === "stripe") return isRoot ? value : "restaurante";
+  if (value === "ia" || value === "pipeline" || value === "cdn" || value === "stripe") return isRoot ? value : "restaurante";
   if (value === "contacto" || value === "booking" || value === "legal-pages" || value === "restaurante") return value;
   return "restaurante";
 }
@@ -218,6 +220,12 @@ export default function Page() {
             icon: <Sparkles className="bo-ico" />,
           } as TabItem,
           {
+            id: "pipeline",
+            label: "Pipeline IA",
+            href: "#pipeline",
+            icon: <GitBranch className="bo-ico" />,
+          } as TabItem,
+          {
             id: "cdn",
             label: "CDN",
             href: "#cdn",
@@ -338,6 +346,10 @@ export default function Page() {
           {contentTab === "ia" ? (
             isRoot ? (
               <>
+                <ConfigBotAI
+                  restaurants={pageContext.bo?.session?.restaurants ?? []}
+                  activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
+                />
                 <ConfigAIImage />
                 <ConfigMiniMax />
 				<ConfigWhatsAppBot
@@ -345,6 +357,13 @@ export default function Page() {
                   activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
                 />
               </>
+            ) : null
+          ) : contentTab === "pipeline" ? (
+            isRoot ? (
+              <ConfigBotPipeline
+                restaurants={pageContext.bo?.session?.restaurants ?? []}
+                activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
+              />
             ) : null
           ) : contentTab === "cdn" ? (
             isRoot ? <ConfigBunnyStorage /> : null

@@ -54,6 +54,7 @@
 @import "./styles/features/settings/widget-preview.css";
 @import "./styles/features/settings/whatsapp-connection.css";
 @import "./styles/features/settings/cobros-online.css";
+@import "./styles/features/settings/bot-ai-pipeline.css";
 @import "./styles/features/reservas/shift-modal.css";
 @import "./styles/features/pos/sell-screen.css";
 
