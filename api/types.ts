@@ -48,6 +48,8 @@ export type Booking = {
   children: number;
   /** Coordination id: mobility_issues_v1 */
   has_mobility_issues?: boolean;
+  /** Event / big-negotiation booking (booking_is_event_v1). */
+  is_event?: boolean;
   /** How many of `party_size` have mobility issues. */
   mobility_people?: number;
   contact_phone: string | null;
@@ -2896,6 +2898,10 @@ export type BotPipelineDecision = {
   routes: string[];
   path: string[];
   elapsed_ms: number;
+  /** v2 meters (wa_bot_dspy_pipeline_v2): anger 0..3, can_handle 0..1. */
+  anger?: number;
+  can_handle?: number;
+  handoff_reason?: string;
 };
 export type BotPipelineDecisionRecord = {
   id: number;

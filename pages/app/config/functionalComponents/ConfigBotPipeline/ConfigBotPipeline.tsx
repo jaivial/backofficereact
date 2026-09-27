@@ -145,6 +145,12 @@ export function ConfigBotPipeline({ restaurants, activeRestaurantId }: { restaur
             <span data-testid="config-bot-pipeline-detail-classifier">{selected.decision.classifier}</span>
             <span data-testid="config-bot-pipeline-detail-model">{selected.modelUsed || "sin llamada al modelo"}</span>
             <span data-testid="config-bot-pipeline-detail-ms">{selected.decision.elapsed_ms} ms</span>
+            {typeof selected.decision.anger === "number" ? (
+              <span data-testid="config-bot-pipeline-detail-anger">enfado {selected.decision.anger.toFixed(1)}/3</span>
+            ) : null}
+            {typeof selected.decision.can_handle === "number" ? (
+              <span data-testid="config-bot-pipeline-detail-can-handle">puede resolverlo {Math.round(selected.decision.can_handle * 100)}%</span>
+            ) : null}
           </div>
         ) : null}
 
