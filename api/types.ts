@@ -2888,20 +2888,48 @@ export type BotAIConfigInput = {
 };
 
 // DSPy decision pipeline graph + stored decisions (wa_bot_dspy_pipeline_v1).
-export type BotPipelineNode = { id: string; label: string; kind: "start" | "classifier" | "decision" | "handoff" | "agent" | "enrich" };
+export type BotPipelineNode = {
+  id: string;
+  label: string;
+  kind: "start" | "classifier" | "decision" | "handoff" | "agent" | "enrich";
+  /** Human explanation of the node (wa_bot_pipeline_visual_v2). */
+  help?: string;
+};
 export type BotPipelineEdge = { from: string; to: string; label?: string };
+export type BotPipelineJev = {
+  intent?: string;
+  confidence?: number;
+  anger?: number;
+  can_handle?: number;
+  event?: number;
+  special_needs?: number;
+  wants_note?: number;
+  language?: string;
+  special_date?: string;
+  special_date_confidence?: number;
+  same_topic?: number;
+  same_request?: number;
+};
 export type BotPipelineDecision = {
   intent: string;
   confidence: number;
   classifier: string;
   node: string;
+  action?: string;
   routes: string[];
   path: string[];
   elapsed_ms: number;
+  directive?: string;
   /** v2 meters (wa_bot_dspy_pipeline_v2): anger 0..3, can_handle 0..1. */
   anger?: number;
   can_handle?: number;
   handoff_reason?: string;
+  handoff_topic?: string;
+  language?: string;
+  special_date?: string;
+  duplicate_request?: boolean;
+  jev?: BotPipelineJev;
+  turn?: { total_ms?: number; iterations?: number; tools?: string[]; burst?: number; transcribed?: boolean };
 };
 export type BotPipelineDecisionRecord = {
   id: number;
@@ -2911,8 +2939,30 @@ export type BotPipelineDecisionRecord = {
   modelUsed: string;
   createdAtMs: number;
 };
+export type BotPipelinePercentiles = { p50: number; p90: number; max: number };
+export type BotPipelineStats = {
+  total: number;
+  node_visits: Record<string, number>;
+  terminal: Record<string, { count: number; avg_turn_ms: number }>;
+  intents: Record<string, number>;
+  classifiers: Record<string, number>;
+  models: Record<string, number>;
+  languages: Record<string, number>;
+  pipeline_ms: BotPipelinePercentiles;
+  turn_ms: BotPipelinePercentiles;
+  angry: number;
+  cannot_handle: number;
+  duplicates: number;
+};
+export type BotPipelineManagement = {
+  total: number;
+  by_reason: Record<string, number>;
+  recent: Array<{ userPhone: string; reason: string; summary: string; groupSent: boolean; createdAtMs: number }>;
+};
 export type BotPipelineResponse = {
   online: boolean;
-  graph: { nodes: BotPipelineNode[]; edges: BotPipelineEdge[] } | null;
+  graph: { nodes: BotPipelineNode[]; edges: BotPipelineEdge[]; thresholds?: Record<string, number> } | null;
   decisions: BotPipelineDecisionRecord[];
+  stats?: BotPipelineStats;
+  management?: BotPipelineManagement;
 };
