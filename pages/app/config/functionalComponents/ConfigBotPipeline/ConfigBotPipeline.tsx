@@ -24,6 +24,26 @@ const KIND_LABEL: Record<string, string> = {
   enrich: "Enriquece el prompt",
 };
 
+const STAGE_LABEL: Record<string, string> = {
+  new_request: "Petición nueva",
+  providing_data: "Da los datos pedidos",
+  confirming: "Confirma la propuesta",
+  rejecting: "Rechaza / corrige",
+  choosing_option: "Elige una opción",
+  small_talk: "Saludo / cortesía",
+};
+
+const OP_LABEL: Record<string, string> = {
+  create: "Reserva nueva",
+  modify_time: "Cambiar hora",
+  modify_date: "Cambiar día",
+  modify_people: "Cambiar personas",
+  modify_rice: "Cambiar arroz",
+  modify_other: "Otro cambio",
+  cancel: "Cancelar",
+  none: "No es de reserva",
+};
+
 const REASON_LABEL: Record<string, string> = {
   same_day: "Reserva para hoy",
   extras: "Extras",
@@ -297,6 +317,9 @@ export function ConfigBotPipeline({ restaurants, activeRestaurantId }: { restaur
                   <dd data-testid="config-bot-pipeline-detail-node">{nodeById.get(dec.node)?.label ?? dec.node}</dd>
                   {dec.handoff_reason ? (<><dt data-testid="config-bot-pipeline-detail-reason-label">Motivo</dt><dd data-testid="config-bot-pipeline-detail-reason">{REASON_LABEL[dec.handoff_reason] ?? dec.handoff_reason}</dd></>) : null}
                   {dec.duplicate_request ? (<><dt data-testid="config-bot-pipeline-detail-dup-label">Gestión</dt><dd data-testid="config-bot-pipeline-detail-dup">Misma solicitud ya enviada: no se reenvió</dd></>) : null}
+                  {dec.stage || jev?.stage ? (<><dt data-testid="config-bot-pipeline-detail-stage-label">Fase</dt><dd data-testid="config-bot-pipeline-detail-stage">{STAGE_LABEL[dec.stage ?? jev?.stage ?? ""] ?? dec.stage ?? jev?.stage}</dd></>) : null}
+                  {dec.booking_op || jev?.booking_op ? (<><dt data-testid="config-bot-pipeline-detail-op-label">Operación</dt><dd data-testid="config-bot-pipeline-detail-op">{OP_LABEL[dec.booking_op ?? jev?.booking_op ?? ""] ?? dec.booking_op ?? jev?.booking_op}</dd></>) : null}
+                  {dec.missing_slots?.length ? (<><dt data-testid="config-bot-pipeline-detail-missing-label">Falta</dt><dd data-testid="config-bot-pipeline-detail-missing">{dec.missing_slots.join(", ")}</dd></>) : null}
                   {dec.special_date ? (<><dt data-testid="config-bot-pipeline-detail-special-label">Fecha especial</dt><dd data-testid="config-bot-pipeline-detail-special">{dec.special_date}</dd></>) : null}
                   <dt data-testid="config-bot-pipeline-detail-language-label">Idioma</dt>
                   <dd data-testid="config-bot-pipeline-detail-language">{(dec.language ?? jev?.language ?? "es").toUpperCase()}</dd>
@@ -317,6 +340,14 @@ export function ConfigBotPipeline({ restaurants, activeRestaurantId }: { restaur
                 <Meter label="Pide anotarlo" value={jev?.wants_note} testId="config-bot-pipeline-meter-wants-note" />
                 <Meter label="Mismo tema abierto" value={jev?.same_topic} danger={thresholds.same_topic_min} testId="config-bot-pipeline-meter-same-topic" />
                 <Meter label="Solicitud ya enviada" value={jev?.same_request} danger={thresholds.same_request_min} testId="config-bot-pipeline-meter-same-request" />
+                <Meter label="Tiene fecha" value={jev?.has_date} testId="config-bot-pipeline-meter-has-date" />
+                <Meter label="Tiene hora" value={jev?.has_time} testId="config-bot-pipeline-meter-has-time" />
+                <Meter label="Tiene personas" value={jev?.has_people} testId="config-bot-pipeline-meter-has-people" />
+                <Meter label="Varias peticiones" value={jev?.multi_request} danger={thresholds.multi_min} testId="config-bot-pipeline-meter-multi" />
+                <Meter label="Urgencia" value={jev?.urgency} max={2} danger={thresholds.urgency_high} testId="config-bot-pipeline-meter-urgency" />
+                <Meter label="Trata de usted" value={jev?.formal} danger={thresholds.formal_min} testId="config-bot-pipeline-meter-formal" />
+                <Meter label="Intento de manipulación" value={jev?.injection} danger={thresholds.injection_min} testId="config-bot-pipeline-meter-injection" />
+                <Meter label="Spam / otro chat" value={jev?.off_topic} danger={thresholds.off_topic_min} testId="config-bot-pipeline-meter-off-topic" />
               </div>
             </div>
             <ol className="bo-pipelineSteps" data-testid="config-bot-pipeline-detail-steps">
