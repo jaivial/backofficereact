@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import ReactFlow, { Background, Controls, MarkerType, MiniMap, type Edge, type Node } from "reactflow";
 import "reactflow/dist/style.css";
-import { GitBranch, RefreshCw, Search, X } from "lucide-react";
+import { BrainCircuit, ChevronDown, GitBranch, RefreshCw, Search, X } from "lucide-react";
 
 import { createClient } from "../../../../../api/client";
-import type { BORestaurant, BotPipelineDecisionRecord, BotPipelineResponse } from "../../../../../api/types";
+import type { BORestaurant, BotPipelineDecisionRecord, BotPipelineDspyInfo, BotPipelineDspyRun, BotPipelineNodeDetail, BotPipelineResponse } from "../../../../../api/types";
 import { SearchableSelect } from "../../../../../ui/inputs/SearchableSelect";
 
 // Coordination id: wa_bot_dspy_pipeline_v1 / wa_bot_pipeline_visual_v2 -
@@ -111,6 +111,99 @@ function Kpi({ label, value, hint, testId }: { label: string; value: string | nu
   );
 }
 
+function pct(v: number) {
+  return `${Math.round(v * 100)} %`;
+}
+
+// Structured node detail (wa_bot_dspy_compiled_v4): what the node reads
+// (Jev questions / DB facts), its exact condition, what happens, tools.
+function NodeDetail({ d }: { d: BotPipelineNodeDetail }) {
+  return (
+    <dl className="bo-pipelineDetailList" data-testid="config-bot-pipeline-node-detail">
+      {d.engine ? (<><dt data-testid="config-bot-pipeline-node-detail-engine-label">Motor</dt><dd data-testid="config-bot-pipeline-node-detail-engine"><span className="bo-pipelineEngine" data-testid="config-bot-pipeline-node-detail-engine-badge">{d.engine}</span>{d.latency ? <span className="bo-pipelineLatency" data-testid="config-bot-pipeline-node-detail-latency">{d.latency}</span> : null}</dd></>) : null}
+      {d.jev?.length ? (
+        <><dt data-testid="config-bot-pipeline-node-detail-jev-label">Preguntas a Jev</dt>
+          <dd data-testid="config-bot-pipeline-node-detail-jev">
+            <ul className="bo-pipelineTagList" data-testid="config-bot-pipeline-node-detail-jev-list">
+              {d.jev.map((q) => <li key={q.question} className="bo-pipelineTag" data-testid={`config-bot-pipeline-node-detail-jev-${q.question}`}><code data-testid={`config-bot-pipeline-node-detail-jev-${q.question}-name`}>{q.question}</code> <span data-testid={`config-bot-pipeline-node-detail-jev-${q.question}-type`}>{q.type}</span></li>)}
+            </ul>
+          </dd></>
+      ) : null}
+      {d.facts?.length ? (<><dt data-testid="config-bot-pipeline-node-detail-facts-label">Datos que consulta</dt><dd data-testid="config-bot-pipeline-node-detail-facts"><ul className="bo-pipelineBullets" data-testid="config-bot-pipeline-node-detail-facts-list">{d.facts.map((f, i) => <li key={f} data-testid={`config-bot-pipeline-node-detail-fact-${i}`}>{f}</li>)}</ul></dd></>) : null}
+      {d.dspy ? (<><dt data-testid="config-bot-pipeline-node-detail-dspy-label">Programa DSPy</dt><dd data-testid="config-bot-pipeline-node-detail-dspy"><code data-testid="config-bot-pipeline-node-detail-dspy-code">{d.dspy}</code></dd></>) : null}
+      {d.condition ? (<><dt data-testid="config-bot-pipeline-node-detail-condition-label">Condición</dt><dd data-testid="config-bot-pipeline-node-detail-condition">{d.condition}</dd></>) : null}
+      {d.outcome ? (<><dt data-testid="config-bot-pipeline-node-detail-outcome-label">Qué pasa</dt><dd data-testid="config-bot-pipeline-node-detail-outcome">{d.outcome}</dd></>) : null}
+      {d.tools?.length ? (<><dt data-testid="config-bot-pipeline-node-detail-tools-label">Herramientas</dt><dd data-testid="config-bot-pipeline-node-detail-tools"><ul className="bo-pipelineTagList" data-testid="config-bot-pipeline-node-detail-tools-list">{d.tools.map((t) => <li key={t} className="bo-pipelineTag" data-testid={`config-bot-pipeline-node-detail-tool-${t}`}><code data-testid={`config-bot-pipeline-node-detail-tool-${t}-name`}>{t}</code></li>)}</ul></dd></>) : null}
+      {d.directive ? (<><dt data-testid="config-bot-pipeline-node-detail-directive-label">Instrucción al agente</dt><dd className="bo-pipelineDirective" data-testid="config-bot-pipeline-node-detail-directive">{d.directive}</dd></>) : null}
+      {d.examples?.length ? (<><dt data-testid="config-bot-pipeline-node-detail-examples-label">Ejemplos</dt><dd data-testid="config-bot-pipeline-node-detail-examples"><ul className="bo-pipelineBullets" data-testid="config-bot-pipeline-node-detail-examples-list">{d.examples.map((e, i) => <li key={e} data-testid={`config-bot-pipeline-node-detail-example-${i}`}>“{e}”</li>)}</ul></dd></>) : null}
+    </dl>
+  );
+}
+
+// "Cómo se aplica DSPy" explainer from the sidecar /dspy (wa_bot_dspy_compiled_v4).
+function DspyPanel({ info, dspyRate }: { info: BotPipelineDspyInfo; dspyRate: string }) {
+  const [open, setOpen] = useState(false);
+  const byIntent = Object.entries(info.demos.by_intent).sort((a, b) => b[1] - a[1]);
+  return (
+    <section className="bo-pipelineDspy" data-testid="config-bot-pipeline-dspy">
+      <button type="button" className="bo-pipelineDspyToggle bo-pressable" aria-expanded={open} onClick={() => setOpen((v) => !v)} data-testid="config-bot-pipeline-dspy-toggle">
+        <BrainCircuit size={16} strokeWidth={1.5} aria-hidden="true" data-testid="config-bot-pipeline-dspy-icon" />
+        <span className="bo-pipelineDspyTitle" data-testid="config-bot-pipeline-dspy-title">Cómo se aplica DSPy</span>
+        <span className="bo-pipelineDspyMeta" data-testid="config-bot-pipeline-dspy-meta">DSPy {info.version} · se activa si Jev &lt; {pct(info.trigger.confidence_min)} · {dspyRate} de los mensajes · {info.demos.count} ejemplos</span>
+        <ChevronDown size={16} strokeWidth={1.5} aria-hidden="true" className={open ? "bo-pipelineChevron is-open" : "bo-pipelineChevron"} data-testid="config-bot-pipeline-dspy-chevron" />
+      </button>
+      {open ? (
+        <div className="bo-pipelineDspyBody" data-testid="config-bot-pipeline-dspy-body">
+          <ol className="bo-pipelineDspyModules" data-testid="config-bot-pipeline-dspy-modules">
+            {info.modules.map((m, i) => (
+              <li key={m.name} className="bo-pipelineDspyModule" data-testid={`config-bot-pipeline-dspy-module-${i}`}>
+                <strong data-testid={`config-bot-pipeline-dspy-module-${i}-name`}>{m.name}</strong> <code data-testid={`config-bot-pipeline-dspy-module-${i}-type`}>{m.type}</code>
+                <p data-testid={`config-bot-pipeline-dspy-module-${i}-what`}>{m.what}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="bo-pipelineDspyGrid" data-testid="config-bot-pipeline-dspy-grid">
+            <div className="bo-pipelineDspyCard" data-testid="config-bot-pipeline-dspy-signature">
+              <strong data-testid="config-bot-pipeline-dspy-signature-title">Firma <code data-testid="config-bot-pipeline-dspy-signature-name">{info.signature.name}</code></strong>
+              <p className="bo-pipelineDirective" data-testid="config-bot-pipeline-dspy-signature-instructions">{info.signature.instructions}</p>
+              <dl className="bo-pipelineDetailList" data-testid="config-bot-pipeline-dspy-signature-fields">
+                {Object.entries(info.signature.inputs).map(([k, v]) => (<React.Fragment key={k}><dt data-testid={`config-bot-pipeline-dspy-input-${k}-name`}>Entrada <code data-testid={`config-bot-pipeline-dspy-input-${k}-code`}>{k}</code></dt><dd data-testid={`config-bot-pipeline-dspy-input-${k}`}>{v}</dd></React.Fragment>))}
+                {Object.entries(info.signature.outputs).map(([k, v]) => (<React.Fragment key={k}><dt data-testid={`config-bot-pipeline-dspy-output-${k}-name`}>Salida <code data-testid={`config-bot-pipeline-dspy-output-${k}-code`}>{k}</code></dt><dd data-testid={`config-bot-pipeline-dspy-output-${k}`}>{v} (más un razonamiento paso a paso)</dd></React.Fragment>))}
+              </dl>
+              <span className="bo-pipelineDspyNote" data-testid="config-bot-pipeline-dspy-adapter">{info.signature.adapter} · máx. {String(info.lm_settings.max_tokens)} tokens · {String(info.lm_settings.timeout_s)} s</span>
+            </div>
+            <div className="bo-pipelineDspyCard" data-testid="config-bot-pipeline-dspy-demos">
+              <strong data-testid="config-bot-pipeline-dspy-demos-title">Ejemplos (few-shot)</strong>
+              <p className="bo-pipelineDirective" data-testid="config-bot-pipeline-dspy-demos-source">{info.demos.count} ejemplos · origen: {info.demos.source}. En cada llamada se usan los 4 más parecidos al mensaje.</p>
+              <div className="bo-pipelineChips" data-testid="config-bot-pipeline-dspy-demos-intents">
+                {byIntent.slice(0, 10).map(([k, v]) => <span key={k} className="bo-pipelineChip" data-testid={`config-bot-pipeline-dspy-demos-intent-${k}`}>{k} · {v}</span>)}
+              </div>
+              <ul className="bo-pipelineBullets" data-testid="config-bot-pipeline-dspy-demos-sample">
+                {info.demos.sample.slice(0, 6).map((d, i) => <li key={`${d.message}-${i}`} data-testid={`config-bot-pipeline-dspy-demo-${i}`}>“{d.message}” → <code data-testid={`config-bot-pipeline-dspy-demo-${i}-intent`}>{d.intent}</code></li>)}
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+// What DSPy did on one decision: model, reasoning, Jev candidates, demos.
+function DspyRun({ run }: { run: BotPipelineDspyRun }) {
+  return (
+    <div className="bo-pipelineDspyRun" data-testid="config-bot-pipeline-detail-dspy">
+      <strong className="flex items-center gap-1" data-testid="config-bot-pipeline-detail-dspy-title"><BrainCircuit size={14} strokeWidth={1.5} aria-hidden="true" data-testid="config-bot-pipeline-detail-dspy-icon" /> DSPy desambiguó · {run.model} → <code data-testid="config-bot-pipeline-detail-dspy-guess">{run.guess}</code></strong>
+      {run.reasoning ? <p className="bo-pipelineDirective" data-testid="config-bot-pipeline-detail-dspy-reasoning"><strong data-testid="config-bot-pipeline-detail-dspy-reasoning-label">Razonamiento:</strong> {run.reasoning}</p> : null}
+      {run.demos?.length ? (
+        <ul className="bo-pipelineBullets" data-testid="config-bot-pipeline-detail-dspy-demos">
+          {run.demos.map((d, i) => <li key={`${d.message}-${i}`} data-testid={`config-bot-pipeline-detail-dspy-demo-${i}`}>Ejemplo: “{d.message}” → <code data-testid={`config-bot-pipeline-detail-dspy-demo-${i}-intent`}>{d.intent}</code></li>)}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 function topEntries(rec: Record<string, number> | undefined, n: number) {
   return Object.entries(rec ?? {}).sort((a, b) => b[1] - a[1]).slice(0, n);
 }
@@ -141,6 +234,11 @@ export function ConfigBotPipeline({ restaurants, activeRestaurantId }: { restaur
   useEffect(() => { void load(); }, [load]);
 
   const stats = data?.stats;
+  const dspyRate = useMemo(() => {
+    const all = data?.decisions ?? [];
+    if (!all.length) return "0 %";
+    return pct(all.filter((d) => d.decision.classifier?.startsWith("dspy")).length / all.length);
+  }, [data]);
   const visits = stats?.node_visits ?? {};
   const maxVisits = Math.max(1, ...Object.values(visits));
   const nodeById = useMemo(() => new Map((data?.graph?.nodes ?? []).map((n) => [n.id, n])), [data?.graph?.nodes]);
@@ -255,6 +353,8 @@ export function ConfigBotPipeline({ restaurants, activeRestaurantId }: { restaur
           </div>
         ) : null}
 
+        {data?.dspy ? <DspyPanel info={data.dspy} dspyRate={dspyRate} /> : null}
+
         <div className="bo-pipelineLegend" data-testid="config-bot-pipeline-legend">
           {Object.entries(KIND_LABEL).map(([k, l]) => (
             <span key={k} className={`bo-pipelineLegendItem bo-pipelineLegendItem--${k}`} data-testid={`config-bot-pipeline-legend-${k}`}>{l}</span>
@@ -287,6 +387,7 @@ export function ConfigBotPipeline({ restaurants, activeRestaurantId }: { restaur
               </button>
             </div>
             {inspected.help ? <p className="bo-pipelineInspectorHelp" data-testid="config-bot-pipeline-inspector-help">{inspected.help}</p> : null}
+            {inspected.detail && Object.keys(inspected.detail).length ? <NodeDetail d={inspected.detail} /> : null}
             <div className="bo-pipelineInspectorStats" data-testid="config-bot-pipeline-inspector-stats">
               <span data-testid="config-bot-pipeline-inspector-visits">Pasaron {visits[inspected.id] ?? 0} mensajes</span>
               {stats?.terminal[inspected.id] ? (
@@ -350,6 +451,19 @@ export function ConfigBotPipeline({ restaurants, activeRestaurantId }: { restaur
                 <Meter label="Spam / otro chat" value={jev?.off_topic} danger={thresholds.off_topic_min} testId="config-bot-pipeline-meter-off-topic" />
               </div>
             </div>
+            {jev?.intent_top3?.length ? (
+              <div className="bo-pipelineTop3" data-testid="config-bot-pipeline-detail-top3">
+                <strong data-testid="config-bot-pipeline-detail-top3-title">Candidatas de Jev</strong>
+                {jev.intent_top3.map(([k, v], i) => (
+                  <div key={k} className="bo-pipelineTop3Row" data-testid={`config-bot-pipeline-detail-top3-${i}`}>
+                    <code data-testid={`config-bot-pipeline-detail-top3-${i}-intent`}>{k}{k === dec.intent ? " ✓" : ""}</code>
+                    <span className="bo-pipelineTop3Bar" data-testid={`config-bot-pipeline-detail-top3-${i}-bar`}><span style={{ width: `${Math.round(v * 100)}%` }} data-testid={`config-bot-pipeline-detail-top3-${i}-fill`} /></span>
+                    <span className="bo-pipelineTop3Value" data-testid={`config-bot-pipeline-detail-top3-${i}-value`}>{pct(v)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {dec.dspy ? <DspyRun run={dec.dspy} /> : null}
             <ol className="bo-pipelineSteps" data-testid="config-bot-pipeline-detail-steps">
               {dec.path.map((id, i) => (
                 <li key={`${id}-${i}`} className={`bo-pipelineStep bo-pipelineStep--${nodeById.get(id)?.kind ?? "decision"}`} data-testid={`config-bot-pipeline-step-${i}`}>
