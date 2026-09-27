@@ -138,7 +138,7 @@ export default function Page() {
 
   return (
     <section aria-label="Añadir reserva" className="bo-reservaAddPage w-full max-w-[768px]" data-testid="reservas-anadir-page">
-      <BookingEditor api={api} initial={initial} busy={busy} submitLabel="Crear" onSubmit={submit} floors={floors} />
+      <BookingEditor api={api} initial={initial} busy={busy} submitLabel="Crear" onSubmit={submit} floors={floors} showEventToggle />
       {busy ? (
         <div className="bo-bookingSubmissionOverlay" role="status" aria-live="polite" data-slot="booking-create-loading-overlay">
           <div className="bo-bookingSubmissionLoading" data-slot="booking-create-loading-content">
