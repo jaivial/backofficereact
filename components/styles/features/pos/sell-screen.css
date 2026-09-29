@@ -1369,8 +1369,7 @@
   box-shadow: none;
 }
 :root[data-theme="light"] .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile { background: transparent; }
-.pos-categoryTile .bo-foodMemberMedia,
-.pos-categoryTile .bo-foodMemberMediaPlaceholder { background: transparent; }
+.pos-categoryTile .bo-foodMemberMedia { background: transparent; }
 .pos-categories .pos-categoryTile .bo-foodMemberBody {
   display: flex;
   flex-direction: column;
