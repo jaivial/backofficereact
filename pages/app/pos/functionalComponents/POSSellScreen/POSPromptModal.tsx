@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { POSSelect } from "../POSSelect/POSSelect";
 
 import { POSDialog } from "./POSDialog";
 
@@ -83,18 +84,16 @@ export function POSPromptModal({
           </div>
         ) : null}
         {resolvedFields.map((field) => (
-          <label className="pos-modal__covers" htmlFor={`${testId}-${field.name}`} key={field.name} data-testid={`${testId}-${field.name}-field`}>
+          <FieldWrap asLabel={field.kind !== "select"} className="pos-modal__covers" htmlFor={`${testId}-${field.name}`} key={field.name} data-testid={`${testId}-${field.name}-field`}>
             {field.label}
             {field.kind === "textarea" ? (
               <textarea id={`${testId}-${field.name}`} placeholder={field.placeholder} value={values[field.name] ?? ""} onChange={(event) => setValues((current) => ({ ...current, [field.name]: event.target.value }))} data-ui={`${testId}-${field.name}`} data-testid={`${testId}-${field.name}`} />
             ) : field.kind === "select" ? (
-              <select id={`${testId}-${field.name}`} value={values[field.name] ?? ""} onChange={(event) => setValues((current) => ({ ...current, [field.name]: event.target.value }))} data-ui={`${testId}-${field.name}`} data-testid={`${testId}-${field.name}`}>
-                {(field.options ?? []).map((entry) => <option value={entry.value} key={entry.value} data-ui={`${testId}-${field.name}-${entry.value || "none"}`}>{entry.label}</option>)}
-              </select>
+              <POSSelect value={values[field.name] ?? ""} onChange={(next) => setValues((current) => ({ ...current, [field.name]: next }))} options={field.options ?? []} ariaLabel={field.label} testId={`${testId}-${field.name}`} />
             ) : (
               <input id={`${testId}-${field.name}`} inputMode={field.inputMode ?? "text"} placeholder={field.placeholder} value={values[field.name] ?? ""} onChange={(event) => setValues((current) => ({ ...current, [field.name]: event.target.value }))} data-ui={`${testId}-${field.name}`} data-testid={`${testId}-${field.name}`} />
             )}
-          </label>
+          </FieldWrap>
         ))}
         {validationMessage ? <p className="pos-modal__error" role="alert" data-testid={`${testId}-validation`}>{validationMessage}</p> : null}
         {summary ? <p className="pos-modal__pending" data-testid={`${testId}-summary`}>{summary(values, option)}</p> : null}
@@ -111,4 +110,9 @@ export function POSPromptModal({
       </div>
     </POSDialog>
   );
+}
+
+/** A custom select renders a button trigger, which must not sit inside a <label>. */
+function FieldWrap({ asLabel, htmlFor, children, ...rest }: { asLabel: boolean; htmlFor: string; className: string; children: React.ReactNode; "data-testid": string }) {
+  return asLabel ? <label htmlFor={htmlFor} {...rest}>{children}</label> : <div role="group" {...rest}>{children}</div>;
 }
