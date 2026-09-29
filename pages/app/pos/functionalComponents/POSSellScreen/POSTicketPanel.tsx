@@ -154,10 +154,32 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
             <span data-testid="pos-total-label">Total</span>
             <strong data-testid="pos-total-value">{money(ticket.totalGrossCents)}</strong>
           </footer>
+          <POSTicketBreakdown ticket={ticket} />
         </>
       ) : (
         <p className="pos-ticketPanel__empty" data-testid="pos-ticket-empty">Selecciona mesa o pulsa Mesa para empezar.</p>
       )}
     </section>
+  );
+}
+
+/** Subtotal, adjustments and VAT included, shown only when they differ from the plain total. */
+function POSTicketBreakdown({ ticket }: { ticket: Ticket }) {
+  const rows = [
+    { key: "subtotal", label: "Subtotal", cents: ticket.subtotalGrossCents ?? 0, show: (ticket.discountCents || ticket.surchargeCents) ? true : false },
+    { key: "discount", label: "Descuento", cents: -(ticket.discountCents ?? 0), show: Boolean(ticket.discountCents) },
+    { key: "surcharge", label: "Recargo", cents: ticket.surchargeCents ?? 0, show: Boolean(ticket.surchargeCents) },
+    { key: "tax", label: "IVA incluido", cents: ticket.taxCents ?? 0, show: Boolean(ticket.taxCents) },
+  ].filter((row) => row.show);
+  if (!rows.length) return null;
+  return (
+    <dl className="pos-ticketPanel__breakdown" data-ui="pos-ticket-breakdown" data-testid="pos-ticket-breakdown">
+      {rows.map((row) => (
+        <div className="pos-ticketPanel__breakdownRow" key={row.key} data-testid={`pos-ticket-breakdown-${row.key}`}>
+          <dt data-testid={`pos-ticket-breakdown-${row.key}-label`}>{row.label}</dt>
+          <dd data-testid={`pos-ticket-breakdown-${row.key}-value`}>{money(row.cents)}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
