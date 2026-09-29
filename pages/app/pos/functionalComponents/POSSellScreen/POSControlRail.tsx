@@ -1,4 +1,6 @@
 import React from "react";
+import type { LucideIcon } from "lucide-react";
+import { Archive, Banknote, ChefHat, Combine, FileText, Gift, HandCoins, IdCard, LayoutGrid, Lock, Map as MapIcon, MessageSquare, Percent, Receipt, Scissors, ShoppingBag, Split, Tags, Trash2, TrendingUp, UserRound, Wine, ListChecks, CirclePause } from "lucide-react";
 
 export type RailFeatureKey =
   | "total" | "cerrar-mesas" | "comanda" | "aparcar" | "mesa" | "salon" | "juntar-mesas" | "borrar-comanda"
@@ -16,7 +18,16 @@ export const RAIL_GROUP_LABELS: Record<RailFeatureGroup, string> = {
   cierre: "Cierre",
 };
 
-export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: RailFeatureGroup; accent?: boolean }> = [
+/** One icon per rail command: a scannable glyph plus the label keeps dense tills readable. */
+const RAIL_ICONS: Record<RailFeatureKey, LucideIcon> = {
+  total: Banknote, comanda: ChefHat, "separar-comanda": Split, "dividir-comanda": Scissors, "juntar-mesas": Combine,
+  descuento: Percent, recargo: TrendingUp, invita: Gift, comentario: MessageSquare, tags: Tags, propina: HandCoins,
+  "borrar-comanda": Trash2, mesa: LayoutGrid, salon: MapIcon, aparcar: CirclePause, barra: Wine, llevar: ShoppingBag,
+  cliente: IdCard, empleado: UserRound, cajon: Archive, cocina: ChefHat, "cerrar-mesas": ListChecks,
+  "cierre-x": FileText, "cierre-y": Receipt, "cerrar-dia": Lock,
+};
+
+export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: RailFeatureGroup; accent?: boolean; danger?: boolean }> = [
   { key: "total", label: "Total", group: "cobro", accent: true },
   { key: "comanda", label: "Comanda", group: "cuenta" },
   { key: "separar-comanda", label: "Separar comanda", group: "cuenta" },
@@ -28,7 +39,7 @@ export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: R
   { key: "comentario", label: "Comentario", group: "cuenta" },
   { key: "tags", label: "Tags", group: "cuenta" },
   { key: "propina", label: "Propina", group: "cuenta" },
-  { key: "borrar-comanda", label: "Borrar comanda", group: "cuenta" },
+  { key: "borrar-comanda", label: "Borrar comanda", group: "cuenta", danger: true },
   { key: "mesa", label: "Mesa", group: "mesa" },
   { key: "salon", label: "Salón", group: "mesa" },
   { key: "aparcar", label: "Aparcar", group: "mesa" },
@@ -60,7 +71,7 @@ export function POSControlRail({ onAction, disabledReasons = {}, readOnly = fals
             return (
               <React.Fragment key={feature.key}>
                 <button
-                  className={feature.accent ? "pos-rail__btn pos-rail__btn--accent" : "pos-rail__btn"}
+                  className={feature.accent ? "pos-rail__btn pos-rail__btn--accent" : feature.danger ? "pos-rail__btn pos-rail__btn--danger" : "pos-rail__btn"}
                   type="button"
                   disabled={Boolean(reason)}
                   title={reason}
@@ -69,7 +80,8 @@ export function POSControlRail({ onAction, disabledReasons = {}, readOnly = fals
                   data-pos-command={feature.key}
                   data-testid={`pos-rail-${feature.key}`}
                 >
-                  {feature.label}
+                  {React.createElement(RAIL_ICONS[feature.key], { className: "pos-rail__icon", "aria-hidden": true, "data-testid": `pos-rail-icon-${feature.key}` } as React.ComponentProps<LucideIcon>)}
+                  <span className="pos-rail__label" data-testid={`pos-rail-label-${feature.key}`}>{feature.label}</span>
                 </button>
                 {reason ? <span id={`pos-rail-reason-${feature.key}`} className="pos-rail__reason" data-testid={`pos-rail-reason-${feature.key}`}>{reason}</span> : null}
               </React.Fragment>

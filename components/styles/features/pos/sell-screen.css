@@ -1197,3 +1197,135 @@
     flex-wrap: wrap;
   }
 }
+
+/* =====================================================================
+   TPV polish v2 (coordination id: pos_sell_layout_v2)
+   - Desktop/tablet landscape (>=901px): the sell screen is a viewport-fitted
+     workspace. Only inner regions (lines, products, rail) scroll, so the
+     "Total" action and the keypad never fall below the fold.
+   - Rail: icon + label rows instead of 108px squares.
+   - Press feedback: scale(0.96), 150ms ease-out, named properties only.
+   ===================================================================== */
+
+.pos-ticketPanel__breakdown {
+  display: grid;
+  gap: 2px;
+  margin: var(--bo-space-2) 0 0;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pos-ticketPanel__breakdownRow { display: flex; justify-content: space-between; gap: var(--bo-space-2); }
+.pos-ticketPanel__breakdownRow dt, .pos-ticketPanel__breakdownRow dd { margin: 0; }
+.pos-ticketPanel__total strong, .pos-line__total, .pos-keypad__value { font-variant-numeric: tabular-nums; }
+
+/* Rail rows: icon + label, left aligned, readable at every density. */
+.pos-rail__btn {
+  aspect-ratio: auto;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  padding: 8px 10px;
+  transition-property: scale, border-color, box-shadow, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+.pos-rail__btn:hover:not(:disabled) { transform: none; }
+.pos-rail__btn:active:not(:disabled) { scale: 0.96; }
+.pos-rail__icon { width: 18px; height: 18px; flex: none; stroke-width: 2; }
+.pos-rail__label { min-width: 0; overflow-wrap: anywhere; }
+.pos-rail__btn--accent { grid-column: 1 / -1; justify-content: center; min-height: 52px; font-size: var(--bo-text-sm); }
+.pos-rail__btn--danger { color: var(--bo-text-danger); border-color: color-mix(in srgb, var(--bo-color-danger) 34%, var(--bo-border-2)); }
+.pos-rail__btn--danger:hover:not(:disabled) { background: color-mix(in srgb, var(--bo-color-danger) 10%, transparent); box-shadow: none; }
+.pos-rail__group { gap: 6px; }
+.pos-rail__groupLabel { margin-top: 6px; }
+
+/* Keys: tactile press, never below a 40px target. */
+.pos-keypad__key, .pos-keypad__calcOp, .pos-keypad__confirm, .pos-modal__primary, .pos-modal__secondary {
+  transition-property: scale, border-color, box-shadow, background-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+.pos-keypad__key:hover { transform: none; }
+.pos-keypad__confirm:hover { transform: none; }
+.pos-keypad__key:active, .pos-keypad__calcOp:active, .pos-keypad__confirm:active,
+.pos-modal__primary:active:not(:disabled), .pos-modal__secondary:active:not(:disabled) { scale: 0.96; }
+.pos-products .bo-foodMemberCard { transition-property: scale, border-color, box-shadow; transition-duration: 150ms; transition-timing-function: ease-out; }
+.pos-products .bo-foodMemberCard:active { scale: 0.96; }
+
+@media (min-width: 901px) {
+  /* Fit the workspace to the viewport: header (~68px) + shell topbar. */
+  .bo-main--pos [data-ui="pos-page"] { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .bo-main--pos .pos-sell { flex: 1 1 0; min-height: 0; height: auto; }
+  .pos-sell__body { flex: 1 1 0; min-height: 0; }
+  .pos-rail { max-height: calc(100% - 2rem); align-self: stretch; overflow-y: auto; scrollbar-width: thin; }
+  .pos-ticketPanel { display: flex; flex-direction: column; }
+  .pos-ticketPanel__lines { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  .pos-keypad__key, .pos-keypad__calcOp { min-height: 40px; }
+  .pos-keypad { overflow-y: auto; scrollbar-width: none; }
+  .pos-sell__row--register { flex: 0 0 auto; height: clamp(300px, 42%, 440px); }
+}
+
+/* Short landscape screens (tablets, 1280x720 laptops): tighter tiles. */
+@media (min-width: 901px) and (max-height: 820px) {
+  .pos-sell__row--register { height: clamp(280px, 46%, 360px); padding-top: 0.5rem; }
+  .pos-keypad__display { padding: 4px 10px; }
+  .pos-keypad__value { font-size: var(--bo-text-lg); }
+  .pos-keypad__key, .pos-keypad__calcOp { min-height: 40px; font-size: var(--bo-text-base); }
+  .pos-products .bo-foodMemberMedia { aspect-ratio: 16 / 9; }
+  .pos-categories [data-ui="dish-card-media"] { display: none; }
+  .pos-rail__btn { min-height: 40px; padding: 6px 8px; }
+}
+
+/* Large desktops: more product columns and a roomier rail. */
+@media (min-width: 1600px) {
+  .pos-products { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+  .pos-rail { width: 272px; }
+}
+
+/* Phones / portrait tablets: ticket -> actions -> catalogue. The work column
+   is flattened so the rail can sit right under the ticket; each rail group is
+   a horizontal strip and the product grid scrolls inside a bounded box, so
+   "Total" is always one short scroll away instead of below the whole menu. */
+@media (max-width: 900px) {
+  .pos-sell__body { display: flex; flex-direction: column; }
+  .pos-sell__work { display: contents; }
+  .pos-sell__row--register { order: 1; }
+  .pos-rail { order: 2; margin: 0 1rem; padding: var(--bo-space-2); display: flex; flex-direction: column; gap: 4px; width: auto; }
+  .pos-sell__row--catalog { order: 3; }
+  .pos-rail__group {
+    display: grid; grid-auto-flow: column; grid-auto-columns: max-content; grid-template-columns: none;
+    overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; padding-bottom: 2px;
+  }
+  .pos-rail__group::-webkit-scrollbar { display: none; }
+  /* Fade the trailing edge so a scrollable strip reads as "more to the right". */
+  .pos-rail__group, .pos-categories {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+    padding-right: 24px;
+  }
+  .pos-rail__groupLabel { grid-column: auto; grid-row: 1; align-self: center; margin: 0 4px 0 0; writing-mode: horizontal-tb; min-width: 3.5rem; }
+  .pos-rail__btn { min-height: 44px; white-space: nowrap; }
+  .pos-rail__btn--accent { grid-column: auto; min-height: 44px; }
+  .pos-rail__label { overflow-wrap: normal; }
+  .pos-keypad__key, .pos-keypad__calcOp { min-height: 44px; }
+  .pos-keypad__body > .pos-keypad__grid { grid-template-rows: repeat(4, minmax(44px, auto)); grid-auto-rows: minmax(44px, auto); }
+  .pos-categories {
+    display: grid; grid-auto-flow: column; grid-auto-columns: minmax(84px, max-content); grid-template-columns: none;
+    overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  }
+  .pos-categories::-webkit-scrollbar { display: none; }
+  .pos-categories [data-ui="dish-card-media"] { display: none; }
+  .pos-products { max-height: min(70dvh, 38rem); overflow-y: auto; overscroll-behavior: contain; }
+}
+@media (max-width: 380px) {
+  .pos-rail__btn { font-size: 11px; gap: 6px; padding: 6px; }
+  .pos-rail__icon { width: 16px; height: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pos-rail__btn:active, .pos-keypad__key:active, .pos-keypad__calcOp:active, .pos-keypad__confirm:active,
+  .pos-modal__primary:active, .pos-modal__secondary:active, .pos-products .bo-foodMemberCard:active { scale: 1; }
+}

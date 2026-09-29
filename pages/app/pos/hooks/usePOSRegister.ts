@@ -23,6 +23,13 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
  * Register state for the POS sell screen: bootstrap data, current visit/ticket,
  * split tickets, payments and kitchen dispatch. Extracted from pos.tsx.
  */
+/** Operator-facing checkout confirmation; raw stock enums stay out of the till UI. */
+const STOCK_STATUS_LABELS: Record<string, string> = { COMPLETE: "stock descontado", PARTIAL: "stock descontado parcialmente, revisa excepciones", SHADOW: "stock simulado" };
+export function checkoutMessage(stockStatus?: string | null): string {
+  const label = stockStatus ? STOCK_STATUS_LABELS[stockStatus.toUpperCase()] : undefined;
+  return label ? `Venta completada · ${label}.` : "Venta completada.";
+}
+
 export function usePOSRegister(date?: string | null) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
@@ -435,7 +442,7 @@ export function usePOSRegister(date?: string | null) {
     try {
       const result = await run("checkout", async (checkoutKey) => {
         const data = await request<{ ticket: Ticket; stockStatus?: string; visitClosed?: boolean; duplicate?: boolean }>(`/tickets/${ticket.id}/checkout`, { method: "POST", body: JSON.stringify({ idempotencyKey: checkoutKey, expectedVersion: ticket.version, payments, closeVisit: true }) });
-        setMessage(data.stockStatus ? `Venta completada · stock ${data.stockStatus.toLowerCase()}.` : "Venta completada.");
+        setMessage(checkoutMessage(data.stockStatus));
         setLastPaidTicket(data.ticket);
         const nextOpen = splitTickets.find((entry) => entry.id !== ticket.id && entry.status === "OPEN") || null;
         // A replayed checkout (lost response) is a success: the visit was already closed.
