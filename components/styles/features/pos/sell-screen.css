@@ -1330,8 +1330,6 @@
   .pos-modal__primary:active, .pos-modal__secondary:active, .pos-products .bo-foodMemberCard:active { scale: 1; }
 }
 
-/* Category tiles have no price: do not reserve the second title line. */
-.pos-categories .bo-memberCard.bo-foodMemberCard .bo-foodMemberTitle { min-height: 0; }
 
 /* Cierre X / Y preview dialog (pos_cash_closure_dialog_v1). */
 .pos-closure { display: grid; gap: var(--bo-space-3); margin-top: var(--bo-space-2); }
@@ -1362,10 +1360,11 @@
    - No surface background: categories read as filters, not as products, so
      they drop the dish-card gradient/fill and keep only the structural border.
    - Own title typography, independent from the product grid titles.
-   - Fixed-height body with the title centred on the Y axis, so 1-line and
-     2-line category names share the same vertical centre. */
+   - Fixed-height body with a single-line title centred on the Y axis, so
+     every category shares the same vertical centre. */
 .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile {
   container-type: inline-size;
+  padding-inline: 3px;
   background: transparent;
   box-shadow: none;
 }
@@ -1377,8 +1376,12 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: calc(2 * 1.2 * 11px + 8px);
-  padding: 4px;
+  min-height: calc(1.2 * 11px + 16px);
+  padding: 4px 2px;
+}
+@container (max-width: 72px) {
+  .pos-categories .pos-categoryTile .bo-foodMemberBody { padding: 4px 0; }
+  .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile .bo-foodMemberTitle { letter-spacing: 0; }
 }
 .pos-categories .pos-categoryTile [data-ui="dish-card-title-row"] {
   display: flex;
@@ -1397,13 +1400,13 @@
   text-align: center;
   color: var(--bo-muted);
   min-height: 0;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  /* One centred line; a name longer than the tile ends in an ellipsis and
+     the full name stays available in the heading's title attribute. */
+  display: block;
+  width: 100%;
+  white-space: nowrap;
   overflow: hidden;
-  overflow-wrap: normal;
-  word-break: normal;
-  hyphens: manual;
+  text-overflow: ellipsis;
 }
 .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile:hover .bo-foodMemberTitle { color: var(--bo-text); }
 .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile.pos-dishCard--active .bo-foodMemberTitle { color: var(--bo-accent); }
