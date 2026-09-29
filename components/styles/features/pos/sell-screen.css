@@ -1330,8 +1330,6 @@
   .pos-modal__primary:active, .pos-modal__secondary:active, .pos-products .bo-foodMemberCard:active { scale: 1; }
 }
 
-/* Category tiles have no price: do not reserve the second title line. */
-.pos-categories .bo-memberCard.bo-foodMemberCard .bo-foodMemberTitle { min-height: 0; }
 
 /* Cierre X / Y preview dialog (pos_cash_closure_dialog_v1). */
 .pos-closure { display: grid; gap: var(--bo-space-3); margin-top: var(--bo-space-2); }
@@ -1357,3 +1355,59 @@
 [data-ui="pos-settings-fields"] .bo-selectWrapper,
 [data-ui="kitchen-route-create"] .bo-selectWrapper,
 .pos-modal .bo-selectWrapper { min-width: 0; width: 100%; }
+
+/* Category tiles (coordination id: pos_category_tile_v1)
+   - No surface background: categories read as filters, not as products, so
+     they drop the dish-card gradient/fill and keep only the structural border.
+   - Own title typography, independent from the product grid titles.
+   - Fixed-height body with a single-line title centred on the Y axis, so
+     every category shares the same vertical centre. */
+.pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile {
+  container-type: inline-size;
+  padding-inline: 3px;
+  background: transparent;
+  box-shadow: none;
+}
+:root[data-theme="light"] .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile { background: transparent; }
+.pos-categoryTile .bo-foodMemberMedia,
+.pos-categoryTile .bo-foodMemberMediaPlaceholder { background: transparent; }
+.pos-categories .pos-categoryTile .bo-foodMemberBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(1.2 * 11px + 16px);
+  padding: 4px 2px;
+}
+@container (max-width: 72px) {
+  .pos-categories .pos-categoryTile .bo-foodMemberBody { padding: 4px 0; }
+  .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile .bo-foodMemberTitle { letter-spacing: 0; }
+}
+.pos-categories .pos-categoryTile [data-ui="dish-card-title-row"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+}
+.pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile .bo-foodMemberTitle {
+  /* Scales with the tile so a single word never breaks mid-word. */
+  font-size: clamp(8.5px, 13.5cqi, 11px);
+  line-height: 1.2;
+  font-weight: var(--bo-weight-bold);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--bo-muted);
+  min-height: 0;
+  /* One centred line; a name longer than the tile ends in an ellipsis and
+     the full name stays available in the heading's title attribute. */
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile:hover .bo-foodMemberTitle { color: var(--bo-text); }
+.pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile.pos-dishCard--active .bo-foodMemberTitle { color: var(--bo-accent); }
+.pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile .bo-foodMemberTitle { transition-property: color; transition-duration: 150ms; transition-timing-function: ease-out; }
