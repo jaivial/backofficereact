@@ -19,10 +19,6 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-/**
- * Register state for the POS sell screen: bootstrap data, current visit/ticket,
- * split tickets, payments and kitchen dispatch. Extracted from pos.tsx.
- */
 /** Operator-facing checkout confirmation; raw stock enums stay out of the till UI. */
 const STOCK_STATUS_LABELS: Record<string, string> = { COMPLETE: "stock descontado", PARTIAL: "stock descontado parcialmente, revisa excepciones", SHADOW: "stock simulado" };
 export function checkoutMessage(stockStatus?: string | null): string {
@@ -30,6 +26,10 @@ export function checkoutMessage(stockStatus?: string | null): string {
   return label ? `Venta completada · ${label}.` : "Venta completada.";
 }
 
+/**
+ * Register state for the POS sell screen: bootstrap data, current visit/ticket,
+ * split tickets, payments and kitchen dispatch. Extracted from pos.tsx.
+ */
 export function usePOSRegister(date?: string | null) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
