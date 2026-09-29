@@ -1405,6 +1405,6 @@
   word-break: normal;
   hyphens: manual;
 }
-.pos-categories .pos-categoryTile.pos-dishCard--active .bo-foodMemberTitle { color: var(--bo-accent); }
-.pos-categories .pos-categoryTile:hover .bo-foodMemberTitle { color: var(--bo-text); }
-.pos-categories .pos-categoryTile .bo-foodMemberTitle { transition-property: color; transition-duration: 150ms; transition-timing-function: ease-out; }
+.pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile:hover .bo-foodMemberTitle { color: var(--bo-text); }
+.pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile.pos-dishCard--active .bo-foodMemberTitle { color: var(--bo-accent); }
+.pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile .bo-foodMemberTitle { transition-property: color; transition-duration: 150ms; transition-timing-function: ease-out; }
