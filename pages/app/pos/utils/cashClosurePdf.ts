@@ -48,13 +48,14 @@ export async function downloadCashClosurePdf(input: { closureType: "X" | "Y" | "
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.text(`Turno ${summary.shiftId} · Terminal ${summary.terminalKey} · Generado ${date(generatedAt.toISOString())}`, 14, 25);
-  doc.text(`Apertura ${date(summary.openedAt)} · Estado ${summary.status}`, 14, 30);
+  const scope = closureType === "Y" ? "Corte parcial desde el último cierre Y" : closureType === "X" ? "Lectura acumulada del turno (no cierra)" : "Cierre definitivo del turno";
+  doc.text(`${scope} · Desde ${date(summary.openedAt)} · Estado ${summary.status}`, 14, 30);
 
   autoTable(doc, {
     startY: 37,
     head: [["Resumen", "Importe"]],
     body: [
-      ["Fondo inicial", money(summary.openingCashCents)], ["Ventas", money(summary.salesGrossCents)],
+      [closureType === "Y" ? "Fondo al inicio del corte" : "Fondo inicial", money(summary.openingCashCents)], ["Ventas", money(summary.salesGrossCents)],
       ["Reembolsos", money(summary.refundsCents)], ["Ventas netas", money(summary.netSalesCents)],
       ["Descuentos", money(summary.discountsCents)], ["Recargos", money(summary.surchargesCents)],
       ["Propinas", money(summary.tipsCents)], ["Efectivo esperado", money(summary.expectedCashCents)],

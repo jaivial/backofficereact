@@ -725,6 +725,29 @@ body.is-navigating .bo-fadeout {
   color: var(--bo-faint);
 }
 
+/* Homogeneous dish cards (coordination id: dish_card_price_anchor_v1):
+   the body fills the card and the footer is pushed to the bottom, and the
+   title row reserves two lines, so the price sits at the same position
+   whether the title wraps to one row or two. */
+.bo-memberCard.bo-foodMemberCard:not(.bo-foodMemberCard--horizontal) > .bo-foodMemberBody {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-content: initial;
+}
+.bo-memberCard.bo-foodMemberCard:not(.bo-foodMemberCard--horizontal) .bo-foodMemberTitle {
+  line-height: 1.2;
+  min-height: 2.4em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.bo-memberCard.bo-foodMemberCard:not(.bo-foodMemberCard--horizontal) .bo-foodMemberFooter {
+  margin-top: auto;
+  padding-top: var(--bo-space-1);
+}
+
 .bo-foodMemberFooter {
   margin-top: var(--bo-space-1);
   display: flex;

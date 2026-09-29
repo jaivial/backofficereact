@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { POSSelect } from "../POSSelect/POSSelect";
 import { POSDialog } from "../POSSellScreen/POSDialog";
 import { parseAmount } from "../../utils/money";
 
@@ -39,18 +40,12 @@ export function POSProductEditDialog({ product, categories, vatRates, busy, erro
         <label className="grid gap-1 text-sm text-[var(--bo-muted)]" data-testid="pos-product-edit-price-field">Precio (IVA incl.)
           <input className={field} inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} aria-invalid={!Number.isFinite(amount) || amount < 0} data-testid="pos-product-edit-price" />
         </label>
-        <label className="grid gap-1 text-sm text-[var(--bo-muted)]" data-testid="pos-product-edit-vat-field">IVA
-          <select className={field} value={vatRateId} onChange={(event) => setVatRateId(Number(event.target.value))} data-testid="pos-product-edit-vat">
-            <option value={0} data-testid="pos-product-edit-vat-default">IVA por defecto</option>
-            {vatRates.map((rate) => <option value={rate.id} key={rate.id} data-testid={`pos-product-edit-vat-${rate.id}`}>{rate.name} · {rate.rate}%</option>)}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm text-[var(--bo-muted)]" data-testid="pos-product-edit-category-field">Categoría
-          <select className={field} value={categoryId} onChange={(event) => setCategoryId(Number(event.target.value))} data-testid="pos-product-edit-category">
-            <option value={0} data-testid="pos-product-edit-category-none">Sin categoría</option>
-            {categories.map((category) => <option value={category.id} key={category.id} data-testid={`pos-product-edit-category-${category.id}`}>{category.name}</option>)}
-          </select>
-        </label>
+        <div className="grid gap-1 text-sm text-[var(--bo-muted)]" role="group" data-testid="pos-product-edit-vat-field">IVA
+          <POSSelect value={vatRateId} onChange={setVatRateId} options={[{ value: 0, label: "IVA por defecto" }, ...vatRates.map((rate) => ({ value: rate.id, label: `${rate.name} · ${rate.rate}%` }))]} ariaLabel="IVA" testId="pos-product-edit-vat" />
+        </div>
+        <div className="grid gap-1 text-sm text-[var(--bo-muted)]" role="group" data-testid="pos-product-edit-category-field">Categoría
+          <POSSelect value={categoryId} onChange={setCategoryId} options={[{ value: 0, label: "Sin categoría" }, ...categories.map((category) => ({ value: category.id, label: category.name }))]} ariaLabel="Categoría" testId="pos-product-edit-category" />
+        </div>
         <label className="flex min-h-11 items-center gap-2 self-end text-sm text-[var(--bo-text)]" data-testid="pos-product-edit-active-field">
           <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} data-testid="pos-product-edit-active" />
           Visible en el TPV

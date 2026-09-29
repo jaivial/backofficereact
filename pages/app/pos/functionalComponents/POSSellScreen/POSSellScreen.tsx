@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { POSSelect } from "../POSSelect/POSSelect";
 
 import { usePOSRegister, money, request, type Table, type TicketLine } from "../../hooks/usePOSRegister";
 import { POSCategoryPanel } from "./POSCategoryPanel";
 import { POSProductGrid } from "./POSProductGrid";
 import { POSTicketPanel } from "./POSTicketPanel";
 import { POSKeypad } from "./POSKeypad";
+import { POSClosureDialog } from "../CashControl/POSClosureDialog";
 import { POSControlRail, RAIL_FEATURES, type RailFeatureKey } from "./POSControlRail";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { splitShares } from "../../utils/splitShares";
@@ -233,19 +235,14 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     }
   }, [register]);
 
-  // Cierre X / Y: a shift snapshot (X) or intermediate cut (Y). One POST, no
-  // modal — neither takes operator input. Z stays on the reports card where it
-  // seals the day and needs counted cash.
-  const runCierre = useCallback(async (closureType: "X" | "Y") => {
-    const shiftId = register.currentShift?.id;
-    if (!shiftId) { register.setError("Abre un turno antes de generar un cierre."); return; }
+  // Cierre X / Y open a preview dialog: X is the cumulative shift reading, Y a
+  // partial cut since the previous Y. Z stays on the reports card where it
+  // seals the shift and needs counted cash.
+  const [closureDialog, setClosureDialog] = useState<"X" | "Y" | null>(null);
+  const runCierre = useCallback((closureType: "X" | "Y") => {
+    if (!register.currentShift?.id) { register.setError("Abre un turno antes de generar un cierre."); return; }
     register.setError("");
-    try {
-      await request<{ closureId: number }>("/cash/closures", { method: "POST", body: JSON.stringify({ shiftId, closureType, idempotencyKey: `${shiftId}-${closureType}-${Date.now()}` }) });
-      register.setMessage(`Cierre ${closureType} generado.`);
-    } catch (reason) {
-      register.setError(reason instanceof Error ? reason.message : `No se pudo generar el cierre ${closureType}.`);
-    }
+    setClosureDialog(closureType);
   }, [register]);
 
   // Bulk close: pay every open ticket for the business date with one method,
@@ -405,8 +402,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       case "salon": setAreaFilter(0); setShowTables(true); break;
       case "barra": void register.openBar(); break;
       case "llevar": void register.openTakeaway(); break;
-      case "cierre-x": void runCierre("X"); break;
-      case "cierre-y": void runCierre("Y"); break;
+      case "cierre-x": runCierre("X"); break;
+      case "cierre-y": runCierre("Y"); break;
       case "cerrar-mesas": register.setError(""); setPrompt("cerrar-mesas"); break;
       case "cerrar-dia": if (onCloseDay && cashDay?.status === "OPEN") { register.setError(""); setCloseDayError(""); setPrompt("cerrar-dia"); } break;
       case "aparcar": case "recargo": case "invita": case "comentario": case "cajon":
@@ -521,14 +518,9 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
           {register.selectedTable && !register.visit ? (
             <div className="pos-modal__confirm" data-testid="pos-tables-confirm">
               {eligibleReservations.length ? (
-                <label className="pos-modal__covers" data-testid="pos-reservation-field">Reserva
-                  <select value={register.bookingId} onChange={(event) => register.selectReservation(Number(event.target.value))} data-testid="pos-reservation-select">
-                    <option value={0} data-testid="pos-reservation-none">Sin reserva</option>
-                    {eligibleReservations.map((item) => (
-                      <option value={item.id} key={item.id} data-testid={`pos-reservation-${item.id}`}>{item.reservationTime} · {item.customerName} · {item.partySize}</option>
-                    ))}
-                  </select>
-                </label>
+                <div className="pos-modal__covers" data-testid="pos-reservation-field">Reserva
+                  <POSSelect value={register.bookingId} onChange={register.selectReservation} options={[{ value: 0, label: "Sin reserva" }, ...eligibleReservations.map((item) => ({ value: item.id, label: `${item.reservationTime} · ${item.customerName} · ${item.partySize}` }))]} ariaLabel="Reserva" testId="pos-reservation-select" />
+                </div>
               ) : null}
               <label className="pos-modal__covers" data-testid="pos-covers-field">Comensales
                 <input inputMode="numeric" value={register.covers} onChange={(event) => register.setCovers(event.target.value)} aria-label="Comensales" data-testid="pos-covers-input" />
@@ -704,6 +696,10 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
         onClose={() => setLineToMove(null)}
         onConfirm={confirmMoveLine}
       />
+
+      {closureDialog && register.currentShift?.id ? (
+        <POSClosureDialog closureType={closureDialog} shiftId={register.currentShift.id} onClose={() => setClosureDialog(null)} onGenerated={register.setMessage} />
+      ) : null}
 
       {showCheckout && register.ticket ? (
         <POSDialog testId="pos-checkout" title={`Cobrar · ${money(register.amountDueCents)}`} ariaLabel="Cobro" busy={register.busy} error={register.error} onClose={() => { setShowCheckout(false); setCheckoutKeypad(false); }}>
