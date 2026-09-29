@@ -1266,6 +1266,13 @@
   .pos-keypad__key, .pos-keypad__calcOp { min-height: 40px; }
   .pos-keypad { overflow-y: auto; scrollbar-width: none; }
   .pos-sell__row--register { flex: 0 0 auto; height: clamp(300px, 42%, 440px); }
+  /* Expanded ticket (double-click on the total row): only the ticket grows.
+     The keypad keeps the height it has in the collapsed row, pinned to the
+     top, instead of stretching its keys to the full expanded height.
+     Coordination id: pos_keypad_fixed_on_expand_v1 */
+  .pos-sell__row--register.is-expanded { height: auto; flex: 1 1 0; align-items: start; }
+  .pos-sell__row--register.is-expanded .pos-ticketPanel { height: 100%; align-self: stretch; }
+  .pos-sell__row--register.is-expanded .pos-keypad { height: var(--pos-keypad-collapsed-h, auto); align-self: start; }
 }
 
 /* Short landscape screens (tablets, 1280x720 laptops): tighter tiles. */

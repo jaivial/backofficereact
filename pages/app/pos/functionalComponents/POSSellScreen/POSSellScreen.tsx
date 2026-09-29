@@ -350,7 +350,14 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     setVoidOrderReason("");
   }, [register, voidOrderReason]);
 
-  const toggleTicketExpanded = useCallback(() => setTicketExpanded((current) => !current), []);
+  // The keypad must not grow with the expanded ticket: freeze its collapsed
+  // height in a CSS variable right before expanding (pos_keypad_fixed_on_expand_v1).
+  const registerRowRef = useRef<HTMLDivElement | null>(null);
+  const toggleTicketExpanded = useCallback(() => {
+    const keypad = registerRowRef.current?.querySelector<HTMLElement>(".pos-keypad");
+    if (keypad && !ticketExpanded) registerRowRef.current?.style.setProperty("--pos-keypad-collapsed-h", `${keypad.getBoundingClientRect().height}px`);
+    setTicketExpanded((current) => !current);
+  }, [ticketExpanded]);
 
   const handleAddProduct = useCallback((product: Parameters<typeof register.addProduct>[0]) => {
     if (register.settings.stockMode === "LIVE" && register.productStock[String(product.id)] === "out") {
@@ -430,7 +437,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       </div>
       <div className="pos-sell__body" data-testid="pos-sell-body">
         <div className="pos-sell__work" data-testid="pos-sell-work">
-          <div className={ticketExpanded ? "pos-sell__row pos-sell__row--register is-expanded" : "pos-sell__row pos-sell__row--register"} data-testid="pos-sell-row-register">
+          <div ref={registerRowRef} className={ticketExpanded ? "pos-sell__row pos-sell__row--register is-expanded" : "pos-sell__row pos-sell__row--register"} data-testid="pos-sell-row-register">
             <POSTicketPanel onRequestTable={() => setShowTables(true)}
               expanded={ticketExpanded}
               onToggleExpand={toggleTicketExpanded}
