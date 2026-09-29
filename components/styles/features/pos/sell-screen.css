@@ -1265,19 +1265,25 @@
   .pos-ticketPanel__lines { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
   .pos-keypad__key, .pos-keypad__calcOp { min-height: 40px; }
   .pos-keypad { overflow-y: auto; scrollbar-width: none; }
-  .pos-sell__row--register { flex: 0 0 auto; height: clamp(300px, 42%, 440px); }
+  /* The collapsed register row height lives in one variable so the expanded
+     layout can reuse it. cqh resolves against .pos-sell__work, the same box
+     the old percentage referred to. */
+  .pos-sell__work { container-type: size; --pos-register-h: clamp(300px, 42cqh, 440px); --pos-register-pad: 1.5rem; }
+  .pos-sell__row--register { flex: 0 0 auto; height: var(--pos-register-h); }
   /* Expanded ticket (double-click on the total row): only the ticket grows.
-     The keypad keeps the height it has in the collapsed row, pinned to the
-     top, instead of stretching its keys to the full expanded height.
+     The keypad keeps exactly its collapsed height (row height minus the row's
+     vertical padding), pinned to the top, instead of stretching its keys.
+     Pure CSS, so it also follows resizes/rotation while expanded.
      Coordination id: pos_keypad_fixed_on_expand_v1 */
   .pos-sell__row--register.is-expanded { height: auto; flex: 1 1 0; align-items: start; }
   .pos-sell__row--register.is-expanded .pos-ticketPanel { height: 100%; align-self: stretch; }
-  .pos-sell__row--register.is-expanded .pos-keypad { height: var(--pos-keypad-collapsed-h, auto); align-self: start; }
+  .pos-sell__row--register.is-expanded .pos-keypad { height: calc(var(--pos-register-h) - var(--pos-register-pad)); align-self: start; }
 }
 
 /* Short landscape screens (tablets, 1280x720 laptops): tighter tiles. */
 @media (min-width: 901px) and (max-height: 820px) {
-  .pos-sell__row--register { height: clamp(280px, 46%, 360px); padding-top: 0.5rem; }
+  .pos-sell__work { --pos-register-h: clamp(280px, 46cqh, 360px); --pos-register-pad: 1rem; }
+  .pos-sell__row--register { padding-top: 0.5rem; }
   .pos-keypad__display { padding: 4px 10px; }
   .pos-keypad__value { font-size: var(--bo-text-lg); }
   .pos-keypad__key, .pos-keypad__calcOp { min-height: 40px; font-size: var(--bo-text-base); }
