@@ -12,6 +12,7 @@ import {
   type GroupMenu,
   type GroupMenuSummary,
   SPECIAL_DATE_PAYMENT_METHOD_LABELS,
+  SPECIAL_DATE_PAYMENT_METHODS,
   type SpecialDatePaymentMethod,
   type SpecialDateSettings,
 } from "../../../../../api/types";
@@ -1326,7 +1327,17 @@ function SpecialBookingSection({
     });
   }, [setDraft]);
 
-  const advanceMethodsOptions = acceptedMethods.map((m) => ({ value: m, label: SPECIAL_DATE_PAYMENT_METHOD_LABELS[m] || m }));
+  // Coordination id: booking_editor_special_adelanto_ui_v2 - the operator
+  // records the deposit with the method actually used, so the selector offers
+  // the whole SPEC §2 enum and not only the methods the date advertises online
+  // (the server accepts the enum for backoffice edits).
+  const advanceMethodsOptions = SPECIAL_DATE_PAYMENT_METHODS.map((m) => ({ value: m.value, label: m.label }));
+  // Every enum method gets a status row, so a deposit collected with a method
+  // the date does not advertise still has somewhere to be recorded.
+  const statusMethods = Array.from(new Set<SpecialDatePaymentMethod>([
+    ...acceptedMethods,
+    ...SPECIAL_DATE_PAYMENT_METHODS.map((m) => m.value),
+  ]));
   const paidMap = new Map((draft.specialAdelantosPaid || []).map((row) => [row.method, Number(row.amount) || 0]));
 
   return (
@@ -1376,9 +1387,7 @@ function SpecialBookingSection({
           {/* Coordination id: booking_editor_special_adelanto_ui_v2 */}
           <div className="bo-specialAdelanto" data-slot="booking-editor-special-adelanto-body">
             <p className="bo-specialAdelantoHint" data-slot="booking-editor-special-adelanto-hint">
-              {acceptedMethods.length > 0
-                ? "Indica por menú el método de pago del adelanto. Las cantidades ya abonadas pueden ajustarse abajo."
-                : "Esta fecha requiere adelanto, pero no hay métodos de pago configurados."}
+              {"Indica por menú el método de pago del adelanto. Las cantidades ya abonadas pueden ajustarse abajo."}
             </p>
 
             <div className="bo-specialAdelantoGroup" data-slot="booking-editor-special-adelanto-menus">
@@ -1394,7 +1403,13 @@ function SpecialBookingSection({
                     data-testid={`booking-editor-special-adelanto-row-${specialEntryKey(m)}`}
                   >
                     <div className="bo-specialAdelantoRowLabel" data-slot="booking-editor-special-adelanto-row-label">
-                      <strong>{m.label || `Menú #${m.special_date_menu_id}`}</strong>
+                      <span
+                        className="bo-specialAdelantoRowLabelText"
+                        title={m.label || `Menú #${m.special_date_menu_id}`}
+                        data-slot="booking-editor-special-adelanto-row-label-text"
+                      >
+                        {m.label || `Menú #${m.special_date_menu_id}`}
+                      </span>
                       <span className="bo-mutedText" data-slot="booking-editor-special-adelanto-row-unit">
                         {m.count} × {Number(m.adelanto_per_unit || 0).toFixed(2)}€
                       </span>
@@ -1421,7 +1436,7 @@ function SpecialBookingSection({
 
             <div className="bo-specialAdelantoGroup" data-slot="booking-editor-special-adelanto-status">
               <div className="bo-specialAdelantoGroupTitle" data-slot="booking-editor-special-adelanto-status-title">Estado del adelanto</div>
-              {acceptedMethods.map((method) => {
+              {statusMethods.map((method) => {
                 const row = totals?.by_method.find((r) => r.method === method);
                 const required = row?.required ?? 0;
                 const paidRow = row?.paid ?? 0;
@@ -1436,7 +1451,13 @@ function SpecialBookingSection({
                     data-testid={`booking-editor-special-adelanto-status-row-${method}`}
                   >
                     <div className="bo-specialAdelantoRowLabel" data-slot={`booking-editor-special-adelanto-status-label-${method}`}>
-                      <strong>{methodLabel}</strong>
+                      <span
+                        className="bo-specialAdelantoRowLabelText"
+                        title={methodLabel}
+                        data-slot={`booking-editor-special-adelanto-status-label-text-${method}`}
+                      >
+                        {methodLabel}
+                      </span>
                       <span className="bo-mutedText" data-slot={`booking-editor-special-adelanto-status-required-${method}`}>
                         Requerido {required.toFixed(2)}€
                       </span>

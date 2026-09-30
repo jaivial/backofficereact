@@ -488,14 +488,34 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(120px, auto);
 }
 
+/* booking_editor_special_adelanto_ui_v2 - the label and its unit price share
+   one row, so a long menu name never pushes the price to a second line. The
+   label shrinks and truncates; the unit keeps its natural width and never
+   wraps or shrinks. Both share the same font size and weight, the unit only
+   taking the muted colour. */
 .bo-specialAdelantoRowLabel {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   min-width: 0;
 }
 
+.bo-specialAdelantoRowLabelText {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .bo-specialAdelantoRowLabel .bo-mutedText {
-  font-size: 12px;
+  font-size: 13px;
+  flex: 0 0 auto;
+  width: fit-content;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .bo-specialAdelantoRowMethod {
@@ -566,6 +586,7 @@
 
   .bo-specialAdelantoRowLabel {
     grid-column: 1 / -1;
+    flex-wrap: wrap;
   }
 
   .bo-specialAdelantoBadge {
