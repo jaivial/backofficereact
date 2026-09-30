@@ -1387,7 +1387,7 @@ function SpecialBookingSection({
           {/* Coordination id: booking_editor_special_adelanto_ui_v2 */}
           <div className="bo-specialAdelanto" data-slot="booking-editor-special-adelanto-body">
             <p className="bo-specialAdelantoHint" data-slot="booking-editor-special-adelanto-hint">
-              {"Indica por menú el método de pago del adelanto. Las cantidades ya abonadas pueden ajustarse abajo."}
+              Indica por menú el método de pago del adelanto. Las cantidades ya abonadas pueden ajustarse abajo.
             </p>
 
             <div className="bo-specialAdelantoGroup" data-slot="booking-editor-special-adelanto-menus">
