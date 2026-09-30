@@ -193,6 +193,7 @@
   display: flex;
   flex-direction: column;
   width: min(32rem, 100%);
+  max-height: calc(100vh - var(--bo-space-6));
   max-height: calc(100dvh - var(--bo-space-6));
   overflow: hidden;
   /* Outer radius = card radius (14px) + list inset (12px) would be 26px; 24px
@@ -483,13 +484,10 @@
     padding: var(--bo-space-2);
   }
 
+  /* Stacked in DOM order: the primary action lands on the bottom row, closest
+     to the thumb, and focus order still matches visual order. */
   .pos-unclosedModal__actions {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  /* Primary action first under the thumb on narrow screens. */
-  .pos-unclosedModal__link {
-    order: -1;
   }
 }
 
