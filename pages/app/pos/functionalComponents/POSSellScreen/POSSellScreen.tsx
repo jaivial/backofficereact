@@ -442,7 +442,6 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               onToggleExpand={toggleTicketExpanded}
               ticket={register.ticket}
               visit={register.visit}
-              operators={register.operators}
               tags={register.tags}
               activeTicketLines={register.activeTicketLines}
               selectedLineId={selectedLineId}

@@ -2,12 +2,11 @@ import React, { useMemo } from "react";
 import { ArrowRightLeft, Merge, Minus, Plus, Receipt, Trash2, Users, X } from "lucide-react";
 import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { cn } from "../../../../../ui/shadcn/utils";
-import { money, type Operator, type Tag, type Ticket, type TicketLine, type Visit } from "../../hooks/usePOSRegister";
+import { money, type Tag, type Ticket, type TicketLine, type Visit } from "../../hooks/usePOSRegister";
 
-export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
+export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
   ticket: Ticket | null;
   visit: Visit | null;
-  operators?: Operator[];
   tags?: Tag[];
   activeTicketLines: TicketLine[];
   selectedLineId: number;
