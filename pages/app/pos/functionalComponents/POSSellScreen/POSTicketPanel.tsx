@@ -30,6 +30,30 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
   readOnly?: boolean;
 }) {
   const isOpen = (ticket?.status ?? visit?.status) === "OPEN";
+  // Most recently changed line first, so the product the operator just touched
+  // is where their thumb already is.
+  //
+  // `updatedAt` is absent on payloads that predate it, and that means "we do not
+  // know", not "oldest": those lines keep the server order instead of being
+  // guessed at. The sort is stable in modern engines, so equal timestamps also
+  // preserve the incoming order and the list never wobbles between renders.
+  // An absent or unparseable value means "unknown", and unknown must never sort
+  // as newest: Date.parse returns NaN, which would corrupt the comparison.
+  const recency = (line: TicketLine): number => {
+    const parsed = Date.parse(line.updatedAt || "");
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const linesByRecency = useMemo(() => {
+    if (!activeTicketLines.some((line) => recency(line) > 0)) return activeTicketLines;
+    return [...activeTicketLines].sort((a, b) => {
+      const left = recency(a);
+      const right = recency(b);
+      if (left === right) return 0;
+      if (left === 0) return 1;
+      if (right === 0) return -1;
+      return right - left;
+    });
+  }, [activeTicketLines]);
   const openSplitTickets = useMemo(() => splitTickets.filter((t) => t.status === "OPEN"), [splitTickets]);
   const currentTicketIsEmpty = useMemo(() => ticket && !ticket.lines.filter((line) => line.status !== "VOIDED").length, [ticket]);
   return (
@@ -52,13 +76,6 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
       </header>
       {ticket ? (
         <>
-          <div className="pos-ticketPanel__details" data-testid="pos-ticket-details">
-            <span data-testid="pos-ticket-channel">{visit?.channel === "BAR" ? "Barra" : visit?.tableName || "Salón"}</span>
-            {visit?.customerName ? <span data-testid="pos-ticket-customer">Cliente: {visit.customerName}{visit.customerTaxId ? ` · ${visit.customerTaxId}` : ""}</span> : null}
-            {ticket.operatorMemberId ? <span data-testid="pos-ticket-operator">Empleado: {operators.find((entry) => entry.id === ticket.operatorMemberId)?.displayName || `#${ticket.operatorMemberId}`}</span> : null}
-            {ticket.discountCents ? <span data-testid="pos-ticket-discount">Descuento: {money(ticket.discountCents)}</span> : null}
-            {ticket.surchargeCents ? <span data-testid="pos-ticket-surcharge">Recargo: {money(ticket.surchargeCents)}</span> : null}
-          </div>
           {splitTickets.length > 1 ? (
             <div className="pos-ticketPanel__tabs" role="tablist" aria-label="Cuentas separadas" data-testid="pos-split-tabs">
               {splitTickets.map((entry, index) => {
@@ -107,7 +124,7 @@ export function POSTicketPanel({ ticket, visit, operators = [], tags = [], activ
             </div>
           ) : null}
           <div className="pos-ticketPanel__lines" data-testid="pos-ticket-lines">
-            {activeTicketLines.map((line) => (
+            {linesByRecency.map((line) => (
               <div
                 className={line.id === selectedLineId ? "pos-line pos-line--selected" : "pos-line"}
                 key={line.id}

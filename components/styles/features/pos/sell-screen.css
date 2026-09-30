@@ -137,7 +137,6 @@
 .pos-ticketPanel__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--bo-space-2); flex-wrap: wrap; }
 .pos-ticketPanel__title { margin: 0; font-size: var(--bo-text-lg); font-weight: var(--bo-weight-bold); color: var(--bo-text); line-height: var(--bo-leading-tight); }
 .pos-ticketPanel__meta { display: inline-flex; align-items: center; gap: var(--bo-space-2); }
-.pos-ticketPanel__details { display: flex; flex-wrap: wrap; gap: var(--bo-space-2); margin-bottom: var(--bo-space-2); color: var(--bo-muted); font-size: var(--bo-text-xs); }
 .pos-ticketPanel__covers { font-size: var(--bo-text-sm); color: var(--bo-muted); display: inline-flex; align-items: center; gap: 4px; }
 
 /* Empty ticket panel: clickable hint to open a table */
