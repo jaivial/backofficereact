@@ -50,6 +50,8 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
   }, []);
 
   const removeEntry = useCallback((id: string) => {
+    // Invariant: at least one split line always survives. The quick-amount
+    // buttons and the cash keypad target the first line and assume it exists.
     setEntries((current) => (current.length <= 1 ? current : current.filter((entry) => entry.id !== id)));
   }, []);
 
@@ -61,8 +63,7 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
     setEntries((current) => {
       const entry = current.find((item) => item.id === id);
       if (!entry) return current;
-      const others = current.filter((item) => item.id !== id);
-      const target = remainingCents(amountDueCents, others);
+      const target = remainingCents(amountDueCents, current.filter((item) => item.id !== id));
       if (target <= 0) return current;
       return current.map((item) => (item.id === id ? { ...item, amount: formatTenderInput(target) } : item));
     });
@@ -81,10 +82,7 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
   }, [entries]);
 
   /** What a line would hold after "Completar": everything but its own amount. */
-  const fillTargetFor = useCallback((id: string) => {
-    const others = entries.filter((entry) => entry.id !== id);
-    return remainingCents(amountDueCents, others);
-  }, [amountDueCents, entries]);
+  const fillTargetFor = useCallback((id: string) => remainingCents(amountDueCents, entries.filter((entry) => entry.id !== id)), [amountDueCents, entries]);
 
   const labelOf = useCallback((method: POSPaymentMethod) => POS_PAYMENT_METHOD_LABELS[method], []);
   const cashlessOf = useCallback((method: POSPaymentMethod) => isCashlessMethod(method), []);
