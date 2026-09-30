@@ -1,7 +1,26 @@
 export type Settings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit?: boolean; requireOpenShift?: boolean; receiptPrefix?: string };
 export type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean };
 export type Table = { id: number; name: string; capacity: number; occupied: boolean; areaId?: number; areaName?: string };
-export type TicketLine = { id: number; productId?: number | null; productName: string; quantity: number; unitPriceGrossCents: number; lineTotalGrossCents: number; vatRate?: number; status?: string; notes?: string; comped?: boolean; compReason?: string; tagIds?: number[] };
+export type TicketLine = {
+  id: number;
+  productId?: number | null;
+  productName: string;
+  quantity: number;
+  unitPriceGrossCents: number;
+  lineTotalGrossCents: number;
+  vatRate?: number;
+  status?: string;
+  notes?: string;
+  comped?: boolean;
+  compReason?: string;
+  tagIds?: number[];
+  /**
+   * Last change to the line (quantity edit, comp/uncomp, note). The sell screen
+   * orders lines by this so the most recently touched line comes first. Absent
+   * on responses that do not carry it, in which case the id order is kept.
+   */
+  updatedAt?: string;
+};
 export type Ticket = { id: number; ticketNumber?: string; version: number; status?: string; lines: TicketLine[]; subtotalGrossCents?: number; discountCents?: number; surchargeCents?: number; tipCents?: number; taxCents?: number; totalGrossCents: number; operatorMemberId?: number | null; note?: string };
 export type Visit = { id: number; channel?: string; tableId?: number | null; tableName?: string; covers: number; status?: string; totalGrossCents?: number; parked?: boolean; parkedNote?: string; openedAt?: string; customerName?: string; customerTaxId?: string; ticket?: Ticket; tickets?: Ticket[] };
 export type VisitSummary = Pick<Visit, "id" | "channel" | "tableId" | "tableName" | "covers" | "status" | "totalGrossCents" | "parked" | "parkedNote"> & { openedAt?: string; lineCount?: number };
