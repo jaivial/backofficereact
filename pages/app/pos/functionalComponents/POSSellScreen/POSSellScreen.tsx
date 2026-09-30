@@ -97,11 +97,11 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     setKeypadMultiplierQty(null);
   }, []);
 
-  /** Cash keypad / quick-amount buttons feed the first cash split line. */
+  /** Cash keypad and quick-amount buttons feed the first cash split line. */
+  const cashKeypadEntry = tenders.entries.find((entry) => entry.method === "CASH") ?? tenders.entries[0] ?? null;
   const applyQuickCash = useCallback((value: number) => {
-    const cashEntry = tenders.entries.find((entry) => entry.method === "CASH") ?? tenders.entries[0];
-    if (cashEntry) tenders.updateEntry(cashEntry.id, { amount: value.toFixed(2) });
-  }, [tenders]);
+    if (cashKeypadEntry) tenders.updateEntry(cashKeypadEntry.id, { amount: value.toFixed(2) });
+  }, [cashKeypadEntry, tenders]);
 
   const confirmKeypad = useCallback(() => {
     if (readOnly) return;
@@ -770,6 +770,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                   <dd>{money(tenders.changeCents)}</dd>
                 </div>
               </dl>
+              {tenders.overCents > 0 ? <p className="pos-checkout__note" data-testid="pos-checkout-over">Entregado de más {money(tenders.overCents)}</p> : null}
               <div className="pos-checkout__progress" role="progressbar" aria-valuemin={0} aria-valuemax={tenders.amountDueCents} aria-valuenow={Math.min(tenders.paidCents, tenders.amountDueCents)} aria-label="Importe entregado" data-testid="pos-checkout-progress">
                 <span className="pos-checkout__progressFill" style={{ width: `${tenders.amountDueCents > 0 ? Math.min(100, Math.round((tenders.paidCents / tenders.amountDueCents) * 100)) : 0}%` }} />
               </div>
@@ -837,7 +838,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                 </button>
               </div>
 
-              {checkoutKeypad ? <POSKeypad value={tenders.entries[0]?.amount ?? ""} onChange={(next) => tenders.updateEntry(tenders.entries[0].id, { amount: next.replace(",", ".") })} contextLabel="Efectivo" onConfirm={() => setCheckoutKeypad(false)} confirmLabel="Listo" readOnly={readOnly} testIdPrefix="pos-checkout-" /> : null}
+              {checkoutKeypad && cashKeypadEntry ? <POSKeypad value={cashKeypadEntry.amount} onChange={(next) => tenders.updateEntry(cashKeypadEntry.id, { amount: next.replace(",", ".") })} contextLabel="Efectivo" onConfirm={() => setCheckoutKeypad(false)} confirmLabel="Listo" readOnly={readOnly} testIdPrefix="pos-checkout-" /> : null}
 
               <div className="pos-modal__modes" role="group" aria-label="Efectivo rápido" data-testid="pos-quick-cash">
                 {quickCashOptions.map((option) => (

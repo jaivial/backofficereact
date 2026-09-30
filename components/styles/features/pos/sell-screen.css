@@ -643,6 +643,7 @@
 .pos-checkout__figure dd { margin: 0; font-size: var(--bo-text-base); font-weight: var(--bo-weight-semibold); font-variant-numeric: tabular-nums; color: var(--bo-text); }
 .pos-checkout__figure--pending dd { color: var(--bo-text-warning); }
 .pos-checkout__figure--change dd { color: var(--bo-on-surface-success); }
+.pos-checkout__note { margin: 0; font-size: var(--bo-text-xs); color: var(--bo-text-warning); }
 .pos-checkout__progress { height: 6px; overflow: hidden; border-radius: var(--bo-radius-full); background: color-mix(in srgb, var(--bo-color-warning) 26%, transparent); }
 .pos-checkout__progressFill {
   display: block; height: 100%; border-radius: inherit; background: var(--bo-color-success);

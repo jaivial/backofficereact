@@ -21,6 +21,8 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
   const paidCents = useMemo(() => entriesTotalCents(entries), [entries]);
   const remaining = useMemo(() => remainingCents(amountDueCents, entries), [amountDueCents, entries]);
   const changeCents = useMemo(() => cashChangeDueCents({ amountDueCents, entries }), [amountDueCents, entries]);
+  /** Money handed over beyond the total; only cash can take it back as change. */
+  const overCents = useMemo(() => Math.max(paidCents - amountDueCents, 0), [amountDueCents, paidCents]);
   const valid = useMemo(() => entries.every((entry) => tenderedCentsOf(entry.amount) >= 0), [entries]);
   const canConfirm = valid && paidCents >= amountDueCents;
 
@@ -73,7 +75,7 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
 
   return {
     entries, setEntries, updateEntry, addEntry, removeEntry, fillRemaining, clear,
-    amountDueCents, paidCents, remaining, changeCents, valid, canConfirm, allocations,
+    amountDueCents, paidCents, remaining, changeCents, overCents, valid, canConfirm, allocations,
     totalsByMethod, labelOf, cashlessOf,
   };
 }
