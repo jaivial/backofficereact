@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowRight, Clock, FileBarChart, Receipt, User, Users } from "lucide-react";
 
 import type { POSCashDay } from "../../../../../api/types";
 import { formatSpanishLongDate } from "./POSNoCashDayModal";
@@ -48,36 +48,71 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
     }
   };
 
+  const count = unclosedPrevious.length;
+  const plural = count !== 1;
+
   return createPortal(
     <>
       <div className="pos-unclosedModal__overlay" data-testid="pos-unclosed-modal-overlay">
-        <div className="pos-unclosedModal" role="alertdialog" aria-labelledby="pos-unclosed-title" aria-describedby="pos-unclosed-desc" data-testid="pos-unclosed-modal">
+        <div
+          className="pos-unclosedModal"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="pos-unclosed-title"
+          aria-describedby="pos-unclosed-desc"
+          data-testid="pos-unclosed-modal"
+        >
           <header data-testid="pos-unclosedmodal-header" className="pos-unclosedModal__header">
-            <AlertTriangle size={32} className="pos-unclosedModal__icon" />
-            <h2 data-slot="pOSUnclosedDaysModal-pos-unclosedModal-title" id="pos-unclosed-title" className="pos-unclosedModal__title">Días anteriores sin cerrar</h2>
+            <span className="pos-unclosedModal__iconWrap" aria-hidden="true">
+              <AlertTriangle size={24} strokeWidth={2} className="pos-unclosedModal__icon" />
+            </span>
+            <h2 data-slot="pOSUnclosedDaysModal-pos-unclosedModal-title" id="pos-unclosed-title" className="pos-unclosedModal__title">
+              Días anteriores sin cerrar
+            </h2>
             <p data-slot="pOSUnclosedDaysModal-pos-unclosedModal-desc" id="pos-unclosed-desc" className="pos-unclosedModal__desc">
-              Cierra estos días antes de abrir el {formatSpanishLongDate(date)}, o ábrelo igualmente.
+              Cierra {plural ? "estos días" : "este día"} antes de abrir el{" "}
+              <strong className="pos-unclosedModal__descDate">{formatSpanishLongDate(date)}</strong>, o ábrelo igualmente.
             </p>
+            <span className="pos-unclosedModal__count" data-testid="pos-unclosed-count">
+              {count} {plural ? "días pendientes" : "día pendiente"}
+            </span>
           </header>
           <div className="pos-unclosedModal__list" data-testid="pos-unclosed-list">
             {unclosedPrevious.map((day) => (
               <article key={day.id} className="pos-unclosedCard" data-testid="pos-unclosed-card">
-                <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-date" className="pos-unclosedCard__date">{formatSpanishLongDate(day.date)}</div>
+                <div className="pos-unclosedCard__head">
+                  <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-date" className="pos-unclosedCard__date">
+                    {formatSpanishLongDate(day.date)}
+                  </div>
+                  <span className="pos-unclosedCard__status">Caja abierta</span>
+                </div>
                 <dl className="pos-unclosedCard__meta">
                   <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
-                    <dt>Apertura</dt>
+                    <dt>
+                      <Clock size={14} strokeWidth={1.5} aria-hidden="true" />
+                      Apertura
+                    </dt>
                     <dd>{formatTime(day.openedAt)}</dd>
                   </div>
                   <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
-                    <dt>Usuario</dt>
-                    <dd>{day.openedByName || "—"}</dd>
+                    <dt>
+                      <User size={14} strokeWidth={1.5} aria-hidden="true" />
+                      Usuario
+                    </dt>
+                    <dd className="pos-unclosedCard__truncate">{day.openedByName || "—"}</dd>
                   </div>
                   <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
-                    <dt>Facturación</dt>
+                    <dt>
+                      <Receipt size={14} strokeWidth={1.5} aria-hidden="true" />
+                      Facturación
+                    </dt>
                     <dd>{money(day.totalGrossCents)}</dd>
                   </div>
                   <div data-slot="pOSUnclosedDaysModal-pos-unclosedCard-field" className="pos-unclosedCard__field">
-                    <dt>Afluencia</dt>
+                    <dt>
+                      <Users size={14} strokeWidth={1.5} aria-hidden="true" />
+                      Afluencia
+                    </dt>
                     <dd>{day.covers ?? 0}</dd>
                   </div>
                 </dl>
@@ -88,15 +123,13 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
                   data-testid="pos-unclosed-view-day"
                 >
                   Ver día
+                  <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
                 </button>
               </article>
             ))}
           </div>
           {error ? <p className="pos-unclosedModal__error" role="alert" data-testid="pos-unclosed-error">{error}</p> : null}
           <div data-slot="pOSUnclosedDaysModal-pos-unclosedModal-actions" className="pos-unclosedModal__actions">
-            <a href="/app/pos?section=reports" className="pos-unclosedModal__link" data-testid="pos-unclosed-go-reports">
-              Ir a Informes
-            </a>
             <button
               type="button"
               className="pos-unclosedModal__force"
@@ -106,6 +139,10 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
             >
               Abrir día igualmente
             </button>
+            <a href="/app/pos?section=reports" className="pos-unclosedModal__link" data-testid="pos-unclosed-go-reports">
+              <FileBarChart size={18} strokeWidth={2} aria-hidden="true" />
+              Ir a Informes
+            </a>
           </div>
         </div>
       </div>
