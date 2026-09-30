@@ -285,16 +285,17 @@ export function buildBookingSpecial(args: {
 }
 
 /**
- * Helper used by the editor's per-menu principales validation: returns true
- * when the sum of the user's selected principales servings for `menuDraft`
- * equals the menu's counter. Custom menus return true (no rows required).
+ * How many counters of `menuDraft` still have no principal dish picked.
+ *
+ * Principales are optional: the kitchen may decide them on the day, so an
+ * unmatched menu is a hint, not a validation error. The editor uses this to
+ * tell the operator what is still pending instead of blocking the save.
  */
-export function principalesMatchCounter(menuDraft: DraftSpecialMenu): boolean {
-  if (menuDraft.is_custom) return true;
-  const sum = menuDraft.items.reduce((acc, it) => acc + (Number(it?.name ? 1 : 0)), 0);
-  // We rely on servings === 1 per row (UI uses InlineCounter per dish row).
-  // Sum counts the rows that have a dish assigned and matches the counter.
-  return sum === Number(menuDraft.count || 0);
+export function principalesPending(menuDraft: DraftSpecialMenu): number {
+  if (menuDraft.is_custom) return 0;
+  const filled = menuDraft.items.filter((it) => it && String(it.name || "").trim()).length;
+  // We rely on servings === 1 per row (UI uses one dish row per counter).
+  return Math.max(0, Number(menuDraft.count || 0) - filled);
 }
 
 /**
