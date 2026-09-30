@@ -28,3 +28,38 @@ export function useForkyVisualState(): ForkyVisualState {
   // server. Without it, SSR throws and protected app routes return HTTP 500.
   return useSyncExternalStore(subscribe, () => state, () => "idle");
 }
+
+/**
+ * Tools the turn in flight has called so far, in order — the rows of the live
+ * ThinkingState trace. Fed by the `status: tool` frames of the assistant WS;
+ * reset when a turn starts. Coordination id: FORKY-ADMIN-TOOLS-S01.
+ */
+const EMPTY_STEPS: readonly string[] = [];
+let steps: readonly string[] = EMPTY_STEPS;
+const stepListeners = new Set<() => void>();
+
+function emitSteps(next: readonly string[]): void {
+  steps = next;
+  for (const listener of stepListeners) listener();
+}
+
+export function resetForkyTurnSteps(): void {
+  if (steps.length) emitSteps(EMPTY_STEPS);
+}
+
+export function addForkyTurnStep(tool: string): void {
+  if (tool) emitSteps([...steps, tool]);
+}
+
+export function useForkyTurnSteps(): readonly string[] {
+  return useSyncExternalStore(
+    (listener) => {
+      stepListeners.add(listener);
+      return () => {
+        stepListeners.delete(listener);
+      };
+    },
+    () => steps,
+    () => EMPTY_STEPS,
+  );
+}

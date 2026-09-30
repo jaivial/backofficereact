@@ -18,6 +18,7 @@ vi.mock("./forkyRuntime", () => ({
 
 vi.mock("./forkyStatus", () => ({
   useForkyVisualState: () => "idle",
+  useForkyTurnSteps: () => [],
   setForkyVisualState: vi.fn(),
 }));
 
@@ -40,6 +41,13 @@ vi.mock("./bui", () => ({
   // testids the rest of the suite asserts against.
   PromptBar: ({ placeholder }: { placeholder?: string }) => (
     <textarea data-testid="forky-composer-input" placeholder={placeholder ?? "Escribe un mensaje…"} />
+  ),
+  // Stubs of the vendored MythCortex chat primitives [FORKY-ADMIN-TOOLS-S01].
+  MessageBubble: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="forky-message-bubble-stub">{children}</div>
+  ),
+  ThinkingState: ({ active }: { active?: string }) => (
+    <div data-testid="forky-thinking-state-stub">{active}</div>
   ),
 }));
 

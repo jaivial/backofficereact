@@ -31,6 +31,7 @@ import { ChatBubbleMotionProvider } from "./chat-motion";
 
 import { forkyOpenAtom } from "../../state/atoms";
 import { ForkyRuntimeProvider } from "./forkyRuntime";
+import { useForkyTurnSteps } from "./forkyStatus";
 
 // ---------------------------------------------------------------------------
 // beautifului.dev design language (tokens in
@@ -48,7 +49,16 @@ const actionBtn =
 // Loading state while assistant is generating — the literal beautifului.dev
 // LoadingState (pixel-grid loader + shimmer label + mono elapsed timer).
 // ---------------------------------------------------------------------------
+/** Human label of a tool step in the live trace (the model sees the raw name). */
+function forkyToolLabel(tool: string): string {
+  if (tool === "admin_catalog") return "Buscando la operación";
+  if (tool === "admin_describe") return "Leyendo la operación";
+  if (tool === "admin_call") return "Ejecutando en el backoffice";
+  return tool.replace(/_/g, " ");
+}
+
 function AssistantLoading() {
+  const steps = useForkyTurnSteps();
   return (
     <div
       data-testid="forky-assistant-loading"
@@ -63,7 +73,12 @@ function AssistantLoading() {
             testIdPrefix="forky-thinking"
             active="Pensando"
             done="Listo"
-            rows={[{ primary: "Leyendo la página" }, { primary: "Consultando las herramientas" }, { primary: "Escribiendo la respuesta" }]}
+            rows={[
+              { primary: "Leyendo la pregunta" },
+              // The tools the turn really called, as the WS reports them (status: tool).
+              ...steps.map((tool) => ({ primary: forkyToolLabel(tool) })),
+              { primary: "Escribiendo la respuesta" },
+            ]}
           />
         </div>
         <div data-testid="forky-loading-fallback" className="mt-1 w-fit">
