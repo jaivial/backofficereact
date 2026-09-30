@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { allocatePayments } from "../utils/paymentAllocation";
+import type { POSPaymentTender } from "../utils/paymentMethods";
 import { parseAmount } from "../utils/money";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
 import { usePOSCommand } from "./usePOSCommand";
@@ -425,13 +426,15 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo enviar a cocina"); }
   }, [activeTicketLines, hasPendingKitchenLines, pendingKitchenLines, pendingKitchenVoids, ticket]);
 
-  const checkout = useCallback(async (requestedTipCents = tipCents) => {
+  const checkout = useCallback(async (requestedTipCents = tipCents, tenders?: POSPaymentTender[]) => {
     const checkoutDue = ticketTotal + requestedTipCents;
-    if (!ticket || ticketTotal < 0 || paymentTotal < checkoutDue) { setError("El pago no cubre el total."); return false; }
+    if (!ticket || ticketTotal < 0) { setError("El pago no cubre el total."); return false; }
     if (isInFlight("checkout")) return false;
     let allocations;
-    try { allocations = allocatePayments({ saleTotalCents: ticketTotal, tipCents: requestedTipCents, cashTenderedCents: cashTenderedCents >= 0 ? cashTenderedCents : 0, cardTenderedCents: cardTenderedCents >= 0 ? cardTenderedCents : 0 }); }
+    try { allocations = tenders?.length ? tenders : allocatePayments({ saleTotalCents: ticketTotal, tipCents: requestedTipCents, cashTenderedCents: cashTenderedCents >= 0 ? cashTenderedCents : 0, cardTenderedCents: cardTenderedCents >= 0 ? cardTenderedCents : 0 }); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Importe no válido."); return false; }
+    const tenderedTotal = allocations.reduce((total, payment) => total + payment.amountCents + payment.tipCents, 0);
+    if (tenderedTotal < checkoutDue) { setError("El pago no cubre el total."); return false; }
     if (allocations.some((payment) => payment.method === "CARD") && !cardReference.trim()) { setError("Introduce referencia del terminal de tarjeta."); return false; }
     const payments = allocations.map((payment) => {
       const idempotencyKey = keyFor(`checkout-${ticket.id}-${payment.method}`);
@@ -455,7 +458,7 @@ export function usePOSRegister(date?: string | null) {
       return result ?? false;
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cobrar"); return false; }
     finally { setBusy(false); }
-  }, [cardReference, cardTenderedCents, cashTenderedCents, clear, isInFlight, keyFor, load, paymentTotal, run, splitTickets, ticket, ticketTotal, tipCents]);
+  }, [cardReference, cardTenderedCents, cashTenderedCents, clear, isInFlight, keyFor, load, run, splitTickets, ticket, ticketTotal, tipCents]);
 
   return {
     settings, setSettings, products, tables, visits, ticket, visit, lastPaidTicket, productStock,

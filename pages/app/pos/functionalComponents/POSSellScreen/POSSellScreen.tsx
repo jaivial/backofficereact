@@ -13,6 +13,8 @@ import { splitShares } from "../../utils/splitShares";
 import { POSPromptModal } from "./POSPromptModal";
 import { POSMultiSelectDialog } from "./POSMultiSelectDialog";
 import { POSDialog } from "./POSDialog";
+import { useCheckoutTenders } from "../../hooks/useCheckoutTenders";
+import { POS_PAYMENT_METHODS, POS_PAYMENT_METHOD_LABELS, formatTenderInput, tenderedCentsOf, type POSPaymentMethod } from "../../utils/paymentMethods";
 import { POSMoveLineDialog } from "./POSMoveLineDialog";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
@@ -29,6 +31,13 @@ function ageLabel(openedAt?: string): string {
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 }
 
+/** Legacy test ids kept so the first cash and card split lines stay addressable. */
+function legacyTenderId(entry: { id: string; method: POSPaymentMethod }, entries: { id: string; method: POSPaymentMethod }[]): string | null {
+  if (entry.method === "CASH" && entries.find((item) => item.method === "CASH")?.id === entry.id) return "pos-cash";
+  if (entry.method === "CARD" && entries.find((item) => item.method === "CARD")?.id === entry.id) return "pos-card";
+  return null;
+}
+
 /**
  * Visual sell screen. Layout:
  *   [ column: [ticket | keypad] over [categories | products] ] [ control rail ]
@@ -41,6 +50,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [selectedLineId, setSelectedLineId] = useState(0);
   const [showTables, setShowTables] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [checkoutMethod, setCheckoutMethod] = useState<POSPaymentMethod>("CASH");
+  const tenders = useCheckoutTenders({ saleTotalCents: register.ticketTotal, tipCents: register.tipCents });
   const [checkoutKeypad, setCheckoutKeypad] = useState(false);
   const [lineToVoid, setLineToVoid] = useState<TicketLine | null>(null);
   const [lineToMove, setLineToMove] = useState<TicketLine | null>(null);
@@ -86,13 +97,19 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     setKeypadMultiplierQty(null);
   }, []);
 
+  /** Cash keypad and quick-amount buttons feed the first cash split line. */
+  const cashKeypadEntry = tenders.entries.find((entry) => entry.method === "CASH") ?? tenders.entries[0] ?? null;
+  const applyQuickCash = useCallback((value: number) => {
+    if (cashKeypadEntry) tenders.updateEntry(cashKeypadEntry.id, { amount: value.toFixed(2) });
+  }, [cashKeypadEntry, tenders]);
+
   const confirmKeypad = useCallback(() => {
     if (readOnly) return;
     if (keypadContext.kind === "quantity") {
       const line = register.activeTicketLines.find((entry) => entry.id === selectedLineId);
       if (line && keypadNumber > 0) void register.setLineQuantity(line, keypadNumber);
     } else if (keypadContext.kind === "cash") {
-      register.setCash(keypadValue.replace(",", "."));
+      applyQuickCash(keypadNumber);
       setShowCheckout(true);
     } else if (keypadContext.kind === "discount") {
       setDiscountMode("amount");
@@ -102,7 +119,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       if (keypadNumber > 0) register.setCovers(String(Math.round(keypadNumber)));
     }
     setKeypadValue("");
-  }, [keypadContext.kind, keypadNumber, keypadValue, readOnly, register, selectedLineId]);
+  }, [applyQuickCash, keypadContext.kind, keypadNumber, keypadValue, readOnly, register, selectedLineId]);
 
   const confirmVoidLine = useCallback(async () => {
     if (!lineToVoid) return;
@@ -292,6 +309,14 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     return [{ key: "exact", label: "Exacto", value: exact }, ...notes.map((note) => ({ key: String(note), label: `${note} €`, value: note }))];
   }, [register.amountDueCents]);
 
+  /** "Exacto" never over-charges: it only fills what the other lines leave open. */
+  const applyQuickCashExact = useCallback(() => {
+    if (!cashKeypadEntry) return;
+    const target = tenders.fillTargetFor(cashKeypadEntry.id);
+    if (target > 0) tenders.updateEntry(cashKeypadEntry.id, { amount: formatTenderInput(target) });
+  }, [cashKeypadEntry, tenders]);
+
+
   const disabledReasons = useMemo<Partial<Record<RailFeatureKey, string>>>(() => {
     const reasons: Partial<Record<RailFeatureKey, string>> = {};
     // A sealed day is a signed Z closure: nothing on the rail may touch it.
@@ -339,6 +364,18 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     void register.moveLine(lineToMove, quantity, targetId);
     setLineToMove(null);
   }, [lineToMove, register]);
+
+  const closeCheckout = useCallback(() => {
+    setShowCheckout(false);
+    setCheckoutKeypad(false);
+    tenders.clear();
+  }, [tenders]);
+
+  const confirmCheckout = useCallback(() => {
+    void register.checkout(register.tipCents, tenders.allocations).then((paid) => {
+      if (paid) closeCheckout();
+    });
+  }, [closeCheckout, register, tenders]);
 
   const closeDiscount = useCallback(() => { setDiscountOpen(false); setDiscountValue(""); setDiscountReason(""); }, []);
 
@@ -709,27 +746,127 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       ) : null}
 
       {showCheckout && register.ticket ? (
-        <POSDialog testId="pos-checkout" title={`Cobrar · ${money(register.amountDueCents)}`} ariaLabel="Cobro" busy={register.busy} error={register.error} onClose={() => { setShowCheckout(false); setCheckoutKeypad(false); }}>
-          <div className="pos-modal__payments" data-testid="pos-checkout-payments">
-            <label data-testid="pos-cash-field">Efectivo<input inputMode="decimal" value={register.cash} onChange={(event) => register.setCash(event.target.value)} data-ui="pos-cash" data-testid="pos-cash" /></label>
-            <label data-testid="pos-card-field">Tarjeta<input inputMode="decimal" value={register.card} onChange={(event) => register.setCard(event.target.value)} data-ui="pos-card" data-testid="pos-card" /></label>
-            {Number(register.card) > 0 ? <label data-testid="pos-card-reference-field">Referencia terminal<input value={register.cardReference} onChange={(event) => register.setCardReference(event.target.value)} data-ui="pos-card-reference" data-testid="pos-card-reference" /></label> : null}
-            <div className="pos-modal__modes" role="group" aria-label="Efectivo rápido" data-testid="pos-quick-cash">
-              {quickCashOptions.map((option) => (
-                <button className="pos-modal__secondary" type="button" key={option.key} onClick={() => register.setCash(option.value.toFixed(2))} data-testid={`pos-quick-cash-${option.key}`}>{option.label}</button>
-              ))}
-            </div>
-            <button className="pos-modal__secondary" type="button" aria-pressed={checkoutKeypad} onClick={() => setCheckoutKeypad((current) => !current)} data-testid="pos-checkout-keypad-toggle">{checkoutKeypad ? "Ocultar teclado" : "Usar teclado"}</button>
-            {checkoutKeypad ? <POSKeypad value={register.cash} onChange={(next) => register.setCash(next.replace(",", "."))} contextLabel="Efectivo" onConfirm={() => setCheckoutKeypad(false)} confirmLabel="Listo" readOnly={readOnly} testIdPrefix="pos-checkout-" /> : null}
-            <p className="pos-modal__pending" data-testid="pos-checkout-sale">Venta {money(register.ticketTotal)}</p>
-            {register.tipCents > 0 ? <p className="pos-modal__pending" data-testid="pos-checkout-tip">Propina {money(register.tipCents)}</p> : null}
-            <p className="pos-modal__pending" data-testid="pos-checkout-due">Total a cobrar {money(register.amountDueCents)}</p>
-            <p className="pos-modal__pending" data-testid="pos-checkout-pending">Pendiente {money(Math.max(register.amountDueCents - register.paymentTotal, 0))}</p>
-            <p className="pos-modal__pending" data-testid="pos-checkout-change">Cambio {money(register.changeDue)}</p>
-            <button className="pos-modal__primary" type="button" disabled={register.busy || register.paymentTotal < register.amountDueCents || register.ticketTotal < 0} onClick={() => { void register.checkout().then((paid) => { if (paid) { setShowCheckout(false); setCheckoutKeypad(false); } }); }} data-pos-command="checkout" data-testid="pos-checkout-confirm">
-              Cobrar y cerrar
-            </button>
+        <POSDialog testId="pos-checkout" title={`Cobrar · ${money(tenders.amountDueCents)}`} ariaLabel="Cobro" busy={register.busy} error={register.error} onClose={closeCheckout}>
+          <div className="pos-checkout" data-testid="pos-checkout-body">
+            <section className="pos-checkout__summary" aria-label="Importes del cobro" data-testid="pos-checkout-summary">
+              <div className="pos-checkout__amount">
+                <span className="pos-checkout__amountLabel">Total a cobrar</span>
+                <strong className="pos-checkout__amountValue" data-testid="pos-checkout-due">{money(tenders.amountDueCents)}</strong>
+              </div>
+              <dl className="pos-checkout__figures">
+                <div className="pos-checkout__figure">
+                  <dt>Venta</dt>
+                  <dd data-testid="pos-checkout-sale">{money(register.ticketTotal)}</dd>
+                </div>
+                {register.tipCents > 0 ? (
+                  <div className="pos-checkout__figure">
+                    <dt>Propina</dt>
+                    <dd data-testid="pos-checkout-tip">{money(register.tipCents)}</dd>
+                  </div>
+                ) : null}
+                <div className="pos-checkout__figure">
+                  <dt>Entregado</dt>
+                  <dd data-testid="pos-checkout-paid">{money(tenders.paidCents)}</dd>
+                </div>
+                <div className="pos-checkout__figure pos-checkout__figure--pending" data-testid="pos-checkout-pending">
+                  <dt>Pendiente</dt>
+                  <dd>{money(tenders.remaining)}</dd>
+                </div>
+                <div className="pos-checkout__figure pos-checkout__figure--change" data-testid="pos-checkout-change">
+                  <dt>Cambio</dt>
+                  <dd>{money(tenders.changeCents)}</dd>
+                </div>
+              </dl>
+              {tenders.overCents > 0 ? <p className="pos-checkout__note" data-testid="pos-checkout-over">Entregado de más {money(tenders.overCents)}</p> : null}
+              <div className="pos-checkout__progress" role="progressbar" aria-valuemin={0} aria-valuemax={tenders.amountDueCents} aria-valuenow={Math.min(tenders.paidCents, tenders.amountDueCents)} aria-label="Importe entregado" data-testid="pos-checkout-progress">
+                <span className="pos-checkout__progressFill" style={{ width: `${tenders.amountDueCents > 0 ? Math.min(100, Math.round((tenders.paidCents / tenders.amountDueCents) * 100)) : 0}%` }} />
+              </div>
+            </section>
+
+            <section className="pos-checkout__splits" aria-label="Pagos por método" data-testid="pos-checkout-payments">
+              <header className="pos-checkout__splitsHeader">
+                <h3 className="pos-checkout__splitsTitle">Pagos</h3>
+                <div className="pos-modal__modes" role="group" aria-label="Añadir método de pago" data-testid="pos-checkout-methods">
+                  {POS_PAYMENT_METHODS.map((method) => (
+                    <button className="pos-modal__secondary" type="button" key={method} disabled={readOnly} onClick={() => { setCheckoutMethod(method); tenders.addEntry(method); }} data-testid={`pos-checkout-method-${method}`}>
+                      {POS_PAYMENT_METHOD_LABELS[method]}
+                    </button>
+                  ))}
+                </div>
+              </header>
+
+              <ul className="pos-checkout__list">
+                {tenders.entries.map((entry, index) => (
+                  <li className="pos-checkout__row" key={entry.id} data-testid={`pos-checkout-split-${entry.id}`}>
+                    <label className="pos-checkout__method" htmlFor={`pos-checkout-method-select-${entry.id}`}>
+                      <span className="bo-srOnly">Método</span>
+                      <select
+                        id={`pos-checkout-method-select-${entry.id}`}
+                        value={entry.method}
+                        disabled={readOnly}
+                        onChange={(event) => tenders.updateEntry(entry.id, { method: event.target.value as POSPaymentMethod })}
+                        data-ui="pos-checkout-split-method"
+                        data-testid={`pos-checkout-split-method-${entry.id}`}
+                      >
+                        {POS_PAYMENT_METHODS.map((method) => (
+                          <option key={method} value={method}>{POS_PAYMENT_METHOD_LABELS[method]}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="pos-checkout__amountField" htmlFor={`pos-checkout-amount-${entry.id}`}>
+                      <span className="bo-srOnly">Importe {POS_PAYMENT_METHOD_LABELS[entry.method]}</span>
+                      <input
+                        id={`pos-checkout-amount-${entry.id}`}
+                        inputMode="decimal"
+                        value={entry.amount}
+                        placeholder="0,00"
+                        disabled={readOnly}
+                        onChange={(event) => tenders.updateEntry(entry.id, { amount: event.target.value })}
+                        data-ui="pos-checkout-split-amount"
+                        data-testid={legacyTenderId(entry, tenders.entries) ?? `pos-checkout-split-amount-${entry.id}`}
+                      />
+                    </label>
+                    <button className="pos-checkout__fill" type="button" disabled={readOnly || tenders.fillTargetFor(entry.id) <= 0} onClick={() => tenders.fillRemaining(entry.id)} title={`Completar con ${POS_PAYMENT_METHOD_LABELS[entry.method]} hasta ${money(tenders.fillTargetFor(entry.id))}`} data-testid={`pos-checkout-fill-${entry.id}`}>
+                      Completar {money(tenders.fillTargetFor(entry.id))}
+                    </button>
+                    <button className="pos-checkout__remove" type="button" disabled={readOnly || tenders.entries.length <= 1} onClick={() => tenders.removeEntry(entry.id)} aria-label={`Quitar pago ${index + 1} de ${POS_PAYMENT_METHOD_LABELS[entry.method]}`} data-testid={`pos-checkout-split-remove-${entry.id}`}>
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="pos-checkout__actions">
+                <button className="pos-modal__secondary" type="button" disabled={readOnly} onClick={() => tenders.addEntry(checkoutMethod)} data-testid="pos-checkout-add-split">
+                  Añadir pago
+                </button>
+                <button className="pos-modal__secondary" type="button" aria-pressed={checkoutKeypad} onClick={() => setCheckoutKeypad((current) => !current)} data-testid="pos-checkout-keypad-toggle">
+                  {checkoutKeypad ? "Ocultar teclado" : "Usar teclado"}
+                </button>
+              </div>
+
+              {checkoutKeypad && cashKeypadEntry ? <POSKeypad value={cashKeypadEntry.amount} onChange={(next) => tenders.updateEntry(cashKeypadEntry.id, { amount: next.replace(",", ".") })} contextLabel="Efectivo" onConfirm={() => setCheckoutKeypad(false)} confirmLabel="Listo" readOnly={readOnly} testIdPrefix="pos-checkout-" /> : null}
+
+              <div className="pos-modal__modes" role="group" aria-label="Efectivo rápido" data-testid="pos-quick-cash">
+                {quickCashOptions.map((option) => (
+                  <button className="pos-modal__secondary" type="button" key={option.key} onClick={() => (option.key === "exact" ? applyQuickCashExact() : applyQuickCash(option.value))} data-testid={`pos-quick-cash-${option.key}`}>{option.label}</button>
+                ))}
+              </div>
+
+              {tenders.entries.some((entry) => entry.method === "CARD" && tenderedCentsOf(entry.amount) > 0) ? (
+                <label className="pos-checkout__reference" htmlFor="pos-card-reference" data-testid="pos-card-reference-field">
+                  Referencia terminal
+                  <input id="pos-card-reference" value={register.cardReference} onChange={(event) => register.setCardReference(event.target.value)} data-ui="pos-card-reference" data-testid="pos-card-reference" />
+                </label>
+              ) : null}
+            </section>
           </div>
+
+          <footer className="pos-checkout__footer">
+            <button className="pos-modal__primary" type="button" disabled={register.busy || !tenders.canConfirm || !tenders.changeResolved || register.ticketTotal < 0} onClick={confirmCheckout} data-pos-command="checkout" data-testid="pos-checkout-confirm">
+              {tenders.remaining > 0 ? `Falta ${money(tenders.remaining)}` : "Cobrar y cerrar"}
+            </button>
+          </footer>
         </POSDialog>
       ) : null}
     </div>

@@ -2641,7 +2641,7 @@ export type POSBulkCheckout = {
   skippedTickets: number;
   closedVisits: number;
   totalGrossCents: number;
-  byMethod: { CASH: number; CARD: number; BANK: number; OTHER: number };
+  byMethod: { CASH: number; CARD: number; BIZUM: number; BANK: number; OTHER: number };
 };
 
 export type POSCashDayTicket = {
@@ -2703,7 +2703,7 @@ export type POSCashDayBilling = {
   openTickets: number;
   closedTickets: number;
   openTables: number;
-  byMethod: { CASH: number; CARD: number; BANK: number; OTHER: number };
+  byMethod: { CASH: number; CARD: number; BIZUM: number; BANK: number; OTHER: number };
   tipsCents: number;
   tables: POSCashDayBillingTable[];
 };
