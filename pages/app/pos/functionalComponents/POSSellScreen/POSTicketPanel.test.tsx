@@ -8,7 +8,7 @@ import type { Ticket, TicketLine } from "../../hooks/usePOSRegister";
 vi.mock("lucide-react", async () => {
   const { createElement } = await import("react");
   const icon = (name: string) => (props: Record<string, unknown>) => createElement("span", { "data-icon": name, ...props });
-  return { ArrowRightLeft: icon("move"), Merge: icon("merge"), Minus: icon("minus"), Plus: icon("plus"), Receipt: icon("receipt"), Trash2: icon("trash"), Users: icon("users"), X: icon("x") };
+  return { ArrowRightLeft: icon("move"), Merge: icon("merge"), Minus: icon("minus"), Plus: icon("plus"), Receipt: icon("receipt"), Trash2: icon("trash"), Users: icon("users"), X: icon("x"), AlertCircle: icon("alert"), CheckCircle2: icon("check"), Info: icon("info") };
 });
 
 const line: TicketLine = { id: 12, productName: "Agua", quantity: 1, unitPriceGrossCents: 250, lineTotalGrossCents: 250, status: "ACTIVE" } as TicketLine;

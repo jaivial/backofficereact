@@ -1,0 +1,148 @@
+/*
+ * POS toasts. Portal-rendered at the top centre of the viewport so a toast is
+ * never clipped by the sell screen's own scroll containers, and so it sits in
+ * the operator's sightline on a till mounted at head height.
+ *
+ * Depth comes from layered shadow rather than a heavy border; the coloured
+ * left edge plus the icon are the state cues, so colour is never the only signal.
+ */
+.posToast__wrap {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-space-2);
+  width: min(26rem, calc(100vw - 24px));
+  /* The wrapper centres itself without relying on the viewport width. */
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.posToast {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--bo-space-2);
+  padding: 10px 10px 10px 12px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.10),
+    0 8px 24px -8px rgba(0, 0, 0, 0.28);
+  pointer-events: auto;
+  /* Short, interruptible: a toast is a high-frequency, throwaway surface. */
+  animation: posToastIn 200ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@keyframes posToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+}
+
+.posToast__icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--bo-radius-sm);
+  color: var(--bo-text);
+}
+
+.posToast__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.posToast__title {
+  margin: 0;
+  font-size: var(--bo-text-sm);
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--bo-text);
+  overflow-wrap: anywhere;
+}
+
+.posToast__message {
+  margin: 0;
+  font-size: var(--bo-text-xs);
+  line-height: 1.4;
+  color: var(--bo-muted);
+  overflow-wrap: anywhere;
+}
+
+.posToast__close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--bo-radius-sm);
+  background: transparent;
+  color: var(--bo-muted);
+  cursor: pointer;
+  transition-property: background-color, color, scale;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.posToast__close:hover {
+  background: var(--bo-surface-hover);
+  color: var(--bo-text);
+}
+
+.posToast__close:active {
+  scale: 0.96;
+}
+
+.posToast__close:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+/* The coloured edge is the state cue; the icon above carries the same meaning
+   in shape, so neither colour nor position is the only signal. */
+.posToast--success {
+  border-left: 3px solid var(--bo-color-success);
+}
+
+.posToast--success .posToast__icon {
+  background: color-mix(in srgb, var(--bo-color-success) 16%, transparent);
+  color: var(--bo-text-success);
+}
+
+.posToast--error {
+  border-left: 3px solid var(--bo-color-danger);
+}
+
+.posToast--error .posToast__icon {
+  background: color-mix(in srgb, var(--bo-color-danger) 16%, transparent);
+  color: var(--bo-text-danger);
+}
+
+.posToast--info {
+  border-left: 3px solid var(--bo-accent);
+}
+
+.posToast--info .posToast__icon {
+  background: color-mix(in srgb, var(--bo-accent) 16%, transparent);
+  color: var(--bo-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .posToast {
+    animation: none;
+  }
+
+  .posToast__close {
+    transition: none;
+  }
+}
