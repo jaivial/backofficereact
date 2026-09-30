@@ -462,8 +462,10 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     <div className="pos-sell" data-ui="pos-sell-screen" data-testid="pos-sell-screen" data-readonly={readOnly ? "true" : undefined}>
       <div className="pos-sell__top" data-testid="pos-sell-top">
         {readOnly ? <div className="pos-sell__alert" role="status" data-ui="pos-readonly-notice" data-testid="pos-readonly-notice">Día cerrado: solo consulta.</div> : null}
-        {register.error ? <div className="pos-sell__alert" role="alert" data-ui="pos-error" data-testid="pos-error">{register.error}</div> : null}
-        {register.message ? <div className="pos-sell__alert pos-sell__alert--success" role="status" data-pos-message="success" data-testid="pos-message">{register.message}</div> : null}
+        {/* Feedback now travels through the POS toast portal (see POSToastProvider);
+            the inline banners used to sit here and pushed the order down. */}
+        <span className="sr-only" role="status" aria-live="polite" data-ui="pos-message-sink" data-testid="pos-message">{register.message}</span>
+        <span className="sr-only" role="alert" aria-live="assertive" data-ui="pos-error-sink" data-testid="pos-error">{register.error}</span>
         {register.lastPaidTicket ? (
           <div className="pos-sell__status" data-ui="pos-last-receipt" data-testid="pos-last-receipt">
             Recibo no fiscal · {register.lastPaidTicket.ticketNumber} · {money(register.lastPaidTicket.totalGrossCents)}
