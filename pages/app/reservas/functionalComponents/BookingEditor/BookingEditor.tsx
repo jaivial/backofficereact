@@ -1562,6 +1562,7 @@ function SpecialMenuSubSection({
   );
   const dishOptions = useMemo(() => dishItems.map((it) => ({ value: it, label: it })), [dishItems]);
   const items = Array.isArray(menu.items) ? menu.items : [];
+  const pendingPrincipales = principalesPending(menu);
 
   return (
     <div
@@ -1644,11 +1645,11 @@ function SpecialMenuSubSection({
               Este menú no tiene lista de principales.
             </div>
           ) : null}
-          {principalesPending(menu) > 0 && dishOptions.length > 0 ? (
+          {pendingPrincipales > 0 && dishOptions.length > 0 ? (
             // Coordination id: special_booking_optional_principales_v1 - a
             // neutral reminder, never a blocker: the booking saves without it.
             <div className="bo-mutedText" style={{ fontSize: 12 }} data-slot={`booking-editor-special-menu-remaining-${specialEntryKey(menu)}`}>
-              {principalesPending(menu)} principal(es) sin elegir. Opcional: se pueden decidir el día de la reserva.
+              {pendingPrincipales} principal(es) sin elegir. Opcional: se pueden decidir el día de la reserva.
             </div>
           ) : null}
         </div>
