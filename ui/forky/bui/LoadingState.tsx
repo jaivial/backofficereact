@@ -39,15 +39,17 @@ function LoaderGrid({
   delays,
   dur,
   round,
+  testId,
 }: {
   delays: (number | null)[];
   dur: number;
   round: boolean;
+  testId: string;
 }) {
   return (
-    <span data-slot="loadingState-gap-[1.5px]" aria-hidden className="grid shrink-0 grid-cols-[repeat(3,4px)] gap-[1.5px]">
+    <span aria-hidden data-testid={testId} className="grid shrink-0 grid-cols-[repeat(3,4px)] gap-[1.5px]">
       {delays.map((delay, index) => (
-        <span data-slot="loadingState-span"
+        <span
           key={index}
           className={`size-[4px] bg-ink ${round ? "rounded-full" : "rounded-[1px]"}`}
           style={{
@@ -60,13 +62,20 @@ function LoaderGrid({
   );
 }
 
-function useElapsed() {
-  const [ds, setDs] = useState(0);
+function useElapsed(since?: number) {
+  const start = since != null && Number.isFinite(since) ? since : undefined;
+  const [startedAt, setStartedAt] = useState(() => start ?? Date.now());
   useEffect(() => {
-    const t = setInterval(() => setDs((d) => d + 1), 100);
+    // A new `since` (new turn on the same mounted loader) restarts the timer instead of
+    // accumulating from the first turn.
+    setStartedAt(start ?? Date.now());
+  }, [start]);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 100);
     return () => clearInterval(t);
   }, []);
-  const total = ds / 10;
+  const total = Math.max(0, now - startedAt) / 1000;
   if (total < 60) return `${total.toFixed(1)}s`;
   return `${Math.floor(total / 60)}m ${(total % 60).toFixed(1)}s`;
 }
@@ -74,21 +83,30 @@ function useElapsed() {
 export default function LoadingState({
   label,
   variant = "Drive",
-  /** the meme feed for the Surfer variant; drop the file in /public to light it up */
-  videoSrc = "/subway-surfers.mp4",
+  /** epoch ms the work started; defaults to mount time. Lets a caller keep the elapsed
+   *  timer anchored to the real send time across re-renders. */
+  since,
+  /** test id prefix for the root/grid/label/elapsed elements (per-surface uniqueness). */
+  testId = "loading-state",
+  /** the meme feed for the Surfer variant; hosted on Vercel Blob so it plays in
+   *  production (the local /public/subway-surfers.mp4 stays gitignored) */
+  videoSrc = "https://95dnc2a95qgwt9ff.public.blob.vercel-storage.com/subway-surfers.mp4",
 }: {
   label?: string;
   variant?: string;
+  since?: number;
+  testId?: string;
   videoSrc?: string;
 }) {
-  const elapsed = useElapsed();
+  const elapsed = useElapsed(since);
   const surfer = variant === "Surfer";
   const resolvedLabel = label ?? (surfer ? "Subway surfing" : "Churning");
   const [videoOk, setVideoOk] = useState(true);
   const { delays, dur, round } = PATTERNS[variant] ?? PATTERNS.Drive;
 
   const labelEl = (
-    <span data-slot="loadingState-text-transparent"
+    <span
+      data-testid={`${testId}-label`}
       className="bg-clip-text text-[13px] font-medium text-transparent"
       style={{
         backgroundImage:
@@ -100,23 +118,23 @@ export default function LoadingState({
       {resolvedLabel}
     </span>
   );
-  const elapsedEl = <span className="font-mono text-[12px] text-ink-3 tabular-nums">{elapsed}</span>;
+  const elapsedEl = <span data-testid={`${testId}-elapsed`} className="font-mono text-[12px] text-ink-3 tabular-nums">{elapsed}</span>;
 
   if (surfer) {
     return (
-      <div data-slot="loadingState-items-start" role="status" className="flex w-fit flex-col items-start">
-        <div data-slot="loadingState-gap-2.5" className="flex items-center gap-2.5">
-          <LoaderGrid {...PATTERNS.Drive} />
+      <div role="status" data-testid={testId} className="flex w-fit flex-col items-start">
+        <div className="flex items-center gap-2.5">
+          <LoaderGrid {...PATTERNS.Drive} testId={`${testId}-grid`} />
           {labelEl}
           {elapsedEl}
         </div>
 
         {/* the context card follows the status text it is illustrating */}
-        <div data-slot="loadingState-shadow-overlay"
+        <div
           className="mt-2 w-56 overflow-hidden rounded-[10px] shadow-overlay"
           style={{ animation: "pop-in 200ms cubic-bezier(0.16,1,0.3,1) both", transformOrigin: "top left" }}
         >
-          <div data-slot="loadingState-w-full" className="relative aspect-video w-full" style={{ background: "var(--tooltip-bg)" }}>
+          <div className="relative aspect-video w-full" style={{ background: "var(--tooltip-bg)" }}>
             {videoOk ? (
               <video
                 src={videoSrc}
@@ -128,9 +146,9 @@ export default function LoadingState({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div data-slot="loadingState-gap-1.5" className="flex h-full w-full flex-col items-center justify-center gap-1.5">
-                <LoaderGrid {...PATTERNS.Drive} />
-                <span data-slot="loadingState-text-[10px]" className="px-3 text-center font-mono text-[10px]" style={{ color: "var(--tooltip-muted)" }}>
+              <div className="flex h-full w-full flex-col items-center justify-center gap-1.5">
+                <LoaderGrid {...PATTERNS.Drive} testId={`${testId}-grid-fallback`} />
+                <span className="px-3 text-center font-mono text-[10px]" style={{ color: "var(--tooltip-muted)" }}>
                   Video unavailable
                 </span>
               </div>
@@ -142,8 +160,8 @@ export default function LoadingState({
   }
 
   return (
-    <div data-slot="loadingState-gap-2.5" role="status" className="flex w-fit items-center gap-2.5">
-      <LoaderGrid delays={delays} dur={dur} round={round} />
+    <div role="status" data-testid={testId} className="flex w-fit items-center gap-2.5">
+      <LoaderGrid delays={delays} dur={dur} round={round} testId={`${testId}-grid`} />
       {labelEl}
       {elapsedEl}
     </div>

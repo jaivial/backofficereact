@@ -11,9 +11,10 @@ import { useEffect, useState } from "react";
 const WORD_MS = 55;
 const HOLD_MS = 3400;
 
-type Token = { text: string; cite?: boolean };
+/* one streamed word, or a `cite` placeholder that renders an inline source chip */
+export type StreamingToken = { text: string; cite?: boolean };
 
-const TOKENS: Token[] = [
+const TOKENS: StreamingToken[] = [
   ..."Pistachio is your fastest-growing flavor — sales are up 23% this month and margins beat vanilla by 8 points."
     .split(" ")
     .map((text) => ({ text })),
@@ -37,20 +38,23 @@ const SOURCE_IMAGES = {
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e56d24'/%3E%3Cpath d='M17 45V25h8v20h-8Zm11 0V16h8v29h-8Zm11 0V30h8v15h-8Z' fill='%23fff'/%3E%3Cpath d='M16 49h32' stroke='%23ffd6b8' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E",
 };
 
-const SOURCES = [
+/* one cited source rendered as an inline chip and in the sources list */
+export type StreamingSource = { name: string; domain: string; href: string; image: string };
+
+const SOURCES: StreamingSource[] = [
   { name: "Scoop Data", domain: "scoopdata.io", href: "https://scoopdata.io/", image: SOURCE_IMAGES.scoop },
   { name: "Trends Index", domain: "trends.google.com", href: "https://trends.google.com/trends/", image: SOURCE_IMAGES.trends },
   { name: "Market Basket", domain: "marketbasket.io", href: "https://marketbasket.io/", image: SOURCE_IMAGES.market },
 ];
 
-function sourceImage(source: (typeof SOURCES)[number]) {
+function sourceImage(source: StreamingSource) {
   return source.image;
 }
 
-function SourceChip() {
-  const source = SOURCES[0];
+function SourceChip({ source }: { source?: StreamingSource }) {
+  if (!source) return null;
   return (
-    <a data-testid="hover-text-ink"
+    <a
       href={source.href}
       target="_blank"
       rel="noreferrer"
@@ -60,7 +64,7 @@ function SourceChip() {
       style={{ animation: "pop-in 250ms cubic-bezier(0.23,1,0.32,1) both" }}
     >
       <img src={sourceImage(source)} alt="" className="source-avatar size-3 rounded-[3px]" />
-      <span data-slot="streamingText-span">{source.domain}</span>
+      <span>{source.domain}</span>
     </a>
   );
 }
@@ -72,21 +76,52 @@ const ACTION_ICONS: React.ReactNode[] = [
   <path key="down" d="M17 14V2M9 18.12L10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88z" />,
 ];
 
+export type StreamingLabels = {
+  /** label on the collapsed sources toggle */
+  sources: string;
+  /** heading above the follow-up prompts */
+  followUps: string;
+};
+
+const DEFAULT_LABELS: StreamingLabels = {
+  sources: "10 sources",
+  followUps: "Follow-ups",
+};
+
 export default function StreamingText({
+  content = TOKENS,
+  sources = SOURCES,
+  followUps = FOLLOW_UPS,
+  labels,
   loop = true,
   fill = false,
+  chrome = true,
   onDone,
+  onFollowUp,
 }: {
   variant?: string;
+  /** the streamed tokens; `cite` tokens render an inline source chip */
+  content?: StreamingToken[];
+  /** cited sources shown in the chip, avatar stack, and expanded list */
+  sources?: StreamingSource[];
+  /** follow-up prompt suggestions shown once the stream completes */
+  followUps?: string[];
+  /** prominent copy strings */
+  labels?: Partial<StreamingLabels>;
   /** restart the stream after a hold; turn off when embedding in a real thread */
   loop?: boolean;
+  /** action icons, source list and follow-ups; off when the host renders its own reply chrome */
+  chrome?: boolean;
   /** fill the parent width instead of the gallery's fixed measure */
   fill?: boolean;
   onDone?: () => void;
-}) {
+  /** fired when a follow-up prompt is chosen */
+  onFollowUp?: (text: string, index: number) => void;
+} = {}) {
+  const l = { ...DEFAULT_LABELS, ...labels };
   const [count, setCount] = useState(0);
   const [sourcesOpen, setSourcesOpen] = useState(false);
-  const done = count >= TOKENS.length;
+  const done = count >= content.length;
 
   useEffect(() => {
     if (done && !loop) {
@@ -94,7 +129,7 @@ export default function StreamingText({
       return;
     }
     const t = setTimeout(
-      () => setCount((c) => (c >= TOKENS.length ? 0 : c + 1)),
+      () => setCount((c) => (c >= content.length ? 0 : c + 1)),
       done ? HOLD_MS : WORD_MS,
     );
     return () => clearTimeout(t);
@@ -102,36 +137,33 @@ export default function StreamingText({
   }, [count, done, loop]);
 
   return (
-    <div data-slot="streamingText-div" className={fill ? "w-full" : "min-h-[15.5rem] w-full max-w-95"}>
-      <p data-slot="streamingText-text-ink" className="text-[13px] leading-relaxed text-ink">
-        {TOKENS.slice(0, count).map((token, i) =>
+    <div className={fill || !chrome ? "w-full" : "min-h-[15.5rem] w-full max-w-95"}>
+      <p className="text-[13px] leading-relaxed text-ink">
+        {content.slice(0, count).map((token, i) =>
           token.cite ? (
-            <SourceChip key={i} />
+            <SourceChip key={i} source={sources[0]} />
           ) : (
-            <span data-slot="streamingText-[will-change:filter,opacity]"
-              key={i}
-              className="inline [will-change:filter,opacity]"
-              style={{ animation: "stream-in 420ms cubic-bezier(0.22,0.61,0.25,1) both" }}
-            >
+            <span key={i} className="inline">
               {token.text}{" "}
             </span>
           ),
         )}
         {!done && (
-          <span data-slot="streamingText-bg-ink"
+          <span
             className="ml-0.5 inline-block h-3 w-0.5 translate-y-0.5 rounded-full bg-ink"
             style={{ animation: "fade-in 150ms ease-out both" }}
           />
         )}
       </p>
-
+      {chrome && (
+      <>
       {/* action icons row */}
-      <div data-slot="streamingText-duration-400"
+      <div
         className="mt-2 flex items-center gap-0.5 transition-opacity duration-400"
         style={{ opacity: done ? 1 : 0, pointerEvents: done ? "auto" : "none" }}
       >
         {ACTION_ICONS.map((icon, i) => (
-          <button data-testid="action"
+          <button
             key={i}
             type="button"
             aria-label="Action"
@@ -143,14 +175,14 @@ export default function StreamingText({
             </svg>
           </button>
         ))}
-        <button data-testid="hover-bg-hover"
+        <button
           type="button"
           aria-expanded={sourcesOpen}
           onClick={() => setSourcesOpen((current) => !current)}
           className="ml-1.5 flex items-center gap-1.5 rounded-[6px] px-1 py-0.5 text-left transition-colors duration-150 hover:bg-hover"
         >
-          <span data-slot="streamingText-space-x-1" className="flex -space-x-1">
-            {SOURCES.map((source) => (
+          <span className="flex -space-x-1">
+            {sources.map((source) => (
               <img
                 key={source.domain}
                 src={sourceImage(source)}
@@ -159,11 +191,11 @@ export default function StreamingText({
               />
             ))}
           </span>
-          <span data-slot="streamingText-text-ink-2" className="text-[12px] text-ink-2">10 sources</span>
+          <span className="text-[12px] text-ink-2">{l.sources}</span>
         </button>
       </div>
 
-      <div data-slot="streamingText-duration-300"
+      <div
         className="grid transition-[grid-template-rows,opacity] duration-300"
         style={{
           gridTemplateRows: done && sourcesOpen ? "1fr" : "0fr",
@@ -171,10 +203,10 @@ export default function StreamingText({
           transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)",
         }}
       >
-        <div data-slot="streamingText-overflow-hidden" className="overflow-hidden">
-          <div data-slot="streamingText-shadow-hairline" className="mt-1.5 flex flex-col rounded-[10px] bg-inset p-1 shadow-hairline">
-            {SOURCES.map((source) => (
-              <a data-testid="hover-text-ink-2"
+        <div className="overflow-hidden">
+          <div className="mt-1.5 flex flex-col rounded-[10px] bg-inset p-1 shadow-hairline">
+            {sources.map((source) => (
+              <a
                 key={source.domain}
                 href={source.href}
                 target="_blank"
@@ -182,8 +214,8 @@ export default function StreamingText({
                 className="flex items-center gap-2 rounded-[6px] px-1.5 py-1 text-[12px] text-ink-2 transition-colors duration-150 hover:bg-hover hover:text-ink"
               >
                 <img src={sourceImage(source)} alt="" className="source-avatar size-4 rounded-[4px]" />
-                <span data-slot="streamingText-animated-underline" className="animated-underline">{source.name}</span>
-                <span data-slot="streamingText-text-ink-3" className="ml-auto font-mono text-[10.5px] text-ink-3">{source.domain}</span>
+                <span className="animated-underline">{source.name}</span>
+                <span className="ml-auto font-mono text-[10.5px] text-ink-3">{source.domain}</span>
               </a>
             ))}
           </div>
@@ -191,15 +223,16 @@ export default function StreamingText({
       </div>
 
       {/* follow-ups */}
-      <div data-slot="streamingText-duration-400"
+      <div
         className="mt-2.5 transition-opacity duration-400"
         style={{ opacity: done ? 1 : 0, pointerEvents: done ? "auto" : "none" }}
       >
-        <p data-slot="streamingText-text-ink-2" className="text-[12px] font-medium text-ink-2">Follow-ups</p>
-        <div data-slot="streamingText-flex-col" className="mt-0.5 flex flex-col">
-          {FOLLOW_UPS.map((text, i) => (
-            <button data-testid="hover-bg-hover-2"
+        <p className="text-[12px] font-medium text-ink-2">{l.followUps}</p>
+        <div className="mt-0.5 flex flex-col">
+          {followUps.map((text, i) => (
+            <button
               key={text}
+              onClick={() => onFollowUp?.(text, i)}
               className="-mx-1.5 flex items-center gap-2 rounded-[7px] border-b border-line
                 px-1.5 py-1.5 text-left text-[12.5px] text-ink transition-colors
                 duration-100 hover:bg-hover-2"
@@ -218,6 +251,8 @@ export default function StreamingText({
           ))}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
