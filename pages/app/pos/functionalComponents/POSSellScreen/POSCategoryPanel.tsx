@@ -15,7 +15,7 @@ export function POSCategoryPanel({ categories, active, onSelect }: {
         showTitleRow
         openAriaLabel="Ver todas las categorías"
         onOpen={() => onSelect("")}
-        className={active === "" ? "pos-dishCard--active" : undefined}
+        className={active === "" ? "pos-categoryTile pos-dishCard--active" : "pos-categoryTile"}
       />
       {categories.map((category) => (
         <FoodDishCard
@@ -24,7 +24,7 @@ export function POSCategoryPanel({ categories, active, onSelect }: {
           key={category}
           openAriaLabel={`Filtrar por ${category}`}
           onOpen={() => onSelect(category)}
-          className={active === category ? "pos-dishCard--active" : undefined}
+          className={active === category ? "pos-categoryTile pos-dishCard--active" : "pos-categoryTile"}
         />
       ))}
     </section>

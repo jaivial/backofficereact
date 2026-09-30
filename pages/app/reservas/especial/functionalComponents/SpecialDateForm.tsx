@@ -86,16 +86,29 @@ function ToggleRow({
 }
 
 /**
- * Read-only sections of a special-type menu: each section carries its own
- * price (edited in the menu editor), so the date has no menu price input.
- * Coordination id: special_date_section_menus_v1
+ * Sections of a special-type menu: each section carries its own price (edited
+ * in the menu editor), so the date has no menu price input. Every section has
+ * a switch that enables / disables it for online booking on this date.
+ * Coordination id: special_date_section_menus_v1 + special_date_section_online_v1
  */
-function SpecialMenuSectionsSummary({ rowIndex, sections }: { rowIndex: number; sections?: SpecialDateMenuSection[] }) {
+function SpecialMenuSectionsSummary({
+  rowIndex,
+  menuTitle,
+  sections,
+  onToggleOnline,
+}: {
+  rowIndex: number;
+  menuTitle: string;
+  sections?: SpecialDateMenuSection[];
+  onToggleOnline: (sectionId: number, enabled: boolean) => void;
+}) {
   const tid = `special-date-menu-row-${rowIndex}-sections`;
+  const onlineCount = (sections ?? []).filter((sec) => sec.online_enabled !== false).length;
   return (
     <div className="grid gap-1" data-testid={tid}>
-      <div className="text-xs text-(--bo-muted)" data-testid={`${tid}-label`}>
-        Menú especial: precio por sección
+      <div className="flex items-center justify-between gap-3 text-xs text-(--bo-muted)" data-testid={`${tid}-label`}>
+        <span>Menú especial: precio por sección</span>
+        <span>Reserva online</span>
       </div>
       {!sections ? (
         <div className="text-xs text-(--bo-muted)" data-testid={`${tid}-loading`}>Cargando secciones…</div>
@@ -103,16 +116,43 @@ function SpecialMenuSectionsSummary({ rowIndex, sections }: { rowIndex: number; 
         <div className="text-xs text-(--bo-muted)" data-testid={`${tid}-empty`}>Este menú especial no tiene secciones todavía.</div>
       ) : (
         <ul className="grid gap-1" data-testid={`${tid}-list`}>
-          {sections.map((sec) => (
-            <li key={sec.id} className="flex items-center justify-between gap-3 text-sm" data-testid={`${tid}-item-${sec.id}`}>
-              <span data-testid={`${tid}-item-${sec.id}-title`}>{sec.title || `Sección ${sec.position + 1}`}</span>
-              <span className="tabular-nums text-(--bo-muted)" data-testid={`${tid}-item-${sec.id}-price`}>
-                {sec.price != null ? `${sec.price.toFixed(2)} € / persona` : "Sin precio"}
-              </span>
-            </li>
-          ))}
+          {sections.map((sec) => {
+            const enabled = sec.online_enabled !== false;
+            const label = sec.title || `Sección ${sec.position + 1}`;
+            return (
+              <li
+                key={sec.id}
+                className="flex min-h-11 items-center justify-between gap-3 text-sm"
+                data-state={enabled ? "on" : "off"}
+                data-testid={`${tid}-item-${sec.id}`}
+              >
+                <span className={`min-w-0 truncate transition-opacity duration-150${enabled ? "" : " opacity-60"}`} data-testid={`${tid}-item-${sec.id}-title`}>
+                  {label}
+                  {enabled ? null : (
+                    <span className="ml-2 text-xs text-(--bo-muted)" data-testid={`${tid}-item-${sec.id}-offline`}>No disponible online</span>
+                  )}
+                </span>
+                <span className="flex shrink-0 items-center gap-3">
+                  <span className="tabular-nums text-(--bo-muted)" data-testid={`${tid}-item-${sec.id}-price`}>
+                    {sec.price != null ? `${sec.price.toFixed(2)} € / persona` : "Sin precio"}
+                  </span>
+                  <Switch
+                    checked={enabled}
+                    onCheckedChange={(v) => onToggleOnline(sec.id, v)}
+                    aria-label={`${enabled ? "Desactivar" : "Activar"} ${menuTitle} · ${label} para reservas online`}
+                    data-testid={`${tid}-item-${sec.id}-online-switch`}
+                  />
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
+      {sections && sections.length > 0 && onlineCount === 0 ? (
+        <div className="text-xs text-(--bo-muted)" data-testid={`${tid}-all-offline`}>
+          Ninguna sección está disponible online: este menú no se mostrará en la reserva online.
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -328,7 +368,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
       void api.menus.gruposV2.listSpecialSections(Number(row.menu_id)).then((res) => {
         if (cancelled || !res.success) return;
         const sections: SpecialDateMenuSection[] = res.sections.map((sec) => ({
-          id: sec.id, title: sec.title, price: sec.price ?? null, adelanto_amount: null, position: sec.position,
+          id: sec.id, title: sec.title, price: sec.price ?? null, adelanto_amount: null, position: sec.position, online_enabled: true,
         }));
         setEditableMenus((prev) => prev.map((m) => (m._key === row._key && m.menu_id === row.menu_id ? { ...m, sections } : m)));
         console.log("[checkpoint] special_date_menu_sections_loaded", `menu=${row.menu_id}`, `sections=${sections.length}`);
@@ -341,6 +381,14 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     setEditableMenus((prev) => prev.map((m) => (m._key !== key ? m : {
       ...m,
       sections: (m.sections ?? []).map((sec) => (sec.id === sectionId ? { ...sec, adelanto_amount: amount } : sec)),
+    })));
+  }, []);
+
+  // Coordination id: special_date_section_online_v1
+  const updateSectionOnline = useCallback((key: string, sectionId: number, enabled: boolean) => {
+    setEditableMenus((prev) => prev.map((m) => (m._key !== key ? m : {
+      ...m,
+      sections: (m.sections ?? []).map((sec) => (sec.id === sectionId ? { ...sec, online_enabled: enabled } : sec)),
     })));
   }, []);
 
@@ -382,7 +430,9 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         position: idx,
         // Coordination id: special_date_section_menus_v1
         // (lean shape: the endpoint rejects unknown fields)
-        sections: isSpecialMenuId(m.menu_id) ? (m.sections ?? []).map((sec) => ({ section_id: sec.id, adelanto_amount: sec.adelanto_amount })) : undefined,
+        sections: isSpecialMenuId(m.menu_id)
+          ? (m.sections ?? []).map((sec) => ({ section_id: sec.id, adelanto_amount: sec.adelanto_amount, online_enabled: sec.online_enabled !== false }))
+          : undefined,
       })),
     };
     try {
@@ -465,6 +515,30 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               data-testid="special-date-description-input"
             />
           </Field>
+
+          <FadeSeparator testId="special-date-sep-description-notice" />
+
+          {/* Notificación personalizada - warn notice the guest sees on step 2
+              of the online special-date booking. Coordination id:
+              special_date_custom_notice_v1 */}
+          <div className="grid gap-1.5" data-ui="special-date-custom-notice" data-testid="special-date-custom-notice-field">
+            <label htmlFor="special-date-custom-notice-input" className="bo-label text-left" data-testid="special-date-custom-notice-field-label">
+              Notificación personalizada
+            </label>
+            <div className="text-xs text-(--bo-muted)" data-testid="special-date-custom-notice-hint">
+              Se muestra como aviso en el paso 2 de la reserva online de esta fecha. Déjalo vacío para no mostrar nada.
+            </div>
+            <textarea
+              id="special-date-custom-notice-input"
+              className="bo-input w-full"
+              style={{ fontSize: 16 }}
+              rows={4}
+              value={draft.custom_notice ?? ""}
+              onChange={(e) => patch({ custom_notice: e.target.value })}
+              placeholder="Ej: Este día el aparcamiento estará cerrado. Os recomendamos venir con antelación."
+              data-testid="special-date-custom-notice-input"
+            />
+          </div>
 
           <FadeSeparator testId="special-date-sep-description-menus" />
 
@@ -621,7 +695,12 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                         catalogue price when menu_id is set. Special-type menus
                         are priced per section instead (special_date_section_menus_v1). */}
                     {isSpecialMenuId(m.menu_id) ? (
-                      <SpecialMenuSectionsSummary rowIndex={idx + 1} sections={m.sections} />
+                      <SpecialMenuSectionsSummary
+                        rowIndex={idx + 1}
+                        menuTitle={selectedLabel}
+                        sections={m.sections}
+                        onToggleOnline={(sectionId, enabled) => updateSectionOnline(m._key, sectionId, enabled)}
+                      />
                     ) : (
                       <div
                         className="grid gap-1"
@@ -798,6 +877,11 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                                   >
                                     <div className="text-sm" data-testid={`special-date-per-section-amount-row-${m._key}-${sec.id}-label`}>
                                       {menuTitle} · {sec.title || `Sección ${sec.position + 1}`}
+                                      {sec.online_enabled === false ? (
+                                        <div className="text-xs text-(--bo-muted)" data-testid={`special-date-per-section-amount-row-${m._key}-${sec.id}-offline`}>
+                                          No disponible online: no se cobra en la reserva online
+                                        </div>
+                                      ) : null}
                                     </div>
                                     <EuroInput
                                       wrapperStyle={{ maxWidth: 120 }}
