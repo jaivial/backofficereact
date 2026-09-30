@@ -2346,6 +2346,9 @@ export type SpecialDateMenuSection = {
   price: number | null;
   adelanto_amount: number | null;
   position: number;
+  // Coordination id: special_date_section_online_v1 - false hides the section
+  // from the public booking wizard (count, principales and adelanto steps).
+  online_enabled?: boolean;
   principales?: SpecialMenuPrincipal[];
 };
 
@@ -2354,6 +2357,11 @@ export type SpecialDateSettings = {
   is_active: boolean;
   title: string;
   description: string;
+  /**
+   * Personalised warn notice shown on step 2 of the public special-date
+   * booking wizard. Coordination id: special_date_custom_notice_v1
+   */
+  custom_notice: string;
   prereserva_enabled: boolean;
   max_per_table_enabled: boolean;
   max_per_table: number | null;
@@ -2383,7 +2391,7 @@ export type SpecialDateSettings = {
 // menu sends only its per-section adelantos (the endpoint rejects unknown
 // fields), so the save payload's menus differ from the read shape.
 export type SpecialDateMenuSave = Omit<SpecialDateMenu, "sections" | "is_special_menu"> & {
-  sections?: Array<{ section_id: number; adelanto_amount: number | null }>;
+  sections?: Array<{ section_id: number; adelanto_amount: number | null; online_enabled: boolean }>;
 };
 
 export type SpecialDateSavePayload = Partial<Omit<SpecialDateSettings, "date" | "menus">> & {

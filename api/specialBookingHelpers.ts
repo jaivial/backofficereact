@@ -318,7 +318,7 @@ export function toSpecialDateSavePayload(settings: SpecialDateSettings & { date:
       ...m,
       price: is_special_menu ? null : m.price ?? null,
       sections: is_special_menu
-        ? (sections ?? []).map((sec) => ({ section_id: sec.id, adelanto_amount: sec.adelanto_amount }))
+        ? (sections ?? []).map((sec) => ({ section_id: sec.id, adelanto_amount: sec.adelanto_amount, online_enabled: sec.online_enabled !== false }))
         : undefined,
     })),
   };
