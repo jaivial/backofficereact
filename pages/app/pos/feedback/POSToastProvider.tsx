@@ -67,21 +67,36 @@ export function POSToastProvider({ children }: { children: React.ReactNode }) {
     setToasts([]);
   }, []);
 
+  // One timer per toast id, started when it appears. Ids are unique, so this
+  // runs once per toast rather than on every render. The bookkeeping matters:
+  // when a same-kind toast replaces an earlier one the old id disappears from
+  // state while its handle is still pending, so the drop below has to clear the
+  // handle *and* forget it, or the map grows for the life of the page.
   useEffect(() => {
     const pending = timers.current;
+    const live = new Set(toasts.map((toast) => toast.id));
     for (const toast of toasts) {
       if (pending.has(toast.id)) continue;
       const timeout = toast.timeoutMs ?? TIMEOUTS[toast.kind];
       if (timeout <= 0) continue;
-      pending.set(toast.id, window.setTimeout(() => dismiss(toast.id), timeout));
+      pending.set(toast.id, window.setTimeout(() => {
+        pending.delete(toast.id);
+        dismiss(toast.id);
+      }, timeout));
     }
-    return () => {
-      // Timers outlive a single render, so only clear them on unmount.
-      for (const [id, handle] of pending) if (!toasts.some((t) => t.id === id)) window.clearTimeout(handle);
-    };
+    for (const [id, handle] of pending) {
+      if (live.has(id)) continue;
+      window.clearTimeout(handle);
+      pending.delete(id);
+    }
   }, [dismiss, toasts]);
 
-  useEffect(() => () => { for (const handle of timers.current.values()) window.clearTimeout(handle); timers.current.clear(); }, []);
+  // A separate unmount-only effect: the effect above is not a teardown hook,
+  // it reconciles timers with state on every change.
+  useEffect(() => () => {
+    for (const handle of timers.current.values()) window.clearTimeout(handle);
+    timers.current.clear();
+  }, []);
 
   const api = useMemo<ToastApi>(() => ({
     push,

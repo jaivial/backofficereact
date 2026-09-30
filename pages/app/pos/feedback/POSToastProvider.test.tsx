@@ -96,4 +96,23 @@ describe("POSToastProvider", () => {
     expect(() => render(<Harness />)).toThrow(/POSToastProvider/);
     spy.mockRestore();
   });
+
+  it("leaves no timer pending once every toast has auto-dismissed", () => {
+    vi.useFakeTimers();
+    renderToast();
+    fireEvent.click(screen.getByText("ok"));
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+    act(() => { vi.advanceTimersByTime(8000); });
+    expect(screen.queryByTestId("pos-toast-wrap")).not.toBeInTheDocument();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("clears the replaced toast's timer, so nothing fires after unmount", () => {
+    vi.useFakeTimers();
+    const { unmount } = render(<POSToastProvider><Harness /></POSToastProvider>);
+    fireEvent.click(screen.getByText("two-ok"));
+    unmount();
+    expect(() => act(() => { vi.advanceTimersByTime(10000); })).not.toThrow();
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
