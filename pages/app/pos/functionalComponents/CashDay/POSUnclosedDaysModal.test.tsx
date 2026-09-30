@@ -75,4 +75,13 @@ describe("POSUnclosedDaysModal", () => {
     render(<POSUnclosedDaysModal date="2026-02-17" unclosedPrevious={[day()]} onOpenDay={async () => true} onPickDate={() => {}} />);
     expect(screen.getByTestId("pos-unclosed-go-reports")).toHaveAttribute("href", "/app/pos?section=reports");
   });
+  it("summarises how many days are pending, singular and plural", () => {
+    const { unmount } = render(<POSUnclosedDaysModal date="2026-02-17" unclosedPrevious={[day()]} onOpenDay={async () => true} onPickDate={() => {}} />);
+    expect(screen.getByTestId("pos-unclosed-count")).toHaveTextContent("1 día pendiente");
+    expect(screen.getByTestId("pos-unclosed-modal")).toHaveTextContent("Cierra este día antes de abrir el");
+    unmount();
+    render(<POSUnclosedDaysModal date="2026-02-17" unclosedPrevious={[day(), day({ id: 6, date: "2026-02-15" })]} onOpenDay={async () => true} onPickDate={() => {}} />);
+    expect(screen.getByTestId("pos-unclosed-count")).toHaveTextContent("2 días pendientes");
+    expect(screen.getByTestId("pos-unclosed-modal")).toHaveTextContent("Cierra estos días antes de abrir el");
+  });
 });

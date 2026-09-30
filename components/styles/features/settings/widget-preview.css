@@ -441,6 +441,136 @@
   display: grid;
   gap: 14px;
   padding: 1.5rem;
+  /* Centered on the x axis (booking_editor_inline_center_v1). */
+  width: 100%;
+  max-width: 1040px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+/* Special-date adelanto panel (booking_editor_special_adelanto_ui_v2). */
+.bo-specialAdelanto {
+  display: grid;
+  gap: 16px;
+}
+
+.bo-specialAdelantoHint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--bo-muted);
+}
+
+.bo-specialAdelantoGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-specialAdelantoGroupTitle {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--bo-muted);
+}
+
+.bo-specialAdelantoRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) 90px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+}
+
+.bo-specialAdelantoRow--status {
+  grid-template-columns: minmax(0, 1fr) auto minmax(120px, auto);
+}
+
+.bo-specialAdelantoRowLabel {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bo-specialAdelantoRowLabel .bo-mutedText {
+  font-size: 12px;
+}
+
+.bo-specialAdelantoRowMethod {
+  min-width: 0;
+}
+
+.bo-specialAdelantoAmount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bo-specialAdelantoPaid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-specialAdelantoPaidLabel {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-specialAdelantoPaidInput {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bo-specialAdelantoPaidInput .bo-input {
+  width: 110px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bo-specialAdelantoBadge {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bo-specialAdelantoTotals {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bo-surface-2, rgba(127, 127, 127, 0.08));
+}
+
+.bo-specialAdelantoTotalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.bo-specialAdelantoTotalRow--all {
+  padding-top: 8px;
+  margin-top: 2px;
+  border-top: 1px solid var(--bo-border);
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .bo-specialAdelantoRow,
+  .bo-specialAdelantoRow--status {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .bo-specialAdelantoRowLabel {
+    grid-column: 1 / -1;
+  }
+
+  .bo-specialAdelantoBadge {
+    justify-content: flex-end;
+  }
 }
 
 /* <=550px: drop the editor's side gutters so fields use the full width. */

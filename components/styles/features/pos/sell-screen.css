@@ -626,6 +626,85 @@
   font-weight: var(--bo-weight-semibold);
 }
 
+/* ===== Day billing summary (Facturación) ===== */
+.pos-billing { display: flex; flex-direction: column; gap: var(--bo-space-4); }
+.pos-billing__hero {
+  display: flex; flex-direction: column; gap: var(--bo-space-2);
+  padding: var(--bo-space-4);
+  border-radius: var(--bo-radius-md);
+  background: color-mix(in srgb, var(--bo-accent) 8%, var(--bo-surface-2));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bo-accent) 22%, transparent);
+}
+.pos-billing__eyebrow, .pos-billing__heading {
+  margin: 0;
+  font-size: var(--bo-text-xs); font-weight: var(--bo-weight-bold);
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--bo-muted);
+}
+.pos-billing__total {
+  font-size: var(--bo-text-3xl); font-weight: var(--bo-weight-bold); line-height: 1.1;
+  font-variant-numeric: tabular-nums; color: var(--bo-text);
+}
+.pos-billing__bar {
+  height: 6px; overflow: hidden;
+  border-radius: var(--bo-radius-full);
+  background: color-mix(in srgb, var(--bo-color-warning) 28%, transparent);
+}
+.pos-billing__barFill {
+  display: block; height: 100%;
+  border-radius: inherit;
+  background: var(--bo-color-success);
+  transition-property: width; transition-duration: 200ms; transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.pos-billing__split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bo-space-3); margin: var(--bo-space-1) 0 0; }
+.pos-billing__splitItem { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pos-billing__splitItem dt {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: var(--bo-text-sm); font-weight: var(--bo-weight-semibold); color: var(--bo-muted);
+}
+.pos-billing__splitItem dt::before { content: ""; width: 8px; height: 8px; border-radius: var(--bo-radius-full); background: currentColor; }
+.pos-billing__splitItem--closed dt::before { background: var(--bo-color-success); }
+.pos-billing__splitItem--open dt::before { background: var(--bo-color-warning); }
+.pos-billing__splitItem dd {
+  margin: 0; font-size: var(--bo-text-xl); font-weight: var(--bo-weight-bold);
+  font-variant-numeric: tabular-nums; color: var(--bo-text);
+}
+.pos-billing__splitItem small { font-size: var(--bo-text-xs); color: var(--bo-muted); }
+.pos-billing__section { display: flex; flex-direction: column; gap: var(--bo-space-2); }
+.pos-billing__methods, .pos-billing__tables { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--bo-space-1); }
+.pos-billing__method, .pos-billing__table {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--bo-space-3);
+  min-height: 44px; padding: 0 var(--bo-space-3);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  background: var(--bo-surface-2);
+}
+.pos-billing__methodLabel, .pos-billing__tableName {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--bo-text-sm); font-weight: var(--bo-weight-semibold); color: var(--bo-text);
+}
+.pos-billing__methodShare { font-size: var(--bo-text-xs); font-variant-numeric: tabular-nums; color: var(--bo-muted); }
+.pos-billing__methodValue, .pos-billing__tableValue {
+  min-width: 6.5rem; text-align: right;
+  font-variant-numeric: tabular-nums; font-weight: var(--bo-weight-bold); color: var(--bo-text);
+}
+.pos-billing__tables { max-height: 16rem; overflow-y: auto; overscroll-behavior: contain; }
+.pos-billing__status {
+  padding: 2px 8px; border-radius: var(--bo-radius-full);
+  font-size: var(--bo-text-xs); font-weight: var(--bo-weight-bold);
+  background: color-mix(in srgb, var(--bo-color-success) 14%, transparent); color: var(--bo-text-success);
+}
+.pos-billing__status--open { background: var(--bo-warning-bg); color: var(--bo-text-warning); }
+.pos-billing__note { margin: 0; font-size: var(--bo-text-sm); color: var(--bo-muted); }
+.pos-billing__actions { display: flex; justify-content: flex-end; }
+.pos-billing__actions .pos-modal__secondary { display: inline-flex; align-items: center; gap: var(--bo-space-2); padding: 0 var(--bo-space-4); }
+.pos-billing__refreshIcon { width: 16px; height: 16px; }
+.pos-billing[aria-busy="true"] .pos-billing__refreshIcon { animation: pos-billing-spin 800ms linear infinite; }
+@keyframes pos-billing-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .pos-billing__barFill { transition: none; }
+  .pos-billing[aria-busy="true"] .pos-billing__refreshIcon { animation: none; }
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 900px) {
   .pos-sell { height: auto; }

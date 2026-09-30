@@ -1,12 +1,12 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { Archive, Banknote, ChefHat, Combine, FileText, Gift, HandCoins, IdCard, LayoutGrid, Lock, Map as MapIcon, MessageSquare, Percent, Receipt, Scissors, ShoppingBag, Split, Tags, Trash2, TrendingUp, UserRound, Wine, ListChecks, CirclePause } from "lucide-react";
+import { Archive, Banknote, ChefHat, Combine, FileText, Gift, HandCoins, IdCard, LayoutGrid, Lock, Map as MapIcon, MessageSquare, Percent, Receipt, Scissors, ShoppingBag, Split, Tags, Trash2, TrendingUp, UserRound, Wine, ListChecks, CirclePause, ChartPie } from "lucide-react";
 
 export type RailFeatureKey =
   | "total" | "cerrar-mesas" | "comanda" | "aparcar" | "mesa" | "salon" | "juntar-mesas" | "borrar-comanda"
   | "cliente" | "cocina" | "cajon" | "descuento" | "recargo"
   | "invita" | "empleado" | "separar-comanda" | "tags" | "barra" | "llevar" | "comentario"
-  | "dividir-comanda" | "propina" | "cierre-x" | "cierre-y" | "cerrar-dia";
+  | "dividir-comanda" | "propina" | "facturacion" | "cierre-x" | "cierre-y" | "cerrar-dia";
 
 export type RailFeatureGroup = "cobro" | "cuenta" | "mesa" | "ajustes" | "cierre";
 
@@ -24,10 +24,11 @@ const RAIL_ICONS: Record<RailFeatureKey, LucideIcon> = {
   descuento: Percent, recargo: TrendingUp, invita: Gift, comentario: MessageSquare, tags: Tags, propina: HandCoins,
   "borrar-comanda": Trash2, mesa: LayoutGrid, salon: MapIcon, aparcar: CirclePause, barra: Wine, llevar: ShoppingBag,
   cliente: IdCard, empleado: UserRound, cajon: Archive, cocina: ChefHat, "cerrar-mesas": ListChecks,
-  "cierre-x": FileText, "cierre-y": Receipt, "cerrar-dia": Lock,
+  facturacion: ChartPie, "cierre-x": FileText, "cierre-y": Receipt, "cerrar-dia": Lock,
 };
 
-export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: RailFeatureGroup; accent?: boolean; danger?: boolean }> = [
+/** `readOnlySafe`: the command only reads, so a sealed day does not disable it. */
+export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: RailFeatureGroup; accent?: boolean; danger?: boolean; readOnlySafe?: boolean }> = [
   { key: "total", label: "Total", group: "cobro", accent: true },
   { key: "comanda", label: "Comanda", group: "cuenta" },
   { key: "separar-comanda", label: "Separar comanda", group: "cuenta" },
@@ -48,6 +49,7 @@ export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: R
   { key: "cliente", label: "Cliente", group: "mesa" },
   { key: "empleado", label: "Empleado", group: "mesa" },
   { key: "cajon", label: "Cajón", group: "ajustes" },
+  { key: "facturacion", label: "Facturación", group: "cierre", readOnlySafe: true },
   { key: "cerrar-mesas", label: "Cerrar mesas", group: "cierre", accent: true },
   { key: "cierre-x", label: "Cierre X", group: "cierre" },
   { key: "cierre-y", label: "Cierre Y", group: "cierre" },
@@ -58,7 +60,7 @@ export function POSControlRail({ onAction, disabledReasons = {}, readOnly = fals
   onAction: (key: RailFeatureKey) => void;
   /** Reason per disabled feature. Presence of a reason disables and explains the button. */
   disabledReasons?: Partial<Record<RailFeatureKey, string>>;
-  /** Sealed day: disable every rail action. */
+  /** Sealed day: disable every rail action except the read-only ones. */
   readOnly?: boolean;
 }) {
   return (
@@ -67,7 +69,7 @@ export function POSControlRail({ onAction, disabledReasons = {}, readOnly = fals
         <div className="pos-rail__group" role="group" aria-label={RAIL_GROUP_LABELS[group]} key={group} data-testid={`pos-rail-group-${group}`}>
           <span className="pos-rail__groupLabel" data-testid={`pos-rail-group-label-${group}`}>{RAIL_GROUP_LABELS[group]}</span>
           {RAIL_FEATURES.filter((feature) => feature.group === group).map((feature) => {
-            const reason = readOnly ? "Día cerrado: solo consulta." : disabledReasons[feature.key];
+            const reason = readOnly && !feature.readOnlySafe ? "Día cerrado: solo consulta." : disabledReasons[feature.key];
             return (
               <React.Fragment key={feature.key}>
                 <button

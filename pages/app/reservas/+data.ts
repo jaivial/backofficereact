@@ -28,11 +28,14 @@ export async function data(pageContext: PageContextServer) {
   const rawDisplayMode = pageContext.bo?.session?.preferences?.reservasDisplayMode;
   const displayMode: "tabla" | "grid" = rawDisplayMode === "grid" ? "grid" : "tabla";
   const visibleColumns = pageContext.bo?.session?.preferences?.reservasVisibleColumns ?? "";
+  // Coordination id: reservas_special_columns_v1
+  const specialVisibleColumns = pageContext.bo?.session?.preferences?.reservasSpecialVisibleColumns ?? "";
 
   return {
     date,
     displayMode,
     visibleColumns,
+    specialVisibleColumns,
     bookings: [],
     floors: [],
     total_count: 0,
