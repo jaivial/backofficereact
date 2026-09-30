@@ -15,6 +15,7 @@ import { POSMultiSelectDialog } from "./POSMultiSelectDialog";
 import { POSDialog } from "./POSDialog";
 import { POSMoveLineDialog } from "./POSMoveLineDialog";
 import { POSTableTile } from "./POSTableTile";
+import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
 import type { POSCashDay, POSCashDayTotals } from "../../../../../api/types";
@@ -61,6 +62,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [keypadMultiplierQty, setKeypadMultiplierQty] = useState<number | null>(null);
   const [closeDayError, setCloseDayError] = useState("");
   const [closeDayBusy, setCloseDayBusy] = useState(false);
+  const [billingOpen, setBillingOpen] = useState(false);
 
   const categories = useMemo(() => {
     const names = new Set<string>();
@@ -294,9 +296,12 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     const reasons: Partial<Record<RailFeatureKey, string>> = {};
     // A sealed day is a signed Z closure: nothing on the rail may touch it.
     if (readOnly) {
-      for (const feature of RAIL_FEATURES) reasons[feature.key] = "Día cerrado: solo consulta.";
+      // Facturación only reads, so it stays available on a sealed day.
+      for (const feature of RAIL_FEATURES) if (!feature.readOnlySafe) reasons[feature.key] = "Día cerrado: solo consulta.";
+      if (!date) reasons.facturacion = "Día de caja no determinado.";
       return reasons;
     }
+    if (!date) reasons.facturacion = "Día de caja no determinado.";
     if (!register.hasPendingKitchenLines) reasons.cocina = "No hay líneas pendientes de enviar a cocina.";
     if (!register.activeTicketLines.length) reasons.comanda = "No hay líneas en la cuenta.";
     else if (comandaBusy) reasons.comanda = "Generando comanda…";
@@ -326,7 +331,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     // still open, and blocked when there is no open cash day to seal.
     if (openVisitCount > 0 || cashDay?.status !== "OPEN") reasons["cerrar-dia"] = openVisitCount > 0 ? `Cierra ${openVisitCount} mesa(s) antes de cerrar el día.` : "No hay un día de caja abierto.";
     return reasons;
-  }, [cashDay?.status, comandaBusy, openVisitCount, readOnly, register.activeTicketLines.length, register.currentShift?.status, register.hasPendingKitchenLines, register.settings.requireOpenShift, register.ticket, register.visit, selectedLine]);
+  }, [cashDay?.status, comandaBusy, date, openVisitCount, readOnly, register.activeTicketLines.length, register.currentShift?.status, register.hasPendingKitchenLines, register.settings.requireOpenShift, register.ticket, register.visit, selectedLine]);
 
   const confirmMoveLine = useCallback((targetId: number, quantity: number) => {
     if (!lineToMove) return;
@@ -402,6 +407,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       case "salon": setAreaFilter(0); setShowTables(true); break;
       case "barra": void register.openBar(); break;
       case "llevar": void register.openTakeaway(); break;
+      case "facturacion": if (date) setBillingOpen(true); break;
       case "cierre-x": runCierre("X"); break;
       case "cierre-y": runCierre("Y"); break;
       case "cerrar-mesas": register.setError(""); setPrompt("cerrar-mesas"); break;
@@ -411,7 +417,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
         openPrompt(key); break;
       default: register.setMessage(`Función "${key}" disponible próximamente.`); break;
     }
-  }, [cashDay?.status, onCloseDay, openPrompt, printComanda, register, runCierre]);
+  }, [cashDay?.status, date, onCloseDay, openPrompt, printComanda, register, runCierre]);
 
   const contextLabel = keypadContext.kind === "quantity" ? "Cantidad" : keypadContext.kind === "cash" ? "Efectivo" : keypadContext.kind === "discount" ? "Descuento €" : "Comensales";
 
@@ -468,6 +474,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
         </div>
         <POSControlRail onAction={railAction} disabledReasons={disabledReasons} readOnly={readOnly} />
       </div>
+
+      {billingOpen && date ? <POSDayBillingDialog date={date} onClose={() => setBillingOpen(false)} /> : null}
 
       <ConfirmDialog
         open={Boolean(lineToVoid)}

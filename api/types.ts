@@ -2678,6 +2678,36 @@ export type POSCashDayTables = {
   adjustedCovers: number;
 };
 
+/** One row of the day billing summary: a table (or tableless channel group). */
+export type POSCashDayBillingTable = {
+  tableId: number | null;
+  tableName: string;
+  channel: string;
+  /** The table still has an open visit. */
+  open: boolean;
+  openCents: number;
+  closedCents: number;
+  totalCents: number;
+};
+
+/**
+ * `GET /pos/cash-days/{date}/billing`: what the day has invoiced so far.
+ * `totalCents` = every table, open or closed; `closedCents` is the part already
+ * charged, split by tender in `byMethod` (net of refunds). Tips are apart.
+ */
+export type POSCashDayBilling = {
+  date: string;
+  totalCents: number;
+  closedCents: number;
+  openCents: number;
+  openTickets: number;
+  closedTickets: number;
+  openTables: number;
+  byMethod: { CASH: number; CARD: number; BANK: number; OTHER: number };
+  tipsCents: number;
+  tables: POSCashDayBillingTable[];
+};
+
 export type POSCashDayCurrent = {
   date: string;
   cashDay: POSCashDay | null;
