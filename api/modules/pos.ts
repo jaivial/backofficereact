@@ -3,7 +3,7 @@
  * Cash day lifecycle: what the till has open, what it took, and sealing it.
  */
 
-import type { APIError, APISuccess, POSBulkCheckout, POSCashDay, POSCashDayCurrent, POSCashDayTables } from "../types";
+import type { APIError, APISuccess, POSBulkCheckout, POSCashDay, POSCashDayBilling, POSCashDayCurrent, POSCashDayTables } from "../types";
 import type { JsonRequestFn } from "../utils/request";
 
 export type POSModule = {
@@ -11,6 +11,7 @@ export type POSModule = {
     current(params?: { date?: string }): Promise<APISuccess<POSCashDayCurrent> | APIError>;
     list(params: { from: string; to: string }): Promise<APISuccess<{ data: POSCashDay[] }> | APIError>;
     tables(params: { date: string }): Promise<APISuccess<POSCashDayTables> | APIError>;
+    billing(params: { date: string }): Promise<APISuccess<POSCashDayBilling> | APIError>;
     open(params: { date?: string; openingCashCents?: number; force?: boolean; notes?: string }): Promise<APISuccess<{ cashDay: POSCashDay }> | APIError>;
     close(params: { id: number; countedCashCents: number; notes?: string; discrepancyReason?: string }): Promise<APISuccess<{ cashDay: POSCashDay }> | APIError>;
     bulkCheckout(params: { date: string; paymentMethod: string; idempotencyKey: string; closeVisits?: boolean }): Promise<APISuccess<POSBulkCheckout> | APIError>;
@@ -34,6 +35,9 @@ export function createPOSModule(json: JsonRequestFn): POSModule {
       },
       async tables(params: { date: string }): Promise<APISuccess<POSCashDayTables> | APIError> {
         return json(`/api/admin/pos/cash-days/${encodeURIComponent(params.date)}/tables`, { method: "GET" });
+      },
+      async billing(params: { date: string }): Promise<APISuccess<POSCashDayBilling> | APIError> {
+        return json(`/api/admin/pos/cash-days/${encodeURIComponent(params.date)}/billing`, { method: "GET" });
       },
       async open(params: { date?: string; openingCashCents?: number; force?: boolean; notes?: string }): Promise<APISuccess<{ cashDay: POSCashDay }> | APIError> {
         return json("/api/admin/pos/cash-days", { method: "POST", headers: jsonHeaders, body: JSON.stringify(params) });
