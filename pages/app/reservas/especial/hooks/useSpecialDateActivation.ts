@@ -17,6 +17,8 @@ export function emptySpecialDate(date: string): SpecialDateSettings {
     is_active: false,
     title: "",
     description: "",
+    // Coordination id: special_date_custom_notice_v1
+    custom_notice: "",
     prereserva_enabled: false,
     max_per_table_enabled: false,
     max_per_table: null,
