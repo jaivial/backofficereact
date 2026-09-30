@@ -187,7 +187,7 @@ function FoodTypePage() {
     <section
       ref={sectionRef}
       aria-label={`Carta ${listLabel}`}
-      className="bo-foodPage"
+      className={`bo-foodPage bo-foodPage--${foodType}`}
       data-role="food-type-page"
     >
       <div className="bo-container" data-slot="@foodType-container">
