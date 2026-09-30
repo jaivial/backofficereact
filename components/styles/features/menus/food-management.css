@@ -1825,3 +1825,40 @@ body.is-navigating .bo-fadeout {
 .bo-beverageCategoryBody .bo-foodGrid {
   margin-top: 4px;
 }
+
+/* Platos page (/app/comida/platos): wider container + explicit responsive
+   grid. Scoped with .bo-foodPage--platos (specificity 0,2,0) so it beats the
+   generic .bo-foodGrid breakpoints (incl. the max-width: 768px override)
+   without affecting bebidas / postres / vinos. */
+.bo-foodPage--platos .bo-container {
+  max-width: 1400px;
+}
+
+.bo-foodPage--platos .bo-foodGrid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* 1 column: wider, shorter media so the card doesn't dominate the viewport */
+@media (max-width: 640px) {
+  .bo-foodPage--platos .bo-foodMemberMedia {
+    aspect-ratio: 5 / 3;
+  }
+}
+
+@media (min-width: 641px) {
+  .bo-foodPage--platos .bo-foodGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 770px) {
+  .bo-foodPage--platos .bo-foodGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1025px) {
+  .bo-foodPage--platos .bo-foodGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
