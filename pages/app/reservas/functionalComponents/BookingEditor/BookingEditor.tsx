@@ -35,7 +35,7 @@ import {
   buildBookingSpecial,
   computeSpecialTotals,
   draftMenusFromSettings,
-  principalesMatchCounter,
+  principalesPending,
   specialMenusPayload,
   type DraftAdelantoPaid,
   type DraftSpecialMenu,
@@ -455,15 +455,16 @@ export function BookingEditor({
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !time || !name || !phone) return false;
     if (specialDate) {
       // Coordination id: special_booking_v1 - require Σ menu counters equal
-      // party_size AND every non-custom menu's principales rows equal its
-      // counter (SPEC §5.5 exact-match rule).
+      // party_size. Principales are optional (coordination id:
+      // special_booking_optional_principales_v1): the server only checks that
+      // the dishes sent belong to the menu, so an unfilled menu must not stop
+      // the operator from saving the booking.
       const party = Math.max(0, Number(draft.party_size || 0));
       const menus = Array.isArray(draft.specialMenus) ? draft.specialMenus : [];
       const sumCount = menus.reduce((acc, m) => acc + (Number(m.count) || 0), 0);
       if (sumCount !== party) return false;
       for (const m of menus) {
         if (Number(m.count || 0) <= 0) continue;
-        if (!principalesMatchCounter(m)) return false;
         if (specialDate.requires_adelanto && !m.adelanto_payment_method) return false;
       }
       return true;
@@ -681,9 +682,6 @@ export function BookingEditor({
       }
       for (const m of menus) {
         if (Number(m.count || 0) <= 0) continue;
-        if (!principalesMatchCounter(m)) {
-          return setFormError(`Selecciona los principales del menú "${m.label || "especial"}" (${m.count} raciones)`);
-        }
         if (specialDate.requires_adelanto && !m.adelanto_payment_method) {
           return setFormError(`Selecciona el método de pago del menú "${m.label || "especial"}"`);
         }
@@ -1564,8 +1562,6 @@ function SpecialMenuSubSection({
   );
   const dishOptions = useMemo(() => dishItems.map((it) => ({ value: it, label: it })), [dishItems]);
   const items = Array.isArray(menu.items) ? menu.items : [];
-  const filledCount = items.filter((it) => it && it.name).length;
-  const rowsRemaining = Math.max(0, Number(menu.count || 0) - filledCount);
 
   return (
     <div
@@ -1648,9 +1644,11 @@ function SpecialMenuSubSection({
               Este menú no tiene lista de principales.
             </div>
           ) : null}
-          {rowsRemaining > 0 && dishOptions.length > 0 ? (
+          {principalesPending(menu) > 0 && dishOptions.length > 0 ? (
+            // Coordination id: special_booking_optional_principales_v1 - a
+            // neutral reminder, never a blocker: the booking saves without it.
             <div className="bo-mutedText" style={{ fontSize: 12 }} data-slot={`booking-editor-special-menu-remaining-${specialEntryKey(menu)}`}>
-              Faltan {rowsRemaining} principal(es) por seleccionar.
+              {principalesPending(menu)} principal(es) sin elegir. Opcional: se pueden decidir el día de la reserva.
             </div>
           ) : null}
         </div>
