@@ -14,7 +14,7 @@ import { POSPromptModal } from "./POSPromptModal";
 import { POSMultiSelectDialog } from "./POSMultiSelectDialog";
 import { POSDialog } from "./POSDialog";
 import { useCheckoutTenders } from "../../hooks/useCheckoutTenders";
-import { POS_PAYMENT_METHODS, POS_PAYMENT_METHOD_LABELS, tenderedCentsOf, type POSPaymentMethod } from "../../utils/paymentMethods";
+import { POS_PAYMENT_METHODS, POS_PAYMENT_METHOD_LABELS, formatTenderInput, tenderedCentsOf, type POSPaymentMethod } from "../../utils/paymentMethods";
 import { POSMoveLineDialog } from "./POSMoveLineDialog";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
@@ -308,6 +308,13 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     const notes = [5, 10, 20, 50].filter((note) => note > exact);
     return [{ key: "exact", label: "Exacto", value: exact }, ...notes.map((note) => ({ key: String(note), label: `${note} €`, value: note }))];
   }, [register.amountDueCents]);
+
+  /** "Exacto" never over-charges: it only fills what the other lines leave open. */
+  const applyQuickCashExact = useCallback(() => {
+    if (!cashKeypadEntry) return;
+    const target = tenders.fillTargetFor(cashKeypadEntry.id);
+    if (target > 0) tenders.updateEntry(cashKeypadEntry.id, { amount: formatTenderInput(target) });
+  }, [cashKeypadEntry, tenders]);
 
 
   const disabledReasons = useMemo<Partial<Record<RailFeatureKey, string>>>(() => {
@@ -819,8 +826,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                         data-testid={legacyTenderId(entry, tenders.entries) ?? `pos-checkout-split-amount-${entry.id}`}
                       />
                     </label>
-                    <button className="pos-checkout__fill" type="button" disabled={readOnly || tenders.remaining <= 0} onClick={() => tenders.fillRemaining(entry.id)} title={`Completar con ${POS_PAYMENT_METHOD_LABELS[entry.method]} el resto: ${money(tenders.remaining)}`} data-testid={`pos-checkout-fill-${entry.id}`}>
-                      Completar {money(tenders.remaining)}
+                    <button className="pos-checkout__fill" type="button" disabled={readOnly || tenders.fillTargetFor(entry.id) <= 0} onClick={() => tenders.fillRemaining(entry.id)} title={`Completar con ${POS_PAYMENT_METHOD_LABELS[entry.method]} hasta ${money(tenders.fillTargetFor(entry.id))}`} data-testid={`pos-checkout-fill-${entry.id}`}>
+                      Completar {money(tenders.fillTargetFor(entry.id))}
                     </button>
                     <button className="pos-checkout__remove" type="button" disabled={readOnly || tenders.entries.length <= 1} onClick={() => tenders.removeEntry(entry.id)} aria-label={`Quitar pago ${index + 1} de ${POS_PAYMENT_METHOD_LABELS[entry.method]}`} data-testid={`pos-checkout-split-remove-${entry.id}`}>
                       ×
@@ -842,7 +849,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
               <div className="pos-modal__modes" role="group" aria-label="Efectivo rápido" data-testid="pos-quick-cash">
                 {quickCashOptions.map((option) => (
-                  <button className="pos-modal__secondary" type="button" key={option.key} onClick={() => applyQuickCash(option.value)} data-testid={`pos-quick-cash-${option.key}`}>{option.label}</button>
+                  <button className="pos-modal__secondary" type="button" key={option.key} onClick={() => (option.key === "exact" ? applyQuickCashExact() : applyQuickCash(option.value))} data-testid={`pos-quick-cash-${option.key}`}>{option.label}</button>
                 ))}
               </div>
 
@@ -856,7 +863,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
           </div>
 
           <footer className="pos-checkout__footer">
-            <button className="pos-modal__primary" type="button" disabled={register.busy || !tenders.canConfirm || register.ticketTotal < 0} onClick={confirmCheckout} data-pos-command="checkout" data-testid="pos-checkout-confirm">
+            <button className="pos-modal__primary" type="button" disabled={register.busy || !tenders.canConfirm || !tenders.changeResolved || register.ticketTotal < 0} onClick={confirmCheckout} data-pos-command="checkout" data-testid="pos-checkout-confirm">
               {tenders.remaining > 0 ? `Falta ${money(tenders.remaining)}` : "Cobrar y cerrar"}
             </button>
           </footer>

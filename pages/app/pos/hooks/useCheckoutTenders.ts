@@ -23,6 +23,12 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
   const changeCents = useMemo(() => cashChangeDueCents({ amountDueCents, entries }), [amountDueCents, entries]);
   /** Money handed over beyond the total; only cash can take it back as change. */
   const overCents = useMemo(() => Math.max(paidCents - amountDueCents, 0), [amountDueCents, paidCents]);
+  /**
+   * Whether the over-tender can actually be returned. Cash soaks it as change;
+   * an excess sitting only on card, Bizum or bank transfer cannot come back, so
+   * the split stays unconfirmable until it is corrected.
+   */
+  const changeResolved = useMemo(() => cashChangeDueCents({ amountDueCents, entries }) >= overCents, [amountDueCents, entries, overCents]);
   const valid = useMemo(() => entries.every((entry) => tenderedCentsOf(entry.amount) >= 0), [entries]);
   const canConfirm = valid && paidCents >= amountDueCents;
 
@@ -47,14 +53,18 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
     setEntries((current) => (current.length <= 1 ? current : current.filter((entry) => entry.id !== id)));
   }, []);
 
-  /** Autocomplete: whatever is still missing goes into this line's method. */
+  /**
+   * Autocomplete: this line ends up covering everything the other lines leave
+   * open, so the value it writes is exactly what its button label promises.
+   */
   const fillRemaining = useCallback((id: string) => {
     setEntries((current) => {
       const entry = current.find((item) => item.id === id);
       if (!entry) return current;
-      const left = remainingCents(amountDueCents, current);
-      if (left <= 0) return current;
-      return current.map((item) => (item.id === id ? { ...item, amount: formatTenderInput(left) } : item));
+      const others = current.filter((item) => item.id !== id);
+      const target = remainingCents(amountDueCents, others);
+      if (target <= 0) return current;
+      return current.map((item) => (item.id === id ? { ...item, amount: formatTenderInput(target) } : item));
     });
   }, [amountDueCents]);
 
@@ -70,12 +80,18 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
     return totals;
   }, [entries]);
 
+  /** What a line would hold after "Completar": everything but its own amount. */
+  const fillTargetFor = useCallback((id: string) => {
+    const others = entries.filter((entry) => entry.id !== id);
+    return remainingCents(amountDueCents, others);
+  }, [amountDueCents, entries]);
+
   const labelOf = useCallback((method: POSPaymentMethod) => POS_PAYMENT_METHOD_LABELS[method], []);
   const cashlessOf = useCallback((method: POSPaymentMethod) => isCashlessMethod(method), []);
 
   return {
-    entries, setEntries, updateEntry, addEntry, removeEntry, fillRemaining, clear,
-    amountDueCents, paidCents, remaining, changeCents, overCents, valid, canConfirm, allocations,
+    entries, setEntries, updateEntry, addEntry, removeEntry, fillRemaining, fillTargetFor, clear,
+    amountDueCents, paidCents, remaining, changeCents, overCents, changeResolved, valid, canConfirm, allocations,
     totalsByMethod, labelOf, cashlessOf,
   };
 }
