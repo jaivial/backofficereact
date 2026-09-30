@@ -1,6 +1,6 @@
 import { createElement, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
-import { setForkyVisualState } from "./forkyStatus";
+import { addForkyTurnStep, resetForkyTurnSteps, setForkyVisualState } from "./forkyStatus";
 import {
   AssistantRuntimeProvider,
   fromThreadMessageLike,
@@ -280,6 +280,8 @@ export class ForkyWsClient {
         break;
       }
       case "status":
+        // `state: tool` names the tool the turn is running: a row of the live trace.
+        if (frame.state === "tool") addForkyTurnStep(String(frame.tool ?? ""));
         this.activeTurn?.queue.push({ type: "status", state: String(frame.state ?? "") });
         break;
       case "delta":
@@ -637,6 +639,7 @@ export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAda
         if (event.type === "status") {
           if (!started) {
             started = true;
+            resetForkyTurnSteps();
             setForkyVisualState("think");
           }
           yield {

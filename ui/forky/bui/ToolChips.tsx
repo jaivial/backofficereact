@@ -20,9 +20,34 @@ const Icons: Record<string, React.ReactNode> = {
   read: <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></g>,
 };
 
-type DetailLine = { text: string; tone?: "add" };
+export type ToolDetailLine = { text: string; tone?: "add" };
 
-const ROWS: { icon: string; label: string; chip: string; mono: boolean; detailMono: boolean; detail: DetailLine[] }[] = [
+export type ToolStep = {
+  icon: string;
+  label: string;
+  chip: string;
+  mono: boolean;
+  detailMono: boolean;
+  detail: ToolDetailLine[];
+  /** live status of the step; absent means settled */
+  status?: "running" | "done" | "error";
+};
+
+export type ToolDiff = { file: string; add: number; del: number };
+
+export type ToolDiffLine = { text: string; tone: "add" | "del" | "ctx" };
+
+export type ToolChipsLabels = {
+  header: string;
+  more: string;
+};
+
+const DEFAULT_LABELS: ToolChipsLabels = {
+  header: "4 tool calls, 2 messages",
+  more: "+2 more",
+};
+
+const ROWS: ToolStep[] = [
   {
     icon: "think", label: "Thinking", chip: "Planning the churn schedule…", mono: false, detailMono: false,
     detail: [
@@ -53,15 +78,14 @@ const ROWS: { icon: string; label: string; chip: string; mono: boolean; detailMo
   },
 ];
 
-const DIFFS = [
+const DIFFS: ToolDiff[] = [
   { file: "flavors.css", add: 13, del: 0 },
   { file: "ChurnSchedule.tsx", add: 74, del: 41 },
   { file: "menu.ts", add: 8, del: 2 },
 ];
 
 /* hovering a file chip opens its diff — green added, red removed */
-type DiffLine = { text: string; tone: "add" | "del" | "ctx" };
-const DIFF_LINES: Record<string, DiffLine[]> = {
+const DIFF_LINES: Record<string, ToolDiffLine[]> = {
   "flavors.css": [
     { text: ".scoop-card {", tone: "ctx" },
     { text: "  gap: 14px;", tone: "del" },
@@ -82,7 +106,55 @@ const DIFF_LINES: Record<string, DiffLine[]> = {
   ],
 };
 
-export default function ToolChips() {
+const HEADER_CLASS =
+  "-mx-1.5 flex w-fit items-center gap-1.5 rounded-control px-1.5 py-1 text-[12.5px] text-ink-2";
+const HEADER_BUTTON_CLASS = `${HEADER_CLASS} transition-colors duration-100 hover:bg-hover-2`;
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="transition-transform duration-200"
+      style={{ transform: open ? "rotate(0deg)" : "rotate(-90deg)" }}
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
+export default function ToolChips({
+  steps = ROWS,
+  diffs = DIFFS,
+  diffLines = DIFF_LINES,
+  labels,
+  className,
+  streaming = false,
+  /** `false` shows only the header chip (total rows): no accordion, no per-step rows. */
+  collapsible = true,
+  onOpenChange,
+  onToggleRow,
+}: {
+  /** Accepted for gallery/registry parity; ToolChips has no visual variants. */
+  variant?: string;
+  steps?: ToolStep[];
+  diffs?: ToolDiff[];
+  diffLines?: Record<string, ToolDiffLine[]>;
+  labels?: Partial<ToolChipsLabels>;
+  className?: string;
+  /** live turn: rows paint as they arrive instead of on the gallery's stagger */
+  streaming?: boolean;
+  collapsible?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onToggleRow?: (label: string, open: boolean) => void;
+} = {}) {
+  const copy = { ...DEFAULT_LABELS, ...labels };
   const [step, setStep] = useState(0);
   const [open, setOpen] = useState(true);
   const [openRows, setOpenRows] = useState<Set<string>>(new Set());
@@ -96,7 +168,7 @@ export default function ToolChips() {
   } | null>(null);
   const openPreview = (file: string) => (event: React.SyntheticEvent) => {
     const rect = (event.currentTarget as Element).closest("[data-diffchip]")!.getBoundingClientRect();
-    const previewHeight = 38 + (DIFF_LINES[file]?.length ?? 0) * 19;
+    const previewHeight = 38 + (diffLines[file]?.length ?? 0) * 19;
     const fitsBelow = rect.bottom + 6 + previewHeight <= window.innerHeight - 12;
     setPreview({
       file,
@@ -108,59 +180,94 @@ export default function ToolChips() {
   };
   const closePreview = (file: string) => () =>
     setPreview((current) => (current?.file === file ? null : current));
-  const total = ROWS.length + 1; // rows, then diff chips
+  const total = steps.length + 1; // rows, then diff chips
+  /* a live turn has no gallery stagger: every step reported so far paints at once */
+  const revealed = streaming ? total : step;
 
   useEffect(() => {
-    if (step >= total) return;
+    if (streaming || step >= total) return;
     const t = setTimeout(() => setStep((s) => s + 1), STEP_MS);
     return () => clearTimeout(t);
-  }, [step, total]);
+  }, [step, total, streaming]);
 
   const toggleRow = (label: string) =>
     setOpenRows((current) => {
       const next = new Set(current);
       next.has(label) ? next.delete(label) : next.add(label);
+      onToggleRow?.(label, next.has(label));
       return next;
     });
 
   return (
-    <div data-slot="toolChips-pb-1" className="min-h-[220px] w-full max-w-80 pb-1">
-      {/* collapsed run header */}
-      <button data-testid="hover-bg-hover-2"
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
-        className="-mx-1.5 flex w-fit items-center gap-1.5 rounded-control px-1.5 py-1 text-[12.5px] text-ink-2 transition-colors duration-100 hover:bg-hover-2"
-      >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200" style={{ transform: open ? "rotate(0deg)" : "rotate(-90deg)" }}>
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-        <span data-slot="toolChips-tabular-nums" className="tabular-nums">4 tool calls, 2 messages</span>
-      </button>
+    <div
+      data-testid="beautifului-tool-chips"
+      data-streaming={streaming ? "true" : "false"}
+      className={`min-h-[220px] w-full max-w-80 pb-1${className ? ` ${className}` : ""}`}
+    >
+      {/* run header — non-collapsible runs (and runs with no per-step rows) stop at the total */}
+      {collapsible && steps.length > 0 ? (
+        <button
+          type="button"
+          data-testid="beautifului-tool-chips-toggle"
+          aria-expanded={open}
+          onClick={() =>
+            setOpen((current) => {
+              onOpenChange?.(!current);
+              return !current;
+            })
+          }
+          className={HEADER_BUTTON_CLASS}
+        >
+          <Chevron open={open} />
+          <span className="tabular-nums">{copy.header}</span>
+        </button>
+      ) : (
+        <div data-testid="beautifului-tool-chips-header" className={HEADER_CLASS}>
+          <span className="tabular-nums">{copy.header}</span>
+        </div>
+      )}
 
       {/* tool call rows */}
-      <div data-slot="toolChips-duration-300" className="grid transition-[grid-template-rows,opacity] duration-300" style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}>
+      {collapsible && (
+      <div className="grid transition-[grid-template-rows,opacity] duration-300" style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}>
         {/* -mx-1 + px-1.5 keeps content at the same x while giving the
             row hover pills room inside this overflow-hidden clip box */}
-        <div data-slot="toolChips-pb-1" className="-mx-1 overflow-hidden px-1.5 pb-1">
-        <div data-slot="toolChips-gap-1" className="mt-1.5 flex flex-col gap-1">
-          {ROWS.slice(0, step).map((row) => {
+        <div className="-mx-1 overflow-hidden px-1.5 pb-1">
+        <div className="mt-1.5 flex flex-col gap-1">
+          {steps.slice(0, revealed).map((row, index) => {
             const rowOpen = openRows.has(row.label);
             return (
-            <div data-slot="toolChips-div" key={row.label} style={{ animation: "fade-up 300ms cubic-bezier(0.23,1,0.32,1) both" }}>
-              <button data-testid="hover-bg-hover-2-2"
+            <div
+              /* index + label: two rows may legitimately share a label (e.g. two counted calls)
+                 and a duplicate React key would silently drop one of them. */
+              key={`${index}-${row.label}`}
+              data-testid={`beautifului-tool-chip-${index}`}
+              data-status={row.status ?? "done"}
+              style={{ animation: "fade-up 300ms cubic-bezier(0.23,1,0.32,1) both" }}
+            >
+              <button
                 type="button"
                 aria-expanded={rowOpen}
                 onClick={() => toggleRow(row.label)}
                 className="group/row -mx-[3px] flex h-7 w-[calc(100%+6px)] min-w-0 items-center gap-2 rounded-control px-[3px] text-left transition-colors duration-100 hover:bg-hover-2"
               >
-                <span data-slot="toolChips-text-ink-3" className="relative flex size-4 shrink-0 items-center justify-center text-ink-3">
+                <span className="relative flex size-4 shrink-0 items-center justify-center text-ink-3">
+                  {row.status === "running" ? (
+                    /* the glyph slot turns into a pulse ring while the tool runs */
+                    <span
+                      aria-hidden
+                      data-testid={`beautifului-tool-pulse-${index}`}
+                      className="size-3 animate-spin rounded-full border-[1.5px] border-line-strong border-t-ink-2
+                        transition-opacity duration-100 group-hover/row:opacity-0"
+                    />
+                  ) : (
                   <svg
                     width="13" height="13" viewBox="0 0 24 24" fill={row.icon === "think" ? "currentColor" : "none"} stroke="currentColor"
                     className={`transition-opacity duration-100 group-hover/row:opacity-0 ${rowOpen ? "opacity-0" : ""}`}
                   >
                     {Icons[row.icon]}
                   </svg>
+                  )}
                   <svg
                     width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
                     className={`absolute transition-[opacity,transform] duration-150 group-hover/row:opacity-100 ${rowOpen ? "opacity-100" : "opacity-0"}`}
@@ -169,25 +276,30 @@ export default function ToolChips() {
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </span>
-                <span data-slot="toolChips-text-ink" className="shrink-0 text-[12.5px] font-medium text-ink">{row.label}</span>
-                <span data-slot="toolChips-span"
-                  className={`inline-flex h-5.5 min-w-0 flex-1 cursor-pointer items-center truncate rounded-chip bg-field px-1.5
-                    text-[11.5px] text-ink-2 shadow-hairline transition-colors duration-100 hover:bg-hover-2
-                    ${row.mono ? "font-mono" : ""}`}
+                <span className="shrink-0 text-[12.5px] font-medium text-ink">{row.label}</span>
+                <span
+                  className={`inline-flex h-5.5 min-w-0 flex-1 cursor-pointer items-center truncate rounded-chip px-1.5
+                    text-[11.5px] shadow-hairline transition-colors duration-100
+                    ${row.mono ? "font-mono" : ""}
+                    ${
+                      row.status === "error"
+                        ? "bg-red-tint text-red"
+                        : "bg-field text-ink-2 hover:bg-hover-2"
+                    }`}
                 >
                   {row.chip}
                 </span>
               </button>
 
               {/* expanded detail */}
-              <div data-slot="toolChips-duration-300"
+              <div
                 className="grid transition-[grid-template-rows,opacity] duration-300"
                 style={{ gridTemplateRows: rowOpen ? "1fr" : "0fr", opacity: rowOpen ? 1 : 0, transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }}
               >
-                <div data-slot="toolChips-overflow-hidden" className="min-h-0 overflow-hidden">
-                  <div data-slot="toolChips-pl-3.5" className="mt-0.5 mb-1 ml-2 flex flex-col gap-0.5 border-l border-line py-0.5 pl-3.5">
+                <div className="min-h-0 overflow-hidden">
+                  <div className="mt-0.5 mb-1 ml-2 flex flex-col gap-0.5 border-l border-line py-0.5 pl-3.5">
                     {row.detail.map((line) => (
-                      <span data-slot="toolChips-span"
+                      <span
                         key={line.text}
                         className={`truncate text-[11.5px] leading-[1.6] ${row.detailMono ? "font-mono" : ""} ${line.tone === "add" ? "text-green" : "text-ink-2"}`}
                       >
@@ -202,50 +314,51 @@ export default function ToolChips() {
           })}
         </div>
 
-      {/* file-diff chips */}
-      {step >= total && (
-        <div data-slot="toolChips-pt-2.5" className="mt-2.5 flex max-w-full flex-wrap gap-1.5 border-t border-line pt-2.5">
-          {DIFFS.map((d, i) => (
-            <span data-slot="toolChips-relative"
+      {/* file-diff chips — a run that reported no edited file has nothing to strip in */}
+      {revealed >= total && diffs.length > 0 && (
+        <div className="mt-2.5 flex max-w-full flex-wrap gap-1.5 border-t border-line pt-2.5">
+          {diffs.map((d, i) => (
+            <span
               key={d.file}
               data-diffchip
               className="relative"
               onMouseEnter={openPreview(d.file)}
               onMouseLeave={closePreview(d.file)}
             >
-              <button data-testid="hover-bg-hover"
+              <button
                 type="button"
                 aria-expanded={preview?.file === d.file}
                 aria-label={`Show diff for ${d.file}`}
                 onFocus={openPreview(d.file)}
                 onBlur={closePreview(d.file)}
-                className="inline-flex h-7 max-w-full items-center gap-1.5 rounded-chip
+                className="inline-flex h-7 max-w-full items-center gap-2 rounded-chip
                   bg-surface px-2 font-mono text-[11.5px] text-ink shadow-btn
                   transition-colors duration-100 hover:bg-hover"
                 style={{ animation: `pop-in 250ms cubic-bezier(0.23,1,0.32,1) ${i * 80}ms both` }}
               >
-                <span data-slot="toolChips-truncate" className="min-w-0 truncate">{d.file}</span>
-                <span data-slot="toolChips-tabular-nums" className="shrink-0 text-green tabular-nums">+{d.add}</span>
+                <span className="min-w-0 truncate">{d.file}</span>
+                <span className="shrink-0 text-green tabular-nums">+{d.add}</span>
                 {d.del > 0 && <span className="shrink-0 text-red tabular-nums">−{d.del}</span>}
               </button>
 
             </span>
           ))}
-          <button data-testid="2-more"
+          <button
             type="button"
             className="inline-flex h-7 items-center rounded-chip px-1.5 font-mono text-[11.5px] text-ink-3
               underline decoration-transparent underline-offset-2 transition-colors duration-100
               hover:text-ink-2 hover:decoration-current"
-            style={{ animation: `fade-in 300ms ease-out ${DIFFS.length * 80}ms both` }}
+            style={{ animation: `fade-in 300ms ease-out ${diffs.length * 80}ms both` }}
           >
-            +2 more
+            {copy.more}
           </button>
         </div>
       )}
         </div>
       </div>
+      )}
       {preview && typeof document !== "undefined" && createPortal(
-        <div data-slot="toolChips-shadow-overlay"
+        <div
           className="fixed z-50 w-72 overflow-hidden rounded-[10px] bg-surface shadow-overlay"
           style={{
             left: preview.x,
@@ -255,18 +368,18 @@ export default function ToolChips() {
             transformOrigin: preview.top === undefined ? "bottom left" : "top left",
           }}
         >
-          <div data-slot="toolChips-text-[11px]" className="flex items-center justify-between border-b border-line px-2.5 py-1.5 font-mono text-[11px]">
-            <span data-slot="toolChips-text-ink-2" className="min-w-0 truncate text-ink-2">{preview.file}</span>
-            <span data-slot="toolChips-tabular-nums" className="shrink-0 tabular-nums">
-              <span data-slot="toolChips-text-green" className="text-green">+{DIFFS.find((diff) => diff.file === preview.file)?.add}</span>
-              {(DIFFS.find((diff) => diff.file === preview.file)?.del ?? 0) > 0 && (
-                <span data-slot="toolChips-text-red" className="text-red"> −{DIFFS.find((diff) => diff.file === preview.file)?.del}</span>
+          <div className="flex items-center justify-between border-b border-line px-2.5 py-1.5 font-mono text-[11px]">
+            <span className="min-w-0 truncate text-ink-2">{preview.file}</span>
+            <span className="shrink-0 tabular-nums">
+              <span className="text-green">+{diffs.find((diff) => diff.file === preview.file)?.add}</span>
+              {(diffs.find((diff) => diff.file === preview.file)?.del ?? 0) > 0 && (
+                <span className="text-red"> −{diffs.find((diff) => diff.file === preview.file)?.del}</span>
               )}
             </span>
           </div>
-          <div data-slot="toolChips-leading-[1.8]" className="py-1 font-mono text-[11px] leading-[1.8]">
-            {(DIFF_LINES[preview.file] ?? []).map((line, index) => (
-              <div data-slot="toolChips-div"
+          <div className="py-1 font-mono text-[11px] leading-[1.8]">
+            {(diffLines[preview.file] ?? []).map((line, index) => (
+              <div
                 key={index}
                 className={`flex gap-2 px-2.5 whitespace-pre ${
                   line.tone === "add"
@@ -276,8 +389,8 @@ export default function ToolChips() {
                       : "text-ink-2"
                 }`}
               >
-                <span data-slot="toolChips-select-none" className="w-3 shrink-0 select-none">{line.tone === "add" ? "+" : line.tone === "del" ? "−" : " "}</span>
-                <span data-slot="toolChips-truncate" className="min-w-0 truncate">{line.text}</span>
+                <span className="w-3 shrink-0 select-none">{line.tone === "add" ? "+" : line.tone === "del" ? "−" : " "}</span>
+                <span className="min-w-0 truncate">{line.text}</span>
               </div>
             ))}
           </div>
