@@ -324,7 +324,9 @@ describe("POSSellScreen", () => {
     expect(await screen.findByRole("option", { name: "Ana" })).toBeInTheDocument();
     fireEvent.change(screen.getByTestId("pos-operator-operatorMemberId"), { target: { value: "3" } });
     fireEvent.click(screen.getByTestId("pos-operator-confirm"));
-    await waitFor(() => expect(screen.getByTestId("pos-ticket-operator")).toHaveTextContent("Ana"));
+    // The ticket no longer prints the operator in a details row (removed on
+    // purpose), so the ticket payload itself must carry the assignment.
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/admin/pos/tickets/1/operator", expect.objectContaining({ method: "POST" })));
   });
 
   it("uses register tip state for exact payment, pending and change", async () => {
