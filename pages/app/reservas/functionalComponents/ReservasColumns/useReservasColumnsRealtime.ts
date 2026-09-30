@@ -4,6 +4,8 @@ export type ReservasColumnsWSMessage = {
   type: string;
   restaurant_id?: number;
   user_id?: number;
+  /** "normal" | "special". Coordination id: reservas_special_columns_v1 */
+  scope?: string;
   columns?: string[];
 };
 
@@ -14,7 +16,7 @@ export type ReservasColumnsWSMessage = {
  */
 export function useReservasColumnsRealtime(opts: {
   userId: number | null;
-  onColumns: (columns: string[]) => void;
+  onColumns: (columns: string[], scope: "normal" | "special") => void;
 }) {
   const { userId, onColumns } = opts;
   const wsRef = useRef<WebSocket | null>(null);
@@ -40,7 +42,7 @@ export function useReservasColumnsRealtime(opts: {
         // The bus is restaurant-scoped but the preference is personal: only the
         // owner's own tabs may apply the columns.
         if (msg.type !== "reservas_columns" || msg.user_id !== userId) return;
-        if (Array.isArray(msg.columns)) onColumnsRef.current(msg.columns);
+        if (Array.isArray(msg.columns)) onColumnsRef.current(msg.columns, msg.scope === "special" ? "special" : "normal");
       } catch {
         // ignore malformed messages
       }

@@ -1375,111 +1375,129 @@ function SpecialBookingSection({
           title="Adelanto"
           meta={totals ? `${Number(totals.required_total).toFixed(2)}€ requeridos` : "—"}
         >
-          <div style={{ display: "grid", gap: 12 }} data-slot="booking-editor-special-adelanto-body">
-            <div className="bo-mutedText" data-slot="booking-editor-special-adelanto-hint">
+          {/* Coordination id: booking_editor_special_adelanto_ui_v2 */}
+          <div className="bo-specialAdelanto" data-slot="booking-editor-special-adelanto-body">
+            <p className="bo-specialAdelantoHint" data-slot="booking-editor-special-adelanto-hint">
               {acceptedMethods.length > 0
                 ? "Indica por menú el método de pago del adelanto. Las cantidades ya abonadas pueden ajustarse abajo."
                 : "Esta fecha requiere adelanto, pero no hay métodos de pago configurados."}
-            </div>
-            {menus.map((m, idx) => {
-              if (Number(m.count || 0) <= 0) return null;
-              const rowTotal = Number(m.adelanto_per_unit || 0) * Number(m.count || 0);
-              return (
-                <div
-                  key={`row-${m.section_id ? `s-${m.section_id}` : m.special_date_menu_id || idx}`}
-                  className="bo-bookingEditorSpecialAdelantoRow"
-                  data-slot={`booking-editor-special-adelanto-row-${specialEntryKey(m)}`}
-                  data-testid={`booking-editor-special-adelanto-row-${specialEntryKey(m)}`}
-                  style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 8, alignItems: "center" }}
-                >
-                  <div data-slot="booking-editor-special-adelanto-row-label" style={{ display: "grid" }}>
-                    <strong>{m.label || `Menú #${m.special_date_menu_id}`}</strong>
-                    <span className="bo-mutedText" style={{ fontSize: 12 }}>
-                      {m.count} × {Number(m.adelanto_per_unit || 0).toFixed(2)}€
-                    </span>
-                  </div>
-                  <SearchableSelect
-                    value={m.adelanto_payment_method || ""}
-                    onChange={(v) => setMenuMethod(idx, v ? (v as SpecialDatePaymentMethod) : null)}
-                    options={[{ value: "", label: "Sin método" }, ...advanceMethodsOptions]}
-                    placeholder="Método…"
-                    searchPlaceholder="Buscar método…"
-                    emptyText="Sin métodos"
-                    ariaLabel="Método de pago del adelanto"
-                    data-testid={`booking-editor-special-adelanto-method-${specialEntryKey(m)}`}
-                  />
-                  <div data-slot="booking-editor-special-adelanto-row-total" style={{ minWidth: 80, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                    {rowTotal.toFixed(2)}€
-                  </div>
-                </div>
-              );
-            })}
+            </p>
 
-            <div className="bo-bookingEditorSpecialTotals" data-slot="booking-editor-special-adelanto-totals" style={{ display: "grid", gap: 6 }}>
-              {totals?.by_method.map((row) => (
-                <div
-                  key={row.method}
-                  className="bo-bookingEditorSpecialTotalRow"
-                  data-slot={`booking-editor-special-adelanto-total-row-${row.method}`}
-                  style={{ display: "flex", justifyContent: "space-between", gap: 12, fontVariantNumeric: "tabular-nums" }}
-                >
-                  <span>{SPECIAL_DATE_PAYMENT_METHOD_LABELS[row.method] || row.method}</span>
-                  <span>
-                    {Number(row.required).toFixed(2)}€ req · {Number(row.paid).toFixed(2)}€ pagados
-                  </span>
-                </div>
-              ))}
-              <div className="bo-bookingEditorSpecialTotalAll" data-slot="booking-editor-special-adelanto-total-all" style={{ display: "flex", justifyContent: "space-between", gap: 12, paddingTop: 6, borderTop: "1px solid var(--bo-border)", fontVariantNumeric: "tabular-nums" }}>
-                <strong>TOTAL</strong>
-                <strong>{totals ? `${Number(totals.required_total).toFixed(2)}€` : "—"}</strong>
-              </div>
-            </div>
-
-            <div className="bo-bookingEditorSpecialAdelantoStatus" data-slot="booking-editor-special-adelanto-status" style={{ display: "grid", gap: 8 }}>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Estado del adelanto</div>
-              {acceptedMethods.map((method) => {
-                const required = totals?.by_method.find((row) => row.method === method)?.required ?? 0;
-                const paidRow = totals?.by_method.find((row) => row.method === method)?.paid ?? 0;
-                const pending = Math.max(0, required - paidRow);
-                const ok = required > 0 && pending <= 0;
+            <div className="bo-specialAdelantoGroup" data-slot="booking-editor-special-adelanto-menus">
+              <div className="bo-specialAdelantoGroupTitle" data-slot="booking-editor-special-adelanto-menus-title">Adelanto por menú</div>
+              {menus.map((m, idx) => {
+                if (Number(m.count || 0) <= 0) return null;
+                const rowTotal = Number(m.adelanto_per_unit || 0) * Number(m.count || 0);
                 return (
                   <div
-                    key={method}
-                    className="bo-bookingEditorSpecialAdelantoStatusRow"
-                    data-slot={`booking-editor-special-adelanto-status-row-${method}`}
-                    style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 8, alignItems: "center" }}
+                    key={`row-${m.section_id ? `s-${m.section_id}` : m.special_date_menu_id || idx}`}
+                    className="bo-specialAdelantoRow"
+                    data-slot={`booking-editor-special-adelanto-row-${specialEntryKey(m)}`}
+                    data-testid={`booking-editor-special-adelanto-row-${specialEntryKey(m)}`}
                   >
-                    <span>{SPECIAL_DATE_PAYMENT_METHOD_LABELS[method] || method}</span>
-                    <span className="bo-mutedText" style={{ fontVariantNumeric: "tabular-nums" }}>req {required.toFixed(2)}€</span>
-                    <input
-                      className="bo-input bo-input--sm"
-                      type="number"
-                      inputMode="decimal"
-                      min={0}
-                      step={0.01}
-                      style={{ width: 110, textAlign: "right", fontVariantNumeric: "tabular-nums" }}
-                      value={String(paidMap.get(method) ?? "")}
-                      onChange={(e) => setAdelantoPaid(method, Number(e.target.value))}
-                      aria-label={`Cantidad abonada (${SPECIAL_DATE_PAYMENT_METHOD_LABELS[method] || method})`}
-                      data-testid={`booking-editor-special-adelanto-paid-${method}`}
-                      data-slot={`booking-editor-special-adelanto-paid-${method}`}
-                    />
-                    {required > 0 ? (
-                      ok ? (
-                        <StatusBadge variant="success" data-testid={`booking-editor-special-adelanto-status-${method}`}>
-                          Pagado
-                        </StatusBadge>
-                      ) : (
-                        <StatusBadge variant="danger" data-testid={`booking-editor-special-adelanto-status-${method}`}>
-                          Pendiente · {pending.toFixed(2)}€
-                        </StatusBadge>
-                      )
-                    ) : (
-                      <span className="bo-mutedText" data-slot={`booking-editor-special-adelanto-status-empty-${method}`}>—</span>
-                    )}
+                    <div className="bo-specialAdelantoRowLabel" data-slot="booking-editor-special-adelanto-row-label">
+                      <strong>{m.label || `Menú #${m.special_date_menu_id}`}</strong>
+                      <span className="bo-mutedText" data-slot="booking-editor-special-adelanto-row-unit">
+                        {m.count} × {Number(m.adelanto_per_unit || 0).toFixed(2)}€
+                      </span>
+                    </div>
+                    <div className="bo-specialAdelantoRowMethod" data-slot="booking-editor-special-adelanto-row-method">
+                      <SearchableSelect
+                        value={m.adelanto_payment_method || ""}
+                        onChange={(v) => setMenuMethod(idx, v ? (v as SpecialDatePaymentMethod) : null)}
+                        options={[{ value: "", label: "Sin método" }, ...advanceMethodsOptions]}
+                        placeholder="Método…"
+                        searchPlaceholder="Buscar método…"
+                        emptyText="Sin métodos"
+                        ariaLabel="Método de pago del adelanto"
+                        data-testid={`booking-editor-special-adelanto-method-${specialEntryKey(m)}`}
+                      />
+                    </div>
+                    <div className="bo-specialAdelantoAmount" data-slot="booking-editor-special-adelanto-row-total">
+                      {rowTotal.toFixed(2)}€
+                    </div>
                   </div>
                 );
               })}
+            </div>
+
+            <div className="bo-specialAdelantoGroup" data-slot="booking-editor-special-adelanto-status">
+              <div className="bo-specialAdelantoGroupTitle" data-slot="booking-editor-special-adelanto-status-title">Estado del adelanto</div>
+              {acceptedMethods.map((method) => {
+                const row = totals?.by_method.find((r) => r.method === method);
+                const required = row?.required ?? 0;
+                const paidRow = row?.paid ?? 0;
+                const pending = Math.max(0, required - paidRow);
+                const ok = required > 0 && pending <= 0;
+                const methodLabel = SPECIAL_DATE_PAYMENT_METHOD_LABELS[method] || method;
+                return (
+                  <div
+                    key={method}
+                    className="bo-specialAdelantoRow bo-specialAdelantoRow--status"
+                    data-slot={`booking-editor-special-adelanto-status-row-${method}`}
+                    data-testid={`booking-editor-special-adelanto-status-row-${method}`}
+                  >
+                    <div className="bo-specialAdelantoRowLabel" data-slot={`booking-editor-special-adelanto-status-label-${method}`}>
+                      <strong>{methodLabel}</strong>
+                      <span className="bo-mutedText" data-slot={`booking-editor-special-adelanto-status-required-${method}`}>
+                        Requerido {required.toFixed(2)}€
+                      </span>
+                    </div>
+                    <label className="bo-specialAdelantoPaid" data-slot={`booking-editor-special-adelanto-paid-wrap-${method}`}>
+                      <span className="bo-specialAdelantoPaidLabel" data-slot={`booking-editor-special-adelanto-paid-label-${method}`}>Abonado</span>
+                      <span className="bo-specialAdelantoPaidInput" data-slot={`booking-editor-special-adelanto-paid-input-${method}`}>
+                        <input
+                          className="bo-input bo-input--sm"
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          step={0.01}
+                          value={String(paidMap.get(method) ?? "")}
+                          onChange={(e) => setAdelantoPaid(method, Number(e.target.value))}
+                          aria-label={`Cantidad abonada (${methodLabel})`}
+                          data-testid={`booking-editor-special-adelanto-paid-${method}`}
+                          data-slot={`booking-editor-special-adelanto-paid-${method}`}
+                        />
+                        <span aria-hidden="true" data-slot={`booking-editor-special-adelanto-paid-currency-${method}`}>€</span>
+                      </span>
+                    </label>
+                    <div className="bo-specialAdelantoBadge" data-slot={`booking-editor-special-adelanto-badge-${method}`}>
+                      {required > 0 ? (
+                        ok ? (
+                          <StatusBadge variant="success" data-testid={`booking-editor-special-adelanto-status-${method}`}>
+                            Pagado
+                          </StatusBadge>
+                        ) : (
+                          <StatusBadge variant="danger" data-testid={`booking-editor-special-adelanto-status-${method}`}>
+                            Pendiente · {pending.toFixed(2)}€
+                          </StatusBadge>
+                        )
+                      ) : (
+                        <span className="bo-mutedText" data-slot={`booking-editor-special-adelanto-status-empty-${method}`}>—</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bo-specialAdelantoTotals" data-slot="booking-editor-special-adelanto-totals">
+              {totals?.by_method.map((row) => (
+                <div
+                  key={row.method}
+                  className="bo-specialAdelantoTotalRow"
+                  data-slot={`booking-editor-special-adelanto-total-row-${row.method}`}
+                >
+                  <span>{SPECIAL_DATE_PAYMENT_METHOD_LABELS[row.method] || row.method}</span>
+                  <span className="bo-specialAdelantoAmount">
+                    {Number(row.paid).toFixed(2)}€ / {Number(row.required).toFixed(2)}€
+                  </span>
+                </div>
+              ))}
+              <div className="bo-specialAdelantoTotalRow bo-specialAdelantoTotalRow--all" data-slot="booking-editor-special-adelanto-total-all">
+                <strong>Total adelanto</strong>
+                <strong className="bo-specialAdelantoAmount">{totals ? `${Number(totals.required_total).toFixed(2)}€` : "—"}</strong>
+              </div>
             </div>
           </div>
         </Panel>
@@ -1664,17 +1682,24 @@ function EventToggleField({ busy, checked, onChange }: { busy?: boolean; checked
       title="Reserva de evento"
       meta={checked ? "Sí" : "No"}
     >
+      {/* Coordination id: booking_is_event_v1 - text left, switch right. */}
       <label className="bo-bookingEventToggle" data-testid="booking-editor-event-toggle-label">
+        <span className="bo-bookingEventToggleCopy" data-slot="booking-editor-event-toggle-copy">
+          <span className="bo-bookingEventToggleTitle" data-testid="booking-editor-event-toggle-title">
+            Evento o negociación importante
+          </span>
+          <span className="bo-bookingEventToggleText" data-testid="booking-editor-event-toggle-text">
+            El asistente de WhatsApp no gestionará cambios y derivará siempre a la gestión del restaurante.
+          </span>
+        </span>
         <Switch
+          className="bo-bookingEventToggleSwitch"
           checked={checked}
           onCheckedChange={onChange}
           disabled={busy}
           aria-label="Reserva de evento"
           data-testid="booking-editor-event-toggle"
         />
-        <span className="bo-bookingEventToggleText" data-testid="booking-editor-event-toggle-text">
-          Evento o negociación importante: el asistente de WhatsApp no gestionará cambios y derivará siempre a la gestión del restaurante.
-        </span>
       </label>
     </Panel>
   );

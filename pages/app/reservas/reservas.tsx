@@ -34,12 +34,13 @@ import { SpecialBookingQrModal } from "./functionalComponents/SpecialBookingQr/S
 import { QrScannerModal } from "./functionalComponents/SpecialBookingQr/QrScannerModal";
 import { useReservasColumnsRealtime } from "./functionalComponents/ReservasColumns/useReservasColumnsRealtime";
 import {
-  RESERVAS_COLUMNS,
-  RESERVAS_COLUMN_IDS,
+  RESERVAS_COLUMNS_PREF_KEY,
   defaultVisibleColumnsForWidth,
-  hasVisibleColumnsPreference,
   normalizeVisibleColumns,
   parseVisibleColumnsPreference,
+  scopeColumnIds,
+  scopeColumns,
+  type ReservasColumnsScope,
   type ReservasColumnCtx,
   type ReservasColumnDef,
   type ReservasColumnId,
@@ -51,6 +52,7 @@ type PageData = {
   date: string;
   displayMode: DisplayMode;
   visibleColumns: string;
+  specialVisibleColumns: string;
   bookings: Booking[];
   floors: ConfigFloor[];
   total_count: number;
@@ -253,6 +255,7 @@ export default function Page() {
     date: "",
     displayMode: "tabla" as DisplayMode,
     visibleColumns: "",
+    specialVisibleColumns: "",
     bookings: [],
     floors: [],
     total_count: 0,
@@ -316,13 +319,18 @@ export default function Page() {
   // Visible table columns (tabla mode). Hydrated from the user's persisted
   // preference and kept in sync in real time over the reservations WS.
   // Coordination id: reservas_columns_realtime_v1
-  const [visibleColumns, setVisibleColumns] = useState<ReservasColumnId[]>(() => parseVisibleColumnsPreference(data.visibleColumns));
+  // Coordination id: reservas_special_columns_v1 - one explicit selection per
+  // scope (normal days vs special dates); null = no choice, width defaults.
+  const [columnsPrefs, setColumnsPrefs] = useState<Record<ReservasColumnsScope, ReservasColumnId[] | null>>(() => ({
+    normal: parseVisibleColumnsPreference(data.visibleColumns, "normal"),
+    special: parseVisibleColumnsPreference(data.specialVisibleColumns, "special"),
+  }));
   const [columnsModalOpen, setColumnsModalOpen] = useState(false);
-  // Whether the user made an explicit choice (overrides the width defaults).
-  const [columnsCustomized, setColumnsCustomized] = useState(() => hasVisibleColumnsPreference(data.visibleColumns));
-  // Flipped after mount so the first paint keeps the SSR/CSS width default and
-  // the explicit-selection override only kicks in once the client is live.
-  const [columnsReady, setColumnsReady] = useState(false);
+  // Viewport width, set after mount so the first paint keeps the SSR/CSS
+  // width default and the explicit-selection override only kicks in once the
+  // client is live.
+  const [viewportWidth, setViewportWidth] = useState<number | null>(null);
+  const columnsReady = viewportWidth != null;
 
   const [searchMode, setSearchMode] = useState(false);
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
@@ -338,9 +346,16 @@ export default function Page() {
   const searchTotalPages = Math.max(1, Math.ceil(searchTotalCount / Math.max(1, searchCount)));
   const searchFadeTransition = reduceMotion ? { duration: 0 } : { duration: 0.5, ease: "easeInOut" as const };
 
+  // Coordination id: reservas_special_columns_v1
+  const columnsScope: ReservasColumnsScope = specialDate?.is_active ? "special" : "normal";
+  const scopeColumnDefs = useMemo(() => scopeColumns(columnsScope), [columnsScope]);
+  const visibleColumns = useMemo(
+    () => columnsPrefs[columnsScope] ?? defaultVisibleColumnsForWidth(viewportWidth, columnsScope),
+    [columnsPrefs, columnsScope, viewportWidth],
+  );
   const tableColumns = useMemo(
-    () => RESERVAS_COLUMNS.filter((col) => visibleColumns.includes(col.id)),
-    [visibleColumns],
+    () => scopeColumnDefs.filter((col) => visibleColumns.includes(col.id)),
+    [scopeColumnDefs, visibleColumns],
   );
 
   // Default visibility follows the viewport width (legacy behaviour). As soon
@@ -348,14 +363,11 @@ export default function Page() {
   // table simply relies on the existing horizontal scroll.
   // Coordination id: reservas_columns_realtime_v1
   useEffect(() => {
-    if (columnsCustomized) return;
-    const apply = () => setVisibleColumns(defaultVisibleColumnsForWidth(window.innerWidth));
+    const apply = () => setViewportWidth(window.innerWidth);
     apply();
     window.addEventListener("resize", apply);
     return () => window.removeEventListener("resize", apply);
-  }, [columnsCustomized]);
-
-  useEffect(() => { setColumnsReady(true); }, []);
+  }, []);
 
   const loadMonth = useCallback(async (year: number, month: number) => {
     if (!session) return;
@@ -526,37 +538,36 @@ export default function Page() {
   // Persists the visible columns for this user and broadcasts them so the
   // user's other open tabs update without a reload.
   // Coordination id: reservas_columns_realtime_v1
+  // Coordination id: reservas_special_columns_v1 - each scope persists under
+  // its own preference key.
   const persistColumns = useCallback((next: ReservasColumnId[]) => {
     if (next.length === 0) return;
     const value = next.join(",");
-    setVisibleColumns(next);
-    setColumnsCustomized(true);
+    const key = RESERVAS_COLUMNS_PREF_KEY[columnsScope];
+    setColumnsPrefs((prev) => ({ ...prev, [columnsScope]: next }));
     if (!session) return;
-    setSession((prev) => (prev ? { ...prev, preferences: { ...(prev.preferences ?? {}), reservasVisibleColumns: value } } : prev));
-    void api.auth.setPreference("reservasVisibleColumns", value).then((res) => {
+    setSession((prev) => (prev ? { ...prev, preferences: { ...(prev.preferences ?? {}), [key]: value } } : prev));
+    void api.auth.setPreference(key, value).then((res) => {
       if (!res.success) pushToast({ kind: "error", title: "Columnas", message: res.message || "No se pudo guardar" });
     });
-  }, [api.auth, pushToast, session, setSession]);
+  }, [api.auth, columnsScope, pushToast, session, setSession]);
 
   const toggleColumn = useCallback((id: ReservasColumnId, next: boolean) => {
     const selected = new Set(visibleColumns);
     if (next) selected.add(id); else selected.delete(id);
-    const ordered = RESERVAS_COLUMN_IDS.filter((cid) => selected.has(cid));
+    const ordered = scopeColumnIds(columnsScope).filter((cid) => selected.has(cid));
     // Never let the table end up with zero columns.
     if (ordered.length === 0) return;
     persistColumns(ordered);
-  }, [persistColumns, visibleColumns]);
+  }, [columnsScope, persistColumns, visibleColumns]);
 
-  const resetColumns = useCallback(() => persistColumns([...RESERVAS_COLUMN_IDS]), [persistColumns]);
+  const resetColumns = useCallback(() => persistColumns(scopeColumnIds(columnsScope)), [columnsScope, persistColumns]);
 
   useReservasColumnsRealtime({
     userId: session?.user?.id ?? null,
-    onColumns: (columns) => {
-      const next = normalizeVisibleColumns(columns);
-      if (next.length > 0) {
-        setVisibleColumns(next);
-        setColumnsCustomized(true);
-      }
+    onColumns: (columns, scope) => {
+      const next = normalizeVisibleColumns(columns, scope);
+      if (next.length > 0) setColumnsPrefs((prev) => ({ ...prev, [scope]: next }));
     },
   });
 
@@ -954,6 +965,8 @@ export default function Page() {
 
       <ReservasColumnsModal
         open={columnsModalOpen}
+        columns={scopeColumnDefs}
+        special={columnsScope === "special"}
         visible={visibleColumns}
         busy={busy}
         onToggle={toggleColumn}

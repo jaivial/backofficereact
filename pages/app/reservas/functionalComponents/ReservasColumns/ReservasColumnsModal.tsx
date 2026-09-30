@@ -1,7 +1,7 @@
 import { Modal } from "../../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
 import { SwitchField } from "../../../../../ui/inputs/SwitchField";
-import { RESERVAS_COLUMNS, type ReservasColumnId } from "./columns";
+import { type ReservasColumnDef, type ReservasColumnId } from "./columns";
 
 /**
  * Column picker for the reservations table. Every switch writes through the
@@ -11,6 +11,8 @@ import { RESERVAS_COLUMNS, type ReservasColumnId } from "./columns";
  */
 export function ReservasColumnsModal({
   open,
+  columns,
+  special,
   visible,
   busy,
   onToggle,
@@ -18,6 +20,10 @@ export function ReservasColumnsModal({
   onClose,
 }: {
   open: boolean;
+  /** Columns offered in the current scope. Coordination id: reservas_special_columns_v1 */
+  columns: ReservasColumnDef[];
+  /** Whether the day shown is a special date (separate saved selection). */
+  special: boolean;
   visible: ReservasColumnId[];
   busy?: boolean;
   onToggle: (id: ReservasColumnId, next: boolean) => void;
@@ -29,10 +35,12 @@ export function ReservasColumnsModal({
     <Modal open={open} title="Columnas de la tabla" onClose={onClose} widthPx={640} className="bo-reservasColumnsModal" hideClose>
       <ModalHeader title="Columnas de la tabla" onClose={onClose} />
       <p className="bo-muted" data-testid="reservas-columns-hint" style={{ margin: "4px 0 14px", textAlign: "center" }}>
-        Elige qué columnas quieres ver. Los cambios se aplican al instante en todas tus pestañas.
+        {special
+          ? "Columnas para días especiales. Se guardan aparte de los días normales y se aplican al instante en todas tus pestañas."
+          : "Elige qué columnas quieres ver. Los cambios se aplican al instante en todas tus pestañas."}
       </p>
-      <div className="bo-reservasColumnsList" data-testid="reservas-columns-list">
-        {RESERVAS_COLUMNS.map((col) => (
+      <div className="bo-reservasColumnsList" data-testid="reservas-columns-list" data-scope={special ? "special" : "normal"}>
+        {columns.map((col) => (
           <SwitchField
             key={col.id}
             checked={selected.has(col.id)}
