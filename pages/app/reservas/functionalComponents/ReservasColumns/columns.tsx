@@ -295,30 +295,59 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
 
 export const RESERVAS_COLUMN_IDS: ReservasColumnId[] = RESERVAS_COLUMNS.map((c) => c.id);
 
-/** Keeps only known ids, in canonical order. Unknown/stale ids are dropped. */
-export function normalizeVisibleColumns(ids: readonly string[] | null | undefined): ReservasColumnId[] {
+/**
+ * Column visibility scope. Special-date days keep their own selection and
+ * catalogue, independent from normal days.
+ * Coordination id: reservas_special_columns_v1
+ */
+export type ReservasColumnsScope = "normal" | "special";
+
+/** Columns offered on normal (non special-date) days. */
+const RESERVAS_NORMAL_COLUMN_IDS: ReservasColumnId[] = [
+  "added", "mesa", "time", "client", "status", "floor", "salon", "pax", "children",
+  "highChairs", "strollers", "phone", "rice", "comment", "movilidad", "movilidadPax",
+];
+
+/** User preference key storing the visible columns of each scope. */
+export const RESERVAS_COLUMNS_PREF_KEY: Record<ReservasColumnsScope, string> = {
+  normal: "reservasVisibleColumns",
+  special: "reservasSpecialVisibleColumns",
+};
+
+/** Column ids available in a scope, in canonical order. */
+export function scopeColumnIds(scope: ReservasColumnsScope): ReservasColumnId[] {
+  return scope === "special" ? [...RESERVAS_COLUMN_IDS] : [...RESERVAS_NORMAL_COLUMN_IDS];
+}
+
+/** Column definitions available in a scope (picker + table). */
+export function scopeColumns(scope: ReservasColumnsScope): ReservasColumnDef[] {
+  const ids = new Set(scopeColumnIds(scope));
+  return RESERVAS_COLUMNS.filter((col) => ids.has(col.id));
+}
+
+/** Keeps only ids known to the scope, in canonical order. Unknown/stale ids are dropped. */
+export function normalizeVisibleColumns(ids: readonly string[] | null | undefined, scope: ReservasColumnsScope): ReservasColumnId[] {
   const set = new Set(ids ?? []);
-  return RESERVAS_COLUMN_IDS.filter((id) => set.has(id));
-}
-
-/** Parses the stored CSV preference; an unset value means every column. */
-export function parseVisibleColumnsPreference(raw: string | null | undefined): ReservasColumnId[] {
-  const value = String(raw ?? "").trim();
-  if (!value) return [...RESERVAS_COLUMN_IDS];
-  const parsed = normalizeVisibleColumns(value.split(","));
-  return parsed.length > 0 ? parsed : [...RESERVAS_COLUMN_IDS];
-}
-
-/** Whether a stored preference is an explicit user choice (vs the default). */
-export function hasVisibleColumnsPreference(raw: string | null | undefined): boolean {
-  return String(raw ?? "").trim() !== "";
+  return scopeColumnIds(scope).filter((id) => set.has(id));
 }
 
 /**
- * Default visible columns for a viewport width, derived from the same
- * `hideBelowWidth` metadata the picker uses. This mirrors the legacy CSS media
- * breakpoints so the table looks identical before the user customizes it.
+ * Parses the stored CSV preference of a scope. Returns null when there is no
+ * explicit (usable) choice, so the width-based defaults apply.
  */
-export function defaultVisibleColumnsForWidth(width: number): ReservasColumnId[] {
-  return RESERVAS_COLUMNS.filter((col) => !col.hideBelowWidth || width > col.hideBelowWidth).map((col) => col.id);
+export function parseVisibleColumnsPreference(raw: string | null | undefined, scope: ReservasColumnsScope): ReservasColumnId[] | null {
+  const value = String(raw ?? "").trim();
+  if (!value) return null;
+  const parsed = normalizeVisibleColumns(value.split(","), scope);
+  return parsed.length > 0 ? parsed : null;
+}
+
+/**
+ * Default visible columns of a scope for a viewport width, derived from the
+ * `hideBelowWidth` metadata. Mirrors the legacy CSS media breakpoints so the
+ * table looks identical before the user customizes it. A null width (SSR /
+ * first paint) shows every column of the scope and lets CSS hide them.
+ */
+export function defaultVisibleColumnsForWidth(width: number | null, scope: ReservasColumnsScope): ReservasColumnId[] {
+  return scopeColumns(scope).filter((col) => width == null || !col.hideBelowWidth || width > col.hideBelowWidth).map((col) => col.id);
 }
