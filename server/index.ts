@@ -730,9 +730,14 @@ async function start() {
   // Proxy only the admin API to the Go backend.
   // Important: Vite serves modules under "/<path-from-root>", and we have "backoffice/api/*".
   // If we proxied "/api/*" we'd shadow Vite modules like "/api/client.ts".
-  app.use("/api/admin", async (req, res) => {
+  /**
+   * Forward a request to the Go backend, translating the browser request.
+   * Shared by the admin API and the MCP endpoint so both inherit the same
+   * session-cookie handling, shared-secret injection and error mapping.
+   */
+  async function proxyToBackend(backendOrigin: string, upstreamPath: string, req: express.Request, res: express.Response, options: { injectAdminSecret: boolean }) {
     try {
-      const upstreamURL = new URL(toBackendAdminPath(req.originalUrl), backendOrigin);
+      const upstreamURL = new URL(upstreamPath, backendOrigin);
 
       const headers = new Headers();
       for (const [k, v] of Object.entries(req.headers)) {
@@ -741,17 +746,26 @@ async function start() {
         else headers.set(k, v);
       }
 
-      // Let fetch set `Host` to upstream automatically.
+      // Let fetch set `Host` to upstream automatically, and tell the backend
+      // which public host the browser used. The backend builds its OAuth
+      // endpoints from this, so the URLs it hands back to ChatGPT stay on the
+      // origin the operator actually reached.
       headers.delete("host");
       headers.set("x-forwarded-proto", requestScheme(req));
+      headers.set("x-forwarded-host", req.headers.host ?? "");
       const sessionCookie = filterBOSessionCookie(headers.get("cookie") ?? undefined);
       if (sessionCookie) headers.set("cookie", sessionCookie);
       else headers.delete("cookie");
 
-      // Trusted server-side identity for the Go admin API: the shared vault key.
-      headers.delete("authorization");
-      headers.delete("x-bearer-token");
-      for (const [k, v] of Object.entries(adminApiAuthHeaders())) headers.set(k, v);
+      // Trusted server-side identity: the shared admin secret, injected only
+      // for the admin API. The MCP endpoint carries its own per-user bearer
+      // token in Authorization, so it keeps that header untouched and never
+      // gets the admin secret.
+      if (options.injectAdminSecret) {
+        headers.delete("authorization");
+        headers.delete("x-bearer-token");
+        for (const [k, v] of Object.entries(adminApiAuthHeaders())) headers.set(k, v);
+      }
 
       // A preference write changes session.preferences, which the SSR session
       // cache would otherwise keep serving stale for up to SESSION_CACHE_TTL_MS.
@@ -833,7 +847,16 @@ async function start() {
         });
       }
     }
-  });
+  }
+
+  app.use("/api/admin", (req, res) => proxyToBackend(backendOrigin, toBackendAdminPath(req.originalUrl), req, res, { injectAdminSecret: true }));
+
+  // MCP endpoint, served from the backoffice origin on purpose. The OAuth
+  // authorize step identifies the operator through the backoffice session
+  // cookie, which only exists on this domain, so ChatGPT authenticates against
+  // the same origin the operator is already signed in to. The session cookie is
+  // forwarded and nothing else is added: each MCP call keeps its own bearer.
+  app.use("/mcp", (req, res) => proxyToBackend(backendOrigin, req.originalUrl, req, res, { injectAdminSecret: false }));
 
   // Proxy for public invoice lookup (no auth required)
   // This proxies to the backend which validates the token
