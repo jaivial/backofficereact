@@ -3052,3 +3052,25 @@ export type BotPipelineResponse = {
   management?: BotPipelineManagement;
   dspy?: BotPipelineDspyInfo | null;
 };
+
+// ChatGPT plugin credentials, surfaced in /app/config?content=ia. The token
+// secret is only ever present in the issue response; the listing is metadata
+// only, because the server stores nothing but a SHA-256 digest.
+export type ChatGPTPluginToken = {
+  id: number;
+  label: string;
+  restaurant_id: number;
+  created_at: string;
+  last_used_at?: string;
+  revoked_at?: string;
+  active: boolean;
+};
+
+export type ChatGPTPluginTokensPayload = {
+  tokens: ChatGPTPluginToken[];
+  manifest_url: string;
+  user_id: number;
+  restaurant_id: number;
+  user_email: string;
+  role: string;
+};
