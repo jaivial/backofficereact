@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createShader, playSweep, accentChain, ACCENTS } from "glimm";
+import TextareaAutosize from "react-textarea-autosize";
 
 /* The built-in "prism" palette is only cyan→indigo→magenta, so a sweep
  * reads as blue/purple. Build a true full-spectrum rainbow instead. */
@@ -68,6 +69,11 @@ const BRANDS: Record<string, React.ReactNode> = {
   ),
 };
 
+// HOST-EDIT: the registry imports the host's attachment chip. Forky vendors a
+// minimal stand-in so the composer needs no host module: same 1:1 square chip,
+// upload state and remove button, backoffice-scoped test ids.
+import { ComposerAttachmentChip } from "./ComposerAttachmentChip";
+
 type Source = {
   key: string;
   name: string;
@@ -103,7 +109,6 @@ const MODELS = [
 ];
 
 const FILES = ["flavor-chart.png", "summer-menu.pdf", "pos-export.csv"];
-const DICTATION = "Compare pistachio weekends to last summer";
 
 /* self-running demo: walk the @ menu, then the / menu, and repeat.
  * Any pointer or key interaction hands control to the user. */
@@ -149,6 +154,35 @@ export default function PromptBar({
   tall = false,
   placeholder,
   onSend,
+  /* ── embedding surface ────────────────────────────────
+   * The gallery walkthrough owns its draft; a real surface does not. These props let a
+   * host keep the draft (a mention picker needs the caret), cap it (API contract limit),
+   * keep the built-in @ / slash menus out of the way of its own picker, drop the
+   * demo-only controls, and float its own popover off the composer anchor. */
+  value,
+  onValueChange,
+  maxLength,
+  menus = true,
+  controls = true,
+  disabled = false,
+  busy = false,
+  sendBlocked = false,
+  dictating = false,
+  voiceBusy = false,
+  onToggleDictation,
+  textareaRef,
+  onInputKeyDown,
+  inputTestId,
+  inputAriaLabel,
+  sendTestId,
+  sendLabel,
+  children,
+  onAttachFiles,
+  attachments: attachmentChips,
+  onRemoveAttachment,
+  attachBlocked = false,
+  attachBlockedReason,
+  attachAccept,
 }: {
   variant?: string;
   /** the self-running walkthrough; turn off when embedding in a real surface */
@@ -157,21 +191,89 @@ export default function PromptBar({
   tall?: boolean;
   placeholder?: string;
   onSend?: (text: string) => void;
+  /** controlled draft — pass it to own the text, `onValueChange` to receive edits */
+  value?: string;
+  onValueChange?: (next: string) => void;
+  /** hard cap on the draft, forwarded to the textarea */
+  maxLength?: number;
+  /** built-in @ / slash menus; off when the host runs its own picker on the same sigils */
+  menus?: boolean;
+  /** attach / model / dictation controls; off for a narrow, single-row composer */
+  controls?: boolean;
+  /** locks the whole composer (read-only draft) */
+  disabled?: boolean;
+  /** the host is submitting: the send control waits, the draft stays editable */
+  busy?: boolean;
+  /** the host refuses to send this draft (a gate): the draft stays editable, send stays off */
+  sendBlocked?: boolean;
+  /** the mic is open in the host: real capture, owned by `useVoiceTranscription` */
+  dictating?: boolean;
+  /** the host is uploading the clip and waiting for the transcript: the mic waits too */
+  voiceBusy?: boolean;
+  /** real dictation toggle. Passing it renders the mic even when `controls` is off (a host
+   *  that runs its own attach/model chrome still dictates). */
+  onToggleDictation?: () => void;
+  /** exposes the textarea so the host can read the caret and re-focus after a pick */
+  textareaRef?: React.Ref<HTMLTextAreaElement>;
+  /** runs before the composer handles the key; a prevented event stops here */
+  onInputKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  /** stable hooks for the host's test ids */
+  inputTestId?: string;
+  // HOST-EDIT: accessible name of the input, decoupled from the visible
+  // placeholder (hosts that localize the placeholder keep the stable label the
+  // e2e suite addresses). Keep on re-pull.
+  inputAriaLabel?: string;
+  sendTestId?: string;
+  /** accessible name of the send control, in the host's language */
+  sendLabel?: string;
+  /** rendered inside the composer anchor, above the input (popovers, hints) */
+  children?: React.ReactNode;
+  /** REAL attachments ([SAGE-MEDIA-C01:upload]): passing it enables the picker — the host
+   *  uploads the files and owns the chips. Absent → demo chips only (gallery unchanged). */
+  onAttachFiles?: (files: File[]) => void;
+  /** host-owned chips; upload state lives with the host ([SAGE-MEDIA-C02:media-ready]) */
+  attachments?: { id: string; name: string; status?: "uploading" | "ready" | "error"; error?: string; previewUrl?: string; kind?: "image" | "document" }[];
+  onRemoveAttachment?: (id: string) => void;
+  /** [SAGE-MEDIA-C04:model-capability] the selected model has no vision: attach renders
+   *  blocked and a popover tells the user why. */
+  attachBlocked?: boolean;
+  attachBlockedReason?: string;
+  /** picker accept list (see `CHAT_MEDIA_ACCEPT`) */
+  attachAccept?: string;
 }) {
   const pill = variant === "Pill";
-  const [draft, setDraft] = useState("");
+  const [internalDraft, setInternalDraft] = useState("");
+  const draft = value ?? internalDraft;
+  const setDraft = (next: string | ((current: string) => string)) => {
+    const resolved = typeof next === "function" ? next(draft) : next;
+    if (value === undefined) setInternalDraft(resolved);
+    onValueChange?.(resolved);
+  };
   const [dismissed, setDismissed] = useState(false);
   const [plusOpen, setPlusOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
   const [model, setModel] = useState(MODELS[1]);
   const [attachments, setAttachments] = useState<string[]>([]);
+  const [attachBlockedOpen, setAttachBlockedOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  /** the host hides the demo controls AND handles uploads: one attach column joins the row */
+  const attachColumn = !controls && !!onAttachFiles;
+  const openAttachPicker = () => {
+    if (attachBlocked) {
+      setAttachBlockedOpen((current) => !current);
+      return;
+    }
+    if (onAttachFiles) fileRef.current?.click();
+  };
   const [connected, setConnected] = useState(false);
   const [active, setActive] = useState(0);
-  const [listening, setListening] = useState(false);
   const [auto, setAuto] = useState(demo);
   const [autoStep, setAutoStep] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const wide = expanded || tall;
+  /* A host that hides the demo controls can still dictate: the mic then takes a column of its
+   * own, right before send. */
+  const mic = controls || !!onToggleDictation;
   const [rowBox, setRowBox] = useState<{ top: number; height: number } | null>(null);
   const [engaged, setEngaged] = useState(false);
   const [modelBox, setModelBox] = useState<{ top: number; height: number } | null>(null);
@@ -180,11 +282,16 @@ export default function PromptBar({
   const [modelMenuBottom, setModelMenuBottom] = useState(0);
   const composerAnchorRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const modelRef = useRef<HTMLButtonElement>(null);
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const modelRowRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const holdInputElement = (element: HTMLTextAreaElement | null) => {
+    inputRef.current = element;
+    if (typeof textareaRef === "function") textareaRef(element);
+    else if (textareaRef) (textareaRef as { current: HTMLTextAreaElement | null }).current = element;
+  };
   const glimmRef = useRef<HTMLCanvasElement>(null);
   const shaderRef = useRef<ReturnType<typeof createShader> | null>(null);
   const sweepingRef = useRef(false);
@@ -196,7 +303,7 @@ export default function PromptBar({
     if (auto && event.target === inputRef.current) setDraft("");
   };
 
-  const token = dismissed ? null : parseToken(draft);
+  const token = dismissed || !menus ? null : parseToken(draft);
   const menu: "at" | "slash" | null = plusOpen ? "at" : token?.kind ?? null;
   const query = plusOpen ? "" : token?.query ?? "";
 
@@ -266,13 +373,16 @@ export default function PromptBar({
   /* Glimm shader lives inside the composer, invisible at rest. Selecting
    * the flagship model fires a one-shot rainbow sweep across the interior. */
   useEffect(() => {
+    /* Only the demo's model picker can trigger a sweep, so a host that hides the
+     * controls never celebrates - and never needs the WebGL context either. */
+    if (!controls) return;
     shaderRef.current = makeShader();
     return () => {
       shaderRef.current?.destroy();
       shaderRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [controls]);
 
   const celebrate = () => {
     if (sweepingRef.current) return;
@@ -323,18 +433,7 @@ export default function PromptBar({
     return () => clearTimeout(t);
   }, [auto, autoStep]);
 
-  /* dictation resolves after a beat, like a real transcript landing */
-  useEffect(() => {
-    if (!listening) return;
-    const t = setTimeout(() => {
-      setDraft((current) => (current ? `${current.trimEnd()} ${DICTATION}` : DICTATION));
-      setListening(false);
-      inputRef.current?.focus();
-    }, 2200);
-    return () => clearTimeout(t);
-  }, [listening]);
-
-  /* Move wrapped text above the controls, then grow to a compact maximum. */
+  /* Keep wrapped text above the controls; TextareaAutosize owns the height. */
   useLayoutEffect(() => {
     const input = inputRef.current;
     const controls = controlsRef.current;
@@ -349,13 +448,6 @@ export default function PromptBar({
     if (needsFullWidth !== expanded) {
       setExpanded(needsFullWidth);
     }
-
-    const minHeight = 28;
-    const maxHeight = 100;
-    input.style.height = "0px";
-    const contentHeight = input.scrollHeight;
-    input.style.height = `${Math.min(Math.max(contentHeight, minHeight), maxHeight)}px`;
-    input.style.overflowY = contentHeight > maxHeight ? "auto" : "hidden";
   }, [draft, expanded]);
 
   /* clicking anywhere outside the composer closes the open menus */
@@ -374,12 +466,20 @@ export default function PromptBar({
   const closeMenus = () => {
     setPlusOpen(false);
     setModelOpen(false);
+    setAttachBlockedOpen(false);
   };
 
   const pick = (row: { key: string; name: string }) => {
     const source = SOURCES.find((s) => s.key === row.key);
     if (source?.attach) {
-      setAttachments((current) => [...current, FILES[current.length % FILES.length]]);
+      if (attachBlocked) {
+        setAttachBlockedOpen(true);
+      } else if (onAttachFiles) {
+        // [SAGE-MEDIA-C01:upload] real picker: the host uploads and tracks the chips.
+        fileRef.current?.click();
+      } else {
+        setAttachments((current) => [...current, FILES[current.length % FILES.length]]);
+      }
       if (token) setDraft(draft.slice(0, token.start));
     } else if (menu === "at") {
       setDraft(`${token ? draft.slice(0, token.start) : draft}@${row.name} `);
@@ -391,7 +491,37 @@ export default function PromptBar({
     inputRef.current?.focus();
   };
 
-  const canSend = draft.trim().length > 0 || attachments.length > 0;
+  const hostChips = attachmentChips ?? [];
+  const canSend = !disabled && !busy && !sendBlocked && (draft.trim().length > 0 || attachments.length > 0 || hostChips.some((chip) => chip.status === "ready"));
+  /* Dictated text arrives in bursts. Rather than letting each burst snap in, the input text is
+   * eased back to full opacity on every growth, so a new phrase reads as a soft fade-in instead of
+   * a hard repaint. Cheap by construction: one class swap per burst, no extra React state in the
+   * hot path beyond the nonce the effect below already needs. */
+  const dictationNonce = useRef(0);
+  const [dictationFade, setDictationFade] = useState(false);
+  const lastDictated = useRef("");
+
+  useEffect(() => {
+    if (!dictating) {
+      lastDictated.current = "";
+      setDictationFade(false);
+      return;
+    }
+    // Only a GROWING draft counts as newly transcribed speech; a user edit must not flicker.
+    if (draft.length <= lastDictated.current.length) {
+      lastDictated.current = draft;
+      return;
+    }
+    lastDictated.current = draft;
+    const id = ++dictationNonce.current;
+    setDictationFade(true);
+    // Drop the class on the next frame so the CSS transition runs from dim back to full.
+    const raf = requestAnimationFrame(() => {
+      if (dictationNonce.current === id) setDictationFade(false);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [draft, dictating]);
+
   const send = () => {
     if (!canSend) return;
     onSend?.(draft.trim());
@@ -401,23 +531,25 @@ export default function PromptBar({
   };
 
   return (
-    <div data-slot="promptBar-div"
+    <div
       data-promptbar
+      data-testid="beautifului-prompt-bar"
       className={demo ? "flex min-h-[384px] w-full max-w-105 flex-col justify-end pb-8" : "w-full"}
       onPointerDownCapture={takeOver}
       onKeyDownCapture={takeOver}
     >
       {/* composer is the anchor — menus grow up from its top edge */}
-      <div data-slot="promptBar-relative" ref={composerAnchorRef} className="relative">
+      <div ref={composerAnchorRef} className="relative">
+      {children}
       {/* ── @ / slash menu ─────────────────────────────── */}
       {menu && (
-        <div data-slot="promptBar-shadow-raised"
+        <div
           onMouseLeave={() => setEngaged(false)}
           className="absolute inset-x-0 bottom-full z-10 mb-2 rounded-[10px] bg-surface p-1 shadow-raised"
           style={{ animation: "pop-in 180ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "bottom center" }}
         >
           {/* single gliding highlight — appears once a row is hovered */}
-          <span data-slot="promptBar-bg-hover"
+          <span
             aria-hidden
             className="pointer-events-none absolute inset-x-1 rounded-[6px] bg-hover"
             style={{
@@ -431,7 +563,7 @@ export default function PromptBar({
           {rows.map((row, i) => {
             const source = menu === "at" ? SOURCES.find((s) => s.key === row.key) : undefined;
             return (
-              <button data-testid="text-left"
+              <button
                 key={row.key}
                 type="button"
                 ref={(el) => {
@@ -446,16 +578,16 @@ export default function PromptBar({
                 className="relative z-10 flex h-9 w-full items-center gap-2.5 rounded-[6px] px-2 text-left"
               >
                 {source && (
-                  <span data-slot="promptBar-text-ink-2" className="flex size-5.5 shrink-0 items-center justify-center text-ink-2">
+                  <span className="flex size-5.5 shrink-0 items-center justify-center text-ink-2">
                     {source.brand ? BRANDS[source.brand] : <Icon size={15}>{GLYPHS[source.glyph ?? "clip"]}</Icon>}
                   </span>
                 )}
-                <span data-slot="promptBar-text-ink" className="shrink-0 text-[12.5px] font-medium text-ink">
+                <span className="shrink-0 text-[12.5px] font-medium text-ink">
                   {row.name}
                 </span>
-                <span data-slot="promptBar-text-ink-3" className="min-w-0 flex-1 truncate text-[12px] text-ink-3">{row.desc}</span>
+                <span className="min-w-0 flex-1 truncate text-[12px] text-ink-3">{row.desc}</span>
                 {source?.connect && (
-                  <span data-slot="promptBar-span"
+                  <span
                     role="button"
                     tabIndex={-1}
                     onClick={(event) => {
@@ -473,11 +605,11 @@ export default function PromptBar({
             );
           })}
           {rows.length === 0 && (
-            <div data-slot="promptBar-text-ink-3" className="flex h-9 items-center px-2 text-[12px] text-ink-3">
+            <div className="flex h-9 items-center px-2 text-[12px] text-ink-3">
               No matches for “{query}”
             </div>
           )}
-          <div data-slot="promptBar-text-ink-3" className="mt-1 border-t border-line px-2 pt-1.5 pb-1 text-[11px] text-ink-3">
+          <div className="mt-1 border-t border-line px-2 pt-1.5 pb-1 text-[11px] text-ink-3">
             {menu === "at" ? "Type to search sources & files" : "Type to search commands"}
           </div>
         </div>
@@ -485,13 +617,13 @@ export default function PromptBar({
 
       {/* ── model menu ─────────────────────────────────── */}
       {modelOpen && (
-        <div data-slot="promptBar-shadow-raised"
+        <div
           onMouseLeave={() => setModelHovered(null)}
           className="absolute z-10 w-44 rounded-[10px] bg-surface p-1 shadow-raised"
           style={{ left: modelMenuLeft, bottom: modelMenuBottom, animation: "pop-in 180ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "bottom left" }}
         >
           {/* single gliding highlight — floats to the hovered / selected row */}
-          <span data-slot="promptBar-bg-hover"
+          <span
             aria-hidden
             className="pointer-events-none absolute inset-x-1 rounded-[6px] bg-hover"
             style={{
@@ -503,7 +635,7 @@ export default function PromptBar({
             }}
           />
           {MODELS.map((m, i) => (
-            <button data-testid="text-left-2"
+            <button
               key={m.key}
               type="button"
               ref={(el) => {
@@ -517,9 +649,9 @@ export default function PromptBar({
               }}
               className="relative z-10 flex h-7.5 w-full items-center gap-2 rounded-[6px] px-2 text-left"
             >
-              <span data-slot="promptBar-text-ink" className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-ink">{m.name}</span>
-              <span data-slot="promptBar-text-ink-3" className="shrink-0 text-[11px] text-ink-3">{m.tag}</span>
-              <span data-slot="promptBar-span" className={`shrink-0 text-ink ${m.key === model.key ? "" : "invisible"}`}>
+              <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-ink">{m.name}</span>
+              <span className="shrink-0 text-[11px] text-ink-3">{m.tag}</span>
+              <span className={`shrink-0 text-ink ${m.key === model.key ? "" : "invisible"}`}>
                 <Icon size={13} strokeWidth={2.5}><path d="M20 6L9 17l-5-5" /></Icon>
               </span>
             </button>
@@ -528,7 +660,7 @@ export default function PromptBar({
       )}
 
       {/* ── composer ───────────────────────────────────── */}
-      <div data-slot="promptBar-div"
+      <div
         className={`relative isolate flex flex-col overflow-hidden border border-line bg-surface shadow-card transition-[border-color,border-radius] duration-150 focus-within:border-line-strong ${
           tall ? "gap-2.5 p-3.5" : "gap-1.5 p-1.5"
         } ${
@@ -544,7 +676,7 @@ export default function PromptBar({
           className="pointer-events-none absolute inset-0 -z-10 h-full w-full"
           style={{ borderRadius: "inherit" }}
         />
-        <span data-slot="promptBar-leading-[18px]"
+        <span
           ref={measureRef}
           aria-hidden="true"
           className="pointer-events-none absolute invisible whitespace-pre text-[13px] leading-[18px]"
@@ -552,10 +684,24 @@ export default function PromptBar({
           {draft}
         </span>
 
-        {attachments.length > 0 && (
-          <div data-slot="promptBar-div" className={`flex flex-wrap gap-1.5 pt-0.5 ${pill ? "px-1" : "px-0.5"}`}>
+        {(attachments.length > 0 || hostChips.length > 0) && (
+          <div className={`flex flex-wrap gap-1.5 pt-0.5 ${pill ? "px-1" : "px-0.5"}`}>
+            {hostChips.map((chip) => (
+              <span key={chip.id} data-testid={`prompt-bar-media-chip-wrap-${chip.id}`} style={{ animation: "pop-in 200ms cubic-bezier(0.23,1,0.32,1) both" }}>
+                <ComposerAttachmentChip
+                  id={chip.id}
+                  name={chip.name}
+                  kind={chip.kind}
+                  previewUrl={chip.previewUrl}
+                  status={chip.status}
+                  error={chip.error}
+                  onRemove={() => onRemoveAttachment?.(chip.id)}
+                  testIdPrefix="forky-prompt-bar-media-chip"
+                />
+              </span>
+            ))}
             {attachments.map((file, i) => (
-              <span data-slot="promptBar-span"
+              <span
                 key={`${file}-${i}`}
                 className={`flex h-6.5 items-center gap-1.5 bg-field py-1 pr-1 pl-1.5 text-[11.5px] text-ink-2 shadow-hairline ${
                   pill ? "rounded-full" : "rounded-chip"
@@ -563,12 +709,12 @@ export default function PromptBar({
                 style={{ animation: "pop-in 200ms cubic-bezier(0.23,1,0.32,1) both" }}
               >
                 <Icon size={12}><g><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></g></Icon>
-                <span data-slot="promptBar-truncate" className="max-w-36 truncate">{file}</span>
-                <button data-testid="button"
+                <span className="max-w-36 truncate">{file}</span>
+                <button
                   type="button"
                   aria-label={`Remove ${file}`}
                   onClick={() => setAttachments((current) => current.filter((_, j) => j !== i))}
-                  className={`-my-1 flex size-6 items-center justify-center text-ink-3 transition-colors duration-100 hover:bg-line/70 hover:text-ink ${
+                  className={`-my-1 flex size-6 items-center justify-center text-ink-3 transition-colors duration-100 hover:bg-hover hover:text-ink ${
                     pill ? "rounded-full" : "rounded-[5px]"
                   }`}
                 >
@@ -579,15 +725,24 @@ export default function PromptBar({
           </div>
         )}
 
-        <div data-slot="promptBar-div"
+        <div
           ref={controlsRef}
           className={`grid items-end gap-x-1 gap-y-1.5 ${
-            wide
-              ? "grid-cols-[28px_auto_minmax(0,1fr)_28px_28px]"
-              : "grid-cols-[28px_minmax(0,1fr)_auto_28px_28px]"
+            !controls
+              ? attachColumn
+                ? mic
+                  ? "grid-cols-[minmax(0,1fr)_28px_28px_28px]"
+                  : "grid-cols-[minmax(0,1fr)_28px_auto]"
+                : mic
+                  ? "grid-cols-[minmax(0,1fr)_28px_28px]"
+                  : "grid-cols-[minmax(0,1fr)_auto]"
+              : wide
+                ? "grid-cols-[28px_auto_minmax(0,1fr)_28px_28px]"
+                : "grid-cols-[28px_minmax(0,1fr)_auto_28px_28px]"
           }`}
         >
-          <button data-testid="add-attachments-and-sources"
+          {controls && (
+          <button
             type="button"
             aria-label="Add attachments and sources"
             aria-expanded={plusOpen}
@@ -602,17 +757,25 @@ export default function PromptBar({
           >
             <Icon size={16} strokeWidth={2}><path d="M12 5v14M5 12h14" /></Icon>
           </button>
+          )}
 
-          <textarea data-testid="prompt"
-            ref={inputRef}
-            rows={1}
+          <TextareaAutosize
+            ref={holdInputElement}
+            minRows={1}
+            maxRows={5}
             value={draft}
+            maxLength={maxLength}
+            disabled={disabled}
+            data-testid={inputTestId}
             onChange={(event) => {
               setDraft(event.target.value);
               setDismissed(false);
               setPlusOpen(false);
             }}
             onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && !event.nativeEvent.isComposing) return;
+              onInputKeyDown?.(event);
+              if (event.defaultPrevented) return;
               if (menu && rows.length > 0) {
                 if (event.key === "ArrowDown" || event.key === "ArrowUp") {
                   event.preventDefault();
@@ -631,20 +794,31 @@ export default function PromptBar({
                 closeMenus();
                 return;
               }
-              if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+              if (event.key === "Enter" && !event.shiftKey && !event.metaKey && !event.ctrlKey && !event.nativeEvent.isComposing) {
                 event.preventDefault();
                 send();
               }
             }}
-            placeholder={listening ? "Listening…" : placeholder ?? "Write a message…"}
-            aria-label="Prompt"
-            className={`${tall ? "min-h-[68px] px-2 py-2 text-[14px] leading-5" : "min-h-7 px-1 py-[5px] text-[13px] leading-[18px]"} min-w-0 w-full resize-none bg-transparent text-ink outline-none [overflow-wrap:anywhere] placeholder:text-ink-3 ${
-              wide ? "col-span-full col-start-1 row-start-1" : "col-start-2 row-start-1"
+            placeholder={dictating ? "Listening…" : placeholder ?? "Write a message…"}
+            aria-label={inputAriaLabel ?? placeholder ?? "Prompt"}
+            style={{
+              // 220ms matches the house fade-in (150ms) plus a touch of tail, so dictation feels
+              // continuous with the rest of the beautiful-ui motion rather than faster than it.
+              transition: "opacity 220ms cubic-bezier(0.23,1,0.32,1)",
+              opacity: dictationFade ? 0.55 : 1,
+            }}
+            className={`${tall ? "min-h-[68px] px-2 py-2 text-[14px] leading-5" : "min-h-7 px-1 py-[5px] text-[13px] leading-[18px]"} min-w-0 w-full resize-none overflow-y-auto bg-transparent text-ink outline-none [overflow-wrap:anywhere] placeholder:text-ink-3 ${
+              !controls
+                ? "col-start-1 row-start-1"
+                : wide
+                  ? "col-span-full col-start-1 row-start-1"
+                  : "col-start-2 row-start-1"
             }`}
           />
 
           {/* model picker */}
-          <button data-testid="choose-model"
+          {controls && (
+          <button
             ref={modelRef}
             type="button"
             aria-expanded={modelOpen}
@@ -658,25 +832,69 @@ export default function PromptBar({
             } ${wide ? "col-start-2 row-start-2 justify-self-start" : "col-start-3 row-start-1"}`}
           >
             {model.name}
-            <span data-slot="promptBar-text-ink-3" className="text-ink-3">
+            <span className="text-ink-3">
               <Icon size={11} strokeWidth={2.4}><path d="M6 9l6 6 6-6" /></Icon>
             </span>
           </button>
+          )}
 
-          {/* dictation */}
-          <button data-testid="button-2"
+          {/* attach — real picker when the host handles uploads ([SAGE-MEDIA-C01:upload]); blocked
+              with a popover when the selected model has no vision ([SAGE-MEDIA-C04:model-capability]) */}
+          {attachColumn && (
+            <div className={`relative flex shrink-0 items-center justify-self-start col-start-2 row-start-1`}>
+              <input
+                ref={fileRef}
+                type="file"
+                multiple
+                accept={attachAccept}
+                data-testid="prompt-bar-attach-input"
+                className="hidden"
+                onChange={(event) => {
+                  const files = Array.from(event.target.files ?? []);
+                  event.target.value = "";
+                  if (files.length) onAttachFiles?.(files);
+                }}
+              />
+              <button
+                type="button"
+                aria-label={attachBlocked ? (attachBlockedReason ?? "Attachments blocked") : "Add photos & files"}
+                aria-expanded={attachBlocked ? attachBlockedOpen : undefined}
+                data-testid="prompt-bar-attach-button"
+                onClick={openAttachPicker}
+                className={`flex size-7 shrink-0 items-center justify-center transition-[background-color,color,transform] duration-150 active:scale-[0.94] ${
+                  pill ? "rounded-full" : "rounded-[8px]"
+                } ${attachBlocked ? "cursor-not-allowed text-ink-3 opacity-60" : "text-ink-3 hover:bg-hover hover:text-ink"}`}
+              >
+                <Icon size={15} strokeWidth={2}>{GLYPHS.clip}</Icon>
+              </button>
+              {attachBlocked && attachBlockedOpen && (
+                <div
+                  role="tooltip"
+                  data-testid="prompt-bar-attach-blocked-popover"
+                  className="absolute bottom-full left-0 z-30 mb-2 w-56 rounded-[10px] border border-line bg-surface p-2 text-[11.5px] leading-snug text-ink-2 shadow-card"
+                >
+                  {attachBlockedReason ?? "The selected model cannot analyze media."}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* dictation — the host records and uploads; this only reflects it */}
+          {mic && (
+          <button
             type="button"
-            aria-label={listening ? "Stop dictation" : "Start dictation"}
-            aria-pressed={listening}
-            onClick={() => setListening((current) => !current)}
-            className={`flex size-7 shrink-0 items-center justify-center transition-[background-color,color,transform] duration-150 active:scale-[0.94] ${
+            aria-label={dictating ? "Stop dictation" : "Start dictation"}
+            aria-pressed={dictating}
+            disabled={voiceBusy}
+            onClick={() => onToggleDictation?.()}
+            className={`flex size-7 shrink-0 items-center justify-center transition-[background-color,color,transform] duration-150 active:scale-[0.94] disabled:opacity-60 ${
               pill ? "rounded-full" : "rounded-[8px]"
-            } ${listening ? "bg-accent-tint text-accent-ink" : "text-ink-3 hover:bg-hover hover:text-ink"} ${wide ? "col-start-4 row-start-2" : "col-start-4 row-start-1"}`}
+            } ${dictating ? "bg-accent-tint text-accent-ink" : "text-ink-3 hover:bg-hover hover:text-ink"} ${wide ? "col-start-4 row-start-2" : !controls ? (attachColumn ? "col-start-3 row-start-1" : "col-start-2 row-start-1") : "col-start-4 row-start-1"}`}
           >
-            {listening ? (
-              <span data-slot="promptBar-gap-[2.5px]" className="flex h-3.5 items-center gap-[2.5px]">
+            {dictating ? (
+              <span className="flex h-3.5 items-center gap-[2.5px]">
                 {[0, 1, 2].map((i) => (
-                  <span data-slot="promptBar-bg-current"
+                  <span
                     key={i}
                     className="w-[2.5px] rounded-full bg-current"
                     style={{ height: "100%", animation: `eq-bounce 900ms ease-in-out ${i * 150}ms infinite` }}
@@ -687,16 +905,22 @@ export default function PromptBar({
               <Icon size={15} strokeWidth={2}><g><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" /></g></Icon>
             )}
           </button>
+          )}
 
           {/* send — tactile square (round in the pill variant) */}
-          <button data-testid="send"
+          <button
             type="button"
-            aria-label="Send"
+            aria-label={sendLabel ?? "Send"}
+            data-testid={sendTestId}
             disabled={!canSend}
             onClick={send}
-            className={`flex size-7 shrink-0 items-center justify-center transition-[background-color,color,transform] duration-200 enabled:active:scale-[0.94] ${
-              pill ? "rounded-full" : "rounded-[8px]"
-            } ${wide ? "col-start-5 row-start-2" : "col-start-5 row-start-1"}`}
+            className={`flex shrink-0 items-center justify-center transition-[background-color,color,transform] duration-200 enabled:active:scale-[0.94] ${
+              /* a host that hides the controls is a real surface: thumb-sized on phones,
+                 the registry's 28px square from `md` up */
+              !controls ? "size-9 md:size-7" : "size-7"
+            } ${
+              pill ? "rounded-full" : "rounded-[10px] md:rounded-[8px]"
+            } ${!controls ? (attachColumn ? (mic ? "col-start-4 row-start-1" : "col-start-3 row-start-1") : mic ? "col-start-3 row-start-1" : "col-start-2 row-start-1") : wide ? "col-start-5 row-start-2" : "col-start-5 row-start-1"}`}
             style={{
               background: canSend ? "var(--ink)" : "var(--line-strong)",
               color: canSend ? "var(--surface)" : "var(--ink-2)",

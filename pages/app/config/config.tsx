@@ -26,6 +26,7 @@ import { ConfigCobrosOnline } from "./functionalComponents/ConfigCobrosOnline/Co
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
 import { ConfigBotAI } from "./functionalComponents/ConfigBotAI/ConfigBotAI";
 import { ConfigBotPipeline } from "./functionalComponents/ConfigBotPipeline/ConfigBotPipeline";
+import { ConfigChatGPTPlugin } from "./functionalComponents/ConfigChatGPTPlugin/ConfigChatGPTPlugin";
 
 type PageData = {
   defaults: ConfigDefaults | null;
@@ -351,6 +352,7 @@ export default function Page() {
                   activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
                 />
                 <ConfigAIImage />
+                <ConfigChatGPTPlugin />
                 <ConfigMiniMax />
 				<ConfigWhatsAppBot
                   restaurants={pageContext.bo?.session?.restaurants ?? []}

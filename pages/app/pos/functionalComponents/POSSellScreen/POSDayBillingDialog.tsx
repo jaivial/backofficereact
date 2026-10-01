@@ -9,6 +9,7 @@ import { POSDialog } from "./POSDialog";
 const METHOD_LABELS: Array<{ key: keyof POSCashDayBilling["byMethod"]; label: string }> = [
   { key: "CASH", label: "Efectivo" },
   { key: "CARD", label: "Tarjeta" },
+  { key: "BIZUM", label: "Bizum" },
   { key: "BANK", label: "Transferencia" },
   { key: "OTHER", label: "Otros" },
 ];

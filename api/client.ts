@@ -2385,6 +2385,26 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // ChatGPT plugin credentials for the active restaurant (root-only).
+      // The server pins every token to the caller and their active restaurant,
+      // so no user or restaurant is ever accepted from the request.
+      async getChatGPTPluginTokens(): Promise<APISuccess<import("./types").ChatGPTPluginTokensPayload> | APIError> {
+        return json("/api/admin/config/chatgpt-plugin/tokens", { method: "GET" });
+      },
+      async issueChatGPTPluginToken(input: { label?: string }): Promise<APISuccess<{ token: string; message: string; manifest: string }> | APIError> {
+        return json("/api/admin/config/chatgpt-plugin/tokens", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
+      async revokeChatGPTPluginTokens(): Promise<APISuccess<{ revoked: number }> | APIError> {
+        return json("/api/admin/config/chatgpt-plugin/tokens/revoke", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      },
       // BunnyCDN storage credentials per restaurant (root-only).
       async getBunnyStorageConfig(): Promise<APISuccess<{ config: import("./types").BunnyStorageConfig }> | APIError> {
         return json("/api/admin/config/bunny-storage", { method: "GET" });

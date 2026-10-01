@@ -13,7 +13,13 @@ import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
 import { ThinkingOrb } from "thinking-orbs";
-import { BuiIsland, LoadingState, PromptBar } from "./bui";
+import {
+  BuiIsland,
+  LoadingState,
+  MessageBubble,
+  PromptBar,
+  ThinkingState,
+} from "./bui";
 import {
   CopyIcon,
   RefreshCwIcon,
@@ -21,8 +27,11 @@ import {
   XIcon,
 } from "lucide-react";
 
+import { ChatBubbleMotionProvider } from "./chat-motion";
+
 import { forkyOpenAtom } from "../../state/atoms";
 import { ForkyRuntimeProvider } from "./forkyRuntime";
+import { useForkyTurnSteps } from "./forkyStatus";
 
 // ---------------------------------------------------------------------------
 // beautifului.dev design language (tokens in
@@ -40,15 +49,41 @@ const actionBtn =
 // Loading state while assistant is generating — the literal beautifului.dev
 // LoadingState (pixel-grid loader + shimmer label + mono elapsed timer).
 // ---------------------------------------------------------------------------
+/** Human label of a tool step in the live trace (the model sees the raw name). */
+function forkyToolLabel(tool: string): string {
+  if (tool === "admin_catalog") return "Buscando la operación";
+  if (tool === "admin_describe") return "Leyendo la operación";
+  if (tool === "admin_call") return "Ejecutando en el backoffice";
+  return tool.replace(/_/g, " ");
+}
+
 function AssistantLoading() {
+  const steps = useForkyTurnSteps();
   return (
     <div
       data-testid="forky-assistant-loading"
-      className="fui-anim flex w-fit py-2"
+      className="fui-anim w-full py-2"
       style={{ animation: "fui-fade-in 300ms ease-out both" }}
     >
       <BuiIsland>
-        <LoadingState label="Pensando" variant="Drive" />
+        {/* Pending turn = the beautifului thinking trace of what the run observed so
+            far, with the pixel-grid LoadingState as its fallback underneath. */}
+        <div data-testid="forky-thinking-state">
+          <ThinkingState
+            testIdPrefix="forky-thinking"
+            active="Pensando"
+            done="Listo"
+            rows={[
+              { primary: "Leyendo la pregunta" },
+              // The tools the turn really called, as the WS reports them (status: tool).
+              ...steps.map((tool) => ({ primary: forkyToolLabel(tool) })),
+              { primary: "Escribiendo la respuesta" },
+            ]}
+          />
+        </div>
+        <div data-testid="forky-loading-fallback" className="mt-1 w-fit">
+          <LoadingState label="Pensando" variant="Drive" />
+        </div>
       </BuiIsland>
     </div>
   );
@@ -87,20 +122,29 @@ function AssistantMessage() {
   return (
     <MessagePrimitive.Root
       data-testid="forky-assistant-message"
-      className="group/message flex w-full flex-col gap-1.5 py-2.5"
+      className="group/message w-full py-2.5"
       style={{ animation: "fui-fade-up 400ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "top left" }}
     >
-      {/* ThinkingOrb avatar — the assistant identity, kept from the old UI */}
-      <div data-slot="forkyModal-gap-2" className="flex items-center gap-2" style={{ height: 28 }}>
-        <div data-slot="forkyModal-shrink-0" className="shrink-0" style={{ transform: "scale(0.42)", transformOrigin: "left center", width: 27, height: 27 }}>
-          {mounted && <ThinkingOrb state="solving" size={64} theme="auto" />}
-        </div>
-        <span data-slot="forkyModal-text-fui-ink" className="text-[12px] leading-[1.3] font-medium text-fui-ink">Forky</span>
-      </div>
+      {/* The turn in the shared chat-bubble layout: the ThinkingOrb stays the avatar of the
+          run, outside the bubble, and the reply rides in the vendored MessageBubble. */}
+      <MessageBubble
+        role="assistant"
+        author="Forky"
+        surface="forky-admin"
+        bubbleTestId="forky-bubble-assistant"
+        avatarTestId="forky-avatar-assistant"
+        avatar={
+          <span data-testid="forky-avatar-orb" className="flex items-center" style={{ height: 28 }}>
+            <span className="shrink-0" style={{ transform: "scale(0.42)", transformOrigin: "left center", width: 27, height: 27 }}>
+              {mounted && <ThinkingOrb state="solving" size={64} theme="auto" />}
+            </span>
+          </span>
+        }
+      >
       <div
         ref={messageRef}
         data-testid="forky-assistant-message-text"
-        className="min-w-0 pl-0 text-[13px] leading-relaxed text-fui-ink [&_p]:my-0"
+        className="min-w-0 text-[13px] leading-relaxed text-fui-ink [&_p]:my-0"
       >
         <MessagePrimitive.Parts components={{ Text: ({ text }: { text: string }) => (
           <>
@@ -149,6 +193,7 @@ function AssistantMessage() {
           <RefreshCwIcon className="size-3.5" />
         </ActionBarPrimitive.Reload>
       </div>
+      </MessageBubble>
     </MessagePrimitive.Root>
   );
 }
@@ -157,15 +202,21 @@ function UserMessage() {
   return (
     <MessagePrimitive.Root
       data-testid="forky-user-message"
-      className="fui-anim flex justify-end pl-14 py-1"
+      className="fui-anim w-full py-1"
       style={{ animation: "fui-fade-up 400ms cubic-bezier(0.23,1,0.32,1) both" }}
     >
-      <div
-        data-testid="forky-user-message-text"
-        className="rounded-xl bg-fui-field px-3 py-1.5 text-[13px] leading-[1.4] text-fui-ink"
+      {/* My turn mirrors to the right in the shared layout, with no avatar. */}
+      <MessageBubble
+        role="user"
+        author="Tú"
+        surface="forky-admin"
+        bubbleTestId="forky-bubble-user"
+        avatarTestId="forky-avatar-user"
       >
-        <MessagePrimitive.Parts />
-      </div>
+        <div data-testid="forky-user-message-text" className="text-[13px] leading-[1.4]">
+          <MessagePrimitive.Parts />
+        </div>
+      </MessageBubble>
     </MessagePrimitive.Root>
   );
 }
@@ -252,6 +303,8 @@ function ChatComposer() {
         <PromptBar
           demo={false}
           placeholder="Pregunta lo que quieras"
+          inputAriaLabel="Prompt"
+          sendLabel="Send"
           onSend={(text) => {
             aui.composer.setText(text);
             aui.composer.send();
@@ -393,10 +446,17 @@ function ChatPane({ onClose }: { onClose: () => void }) {
                 <ThreadPrimitive.Empty>
                   <EmptyState />
                 </ThreadPrimitive.Empty>
+                {/* One island (and one motion scope) for the whole thread: the turns
+                    render with the vendored bubble utilities and the shared
+                    chat-bubble entrance. Coordination id: FORKY-ADMIN-TOOLS-S01. */}
                 <div data-testid="forky-messages-container" className="flex flex-col gap-2.5">
-                  <ThreadPrimitive.Messages
-                    components={{ AssistantMessage, UserMessage }}
-                  />
+                  <BuiIsland className="min-w-0 flex-1" data-obs="forky.admin.thread" data-coord="FORKY-ADMIN-TOOLS-S01">
+                    <ChatBubbleMotionProvider testId="forky-chat-bubble-motion">
+                      <ThreadPrimitive.Messages
+                        components={{ AssistantMessage, UserMessage }}
+                      />
+                    </ChatBubbleMotionProvider>
+                  </BuiIsland>
                 </div>
                 <ThreadPrimitive.If running>
                   <AssistantLoading />

@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { allocatePayments } from "../utils/paymentAllocation";
+import type { POSPaymentTender } from "../utils/paymentMethods";
 import { parseAmount } from "../utils/money";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
 import { usePOSCommand } from "./usePOSCommand";
+import { POSToastContext } from "../feedback/POSToastProvider";
 import type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
 export type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
@@ -30,6 +32,11 @@ export function checkoutMessage(stockStatus?: string | null): string {
  * Register state for the POS sell screen: bootstrap data, current visit/ticket,
  * split tickets, payments and kitchen dispatch. Extracted from pos.tsx.
  */
+/**
+ * Optional: the hook is also used in isolation by tests and by the kitchen
+ * display, where no provider is mounted. Falling back to plain state keeps
+ * those callers working while the POS page gets the toast.
+ */
 export function usePOSRegister(date?: string | null) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
@@ -52,8 +59,19 @@ export function usePOSRegister(date?: string | null) {
   const [reservationsLoaded, setReservationsLoaded] = useState(false);
   const [bookingId, setBookingId] = useState(0);
   const [query, setQuery] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const toast = useContext(POSToastContext);
+  // Feedback goes to the portal toast when one is mounted, and still lands in
+  // state so the inline/aria sinks and non-POS callers keep working.
+  const setMessage = useCallback((next: string) => {
+    if (next) toast?.success(next);
+    setMessageState(next);
+  }, [toast]);
+  const setError = useCallback((next: string) => {
+    if (next) toast?.error(next);
+    setErrorState(next);
+  }, [toast]);
+  const [message, setMessageState] = useState("");
+  const [error, setErrorState] = useState("");
   const [busy, setBusy] = useState(false);
   const [cash, setCash] = useState("");
   const [card, setCard] = useState("");
@@ -425,13 +443,15 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo enviar a cocina"); }
   }, [activeTicketLines, hasPendingKitchenLines, pendingKitchenLines, pendingKitchenVoids, ticket]);
 
-  const checkout = useCallback(async (requestedTipCents = tipCents) => {
+  const checkout = useCallback(async (requestedTipCents = tipCents, tenders?: POSPaymentTender[]) => {
     const checkoutDue = ticketTotal + requestedTipCents;
-    if (!ticket || ticketTotal < 0 || paymentTotal < checkoutDue) { setError("El pago no cubre el total."); return false; }
+    if (!ticket || ticketTotal < 0) { setError("El pago no cubre el total."); return false; }
     if (isInFlight("checkout")) return false;
     let allocations;
-    try { allocations = allocatePayments({ saleTotalCents: ticketTotal, tipCents: requestedTipCents, cashTenderedCents: cashTenderedCents >= 0 ? cashTenderedCents : 0, cardTenderedCents: cardTenderedCents >= 0 ? cardTenderedCents : 0 }); }
+    try { allocations = tenders?.length ? tenders : allocatePayments({ saleTotalCents: ticketTotal, tipCents: requestedTipCents, cashTenderedCents: cashTenderedCents >= 0 ? cashTenderedCents : 0, cardTenderedCents: cardTenderedCents >= 0 ? cardTenderedCents : 0 }); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Importe no válido."); return false; }
+    const tenderedTotal = allocations.reduce((total, payment) => total + payment.amountCents + payment.tipCents, 0);
+    if (tenderedTotal < checkoutDue) { setError("El pago no cubre el total."); return false; }
     if (allocations.some((payment) => payment.method === "CARD") && !cardReference.trim()) { setError("Introduce referencia del terminal de tarjeta."); return false; }
     const payments = allocations.map((payment) => {
       const idempotencyKey = keyFor(`checkout-${ticket.id}-${payment.method}`);
@@ -455,7 +475,7 @@ export function usePOSRegister(date?: string | null) {
       return result ?? false;
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cobrar"); return false; }
     finally { setBusy(false); }
-  }, [cardReference, cardTenderedCents, cashTenderedCents, clear, isInFlight, keyFor, load, paymentTotal, run, splitTickets, ticket, ticketTotal, tipCents]);
+  }, [cardReference, cardTenderedCents, cashTenderedCents, clear, isInFlight, keyFor, load, run, splitTickets, ticket, ticketTotal, tipCents]);
 
   return {
     settings, setSettings, products, tables, visits, ticket, visit, lastPaidTicket, productStock,
