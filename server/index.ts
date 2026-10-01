@@ -858,6 +858,14 @@ async function start() {
   // forwarded and nothing else is added: each MCP call keeps its own bearer.
   app.use("/mcp", (req, res) => proxyToBackend(backendOrigin, req.originalUrl, req, res, { injectAdminSecret: false }));
 
+  // OAuth discovery documents at the site root. A client may probe these before
+  // the /mcp prefix, and on this origin the SSR app would otherwise answer with
+  // an HTML 404 that cannot be read as metadata, which reads as "this server
+  // has no dynamic client registration". Forward them to the backend so it can
+  // redirect to the canonical location.
+  app.use("/.well-known/oauth-authorization-server", (req, res) => proxyToBackend(backendOrigin, req.originalUrl, req, res, { injectAdminSecret: false }));
+  app.use("/.well-known/oauth-protected-resource", (req, res) => proxyToBackend(backendOrigin, req.originalUrl, req, res, { injectAdminSecret: false }));
+
   // Proxy for public invoice lookup (no auth required)
   // This proxies to the backend which validates the token
   app.use("/api/public/invoices", async (req, res) => {
