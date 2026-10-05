@@ -33,8 +33,9 @@ export function diffLabel(start: string, end: string): string {
   const [sh, sm] = start.split(":").map((v) => Number(v));
   const [eh, em] = end.split(":").map((v) => Number(v));
   if (![sh, sm, eh, em].every((v) => Number.isFinite(v))) return "--";
-  const minutes = (eh * 60 + em) - (sh * 60 + sm);
-  if (minutes <= 0) return "--";
+  let minutes = (eh * 60 + em) - (sh * 60 + sm);
+  if (minutes < 0) minutes += 24 * 60; // turno que cruza la medianoche
+  if (minutes === 0) return "--";
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}h ${String(m).padStart(2, "0")}m`;

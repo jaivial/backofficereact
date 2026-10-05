@@ -978,7 +978,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             <>
               {isMultiple && activeStep ? <StepInspector step={activeStep} onChange={(patch) => setAd(updateStep(ad, activeStep.id, patch))} onBackgroundImage={(which) => { setImageTarget({ kind: which, stepId: activeStep.id }); setImageOpen(true); setImageStep("choose"); }} imageBusy={imageEnhancing} onSelectButton={(buttonId) => setSelectedId(buttonId)} /> : null}
               <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
-                <div className="bo-anunciosCtasTitle">Duracion</div>
+                <div className="bo-anunciosCtasTitle">Duración</div>
                 <div className="bo-anunciosCtasHint">El anuncio solo se muestra dentro de este periodo.</div>
                 <InlineDateRangeCalendar from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
                   if (range.from && range.to && sendAdScheduleCheck) {

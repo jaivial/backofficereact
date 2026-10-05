@@ -704,7 +704,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
       "FechaFactura",
       "MetodoPago",
       "Estado",
-      "Categoria",
+      "Categoría",
     ];
 
     const sampleData = [

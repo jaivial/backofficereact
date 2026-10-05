@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 const categories = [
   { label: "Platos", type: "platos" },
   { label: "Bebidas", type: "bebidas" },
-  { label: "Cafes", type: "cafes" },
+  { label: "Cafés", type: "cafes" },
   { label: "Vinos", type: "vinos" },
 ];
 

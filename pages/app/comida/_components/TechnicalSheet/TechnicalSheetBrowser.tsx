@@ -125,7 +125,7 @@ export function TechnicalSheetBrowser({ onPick, onCreate, productName = "", crea
             value={categoryId}
             onChange={setCategoryId}
             options={categoryOptions}
-            ariaLabel="Categoria"
+            ariaLabel="Categoría"
           />
           <Select value={status} onChange={setStatus} options={STATUS_OPTIONS} ariaLabel="Estado" />
         </div>

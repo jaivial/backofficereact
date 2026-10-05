@@ -106,7 +106,7 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
                   <tr data-slot="customerStatementContent-tr">
                     <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="customerStatementContent-uppercase">Factura</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="customerStatementContent-uppercase">Fecha</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="customerStatementContent-uppercase">Metodo</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="customerStatementContent-uppercase">Método</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="customerStatementContent-uppercase">Importe</th>
                   </tr>
                 </thead>

@@ -8,7 +8,7 @@ export const FOOD_TYPE_ORDER: FoodType[] = ["vinos", "cafes", "postres", "platos
 
 export const FOOD_TYPE_LABELS: Record<FoodType, string> = {
   vinos: "Vinos",
-  cafes: "Cafes",
+  cafes: "Cafés",
   postres: "Postres",
   platos: "Platos",
   bebidas: "Bebidas",

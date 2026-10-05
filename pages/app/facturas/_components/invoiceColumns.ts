@@ -43,11 +43,11 @@ export const INVOICE_COLUMNS: InvoiceColumnDef[] = [
   { id: "invoice_date", label: "Fecha", icon: Calendar },
   { id: "due_date", label: "Vencimiento", icon: CalendarClock },
   { id: "payment_date", label: "F. Pago", icon: CalendarCheck },
-  { id: "payment_method", label: "Metodo", icon: CreditCard },
+  { id: "payment_method", label: "Método", icon: CreditCard },
   { id: "status", label: "Estado", icon: Activity },
   { id: "is_reservation", label: "Tipo", icon: Tag },
-  { id: "deposit", label: "Deposito", icon: PiggyBank },
-  { id: "category", label: "Categoria", icon: Tags },
+  { id: "deposit", label: "Depósito", icon: PiggyBank },
+  { id: "category", label: "Categoría", icon: Tags },
 ];
 
 export const INVOICE_COLUMN_IDS: InvoiceColumnId[] = INVOICE_COLUMNS.map((c) => c.id);

@@ -54,7 +54,7 @@ function parseAnalyticsParams(search: Record<string, unknown> | undefined, now =
 
 export async function data(pageContext: PageContextServer): Promise<EstadisticasPageData> {
   const config = useConfig();
-  config({ title: "Estadisticas" });
+  config({ title: "Estadísticas" });
 
   const params = parseAnalyticsParams(pageContext.urlParsed?.search as Record<string, unknown> | undefined);
   const backendOrigin = pageContext.boRequest?.backendOrigin ?? "http://127.0.0.1:8080";

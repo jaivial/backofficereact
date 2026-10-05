@@ -15,7 +15,7 @@ test.describe("@edge Shell", () => {
     await goHome(adminPage);
     await expect(adminPage.getByText(/Bienvenido/).first()).toBeVisible({ timeout: 15_000 });
 
-    const expected = ["Reservas", "Menus", "Carta", "Stock", "TPV", "Miembros", "Horarios", "Fichaje", "Facturas", "Estadisticas", "Plataforma"];
+    const expected = ["Reservas", "Menus", "Carta", "Stock", "TPV", "Miembros", "Horarios", "Fichaje", "Facturas", "Estadísticas", "Plataforma"];
     const labels = await adminPage.locator('[data-ui="orbit-node-label"]').allInnerTexts();
     for (const label of expected) {
       expect(labels).toContain(label);

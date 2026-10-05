@@ -21,7 +21,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { key: "campanas", href: "/app/campanas", label: "Campañas" },
   { key: "anuncios", href: "/app/anuncios", label: "Anuncios" },
   { key: "qr", href: "/app/qr", label: "QR" },
-  { key: "estadisticas", href: "/app/estadisticas", label: "Estadisticas" },
+  { key: "estadisticas", href: "/app/estadisticas", label: "Estadísticas" },
   { key: "plataforma", href: "/app/plataforma", label: "Plataforma" },
 ];
 

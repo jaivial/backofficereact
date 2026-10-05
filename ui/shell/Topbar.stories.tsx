@@ -161,7 +161,7 @@ export const WithActiveFichaje: Story = {
 export const WithMultipleRestaurants: Story = {
   name: "With Multiple Restaurants",
   args: {
-    title: "Gestion",
+    title: "Gestión",
   },
   render: (args) => (
     <WithAtoms session={createMockSession()} fichaje={mockFichajeInactive}>

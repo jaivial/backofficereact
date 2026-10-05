@@ -35,7 +35,7 @@ const EMPTY_SUMMARY: Summary = { itemsTracked: 0, belowPar: 0, belowReorder: 0, 
 
 const SECTION_TABS: { id: Section; label: string }[] = [
   { id: "inventory", label: "Existencias" },
-  { id: "sheets", label: "Fichas tecnicas" },
+  { id: "sheets", label: "Fichas técnicas" },
   { id: "operations", label: "Operaciones" },
   { id: "suppliers", label: "Proveedores" },
   { id: "settings", label: "Configuración" },
