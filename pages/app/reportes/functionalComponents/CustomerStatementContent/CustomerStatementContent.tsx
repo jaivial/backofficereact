@@ -17,7 +17,7 @@ export function CustomerStatementContent({ customerStatement }: CustomerStatemen
   return (
     <>
       <Card variant="tailwind" padding className="mb-6" data-ui="customer-info">
-        <h3 className="text-lg font-semibold text-[var(--bo-text)] mb-4" data-ui="info-title">Informacion del Cliente</h3>
+        <h3 className="text-lg font-semibold text-[var(--bo-text)] mb-4" data-ui="info-title">Información del Cliente</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-ui="info-grid">
           <div data-ui="name-info">
             <span className="text-sm text-[var(--bo-muted)]" data-slot="customerStatementContent-text-[var(--bo-muted)]">Nombre</span>

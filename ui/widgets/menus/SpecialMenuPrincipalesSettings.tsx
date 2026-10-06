@@ -11,7 +11,7 @@ export type SpecialMenuPrincipalesSection = {
 };
 
 /**
- * "Anadir platos principales" settings for a special menu.
+ * "Añadir platos principales" settings for a special menu.
  *
  * One toggle for the menu; when on, every image section gets the catalog
  * search (same row as the section editor) and the list of picked dishes, each

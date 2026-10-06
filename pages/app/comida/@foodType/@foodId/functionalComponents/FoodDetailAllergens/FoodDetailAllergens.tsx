@@ -52,7 +52,7 @@ export function FoodDetailAllergens({
           ))}
         </div>
       ) : (
-        <div className="bo-foodDetailEmptyNote" data-role="food-detail-allergens-empty">Sin alergenos</div>
+        <div className="bo-foodDetailEmptyNote" data-role="food-detail-allergens-empty">Sin alérgenos</div>
       )}
     </Panel>
   );

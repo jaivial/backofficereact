@@ -302,7 +302,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const [pendingSectionDelete, setPendingSectionDelete] = useState<{ sectionClientId: string; sectionLabel: string } | null>(null);
 
-  // Coordination id: menu_section_kind_presets_v1 - "Anadir seccion" always asks
+  // Coordination id: menu_section_kind_presets_v1 - "Añadir seccion" always asks
   // the section type first on conventional closed menus and conventional a la
   // carte menus; special menus keep the old one-click behaviour.
   const [addSectionModalOpen, setAddSectionModalOpen] = useState(false);
@@ -950,7 +950,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
               {!isSpecial ? (
                 <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
                   <div className="bo-panelHead" data-slot="crear-panelHead">
-                    <div className="bo-panelTitle" data-slot="crear-panelTitle"><Settings2 size={15} /> Configuracion</div>
+                    <div className="bo-panelTitle" data-slot="crear-panelTitle"><Settings2 size={15} /> Configuración</div>
                   </div>
                   <div className="bo-panelBody bo-form bo-form--menuWizard" data-slot="crear-form--menuWizard">
                     <div className="bo-field" data-slot="crear-field">
@@ -1018,7 +1018,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       {mainLimit ? (
                         <div className="bo-field bo-mainLimitCounterField" data-slot="crear-field-main-limit-number">
                           <PlusMinusCounter
-                            label="Numero maximo de principales por mesa"
+                            label="Número maximo de principales por mesa"
                             value={Math.max(1, Number.parseInt(mainLimitNum || "1", 10) || 1)}
                             onDecrease={() => setMainLimitNum(String(Math.max(1, (Number.parseInt(mainLimitNum || "1", 10) || 1) - 1)))}
                             onIncrease={() => setMainLimitNum(String(Math.max(1, (Number.parseInt(mainLimitNum || "1", 10) || 1) + 1)))}
@@ -1038,7 +1038,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       <AutosaveInput multiline className="bo-input bo-textarea" value={comments.join("\n")} onChange={(e) => setComments(e.target.value.split("\n"))} placeholder="Añade comentarios..." rows={2} style={{ minHeight: "60px", resize: "vertical" }} data-testid="menu-crear-comments-textarea" />
                     </div>
                     <div className="bo-field bo-field--full" data-slot="crear-importantInfoField" data-coordination-id="menu_important_info_v1">
-                      <div className="bo-label" data-slot="crear-importantInfoLabel">Informacion importante</div>
+                      <div className="bo-label" data-slot="crear-importantInfoLabel">Información importante</div>
                       <div className="bo-stackFields" data-slot="crear-importantInfoStackFields">
                         {importantInfo.map((line, idx) => (
                           <div key={`important-info-${idx}`} className="bo-inlineField" data-slot="crear-importantInfoInlineField">
@@ -1046,7 +1046,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                               className="bo-input bo-textarea"
                               value={line}
                               onChange={(e) => updateImportantInfoLine(idx, e.target.value)}
-                              placeholder="Informacion importante"
+                              placeholder="Información importante"
                               rows={2}
                               style={{ minHeight: "2.8em", fontSize: "16px", resize: "vertical" }}
                               data-testid={`menu-crear-important-info-textarea-${idx}`}
@@ -1206,7 +1206,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
 
       {/* Allergen modal */}
       <Modal open={!!allergenModal?.open} title="Alergenos" onClose={() => setAllergenModal(null)} widthPx={620} hideClose>
-        <ModalHeader title="Selecciona alergenos" onClose={() => setAllergenModal(null)} />
+        <ModalHeader title="Selecciona alérgenos" onClose={() => setAllergenModal(null)} />
         <div className="bo-modalBody" data-slot="crear-modalBody">
           <div className="bo-allergenGrid" data-testid="menu-crear-allergen-grid">
             {ALLERGENS.map((item) => {

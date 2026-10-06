@@ -1492,7 +1492,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   }, [api]);
 
   // --- addSection ---
-  // Coordination id: menu_section_kind_presets_v1 - the "Anadir seccion" modal
+  // Coordination id: menu_section_kind_presets_v1 - the "Añadir seccion" modal
   // passes the chosen preset, so Entrantes/Principal/Arroz/Postres land with
   // their title already filled and "Personalizada" lands blank.
   const addSection = useCallback((selection?: AddSectionSelection) => {

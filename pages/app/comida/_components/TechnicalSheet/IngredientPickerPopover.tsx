@@ -108,7 +108,7 @@ export function IngredientPickerPopover({
       onAdded();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo anadir el ingrediente");
+      setError(err instanceof Error ? err.message : "No se pudo añadir el ingrediente");
     } finally {
       setBusy(false);
     }
@@ -119,7 +119,7 @@ export function IngredientPickerPopover({
       open={open}
       anchorRef={anchorRef}
       onClose={onClose}
-      ariaLabel="Anadir ingrediente"
+      ariaLabel="Añadir ingrediente"
       // Sized to its results: a short product name should not be padded out to a
       // fixed width, and a long one should have room up to the cap.
       minWidthPx={300}
@@ -128,7 +128,7 @@ export function IngredientPickerPopover({
       data-testid="ingredient-picker-popover"
     >
       <div data-slot="ingredientPickerPopover-popover-head" className="bo-popover__head">
-        <h4 data-slot="ingredientPickerPopover-popover-title" className="bo-popover__title">Anadir ingrediente</h4>
+        <h4 data-slot="ingredientPickerPopover-popover-title" className="bo-popover__title">Añadir ingrediente</h4>
       </div>
 
       <div data-slot="ingredientPickerPopover-popover-body" className="bo-popover__body">

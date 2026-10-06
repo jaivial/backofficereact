@@ -156,7 +156,7 @@ export function MemberCreateModal({
               </label>
 
               <label className="bo-field bo-field--wide" data-slot="member-create-phone-label">
-                <span className="bo-label" data-slot="memberCreateModal-label">Telefono (opcional)</span>
+                <span className="bo-label" data-slot="memberCreateModal-label">Teléfono (opcional)</span>
                 <PhoneInput
                   countryCode={phoneCountryCode}
                   number={phoneNumber}

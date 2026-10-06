@@ -14,8 +14,8 @@ type MandatoryMenuSelectorProps = {
 
 const MENU_TYPE_LABELS: Record<string, string> = {
   closed_conventional: "Cerrado convencional",
-  a_la_carte_group: "Menu grupo a la carta",
-  closed_group: "Menu de grupo cerrado",
+  a_la_carte_group: "Menú grupo a la carta",
+  closed_group: "Menú de grupo cerrado",
   special: "Especial",
   a_la_carte: "A la carta convencional",
 };

@@ -10,7 +10,7 @@ import type { ProductionType } from "../../../comida/_components/TechnicalSheet/
 
 // Creation dialog for stock articles. The first step asks HOW the article is
 // born: "Escanear documento" opens the camera and lets MiniMax vision turn a
-// photographed albaran/etiqueta into a name, or "Anadir manualmente" opens the
+// photographed albaran/etiqueta into a name, or "Añadir manualmente" opens the
 // regular form. Materia prima creates a plain RAW stock item; Preparado requires
 // a ficha tecnica - the sheet create already produces the output stock article
 // server-side, so the modal only closes once one exists.
@@ -253,7 +253,7 @@ export function StockItemModal({
             onClick={() => setStep("manual")}
           >
             <Keyboard size={28} className="bo-stockChoiceIco" aria-hidden="true" />
-            <strong className="bo-stockChoiceTitle">Anadir manualmente</strong>
+            <strong className="bo-stockChoiceTitle">Añadir manualmente</strong>
             <span data-slot="stockItemModal-stockChoiceHint" className="bo-stockChoiceHint">Crea el articulo a mano con todos sus datos.</span>
           </button>
         </div>

@@ -48,7 +48,7 @@ function formatFieldName(field: string): string {
     invoice_date: "Fecha de factura",
     payment_date: "Fecha de pago",
     status: "Estado",
-    invoice_number: "Numero de factura",
+    invoice_number: "Número de factura",
   };
   return fieldMap[field] || field;
 }

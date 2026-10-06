@@ -172,7 +172,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
             <div data-testid="line-items-table-header" className="bo-lineItemsTableHeader" data-slot="line-items-table-header">
               <div data-testid="line-items-cell-description" className="bo-lineItemCell bo-lineItemCell--description" data-slot="line-items-cell-description">
                 <List size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />
-                <span data-testid="lineItems-srOnly" className="bo-srOnly" data-slot="lineItems-srOnly">Descripcion</span>
+                <span data-testid="lineItems-srOnly" className="bo-srOnly" data-slot="lineItems-srOnly">Descripción</span>
               </div>
               <div data-testid="line-items-cell-quantity" className="bo-lineItemCell bo-lineItemCell--quantity" data-slot="line-items-cell-quantity">
                 <Hash size={14} className="bo-lineItemHeaderIcon" aria-hidden="true" />

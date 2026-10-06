@@ -73,7 +73,7 @@ export function InvoiceNumberingPanel({ invoiceSettings, busy, onSettingsChange,
 
           <div className="bo-row" data-slot="numberingRow">
             <label className="bo-field" style={{ flex: 1 }} data-ui="startingNumberField">
-              <div className="bo-label" data-slot="fieldLabel">Numero inicial</div>
+              <div className="bo-label" data-slot="fieldLabel">Número inicial</div>
               <input
                 className="bo-input"
                 type="number"

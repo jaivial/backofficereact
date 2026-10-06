@@ -377,7 +377,7 @@ export default function Page() {
         <>
           {/* Customer Info */}
           <Card variant="tailwind" padding className="mb-6" data-slot="estado-cuenta-customer-info-card">
-            <h3 className="text-lg font-semibold text-[var(--bo-text)] mb-4" data-slot="estado-cuenta-customer-info-title">Informacion del Cliente</h3>
+            <h3 className="text-lg font-semibold text-[var(--bo-text)] mb-4" data-slot="estado-cuenta-customer-info-title">Información del Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-slot="estado-cuenta-customer-info-grid">
               <div data-slot="estado-cuenta-customer-name-field">
                 <span className="text-sm text-[var(--bo-muted)]" data-slot="estado-cuenta-text-[var(--bo-muted)]">Nombre</span>

@@ -51,12 +51,12 @@ export default function Page() {
             <a
               className="bo-foodHubCard"
               href="/app/comida/menus"
-              aria-label="Abrir Menus"
+              aria-label="Abrir Menús"
               data-ui="food-hub-card"
               data-testid="food-hub-card-menus"
             >
               <UtensilsCrossed className="bo-foodHubIcon" size={20} aria-hidden="true" data-ui="food-hub-icon" data-testid="food-hub-icon-menus" />
-              <span className="bo-foodHubLabel" data-ui="food-hub-label" data-testid="food-hub-label-menus">Menus</span>
+              <span className="bo-foodHubLabel" data-ui="food-hub-label" data-testid="food-hub-label-menus">Menús</span>
               <span className="bo-foodHubHint" data-ui="food-hub-hint" data-testid="food-hub-hint-menus">Gestiona los menus del restaurante</span>
             </a>
           ) : null}
