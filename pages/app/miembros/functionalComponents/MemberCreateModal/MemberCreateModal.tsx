@@ -70,7 +70,7 @@ export function MemberCreateModal({
     setDni("");
     setPhoneCountryCode("34");
     setPhoneNumber("");
-    setRoleSlug(roles[0]?.slug ?? "");
+    setRoleSlug("");
     setUsername("");
     setTemporaryPassword("");
     setAvatarFile(null);
