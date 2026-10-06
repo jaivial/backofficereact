@@ -226,7 +226,7 @@ function ContentNode({
             data-testid={`ad-node-${item.id}-image`}
           >
             <ImagePlus size={16} aria-hidden="true" />
-            <span>{item.value ? "Cambiar imagen" : "Anadir imagen"}</span>
+            <span>{item.value ? "Cambiar imagen" : "Añadir imagen"}</span>
           </button>
         ) : null}
       </div>
@@ -575,7 +575,7 @@ function WizardCard({
           <EditableText
             value={step.description}
             multiline
-            ariaLabel="Descripcion del anuncio"
+            ariaLabel="Descripción del anuncio"
             placeholder="Descripcion"
             testId={`ad-wizard-card-${step.id}-description`}
             className="bo-adWizardCardDesc"

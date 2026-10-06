@@ -432,7 +432,7 @@ export function MenuSectionEditor({
                     className="bo-input bo-textarea"
                     value={sec.subtitle}
                     onChange={(e) => updateSection(sec.clientId, { subtitle: e.target.value })}
-                    placeholder="Descripcion breve que aparece debajo del titulo en cursiva"
+                    placeholder="Descripción breve que aparece debajo del titulo en cursiva"
                     rows={2}
                     style={{ minHeight: "3em", fontSize: "16px", resize: "vertical" }}
                     data-testid={`menu-section-editor-settings-subtitle-${sec.clientId}`}

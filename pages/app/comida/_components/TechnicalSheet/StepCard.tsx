@@ -75,7 +75,7 @@ export function StepCard({
             onClick={() => setImageOpen((open) => !open)}
           >
             <ImagePlus size={22} aria-hidden="true" />
-            <span data-slot="stepCard-span">Anadir imagen</span>
+            <span data-slot="stepCard-span">Añadir imagen</span>
           </button>
         )}
 

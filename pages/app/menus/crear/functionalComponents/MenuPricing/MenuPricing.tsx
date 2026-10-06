@@ -58,7 +58,7 @@ export function MenuPricing({
   if (isSpecial) return null;
   return (
     <Panel className="bo-settingsPanel" data-pricing-panel="true" data-slot="menuPricing-settingsPanel"
-      title={<><Settings2 size={15} /> Configuracion</>}
+      title={<><Settings2 size={15} /> Configuración</>}
       bodyClassName="bo-form bo-form--menuWizard"
     >
         <div className="bo-field" data-slot="menuPricing-field">
@@ -141,7 +141,7 @@ export function MenuPricing({
           <Switch checked={mainLimit} onCheckedChange={onMainLimitChange} data-testid="menu-pricing-main-limit-switch" />
           {mainLimit ? (
             <PlusMinusCounter
-              label="Numero de principales"
+              label="Número de principales"
               value={mainLimitNum}
               onDecrease={() => onMainLimitNumChange(String(Math.max(1, Number(mainLimitNum) - 1)))}
               onIncrease={() => onMainLimitNumChange(String(Number(mainLimitNum) + 1))}

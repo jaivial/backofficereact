@@ -60,13 +60,13 @@ export function AllergenPickerPopover({
       open={open}
       anchorRef={anchorRef}
       onClose={onClose}
-      ariaLabel="Alergenos de la ficha"
+      ariaLabel="Alérgenos de la ficha"
       widthPx={300}
       className={className}
       data-testid="allergen-picker-popover"
     >
       <div data-slot="allergenPickerPopover-popover-head" className="bo-popover__head">
-        <h4 data-slot="allergenPickerPopover-popover-title" className="bo-popover__title">Alergenos</h4>
+        <h4 data-slot="allergenPickerPopover-popover-title" className="bo-popover__title">Alérgenos</h4>
       </div>
 
       {/* Compact variant of the very same grid used in the Informacion tab. */}

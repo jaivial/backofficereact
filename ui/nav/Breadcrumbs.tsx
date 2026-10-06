@@ -35,7 +35,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   turnos: "Turnos",
   fichaje: "Fichaje",
   facturas: "Facturas",
-  recurrentes: "Facturacion recurrente",
+  recurrentes: "Facturación recurrente",
   reportes: "Reportes",
   "estado-cuenta": "Estado de Cuenta",
 };

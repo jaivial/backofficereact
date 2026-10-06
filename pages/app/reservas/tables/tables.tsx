@@ -5081,7 +5081,7 @@ export default function TableManagerPage() {
 										data-ui="add-table-top-btn"
 										className="bo-actionBtn bo-actionBtn--glass"
 										type="button"
-										aria-label="Anadir mesa"
+										aria-label="Añadir mesa"
 										onClick={openAddModal}
 									>
 										<Plus size={18} strokeWidth={1.8} />
@@ -5538,7 +5538,7 @@ export default function TableManagerPage() {
 											<div data-ui="limit-hint" className="bo-tableMapDrawHint">
 												{isEditingLimitArea
 													? "Edita los limites: doble clic en una linea anade un punto, doble clic en un punto lo elimina."
-													: "Dibuja el perimetro del area"}
+													: "Dibuja el perímetro del area"}
 											</div>
 
 											{hasClosedLimitArea(selectedFloorTemplatePoints) &&
@@ -7129,8 +7129,8 @@ export default function TableManagerPage() {
 																const armed = shortSideHover === slot.side;
 																const label =
 																	slot.side === "left"
-																		? "Anadir silla en lado corto izquierdo"
-																		: "Anadir silla en lado corto derecho";
+																		? "Añadir silla en lado corto izquierdo"
+																		: "Añadir silla en lado corto derecho";
 																return (
 																	<button
 																		key={`add-short-${slot.side}`}

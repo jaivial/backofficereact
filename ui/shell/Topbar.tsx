@@ -120,7 +120,7 @@ export function Topbar({
         ? [
             {
               id: "restaurant-config",
-              label: "Configuracion restaurante",
+              label: "Configuración restaurante",
               icon: <Store size={18} strokeWidth={1.8} />,
               onSelect: goRestaurantConfig,
             },

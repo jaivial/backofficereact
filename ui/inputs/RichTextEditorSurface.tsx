@@ -481,7 +481,7 @@ export default function RichTextEditorSurface({
               data-coord-id={coordId ? `${coordId}-link` : undefined}
             >
               <label className="grid gap-1" data-testid={`${testId}-link-url-field`}>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-muted">Direccion</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-muted">Dirección</span>
                 <input
                   className="bo-input bo-input--sm w-full"
                   type="url"

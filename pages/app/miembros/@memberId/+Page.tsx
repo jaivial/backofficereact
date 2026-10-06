@@ -83,7 +83,7 @@ export default function Page() {
     const digits = phoneNumber.replace(/[^0-9]/g, "");
     const phoneE164 = composePhoneE164(phoneCountryCode, phoneNumber);
     if (digits !== "" && phoneE164 === null) {
-      setError("Telefono invalido");
+      setError("Teléfono invalido");
       return;
     }
 
@@ -256,7 +256,7 @@ export default function Page() {
   );
 
   return (
-    <section aria-label="Informacion del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-detail-section">
+    <section aria-label="Información del miembro" className="bo-content-grid bo-memberDetailPage" data-slot="miembro-detail-section">
       <Breadcrumbs items={[{ label: "Miembros", href: "/app/miembros" }, { label: memberName || "Detalle" }]} />
       {!member ? (
         <Panel data-slot="@memberId-panel" title="Miembro no disponible" meta="No se pudo cargar el detalle del miembro solicitado." />
@@ -416,11 +416,11 @@ export default function Page() {
                   )}
                 </label>
                 <label className="bo-field bo-field--wide" data-slot="@memberId-field--wide">
-                  <span className="bo-label" data-slot="@memberId-label">Numero de cuenta (opcional)</span>
+                  <span className="bo-label" data-slot="@memberId-label">Número de cuenta (opcional)</span>
                   <input id="bankAccount" className="bo-input" data-testid="miembro-detail-bankaccount-input" value={bankAccount} disabled={!editing || saving || avatarBusy} onChange={(e) => setBankAccount(e.target.value)} />
                 </label>
                 <label className="bo-field bo-field--wide" data-slot="@memberId-field--wide">
-                  <span className="bo-label" data-slot="@memberId-label">Telefono (opcional)</span>
+                  <span className="bo-label" data-slot="@memberId-label">Teléfono (opcional)</span>
                   <PhoneInput
                     countryCode={phoneCountryCode}
                     number={phoneNumber}

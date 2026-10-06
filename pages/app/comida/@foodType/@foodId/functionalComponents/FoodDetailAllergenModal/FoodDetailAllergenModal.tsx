@@ -20,7 +20,7 @@ export function FoodDetailAllergenModal({
 }: FoodDetailAllergenModalProps) {
   return (
     <Modal open={open} title="Alergenos" onClose={onClose} widthPx={620} hideClose>
-      <ModalHeader title="Selecciona alergenos" onClose={onClose} data-slot="food-detail-allergen-modal-head" data-role="food-detail-allergen-modal-title" />
+      <ModalHeader title="Selecciona alérgenos" onClose={onClose} data-slot="food-detail-allergen-modal-head" data-role="food-detail-allergen-modal-title" />
       <div className="bo-modalBody" data-slot="food-detail-allergen-modal-body">
         <div className="bo-allergenGrid" data-ui="food-detail-allergen-modal-grid">
           {CARD_ALLERGENS.map((item) => {

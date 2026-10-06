@@ -55,7 +55,7 @@ export function SpecialMenuCtaSettings({
           </div>
           {config.action === "menu" ? (
             <div className="bo-field" data-slot="special-cta-menu-field">
-              <div className="bo-label" data-slot="special-cta-menu-label">Menu de destino</div>
+              <div className="bo-label" data-slot="special-cta-menu-label">Menú de destino</div>
               <Select className="bo-menuSettingSelect" value={String(config.menu_id || "")} onChange={(value) => onChange({ menu_id: Number(value) || 0 })} options={menuOptions} placeholder="Selecciona un menu" size="sm" ariaLabel="Menu de destino del boton" disabled={busy} data-testid="menu-crear-special-cta-menu-select" />
             </div>
           ) : null}
@@ -69,7 +69,7 @@ export function SpecialMenuCtaSettings({
                   onCountryCodeChange={(cc) => onChange({ whatsapp_phone: phone.national ? `${cc}${phone.national}` : "" })}
                   onNumberChange={(national) => onChange({ whatsapp_phone: national.replace(/\D/g, "") ? `${phone.countryCode}${national.replace(/\D/g, "")}` : "" })}
                   disabled={busy}
-                  numberAriaLabel="Telefono de WhatsApp del boton"
+                  numberAriaLabel="Teléfono de WhatsApp del boton"
                 />
               </div>
               <div className="bo-field bo-field--full" data-slot="special-cta-message-field">

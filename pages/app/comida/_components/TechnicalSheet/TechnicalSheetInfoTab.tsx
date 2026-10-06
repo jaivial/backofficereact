@@ -69,7 +69,7 @@ export function TechnicalSheetInfoTab({
             ref={addIngredientRef}
             type="button"
             className="bo-btn bo-btn--secondary bo-btn--sm"
-            aria-label="Anadir ingrediente"
+            aria-label="Añadir ingrediente"
             aria-expanded={ingredientOpen}
             data-role="sheet-add-ingredient"
             onClick={() => setIngredientOpen((open) => !open)}
@@ -107,12 +107,12 @@ export function TechnicalSheetInfoTab({
 
       <section data-testid="sheetsection-2" className="bo-stack bo-sheetSection">
         <div data-slot="technicalSheetInfoTab-sheetSectionHead" className="bo-sheetSectionHead">
-          <h3 data-slot="technicalSheetInfoTab-sectionTitle" className="bo-sectionTitle">Alergenos</h3>
+          <h3 data-slot="technicalSheetInfoTab-sectionTitle" className="bo-sectionTitle">Alérgenos</h3>
           <button
             ref={addAllergenRef}
             type="button"
             className="bo-btn bo-btn--secondary bo-btn--sm"
-            aria-label="Anadir alergeno"
+            aria-label="Añadir alergeno"
             aria-expanded={allergenOpen}
             data-role="sheet-add-allergen"
             onClick={() => setAllergenOpen((open) => !open)}

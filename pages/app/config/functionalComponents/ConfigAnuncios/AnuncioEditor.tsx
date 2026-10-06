@@ -853,7 +853,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             )}
 
         <div className="bo-adInsertPalette" data-testid="ad-insert-palette">
-          <div className="bo-adStudioSectionTitle">Anadir</div>
+          <div className="bo-adStudioSectionTitle">Añadir</div>
           <div className="bo-anunciosAddList bo-anunciosAddList--inline">
             {(editingCard ? [] : addContentItems).map((item) => (
               <button
@@ -1820,10 +1820,10 @@ export function ButtonInspector({
         {whatsappStyle ? (
           <div className="bo-adGroup bo-adWhatsapp" data-testid={`ad-cta-${cta.id}-whatsapp`}>
             <div className="bo-adGroupTitle">WhatsApp</div>
-            <Field label="Telefono del restaurante" testId={`ad-cta-${cta.id}-phone-restaurant`}>
+            <Field label="Teléfono del restaurante" testId={`ad-cta-${cta.id}-phone-restaurant`}>
               <input value={phone || "Sin telefono"} readOnly className="bo-input bo-inputReadonly" />
             </Field>
-            <Field label="Telefono personalizado" testId={`ad-cta-${cta.id}-phone-custom`}>
+            <Field label="Teléfono personalizado" testId={`ad-cta-${cta.id}-phone-custom`}>
               <input
                 value={whatsapp?.phone ?? ""}
                 onChange={(event) => onChange(patchWhatsAppButton(cta, { phone: event.target.value }))}

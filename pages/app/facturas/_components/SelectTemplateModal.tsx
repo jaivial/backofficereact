@@ -376,7 +376,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
               <input className="bo-input" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} required data-testid="select-template-customerEmail-input" />
             </label>
             <label data-testid="selectTemplateModal-field-4" className="bo-field" data-slot="selectTemplateModal-field">
-              <span data-testid="selectTemplateModal-label-5" className="bo-label" data-slot="selectTemplateModal-label">Telefono</span>
+              <span data-testid="selectTemplateModal-label-5" className="bo-label" data-slot="selectTemplateModal-label">Teléfono</span>
               <input className="bo-input" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} data-testid="select-template-customerPhone-input" />
             </label>
           </div>
@@ -392,7 +392,7 @@ function TemplateForm({ template, onSave, onCancel }: TemplateFormProps) {
               <input className="bo-input" type="text" value={customerAddressStreet} onChange={(e) => setCustomerAddressStreet(e.target.value)} data-testid="select-template-customerAddressStreet-input" />
             </label>
             <label data-testid="selectTemplateModal-field-number" className="bo-field bo-field--number" data-slot="selectTemplateModal-field--number">
-              <span data-testid="selectTemplateModal-label-8" className="bo-label" data-slot="selectTemplateModal-label">Numero</span>
+              <span data-testid="selectTemplateModal-label-8" className="bo-label" data-slot="selectTemplateModal-label">Número</span>
               <input className="bo-input" type="text" value={customerAddressNumber} onChange={(e) => setCustomerAddressNumber(e.target.value)} data-testid="select-template-customerAddressNumber-input" />
             </label>
           </div>
