@@ -14,7 +14,7 @@ type FoodPanelDef = {
 
 const FOOD_TYPE_PANELS: FoodPanelDef[] = [
   { value: "vinos", label: "Vinos", description: "Carta y referencias de bodega", icon: Wine },
-  { value: "cafes", label: "Cafes", description: "Opciones de cafe e infusiones", icon: Coffee },
+  { value: "cafes", label: "Cafés", description: "Opciones de cafe e infusiones", icon: Coffee },
   { value: "postres", label: "Postres", description: "Postres activos para carta", icon: Sparkles },
   { value: "platos", label: "Platos", description: "Platos y categorias", icon: UtensilsCrossed },
   { value: "bebidas", label: "Bebidas", description: "Refrescos y bebidas", icon: GlassWater },

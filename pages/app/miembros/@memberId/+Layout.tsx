@@ -36,7 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     () => [
       { id: "informacion", label: "Informacion", href: `${basePath}`, icon: <UserRound className="bo-ico" /> },
       { id: "contrato", label: "Contrato", href: `${basePath}/contrato`, icon: <FileSpreadsheet className="bo-ico" /> },
-      { id: "estadisticas", label: "Estadisticas", href: `${basePath}/estadisticas`, icon: <BarChart3 className="bo-ico" /> },
+      { id: "estadisticas", label: "Estadísticas", href: `${basePath}/estadisticas`, icon: <BarChart3 className="bo-ico" /> },
     ],
     [basePath],
   );

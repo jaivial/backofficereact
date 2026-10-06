@@ -16,7 +16,7 @@ describe("estadisticas access", () => {
     expect(isPathAllowed("/app/estadisticas", "admin", ["estadisticas"], 90)).toBe(true);
     expect(isPathAllowed("/app/estadisticas", "metre", ["fichaje"], 70)).toBe(false);
     expect(sidebarItemsForRole("admin", ["estadisticas"], 90)).toEqual(
-      expect.arrayContaining([{ key: "estadisticas", href: "/app/estadisticas", label: "Estadisticas" }]),
+      expect.arrayContaining([{ key: "estadisticas", href: "/app/estadisticas", label: "Estadísticas" }]),
     );
   });
 });

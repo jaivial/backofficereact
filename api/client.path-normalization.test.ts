@@ -7,7 +7,7 @@ describe("createClient admin path normalization", () => {
     let requestedURL = "";
     const fetchImpl: typeof fetch = async (input, _init) => {
       requestedURL = String(input);
-      return new Response(JSON.stringify({ success: false, message: "Credenciales invalidas" }), {
+      return new Response(JSON.stringify({ success: false, message: "Credenciales inválidas" }), {
         status: 200,
         headers: { "content-type": "application/json" },
       });
@@ -23,7 +23,7 @@ describe("createClient admin path normalization", () => {
     let requestedURL = "";
     const fetchImpl: typeof fetch = async (input, _init) => {
       requestedURL = String(input);
-      return new Response(JSON.stringify({ success: false, message: "Credenciales invalidas" }), {
+      return new Response(JSON.stringify({ success: false, message: "Credenciales inválidas" }), {
         status: 200,
         headers: { "content-type": "application/json" },
       });

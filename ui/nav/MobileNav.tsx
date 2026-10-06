@@ -49,7 +49,7 @@ const MOBILE_NAV_ITEMS: NavItem[] = [
   { key: "fichaje", label: "Fichaje", href: "/m/app/fichaje", icon: Clock },
   { key: "stock", label: "Stock", href: "/app/stock", icon: Boxes },
   { key: "pos", label: "TPV", href: "/app/pos", icon: MonitorSmartphone },
-  { key: "estadisticas", label: "Estadisticas", href: "/app/estadisticas", icon: BarChart3 },
+  { key: "estadisticas", label: "Estadísticas", href: "/app/estadisticas", icon: BarChart3 },
   { key: "campanas", label: "Campañas", href: "/app/campanas", icon: Mails },
   { key: "anuncios", label: "Anuncios", href: "/app/anuncios", icon: Megaphone },
 ];

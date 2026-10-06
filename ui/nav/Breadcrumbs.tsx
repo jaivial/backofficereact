@@ -29,7 +29,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   "mi-horario": "Mi Horario",
   roles: "Roles",
   contrato: "Contrato",
-  estadisticas: "Estadisticas",
+  estadisticas: "Estadísticas",
   horarios: "Horarios",
   preview: "Preview",
   turnos: "Turnos",
@@ -109,7 +109,7 @@ function titleForRoute(pathname: string, segments: string[]): string {
 
   if (segments[0] === "miembros" && segments[1] && /^\d+$/.test(segments[1])) {
     if (segments[2] === "contrato") return "Contrato";
-    if (segments[2] === "estadisticas") return "Estadisticas";
+    if (segments[2] === "estadisticas") return "Estadísticas";
     return `Miembro #${segments[1]}`;
   }
 

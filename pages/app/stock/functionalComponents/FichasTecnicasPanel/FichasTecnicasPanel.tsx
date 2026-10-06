@@ -18,7 +18,7 @@ import {
 import { useSheetImageSocket } from "../../../comida/_components/TechnicalSheet/useSheetImageSocket";
 import { MenuEngineeringChart } from "./MenuEngineeringChart";
 
-// "Fichas tecnicas" tab: a card per elaborated product (every plato/postre that
+// "Fichas técnicas" tab: a card per elaborated product (every plato/postre that
 // has a DRAFT/ACTIVE technical sheet). Clicking a card opens that sheet's editor
 // in the SAME UI used to create it, addressed by the ?ficha=<id> URL query so
 // the view is shareable / deep-linkable.
@@ -218,7 +218,7 @@ export function FichasTecnicasPanel() {
             setSelectedId(null);
           }}
           data-ui="fichas-filter-category"
-          aria-label="Categoria"
+          aria-label="Categoría"
         >
           <option value="">Todas las categorias</option>
           {categoryOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -306,9 +306,9 @@ export function FichasTecnicasPanel() {
   };
 
   return (
-    <section className="bo-panel" aria-label="Fichas tecnicas" data-ui="fichas-tecnicas">
+    <section className="bo-panel" aria-label="Fichas técnicas" data-ui="fichas-tecnicas">
       <div className="bo-panelHead" data-ui="fichas-header">
-        <h2 className="bo-panelTitle" data-ui="fichas-title">Fichas tecnicas</h2>
+        <h2 className="bo-panelTitle" data-ui="fichas-title">Fichas técnicas</h2>
         <span className="bo-stockMuted" data-ui="fichas-count">
           {refreshing ? `${total} fichas · actualizando` : `${total} fichas`}
         </span>

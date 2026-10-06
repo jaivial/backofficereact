@@ -188,7 +188,7 @@ export default function Page() {
 
         autoTable(doc, {
           startY: currentY + 5,
-          head: [["Factura", "Fecha", "Metodo", "Importe"]],
+          head: [["Factura", "Fecha", "Método", "Importe"]],
           body: paymentBody,
           theme: "striped",
         });
@@ -502,7 +502,7 @@ export default function Page() {
                       <tr data-slot="estado-cuenta-tr">
                         <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Factura</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Fecha</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Metodo</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Método</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Importe</th>
                       </tr>
                     </thead>

@@ -29,7 +29,7 @@ function parseMemberId(pageContext: PageContextServer): number {
 export async function data(pageContext: PageContextServer) {
   const memberId = parseMemberId(pageContext);
   const config = useConfig();
-  config({ title: memberId > 0 ? `Miembro #${memberId} · Estadisticas` : "Estadisticas" });
+  config({ title: memberId > 0 ? `Miembro #${memberId} · Estadisticas` : "Estadísticas" });
 
   const date = typeof pageContext.urlParsed?.search?.date === "string" ? pageContext.urlParsed.search.date : todayISO();
 
