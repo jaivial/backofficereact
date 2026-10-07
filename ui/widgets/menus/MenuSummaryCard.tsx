@@ -5,6 +5,7 @@ import { cn } from "../../shadcn/utils";
 import { Switch } from "../../shadcn/Switch";
 import { PencilLine, Repeat2, Trash2 } from "lucide-react";
 import { formatMenuPrice, menuTypeLabel } from "./menuPresentation";
+import { normalizeMenuType } from "./menuTypeCodes";
 
 export const MenuSummaryCard = React.memo(function MenuSummaryCard({
   menu,
@@ -26,7 +27,7 @@ export const MenuSummaryCard = React.memo(function MenuSummaryCard({
   onRequestDelete: (menu: GroupMenuV2Summary) => void;
 }) {
   const title = menu.menu_title || "Sin titulo";
-  const typeLabel = useMemo(() => menuTypeLabel(menu.menu_type || "closed_conventional"), [menu.menu_type]);
+  const typeLabel = useMemo(() => menuTypeLabel(normalizeMenuType(menu.menu_type)), [menu.menu_type]);
   const priceLabel = useMemo(() => formatMenuPrice(menu.price), [menu.price]);
   const statusLabel = menu.active ? "Activo" : "Inactivo";
 

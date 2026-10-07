@@ -2,14 +2,14 @@ import React, { useMemo } from "react";
 import type { MenuTemplateType, RestaurantWebsiteMenuTemplatesConfig } from "../../../../../api/types";
 import { Select } from "../../../../../ui/inputs/Select";
 import { Panel } from "../../../../../ui/shell/Panel";
+// Coordination id: menu_type_codes_v1 - website template overrides are keyed by
+// the same numeric menu_type codes the menus use.
+import { MENU_TYPE_PANELS, menuTypeFullLabel } from "../../../../../ui/widgets/menus/menuPresentation";
 
-const MENU_TYPE_OPTIONS: { value: MenuTemplateType; label: string }[] = [
-  { value: "closed_conventional", label: "Menu cerrado convencional" },
-  { value: "a_la_carte", label: "Menu carta convencional" },
-  { value: "closed_group", label: "Menu cerrado grupo" },
-  { value: "a_la_carte_group", label: "Menu carta grupo" },
-  { value: "special", label: "Menu especial" },
-];
+const MENU_TYPE_OPTIONS: { value: MenuTemplateType; label: string }[] = MENU_TYPE_PANELS.map((panel) => ({
+  value: panel.value,
+  label: menuTypeFullLabel(panel.value),
+}));
 
 interface WebsitePanelProps {
   websiteMenuTemplates: RestaurantWebsiteMenuTemplatesConfig;

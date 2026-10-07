@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { MenuTypeChangeModal } from "./MenuTypeChangeModal";
+// Coordination id: menu_type_codes_v1 - stories use the numeric menu_type codes.
+import { MENU_TYPE } from "./menuTypeCodes";
+import type { MenuTypeCode } from "./menuTypeCodes";
 
 const meta = {
   title: "ui/widgets/menus/MenuTypeChangeModal",
@@ -18,12 +21,12 @@ export const Default: Story = {
   name: "Default",
   render: () => {
     const [open, setOpen] = useState(true);
-    const [nextType, setNextType] = useState("a_la_carte");
+    const [nextType, setNextType] = useState<MenuTypeCode>(MENU_TYPE.A_LA_CARTE);
 
     return (
       <MenuTypeChangeModal
         open={open}
-        currentType="closed_conventional"
+        currentType={MENU_TYPE.CLOSED_CONVENTIONAL}
         nextType={nextType}
         saving={false}
         onClose={() => setOpen(false)}
@@ -38,12 +41,12 @@ export const WithDifferentTypes: Story = {
   name: "With Different Types",
   render: () => {
     const [open, setOpen] = useState(true);
-    const [nextType, setNextType] = useState("closed_group");
+    const [nextType, setNextType] = useState<MenuTypeCode>(MENU_TYPE.CLOSED_GROUP);
 
     return (
       <MenuTypeChangeModal
         open={open}
-        currentType="a_la_carte"
+        currentType={MENU_TYPE.A_LA_CARTE}
         nextType={nextType}
         saving={false}
         onClose={() => setOpen(false)}
@@ -58,12 +61,12 @@ export const Saving: Story = {
   name: "Saving",
   render: () => {
     const [open, setOpen] = useState(true);
-    const [nextType, setNextType] = useState("special");
+    const [nextType, setNextType] = useState<MenuTypeCode>(MENU_TYPE.SPECIAL);
 
     return (
       <MenuTypeChangeModal
         open={open}
-        currentType="closed_conventional"
+        currentType={MENU_TYPE.CLOSED_CONVENTIONAL}
         nextType={nextType}
         saving={true}
         onClose={() => setOpen(false)}
@@ -78,12 +81,12 @@ export const SpecialMenuType: Story = {
   name: "Special Menu Type",
   render: () => {
     const [open, setOpen] = useState(true);
-    const [nextType, setNextType] = useState("a_la_carte_group");
+    const [nextType, setNextType] = useState<MenuTypeCode>(MENU_TYPE.A_LA_CARTE_GROUP);
 
     return (
       <MenuTypeChangeModal
         open={open}
-        currentType="special"
+        currentType={MENU_TYPE.SPECIAL}
         nextType={nextType}
         saving={false}
         onClose={() => setOpen(false)}
@@ -98,12 +101,12 @@ export const SameTypeSelected: Story = {
   name: "Same Type Selected (Confirm Disabled)",
   render: () => {
     const [open, setOpen] = useState(true);
-    const [nextType, setNextType] = useState("closed_conventional");
+    const [nextType, setNextType] = useState<MenuTypeCode>(MENU_TYPE.CLOSED_CONVENTIONAL);
 
     return (
       <MenuTypeChangeModal
         open={open}
-        currentType="closed_conventional"
+        currentType={MENU_TYPE.CLOSED_CONVENTIONAL}
         nextType={nextType}
         saving={false}
         onClose={() => setOpen(false)}
@@ -118,12 +121,12 @@ export const Closed: Story = {
   name: "Closed",
   render: () => {
     const [open, setOpen] = useState(false);
-    const [nextType, setNextType] = useState("a_la_carte");
+    const [nextType, setNextType] = useState<MenuTypeCode>(MENU_TYPE.A_LA_CARTE);
 
     return (
       <MenuTypeChangeModal
         open={open}
-        currentType="closed_conventional"
+        currentType={MENU_TYPE.CLOSED_CONVENTIONAL}
         nextType={nextType}
         saving={false}
         onClose={() => setOpen(false)}

@@ -47,9 +47,9 @@ describe("factories — create + cleanup contracts", () => {
     (api.post as ReturnType<typeof vi.fn>).mockResolvedValue({ success: true, menu_id: 99 });
     const { factory, cleanup } = makeMenuFactory(api);
 
-    const m = await factory.create({ menu_type: "special" });
+    const m = await factory.create({ menu_type: 6 });
     expect(m.id).toBe(99);
-    expect(api.post).toHaveBeenCalledWith("/api/admin/group-menus-v2/drafts", expect.objectContaining({ menu_type: "special" }));
+    expect(api.post).toHaveBeenCalledWith("/api/admin/group-menus-v2/drafts", expect.objectContaining({ menu_type: 6 }));
 
     await cleanup();
     expect(api.delete).toHaveBeenCalledWith("/api/admin/group-menus-v2/99");

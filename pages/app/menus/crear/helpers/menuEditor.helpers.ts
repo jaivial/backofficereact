@@ -11,6 +11,10 @@ import type {
 } from "../types/menuEditor.types";
 import type { GroupMenuV2, GroupMenuV2AIDish, GroupMenuV2AIImages, GroupMenuV2Dish, GroupMenuV2Section } from "../../../../../api/types";
 import { DEFAULT_BEVERAGE, DISH_IMAGE_AI_MAX_KB, MENU_AI_TRACE_PREFIX } from "../constants/menuEditor.constants";
+// Coordination id: menu_type_codes_v1 - every incoming menu_type is normalised
+// through the single tolerant helper.
+import { normalizeMenuType } from "../../../../../ui/widgets/menus/menuTypeCodes";
+import type { MenuTypeCode } from "../../../../../ui/widgets/menus/menuTypeCodes";
 // Coordination id: dessert_section_source_v1
 import { isGeneralDessertSection, normalizeDessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
 // Coordination id: autosave_three_way_merge_v1 - shared echo-merge primitives.
@@ -903,7 +907,7 @@ export function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []
   title: string;
   price: string;
   active: boolean;
-  menuType: string;
+  menuType: MenuTypeCode;
   subtitles: string[];
   sections: EditorSection[];
   settings: {
@@ -939,7 +943,7 @@ export function mapApiMenu(menu: GroupMenuV2, prevSections: EditorSection[] = []
     title: menu.menu_title || "",
     price: menu.price || "0",
     active: !!menu.active,
-    menuType: menu.menu_type || "closed_conventional",
+    menuType: normalizeMenuType(menu.menu_type),
     subtitles: menu.menu_subtitle || [],
     showDishImages: !!menu.show_dish_images,
     showSectionTabs: !!menu.show_section_tabs,

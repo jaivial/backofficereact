@@ -4,42 +4,30 @@ import {
   Fish,
   FlaskConical,
   LeafyGreen,
-  Lock,
   Milk,
   Nut,
   CircleDot,
   Shrimp,
   Sprout,
-  Star,
-  Users,
-  UsersRound,
   Wheat,
   Shell,
-  UtensilsCrossed,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
-export type MenuTypePanelDef = {
-  value: string;
-  label: string;
-  icon: LucideIcon;
-  description: string;
-};
+// Coordination id: menu_type_codes_v1 - the numeric menu_type codes, their
+// meaning and the legacy string mapping live in
+// ui/widgets/menus/menuTypeCodes.ts; the panels themselves are owned by
+// ui/widgets/menus/menuPresentation.ts. Only the editor-specific hints below
+// are local to the creator wizard.
+import { MENU_TYPE_PANELS } from "../../../../../ui/widgets/menus/menuPresentation";
+import { MENU_TYPE } from "../../../../../ui/widgets/menus/menuTypeCodes";
+import type { MenuTypeCode } from "../../../../../ui/widgets/menus/menuTypeCodes";
 
-const MENU_TYPE_PANELS: readonly MenuTypePanelDef[] = [
-  { value: "closed_conventional", label: "Menu cerrado convencional", icon: Lock, description: "Menu fijo con precio cerrado" },
-  { value: "closed_group", label: "Menu cerrado grupal", icon: Users, description: "Menu cerrado para grupos" },
-  { value: "a_la_carte", label: "Carta", icon: UtensilsCrossed, description: "Carta abierta" },
-  { value: "a_la_carte_group", label: "Carta grupal", icon: UsersRound, description: "Carta para grupos" },
-  { value: "special", label: "Menu especial", icon: Star, description: "Menu de temporada o evento" },
-];
-
-export const MENU_TYPE_HINTS: Record<string, string> = {
-  closed_conventional: "Estructura fija y rapida para menus clasicos",
-  closed_group: "Pensado para grupos con timing de servicio",
-  a_la_carte: "Carta abierta con mas libertad de eleccion",
-  a_la_carte_group: "Version de carta para reservas de grupo",
-  special: "Menu de temporada o evento con presentacion especial",
+export const MENU_TYPE_HINTS: Partial<Record<MenuTypeCode, string>> = {
+  [MENU_TYPE.CLOSED_CONVENTIONAL]: "Estructura fija y rapida para menus clasicos",
+  [MENU_TYPE.CLOSED_GROUP]: "Pensado para grupos con timing de servicio",
+  [MENU_TYPE.A_LA_CARTE]: "Carta abierta con mas libertad de eleccion",
+  [MENU_TYPE.A_LA_CARTE_GROUP]: "Version de carta para reservas de grupo",
+  [MENU_TYPE.SPECIAL]: "Menu de temporada o evento con presentacion especial",
 };
 
 export const MENU_TYPES = MENU_TYPE_PANELS.map((panel) => ({
@@ -48,9 +36,10 @@ export const MENU_TYPES = MENU_TYPE_PANELS.map((panel) => ({
   hint: MENU_TYPE_HINTS[panel.value] ?? "Plantilla lista para editar",
 }));
 
+/** Select-compatible options: the numeric code serialised as a string. */
 export const menuTypeOptions: { value: string; label: string }[] = MENU_TYPES
   .filter((panel) => panel.enabled)
-  .map((panel) => ({ value: panel.value, label: panel.label }));
+  .map((panel) => ({ value: String(panel.value), label: panel.label }));
 
 export const DEFAULT_BEVERAGE = {
   type: "no_incluida",

@@ -58,6 +58,8 @@ import { MenuSectionEditor } from "./functionalComponents/MenuSectionEditor/Menu
 import { DishImageAdvisorModalComponent } from "./functionalComponents/DishImageAdvisorModal/DishImageAdvisorModal";
 import { ALLERGENS, beverageTypeOptions, dishVisibilityOptions, menuPreviewVisibilityOptions, menuTypeOptions, MENU_TYPES } from "./constants/menuEditor.constants";
 import { menuTypeFullLabel, menuTypeQuerySlug } from "../../../../ui/widgets/menus/menuPresentation";
+// Coordination id: menu_type_codes_v1 - the wizard works with numeric codes.
+import { normalizeMenuType } from "../../../../ui/widgets/menus/menuTypeCodes";
 import { AutosaveToast } from "../../../../ui/feedback/AutosaveToast";
 import type { DishImageCropConfirm } from "./types/menuEditor.types";
 
@@ -361,7 +363,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
   useEffect(() => {
     const win = previewFrameRef.current?.contentWindow;
     if (!win || previewThemeLoading || previewNeedsUpgrade) return;
-    win.postMessage({ type: "vc_preview:update", theme_id: previewThemeId, menu_type: menuType || "closed_conventional", menu: sliderPreviewMenuPayload }, "*");
+    win.postMessage({ type: "vc_preview:update", theme_id: previewThemeId, menu_type: normalizeMenuType(menuType), menu: sliderPreviewMenuPayload }, "*");
   }, [menuType, previewFrameRef, previewNeedsUpgrade, previewThemeId, previewThemeLoading, sliderPreviewMenuPayload]);
 
   const paneLayoutTransition = useMemo(
@@ -520,16 +522,16 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
           <p className="bo-typeIntro" data-slot="crear-typeIntro">Elige una base para empezar. Luego podras editar todos los detalles del menu.</p>
           <div className="bo-typeGrid" data-slot="crear-typeGrid">
             {H.isSpecial !== undefined && menuTypeOptions.map((opt) => {
-              const optData = MENU_TYPES.find((p) => p.value === opt.value) ?? MENU_TYPES[0];
+              const optData = MENU_TYPES.find((p) => String(p.value) === opt.value) ?? MENU_TYPES[0];
               const Icon = optData.icon || Settings2;
-              const isSelected = menuType === opt.value;
+              const isSelected = menuType === normalizeMenuType(opt.value);
               return (
                 <button
                   key={opt.value}
                   className={`bo-panel bo-typeCard ${isSelected ? "is-selected" : ""}`}
                   type="button"
                   disabled={!optData.enabled || busy}
-                  onClick={() => setMenuType(opt.value)}
+                  onClick={() => setMenuType(normalizeMenuType(opt.value))}
                   aria-pressed={isSelected}
                   data-testid={`menu-crear-type-card-${opt.value}`}
                 >
@@ -594,7 +596,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
             {!isSpecial ? (
               <div className="bo-field" data-slot="crear-field">
                 <div className="bo-label" data-slot="crear-label">Cambiar tipo de menu</div>
-                <Select className="bo-menuSettingSelect" value={menuType} onChange={setMenuType} options={menuTypeOptions} size="sm" ariaLabel="Seleccionar tipo de menu" />
+                <Select className="bo-menuSettingSelect" value={String(menuType)} onChange={(value) => setMenuType(normalizeMenuType(value))} options={menuTypeOptions} size="sm" ariaLabel="Seleccionar tipo de menu" />
               </div>
             ) : null}
 
@@ -905,7 +907,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                   {!isSpecial ? (
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Cambiar tipo de menu</div>
-                      <Select className="bo-menuSettingSelect" value={menuType} onChange={setMenuType} options={menuTypeOptions} size="sm" ariaLabel="Seleccionar tipo de menu en editor final" />
+                      <Select className="bo-menuSettingSelect" value={String(menuType)} onChange={(value) => setMenuType(normalizeMenuType(value))} options={menuTypeOptions} size="sm" ariaLabel="Seleccionar tipo de menu en editor final" />
                     </div>
                   ) : null}
                   <div className="bo-menuBasicsSwitchRow" data-slot="crear-menuBasicsSwitchRow">

@@ -1,16 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "../../../../../../api/client";
 import { WEBSITE_ROUTE_OPTIONS } from "../lib/adEditor";
+// Coordination id: menu_type_codes_v1 - menus arrive with numeric menu_type codes.
+import { menuTypeLabel } from "../../../../../../ui/widgets/menus/menuPresentation";
 
 export type RouteOption = { value: string; label: string };
-
-const MENU_TYPE_LABEL: Record<string, string> = {
-  special: "Menú especial",
-  closed_group: "Menú de grupo",
-  a_la_carte_group: "Carta de grupo",
-  a_la_carte: "Carta",
-  closed_conventional: "Menú",
-};
 
 /**
  * Coordination id: ads_cta_menu_routes_v1. Button "Web" destinations are the
@@ -31,7 +25,7 @@ export function useMenuRouteOptions(): RouteOption[] {
             .filter((menu) => menu.active && !menu.is_draft)
             .map((menu) => ({
               value: `/menu/${menu.id}`,
-              label: `${MENU_TYPE_LABEL[menu.menu_type] ?? "Menú"}: ${menu.menu_title || `#${menu.id}`}`,
+              label: `${menuTypeLabel(menu.menu_type)}: ${menu.menu_title || `#${menu.id}`}`,
             })),
         );
       })

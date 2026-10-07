@@ -2,14 +2,15 @@ import React from "react";
 
 import { cn } from "../../shadcn/utils";
 import { MENU_TYPE_PANELS } from "./menuPresentation";
+import type { MenuTypeCode } from "./menuTypeCodes";
 
 export const MenuTypePanelGrid = React.memo(function MenuTypePanelGrid({
   countsByType,
   onSelect,
   className,
 }: {
-  countsByType: Record<string, number>;
-  onSelect: (type: string) => void;
+  countsByType: Partial<Record<MenuTypeCode, number>>;
+  onSelect: (type: MenuTypeCode) => void;
   className?: string;
 }) {
   const panelIdPrefix = React.useId();

@@ -1,4 +1,6 @@
 import type { DessertSource } from "../../../../../ui/widgets/menus/sectionPresentation";
+// Coordination id: menu_type_codes_v1 - menu types are numeric codes in the editor.
+import type { MenuTypeCode } from "../../../../../ui/widgets/menus/menuTypeCodes";
 
 // Types for the menu editor page
 
@@ -82,7 +84,7 @@ export type BasicsDraft = {
   title: string;
   price: string;
   active: boolean;
-  menuType: string;
+  menuType: MenuTypeCode;
   subtitles: string[];
   showDishImages: boolean;
   showSectionTabs: boolean;
@@ -103,7 +105,7 @@ export type BasicsPayload = {
   menu_title: string;
   price: number;
   active: boolean;
-  menu_type: string;
+  menu_type: MenuTypeCode;
   menu_subtitle: string[];
   show_dish_images: boolean;
   show_section_tabs: boolean;
@@ -125,7 +127,7 @@ export type BasicsPayload = {
 export type PreviewThemeConfig = {
   assigned: boolean;
   default_theme_id: string;
-  overrides: Record<string, string>;
+  overrides: Partial<Record<MenuTypeCode, string>>;
   themes: { id: string; name?: string }[];
 };
 

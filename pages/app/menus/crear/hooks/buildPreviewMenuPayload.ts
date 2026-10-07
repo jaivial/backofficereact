@@ -1,4 +1,8 @@
 import type { BeverageOption } from '../types/menuEditor.types'
+// Coordination id: menu_type_codes_v1 - the preview payload mirrors the
+// public-API shape, where menu_type is the numeric code.
+import { DEFAULT_MENU_TYPE, normalizeMenuType } from '../../../../../ui/widgets/menus/menuTypeCodes'
+import type { MenuTypeCode } from '../../../../../ui/widgets/menus/menuTypeCodes'
 
 /**
  * Pure builder for the menu-preview iframe payload.
@@ -16,7 +20,7 @@ import type { BeverageOption } from '../types/menuEditor.types'
 export type BuildPreviewMenuPayloadInput = {
   menuId: number | null
   title: string
-  menuType: string
+  menuType: MenuTypeCode
   price: string
   active: boolean
   subtitles: string[]
@@ -116,7 +120,7 @@ export function buildPreviewMenuPayload(input: BuildPreviewMenuPayloadInput) {
   return {
     id: menuId,
     menu_title: title,
-    menu_type: menuType || 'closed_conventional',
+    menu_type: normalizeMenuType(menuType ?? DEFAULT_MENU_TYPE),
     price,
     active,
     menu_subtitle: subtitles,

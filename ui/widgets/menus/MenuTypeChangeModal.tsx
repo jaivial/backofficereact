@@ -6,8 +6,11 @@ import { Select } from "../../inputs/Select";
 import { Modal } from "../../overlays/Modal";
 import { cn } from "../../shadcn/utils";
 import { MENU_TYPE_PANELS, menuTypeLabel } from "./menuPresentation";
+import { normalizeMenuType } from "./menuTypeCodes";
+import type { MenuTypeCode } from "./menuTypeCodes";
 
-const MENU_TYPE_OPTIONS = MENU_TYPE_PANELS.map((panel) => ({ value: panel.value, label: panel.label }));
+// Select works with strings, so the numeric code is serialised on the way out.
+const MENU_TYPE_OPTIONS = MENU_TYPE_PANELS.map((panel) => ({ value: String(panel.value), label: panel.label }));
 
 export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
   open,
@@ -21,16 +24,16 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
   onConfirm,
 }: {
   open: boolean;
-  currentType: string;
-  nextType: string;
+  currentType: MenuTypeCode;
+  nextType: MenuTypeCode;
   saving: boolean;
   title?: string;
   className?: string;
   onClose: () => void;
-  onNextTypeChange: (value: string) => void;
+  onNextTypeChange: (value: MenuTypeCode) => void;
   onConfirm: () => void;
 }) {
-  const disableConfirm = saving || !nextType || nextType === currentType;
+  const disableConfirm = saving || nextType === currentType;
 
   return (
     <Modal open={open} title={title} onClose={onClose} widthPx={520} className={className}>
@@ -44,12 +47,12 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
       <div className="bo-modalBody" data-slot="menu-type-change-modal-body">
         <div className="bo-field bo-field--full" data-slot="menu-type-change-modal-current-field">
           <div className="bo-label" data-slot="menu-type-change-modal-current-label">Tipo actual</div>
-          <div className="bo-mutedText" data-slot="menu-type-change-modal-current-value">{menuTypeLabel(currentType || "closed_conventional")}</div>
+          <div className="bo-mutedText" data-slot="menu-type-change-modal-current-value">{menuTypeLabel(normalizeMenuType(currentType))}</div>
         </div>
 
         <label className="bo-field bo-field--full" data-slot="menu-type-change-modal-new-field">
           <span className="bo-label" data-slot="menu-type-change-modal-new-label">Nuevo tipo</span>
-          <Select value={nextType} onChange={onNextTypeChange} options={MENU_TYPE_OPTIONS} ariaLabel="Nuevo tipo de menu" />
+          <Select value={String(nextType)} onChange={(value) => onNextTypeChange(normalizeMenuType(value))} options={MENU_TYPE_OPTIONS} ariaLabel="Nuevo tipo de menu" />
         </label>
       </div>
 

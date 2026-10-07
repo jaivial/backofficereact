@@ -11,6 +11,8 @@ import { EuroInput } from "../../../../../ui/inputs/EuroInput";
 import { InlineDateRangeCalendar } from "../../../../../ui/inputs/InlineDateRangeCalendar";
 import { Select } from "../../../../../ui/inputs/Select";
 import { PlusMinusCounter } from "../../../../../ui/widgets/PlusMinusCounter";
+// Coordination id: menu_type_codes_v1 - menu types are numeric codes.
+import { isSpecialMenuType } from "../../../../../ui/widgets/menus/menuTypeCodes";
 import { FadeSeparator } from "../../../../../ui/layout/FadeSeparator";
 import { emptySpecialDate } from "../hooks/useSpecialDateActivation";
 
@@ -356,7 +358,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   // is set per section. Sections come with the saved date (GET) or are
   // fetched when the operator picks the menu.
   const isSpecialMenuId = useCallback(
-    (menuId: number | null | undefined) => menuId != null && availableMenus.find((am) => am.id === menuId)?.menu_type === "special",
+    (menuId: number | null | undefined) => menuId != null && isSpecialMenuType(availableMenus.find((am) => am.id === menuId)?.menu_type),
     [availableMenus],
   );
 
