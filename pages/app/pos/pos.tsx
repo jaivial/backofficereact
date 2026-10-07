@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import type { ModifierGroup } from "./types/register";
 import { POSSelect } from "./functionalComponents/POSSelect/POSSelect";
 import "../../../components/styles/features/pos/sell-screen.css";
 import "../../../components/styles/features/pos/toast.css";
@@ -19,12 +20,12 @@ import { POSCalendarModal } from "./functionalComponents/CashDay/POSCalendarModa
 import "../../../components/styles/features/pos/cash-day.css";
 
 type Settings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit?: boolean; requireOpenShift?: boolean; receiptPrefix?: string };
-type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean };
+type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean; modifierGroups?: ModifierGroup[] };
 type Table = { id: number; name: string; capacity: number; occupied: boolean };
 type TicketLine = { id: number; productName: string; quantity: number; unitPriceGrossCents: number; lineTotalGrossCents: number; status?: string };
 type Ticket = { id: number; ticketNumber?: string; version: number; status?: string; lines: TicketLine[]; subtotalGrossCents?: number; discountCents?: number; taxCents?: number; totalGrossCents: number };
 type Visit = { id: number; channel?: string; tableId?: number | null; tableName?: string; covers: number; status?: string; totalGrossCents?: number; ticket?: Ticket; tickets?: Ticket[] };
-type Bootstrap = { settings: Settings; products: Product[]; tables: Table[]; visits: Visit[] };
+type Bootstrap = { settings: Settings; products: Product[]; productModifiers?: Record<string, ModifierGroup[]>; tables: Table[]; visits: Visit[] };
 type Readiness = { activeProducts: number; mappedProducts: number; unmappedProducts: number; untrackedProducts: number; invalidMappings: number; salesCoveragePct: number };
 type StockOption = { id: number; name: string; deductionSource: string; quantityBase?: number };
 type Warehouse = { id: number; name: string; isDefault: boolean };
@@ -129,7 +130,10 @@ export default function Page() {
     setError("");
     try {
       const data = await request<Bootstrap>(activeDate ? `/bootstrap?date=${encodeURIComponent(activeDate)}` : "/bootstrap");
-      setSettings(data.settings || DEFAULT_SETTINGS); setProducts(data.products || []); setTables(data.tables || []); setVisits(data.visits || []);
+      // Modifier groups arrive keyed by product id; attach them so the sell
+      // screen knows a dish needs a choice before adding it to a ticket.
+      const modifierMap = (data.productModifiers || {}) as Record<string, ModifierGroup[]>;
+      setSettings(data.settings || DEFAULT_SETTINGS); setProducts((data.products || []).map((product: Product) => modifierMap[String(product.id)]?.length ? { ...product, modifierGroups: modifierMap[String(product.id)] } : product)); setTables(data.tables || []); setVisits(data.visits || []);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
   }, [activeDate, scopeReady]);
   useEffect(() => { void load(); }, [load]);
