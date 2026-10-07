@@ -20,6 +20,7 @@ import { POSModifierPicker } from "./POSModifierPicker";
 import { POSPackPicker } from "./POSPackPicker";
 import { POSRecallDialog } from "./POSRecallDialog";
 import { POSPinDialog } from "./POSPinDialog";
+import { POSGuestHistoryDialog } from "./POSGuestHistoryDialog";
 import { printTicketReceipt } from "./printReceipt";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
@@ -388,7 +389,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     if (!register.activeTicketLines.length) reasons.comanda = "No hay líneas en la cuenta.";
     else if (comandaBusy) reasons.comanda = "Generando comanda…";
     if (!register.ticket) {
-      const ticketKeys: RailFeatureKey[] = ["total", "borrar-comanda", "descuento", "separar-comanda", "dividir-comanda", "recargo", "invita", "comentario", "aparcar", "juntar-mesas", "cliente", "empleado", "tags", "propina"];
+      const ticketKeys: RailFeatureKey[] = ["total", "borrar-comanda", "descuento", "separar-comanda", "dividir-comanda", "recargo", "invita", "comentario", "aparcar", "juntar-mesas", "cliente", "comensal", "empleado", "tags", "propina"];
       for (const key of ticketKeys) reasons[key] = "Abre una cuenta para usar esta acción.";
     }
     if (!selectedLine || (selectedLine.status && selectedLine.status !== "ACTIVE")) {
@@ -542,6 +543,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       // Fiscal documents live on their own rail action: they are a document the
       // guest may ask for, not an edit of the comanda.
       case "factura": register.setError(""); setPrompt("factura"); break;
+      case "comensal": register.setError(""); setPrompt("comensal"); break;
       case "cerrar-mesas": register.setError(""); setPrompt("cerrar-mesas"); break;
       case "cerrar-dia": if (onCloseDay && cashDay?.status === "OPEN") { register.setError(""); setCloseDayError(""); setPrompt("cerrar-dia"); } break;
       case "aparcar": case "recargo": case "invita": case "comentario": case "cajon":
@@ -630,6 +632,15 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       </div>
 
       {billingOpen && date ? <POSDayBillingDialog date={date} onClose={() => setBillingOpen(false)} /> : null}
+
+      {prompt === "comensal" && register.ticket ? (
+        <POSGuestHistoryDialog
+          ticket={register.ticket}
+          canErase
+          onClose={closePrompt}
+          onLinked={(next) => register.adoptTicket(next)}
+        />
+      ) : null}
 
       {prompt === "factura" ? <POSFiscalDialog ticket={register.ticket} visit={register.visit} online={register.online} onClose={closePrompt} /> : null}
 
@@ -894,7 +905,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
           title="Anular línea"
 
-          description={`Pide el PIN de un jefe para anular "{lineToVoid.name}".`}
+          description={`Pide el PIN de un jefe para anular "${lineToVoid.productName}".`}
 
           confirmLabel="Anular con PIN"
 
@@ -908,6 +919,29 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
       ) : null}
 
+
+      {register.pinChallenge ? (
+        <POSPinDialog
+          title={register.pinChallenge.title}
+          description={register.pinChallenge.message}
+          confirmLabel="Aprobar con PIN"
+          busy={register.busy}
+          error={pinError || undefined}
+          onClose={() => { setPinError(""); register.setPinChallenge(null); }}
+          onSubmit={async (payload) => {
+            const challenge = register.pinChallenge;
+            if (!challenge) return;
+            // Checked with /pin/verify first so a wrong PIN stays in this dialog
+            // instead of becoming a till error; the action itself verifies again
+            // on the server, which is the only check that counts.
+            try { await register.verifyPin(payload.pin); setPinError(""); }
+            catch (failure) { setPinError(failure instanceof Error ? failure.message : "PIN incorrecto"); return; }
+            register.setPinChallenge(null);
+            const done = await challenge.retry(payload.pin);
+            if (done) { setDiscountOpen(false); setLineToVoid(null); }
+          }}
+        />
+      ) : null}
 
       {showRecall ? (
 

@@ -23,7 +23,7 @@ export function isCashlessMethod(method: POSPaymentMethod): boolean {
 export type TenderEntry = { id: string; method: POSPaymentMethod; amount: string };
 
 /** Tender accepted by `POST /admin/pos/tickets/{id}/checkout`. */
-export type POSPaymentTender = { method: POSPaymentMethod; amountCents: number; tipCents: number };
+export type POSPaymentTender = { method: POSPaymentMethod; amountCents: number; tipCents: number; /** CASH only: what the guest handed over, when it was typed. */ tenderedCents?: number };
 
 /** Amount typed into a split line, in cents; -1 while it is not a valid amount. */
 export function tenderedCentsOf(value: string): number {
@@ -105,6 +105,13 @@ export function allocateTenders(input: { saleTotalCents: number; tipCents: numbe
     }
     if (sale + tip > 0) payments.push({ method, amountCents: sale, tipCents: tip });
   }
+  // The cash the guest actually handed over, recorded so the receipt can print
+  // real change. Only when the cashier typed a cash amount that covers what
+  // the cash line applies; the "fill the rest" button produces an exact
+  // amount, which simply records tendered = applied (change 0,00).
+  const cashTyped = perMethod.get("CASH") ?? 0;
+  const cashPayment = payments.find((payment) => payment.method === "CASH");
+  if (cashPayment && cashTyped >= cashPayment.amountCents + cashPayment.tipCents) cashPayment.tenderedCents = cashTyped;
   return payments;
 }
 

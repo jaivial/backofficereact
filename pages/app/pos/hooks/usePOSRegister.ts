@@ -21,8 +21,18 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   headers.set("Content-Type", "application/json");
   const response = await fetch(`/api/admin/pos${path}`, { ...init, credentials: "include", headers });
   const body = await response.json();
-  if (!response.ok || !body.success) throw new Error(body.message || "Error de TPV");
+  if (!response.ok || !body.success) throw new POSRequestError(body.message || "Error de TPV", body.code, response.status, body);
   return body as T;
+}
+
+/** A refusal from the server, carrying its machine-readable code (e.g. PIN_REQUIRED). */
+export class POSRequestError extends Error {
+  constructor(message: string, readonly code?: string, readonly status?: number, readonly body?: Record<string, unknown>) { super(message); this.name = "POSRequestError"; }
+}
+
+/** True when the server refused because the PIN policy wants a manager PIN. */
+export function isPinRequired(reason: unknown): boolean {
+  return reason instanceof POSRequestError && reason.code === "PIN_REQUIRED";
 }
 
 /** Thrown when the network is down and the write cannot be held for replay. */
@@ -125,6 +135,13 @@ export function usePOSRegister(date?: string | null) {
   const [cardReference, setCardReference] = useState("");
   const [discount, setDiscount] = useState("");
   const [sentKitchenQuantities, setSentKitchenQuantities] = useState<Record<number, number>>({});
+  /**
+   * A money-reducing action the server refused with PIN_REQUIRED. The sell
+   * screen shows the PIN pad; `retry` repeats the same action with the PIN.
+   * The policy lives on the server, so the till never decides on its own
+   * whether a PIN is needed: it just asks when told to.
+   */
+  const [pinChallenge, setPinChallenge] = useState<{ title: string; message: string; retry: (pin: string) => Promise<boolean> } | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [lineTags, setLineTags] = useState<Record<number, number[]>>({});
   const [tipCents, setTipCents] = useState(0);
@@ -241,6 +258,39 @@ export function usePOSRegister(date?: string | null) {
   const openSplitTickets = useMemo(() => splitTickets.filter((entry) => entry.status === "OPEN"), [splitTickets]);
   const otherOpenSplitTickets = useMemo(() => openSplitTickets.filter((entry) => entry.id !== ticket?.id), [openSplitTickets, ticket?.id]);
   const activeLineIds = useMemo(() => new Set(activeTicketLines.map((line) => line.id)), [activeTicketLines]);
+  // The server is the source of truth for what the kitchen has heard about.
+  // Every ticket the server sends carries kitchenSentQuantity per line; adopt it
+  // so a reload, another terminal or a line moved between checks (which the
+  // server keeps "sent" across) does not make the comanda button re-fire it.
+  // Only lines the server reports are overwritten: a line voided a moment ago
+  // keeps its local entry so the pending VOID still reaches the kitchen.
+  // When the active check changes, the map is rebuilt from that check alone:
+  // otherwise the previous check's lines are "sent but missing" here and the
+  // comanda button offers to VOID dishes that simply live on another check.
+  const kitchenSentTicketRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!ticket) { kitchenSentTicketRef.current = null; return; }
+    const fromServer = ticket.lines.filter((line) => line.status !== "VOIDED" && typeof line.kitchenSentQuantity === "number");
+    if (kitchenSentTicketRef.current !== ticket.id) {
+      kitchenSentTicketRef.current = ticket.id;
+      if (fromServer.length) setSentKitchenQuantities(Object.fromEntries(fromServer.filter((line) => (line.kitchenSentQuantity as number) > 0).map((line) => [line.id, line.kitchenSentQuantity as number])));
+      return;
+    }
+    if (!fromServer.length) return;
+    setSentKitchenQuantities((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const line of fromServer) {
+        const sent = line.kitchenSentQuantity as number;
+        // Only positive values are adopted. A line routed to no station (a
+        // menu parent, a coffee with no route) is reported as 0 forever;
+        // deleting the local entry for it would re-light the Comanda button
+        // after every edit for dishes the kitchen never receives.
+        if (sent > 0 && next[line.id] !== sent) { next[line.id] = sent; changed = true; }
+      }
+      return changed ? next : current;
+    });
+  }, [ticket]);
   const pendingKitchenLines = useMemo(() => activeTicketLines.filter((line) => line.quantity !== (sentKitchenQuantities[line.id] ?? 0)), [activeTicketLines, sentKitchenQuantities]);
   const pendingKitchenVoids = useMemo(() => Object.keys(sentKitchenQuantities).map(Number).filter((id) => !activeLineIds.has(id)), [activeLineIds, sentKitchenQuantities]);
   const hasPendingKitchenLines = pendingKitchenLines.length > 0 || pendingKitchenVoids.length > 0;
@@ -318,6 +368,11 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo recuperar la cuenta"); return false; }
   }, [isInFlight, load, run]);
 
+  /** Takes a ticket the server just returned (e.g. after linking a guest) as the current state of that check. */
+  const adoptTicket = useCallback((next: Ticket) => {
+    setTicket((current) => (current && current.id === next.id ? next : current));
+    setSplitTickets((current) => current.map((entry) => (entry.id === next.id ? next : entry)));
+  }, []);
   const switchTicket = useCallback((next: Ticket) => { setTicket(next); setSplitTargetId(0); setCash(""); setCard(""); setCardReference(""); setTipCents(0); }, []);
   const voidEmptyTicket = useCallback(async (next: Ticket) => { if (next.lines.filter((line) => line.status !== "VOIDED").length) return; try { await request(`/tickets/${next.id}/void`, { method: "POST", body: JSON.stringify({ reason: "Cuenta separada vacía" }) }); setSplitTickets((current) => current.filter((entry) => entry.id !== next.id)); if (ticket?.id === next.id) { const fallback = splitTickets.find((entry) => entry.id !== next.id && entry.status === "OPEN"); setTicket(fallback || null); } } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo anular cuenta"); } }, [splitTickets, ticket]);
   /**
@@ -333,7 +388,7 @@ export function usePOSRegister(date?: string | null) {
    * instead of pretending it saved.
    */
   const setTicketGuestLabel = useCallback(async (guestLabel: string) => { if (!ticket) return false; try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/guest-label`, { method: "POST", body: JSON.stringify({ guestLabel: guestLabel.trim() }) }); setTicket(data.ticket); setSplitTickets((current) => current.map((entry) => entry.id === data.ticket.id ? data.ticket : entry)); setMessage(guestLabel.trim() ? `Comensal: ${guestLabel.trim()}.` : "Se quitó el nombre del comensal."); return true; } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo guardar el comensal"); return false; } }, [ticket]);
-  const moveLine = useCallback(async (line: TicketLine, quantity = line.quantity, targetId = splitTargetId) => { if (!ticket || !targetId) return; const moved = Math.min(Math.round(quantity), line.quantity); if (moved <= 0) return; try { const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: targetId, quantity: moved, idempotencyKey: crypto.randomUUID() }) }); setTicket(data.sourceTicket); setSplitTickets((current) => current.map((entry) => entry.id === data.sourceTicket.id ? data.sourceTicket : entry.id === data.targetTicket.id ? data.targetTicket : entry)); return true; } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo mover línea"); return false; } }, [splitTargetId, ticket]);
+  const moveLine = useCallback(async (line: TicketLine, quantity = line.quantity, targetId = splitTargetId) => { if (!ticket || !targetId) return; const moved = Math.min(Math.round(quantity), line.quantity); if (moved <= 0) return; try { const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket; full?: boolean }>(`/tickets/${ticket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: targetId, quantity: moved, idempotencyKey: crypto.randomUUID() }) }); if (data.full) setSentKitchenQuantities((current) => { if (!(line.id in current)) return current; const next = { ...current }; delete next[line.id]; return next; }); setTicket(data.sourceTicket); setSplitTickets((current) => current.map((entry) => entry.id === data.sourceTicket.id ? data.sourceTicket : entry.id === data.targetTicket.id ? data.targetTicket : entry)); return true; } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo mover línea"); return false; } }, [splitTargetId, ticket]);
 
   const mergeSplitTickets = useCallback(async () => {
     if (!ticket || openSplitTickets.length <= 1 || isInFlight("merge-splits")) return false;
@@ -408,7 +463,7 @@ export function usePOSRegister(date?: string | null) {
     finally { setBusy(false); }
   }, [isInFlight, load, run, ticket?.version, visit]);
 
-  const applyAdjustment = useCallback(async (type: "DISCOUNT" | "SURCHARGE", mode: "AMOUNT" | "PERCENT", value: number, reason: string) => {
+  const applyAdjustment = useCallback(async (type: "DISCOUNT" | "SURCHARGE", mode: "AMOUNT" | "PERCENT", value: number, reason: string, approvalPin?: string): Promise<boolean> => {
     if (!ticket) return false;
     const trimmed = reason.trim();
     if (!trimmed) { setError("Indica el motivo."); return false; }
@@ -418,25 +473,35 @@ export function usePOSRegister(date?: string | null) {
     setError(""); setMessage("");
     try {
       const result = await run(command, async (key) => {
-        const common = { type, mode, reason: trimmed, expectedVersion: ticket.version, idempotencyKey: key };
+        const common = { type, mode, reason: trimmed, expectedVersion: ticket.version, idempotencyKey: key, approvalPin };
         const body = mode === "PERCENT" ? { ...common, percent: value } : { ...common, amountCents: Math.round(value) };
         const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/adjustments`, { method: "POST", body: JSON.stringify(body) });
         setTicket(data.ticket); return true;
       });
       return result ?? false;
-    } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo aplicar el ajuste"); return false; }
+    } catch (reasonValue) {
+      if (isPinRequired(reasonValue) && !approvalPin) { setPinChallenge({ title: "Descuento", message: (reasonValue as Error).message, retry: (pin) => applyAdjustmentRef.current(type, mode, value, reason, pin) }); return false; }
+      setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo aplicar el ajuste"); return false;
+    }
   }, [isInFlight, run, ticket]);
+  const applyAdjustmentRef = useRef(applyAdjustment);
+  applyAdjustmentRef.current = applyAdjustment;
 
-  const compLine = useCallback(async (line: TicketLine, comped: boolean, reason = "") => {
+  const compLine = useCallback(async (line: TicketLine, comped: boolean, reason = "", approvalPin?: string): Promise<boolean> => {
     if (!ticket) return false;
     const trimmed = reason.trim();
     if (comped && !trimmed) { setError("Indica el motivo de la invitación."); return false; }
     setError("");
     try {
-      const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/comp`, { method: "POST", body: JSON.stringify({ comped, reason: trimmed, expectedVersion: ticket.version }) });
+      const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/comp`, { method: "POST", body: JSON.stringify({ comped, reason: trimmed, expectedVersion: ticket.version, approvalPin }) });
       setTicket(data.ticket); return true;
-    } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo invitar la línea"); return false; }
+    } catch (reasonValue) {
+      if (isPinRequired(reasonValue) && !approvalPin) { setPinChallenge({ title: "Invitar línea", message: (reasonValue as Error).message, retry: (pin) => compLineRef.current(line, comped, reason, pin) }); return false; }
+      setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo invitar la línea"); return false;
+    }
   }, [ticket]);
+  const compLineRef = useRef(compLine);
+  compLineRef.current = compLine;
 
   const setLineNote = useCallback(async (line: TicketLine, note: string) => {
     if (!ticket || isInFlight("line-note")) return false;
@@ -647,11 +712,16 @@ export function usePOSRegister(date?: string | null) {
    * the server resolves who it belongs to, so a tampered label in the browser
    * cannot put the wrong person in the audit trail.
    */
-  const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir", approvalPin?: string) => {
-    if (!ticket) return; const trimmed = reason.trim(); if (!trimmed) return;
-    try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed, approvalPin }) }); setTicket(data.ticket); }
-    catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo anular línea"); }
+  const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir", approvalPin?: string): Promise<boolean> => {
+    if (!ticket) return false; const trimmed = reason.trim(); if (!trimmed) return false;
+    try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed, approvalPin }) }); setTicket(data.ticket); return true; }
+    catch (reasonValue) {
+      if (isPinRequired(reasonValue) && !approvalPin) { setPinChallenge({ title: "Anular línea", message: (reasonValue as Error).message, retry: (pin) => voidLineRef.current(line, reason, pin) }); return false; }
+      setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo anular línea"); return false;
+    }
   }, [ticket]);
+  const voidLineRef = useRef(voidLine);
+  voidLineRef.current = voidLine;
 
   const setLineQuantity = useCallback(async (line: TicketLine, quantity: number) => {
     if (!ticket || quantity <= 0) return;
@@ -684,7 +754,7 @@ export function usePOSRegister(date?: string | null) {
     finally { setBusy(false); }
   }, [load, restoreVisit, ticket, visit]);
 
-  const applyDiscount = useCallback(async (amountCents: number, reason: string) => {
+  const applyDiscount = useCallback(async (amountCents: number, reason: string, approvalPin?: string): Promise<boolean> => {
     if (!ticket || isInFlight("discount")) return false;
     const trimmed = reason.trim();
     const amount = Math.min(Math.max(Math.round(amountCents), 0), ticket.totalGrossCents + (ticket.discountCents || 0));
@@ -692,12 +762,17 @@ export function usePOSRegister(date?: string | null) {
     setError("");
     try {
       const result = await run("discount", async () => {
-        const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/discount`, { method: "POST", body: JSON.stringify({ amountCents: amount, reason: trimmed }) });
+        const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/discount`, { method: "POST", body: JSON.stringify({ amountCents: amount, reason: trimmed, approvalPin }) });
         setTicket(data.ticket); setDiscount(""); return true;
       });
       return result ?? false;
-    } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo aplicar descuento"); return false; }
+    } catch (reasonValue) {
+      if (isPinRequired(reasonValue) && !approvalPin) { setPinChallenge({ title: "Descuento", message: (reasonValue as Error).message, retry: (pin) => applyDiscountRef.current(amountCents, reason, pin) }); return false; }
+      setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo aplicar descuento"); return false;
+    }
   }, [isInFlight, run, ticket]);
+  const applyDiscountRef = useRef(applyDiscount);
+  applyDiscountRef.current = applyDiscount;
 
   const sendKitchen = useCallback(async () => {
     if (!ticket || !hasPendingKitchenLines) return;
@@ -789,6 +864,7 @@ export function usePOSRegister(date?: string | null) {
     load, loadReservations, selectReservation, openVisit, openTakeaway, restoreVisit, restoreParkedVisit, moveVisitToTable,
     parkVisit, openBar, mergeVisits, applyAdjustment, compLine, setLineNote, openDrawer,
     setVisitCustomer, setTicketOperator, toggleLineTag, loadTags,
+    pinChallenge, setPinChallenge, adoptTicket,
     switchTicket, voidEmptyTicket, createSplitTicket, setTicketGuestLabel, moveLine, mergeSplitTickets, addProduct, addPack, packs, hasPin, loadPinStatus, setPin, verifyPin, recallTicket, recallTickets, loadRecallCandidates,
     setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, activeCourse, setActiveCourse, courses, loadCourses, fireCourse, checkout,
   };
