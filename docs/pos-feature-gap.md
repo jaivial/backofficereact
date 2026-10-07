@@ -122,7 +122,8 @@ service instead of queuing.
 6. G10 packs. **DONE** (backend #389/#390/#391, backofficereact #532)
 7. G12 recall. **DONE** (backend #392, backofficereact #534)
 8. G11 staff PIN. **DONE** (backend #393/#400, backofficereact #537/#539)
-9. G3 allergens, G9 receipt, G13 offline.
+9. G2 coursing. **DONE** (backend #401/#402/#403, backofficereact #541)
+10. G3 allergens, G9 receipt, G13 offline.
 
 ---
 
@@ -317,3 +318,66 @@ hours later could not be traced to a person.
 Plus two found in the browser: the PIN was unhangable for anyone whose staff row
 had no `bo_user_id` (#395, most of them), and the change-PIN dialog could never
 reach the new-PIN step (#539) — a staff member with a PIN could never change it.
+
+
+---
+
+## G2 — Coursing (servicios): what shipped
+
+A waiter takes the whole table's order, sends none of it, and fires the first
+course when the guests are ready. Before this every dish reached the kitchen the
+moment it was rung, so an entrée ordered at the start of service was cooked
+twenty minutes early.
+
+**The schema was already half there** — `pos_ticket_lines.course` and an unused
+`FIRE` action on the dispatch lines existed, but nothing wrote or read them.
+
+**Backend** (herorestaurant-backend #401, #402, #403)
+- `course` is accepted on every line create (plain product, pack parent and pack
+  components) and returned on read. Recall carries it, so a recalled menu lands in
+  the service it was rung in.
+- `POST /pos/tickets/{id}/courses/fire` sends **one** course. It reuses the
+  existing dispatch path with a course filter instead of reimplementing routing
+  and delta calculation.
+- `GET /pos/tickets/{id}/courses` reports each course with how much of it the
+  kitchen still has not seen.
+- Courses are normalised: `"2"`, `" 2 "`, `"2.º"` and `"curso 2"` are one course,
+  and an unset course is course 1 rather than a course nobody can fire.
+- The idempotency key is derived from the course **and its current contents**, so
+  a double tap cannot fire twice while a dish added after the first fire can
+  still be sent.
+
+**Frontend** (backofficereact #541)
+- `POSCourseStrip` under the ticket header: pick the course, fire the pending
+  ones. One course past the highest in use is always offered.
+- The pending count is a badge, not just a colour: "has this gone?" is answered
+  without reading the button state.
+
+**Verified against dev** (measured):
+
+| case | result |
+|---|---|
+| ring a dish into `"2.º"` | 201, stored as course 2 ✅ |
+| courses listed with pending counts | `[{1,0},{2,0},{3,1}]` ✅ |
+| fire course 1 | 201, `pendingLines` 1 -> 0 ✅ |
+| fire course 1 again | 200, nothing re-sent ✅ |
+| fire `" curso 2 "` | 201, normalised to course 2 ✅ |
+| fire an empty course | treated as course 1 ✅ |
+| fire a course with nothing in it | 409 ✅ |
+| UI: courses offered | 1, 2, 3, 4 ✅ |
+| UI: fire button appears only on courses with pending lines | only course 3 ✅ |
+| UI: after firing, the button disappears | ✅ |
+| UI at 1280x800 and 390x844 touch | 0 controls <44px, no overflow, no errors ✅ |
+
+**Two bugs found by running it, both fixed:**
+1. `GET /courses` answered 500 on every call: `SUM(CASE WHEN COALESCE(SUM(...)))`
+   nests an aggregate inside another, which MySQL rejects (#402). The per-line
+   sent quantity is now aggregated in a subquery — which also stops a dish routed
+   to two stations from being counted twice.
+2. **Firing a course told the kitchen to VOID the courses it did not include.**
+   `current` was filtered by course but `sent` covered the whole ticket, so
+   course 1's lines were missing from one side and present in the other; the
+   delta came out negative and the dispatch told the kitchen to cancel dishes
+   the waiter never cancelled (#403). Measured on dev: after firing course 2,
+   course 1 dropped back to `firedLines: 0` with a VOID for a dish still on the
+   bill.
