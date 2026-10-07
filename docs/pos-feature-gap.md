@@ -119,7 +119,57 @@ service instead of queuing.
    **DONE** (backofficereact #528/#529, herorestaurant-backend #388)
 4. Add G2 coursing — high value for kitchen, medium effort. **NEXT**
 5. G8 fiscal slice (Factura simplificada + series/QR) — compliance, larger.
-6. G3 allergens, G9 receipt, G10 packs, G11 PIN, G12 recall, G13 offline.
+6. G10 packs. **DONE** (backend #389/#390/#391, backofficereact #532)
+7. G3 allergens, G9 receipt, G11 PIN, G12 recall, G13 offline.
+
+---
+
+## G10 — Packs (menú del día): what shipped
+
+`pos_packs`, `pos_pack_components` and `pos_ticket_lines.pack_id/parent_line_id`
+have existed since migration 078 with nothing reading or writing them, so a menú
+del día could only be rung up plate by plate and the guest's ticket had no way to
+say "this is one menu".
+
+**Backend** (herorestaurant-backend #389, #390, #391)
+- Ringing up a pack writes the parent line at the pack price and its components
+  underneath at zero, so money is counted once and the ticket reads the way the
+  guest ordered it.
+- One pick per slot, enforced: two picks in a slot would charge the menu price
+  for a double portion; a slot with a single option needs no answer.
+- Whole menus only — a fractional quantity is rejected instead of rounded.
+- Voiding a parent voids its components, so a menu cannot stay in the kitchen
+  with nothing to pay for.
+- Stock deducts on the components, not the parent.
+- Idempotent (component keys derive from the caller's); `PACK_RUNG` audit event.
+- Deleting a sold pack deactivates it instead of orphaning paid tickets.
+
+**Frontend** (backofficereact #532)
+- "Menús" section on the sell screen; the picker gates Confirm until every slot
+  is answered and shows the running total.
+- The menu shows on the ticket as one paid line with its dishes indented, not as
+  a paid line followed by unexplained 0,00 € plates.
+
+**Verified against dev** (measured):
+
+| case | result |
+|---|---|
+| slot not answered | 400 ✅ |
+| choice outside the slot | 400 ✅ |
+| choice from the wrong slot | 400 ✅ |
+| fractional quantity (1,5 menús) | 400 ✅ |
+| both productId and packId | 400 ✅ |
+| pack + price override | 400 ✅ |
+| unknown pack | 404 ✅ |
+| valid, defaults, qty 1 | parent 2450, components 0 ✅ |
+| qty 2 | parent 4900, components qty 2 ✅ |
+| no-slot pack, no picks | 201 ✅ |
+| retry with the same idempotency key | no duplicate ✅ |
+| void the parent | components voided with it ✅ |
+| UI: Confirm before choosing | disabled ✅ |
+| UI: qty 1 → 2 | 24,50 € → 49,00 € ✅ |
+| UI: ticket after adding | one 49,00 € line + 4 nested dishes, no 0,00 € rows ✅ |
+| UI: 44px targets | all new controls ≥44px at 390/768/1280/1920 ✅ |
 
 ---
 
