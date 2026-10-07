@@ -51,6 +51,7 @@ export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: R
   { key: "cajon", label: "Cajón", group: "ajustes" },
   { key: "mi-pin", label: "Mi PIN", group: "ajustes" },
   { key: "facturacion", label: "Facturación", group: "cierre", readOnlySafe: true },
+  { key: "factura", label: "Factura", group: "cierre" },
   { key: "cerrar-mesas", label: "Cerrar mesas", group: "cierre", accent: true },
   { key: "cierre-x", label: "Cierre X", group: "cierre" },
   { key: "cierre-y", label: "Cierre Y", group: "cierre" },

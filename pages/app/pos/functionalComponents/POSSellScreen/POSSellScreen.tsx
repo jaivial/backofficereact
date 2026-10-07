@@ -23,6 +23,7 @@ import { POSPinDialog } from "./POSPinDialog";
 import { printTicketReceipt } from "./printReceipt";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
+import { POSFiscalDialog } from "./POSFiscalDialog";
 import { POSOfflineBar } from "./POSOfflineBar";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
@@ -535,6 +536,9 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       case "facturacion": if (date) setBillingOpen(true); break;
       case "cierre-x": runCierre("X"); break;
       case "cierre-y": runCierre("Y"); break;
+      // Fiscal documents live on their own rail action: they are a document the
+      // guest may ask for, not an edit of the comanda.
+      case "factura": register.setError(""); setPrompt("factura"); break;
       case "cerrar-mesas": register.setError(""); setPrompt("cerrar-mesas"); break;
       case "cerrar-dia": if (onCloseDay && cashDay?.status === "OPEN") { register.setError(""); setCloseDayError(""); setPrompt("cerrar-dia"); } break;
       case "aparcar": case "recargo": case "invita": case "comentario": case "cajon":
@@ -615,6 +619,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       </div>
 
       {billingOpen && date ? <POSDayBillingDialog date={date} onClose={() => setBillingOpen(false)} /> : null}
+
+      {prompt === "factura" ? <POSFiscalDialog ticket={register.ticket} visit={register.visit} online={register.online} onClose={closePrompt} /> : null}
 
       <ConfirmDialog
         open={Boolean(lineToVoid)}
