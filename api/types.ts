@@ -1,4 +1,7 @@
 import type { BORole, BOSection } from "../lib/rbac";
+// Coordination id: menu_type_codes_v1 - the numeric menu_type contract shared
+// with the Go backend is defined once in the front source of truth module.
+import type { MenuTypeCode } from "../ui/widgets/menus/menuTypeCodes";
 
 export type BOUser = {
   id: number;
@@ -486,7 +489,8 @@ export type GroupMenuV2Summary = {
   price: string;
   active: boolean;
   is_draft: boolean;
-  menu_type: string;
+  /** Coordination id: menu_type_codes_v1 - numeric menu_type code. */
+  menu_type: MenuTypeCode;
   created_at?: string;
   modified_at?: string;
 };
@@ -599,7 +603,8 @@ export type GroupMenuV2 = {
   price: string;
   active: boolean;
   is_draft: boolean;
-  menu_type: string;
+  /** Coordination id: menu_type_codes_v1 - numeric menu_type code. */
+  menu_type: MenuTypeCode;
   menu_subtitle: string[];
   show_dish_images: boolean;
   show_section_tabs: boolean;
@@ -1587,12 +1592,11 @@ export type RestaurantInvoiceSettings = {
   default_payment_terms?: number;
 };
 
-export type MenuTemplateType =
-  | "closed_conventional"
-  | "closed_group"
-  | "a_la_carte"
-  | "a_la_carte_group"
-  | "special";
+/**
+ * Coordination id: menu_type_codes_v1 - website theme overrides are keyed by
+ * the numeric menu_type code, exactly like the menus themselves.
+ */
+export type MenuTemplateType = MenuTypeCode;
 
 export type WebsiteThemeOption = {
   id: string;
@@ -2427,7 +2431,8 @@ export type MandatoryMenuSavePayload = {
 export type MenuSelectorItem = {
   id: number;
   menu_title: string;
-  menu_type: string;
+  /** Coordination id: menu_type_codes_v1 - numeric menu_type code. */
+  menu_type: MenuTypeCode;
 };
 
 export type AIImageProvider = {

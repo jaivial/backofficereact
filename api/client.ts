@@ -94,6 +94,8 @@ import type {
   AnalyticsRefreshResponse,
 } from "./types";
 import type { BORole } from "../lib/rbac";
+// Coordination id: menu_type_codes_v1 - menus.menu_type travels as a numeric code.
+import type { MenuTypeCode } from "../ui/widgets/menus/menuTypeCodes";
 import { emitSessionExpired, emitSessionExpirationUpdate } from "../lib/session-expiration";
 
 type ClientOpts = {
@@ -1661,7 +1663,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           q.set("includeDrafts", includeDrafts ? "1" : "0");
           return json(`/api/admin/group-menus-v2?${q.toString()}`, { method: "GET" });
         },
-        async createDraft(input: { menu_type: string }): Promise<APISuccess<{ menu_id: number }> | APIError> {
+        async createDraft(input: { menu_type: MenuTypeCode }): Promise<APISuccess<{ menu_id: number }> | APIError> {
           return json("/api/admin/group-menus-v2/drafts", {
             method: "POST",
             headers: { "content-type": "application/json" },
@@ -1709,7 +1711,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             price: number;
             active: boolean;
             is_draft: boolean;
-            menu_type: string;
+            menu_type: MenuTypeCode;
             menu_subtitle: string[];
             show_dish_images: boolean;
             show_section_tabs: boolean;
@@ -1734,7 +1736,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             body: JSON.stringify(input),
           });
         },
-        async patchMenuType(id: number, menuType: string): Promise<APISuccess<{ menu_id: number; menu_type: string }> | APIError> {
+        async patchMenuType(id: number, menuType: MenuTypeCode): Promise<APISuccess<{ menu_id: number; menu_type: MenuTypeCode }> | APIError> {
           return json(`/api/admin/group-menus-v2/${id}/menu-type`, {
             method: "PATCH",
             headers: { "content-type": "application/json" },

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MandatoryMenuSelector } from "./MandatoryMenuSelector";
+import { MENU_TYPE } from "./menus/menuTypeCodes";
 import * as React from "react";
 
 // Mock lucide-react icons
@@ -25,11 +26,12 @@ function queryByDataUI(container: HTMLElement, value: string) {
   return container.querySelector(`[data-ui="${value}"]`);
 }
 
+// Coordination id: menu_type_codes_v1 - menu types are numeric codes.
 const mockMenus = [
-  { id: 1, menu_title: "Menu del Dia", menu_type: "closed_conventional" },
-  { id: 2, menu_title: "Menu Grupo A", menu_type: "closed_group" },
-  { id: 3, menu_title: "Menu Especial", menu_type: "special" },
-  { id: 4, menu_title: "Carta del Dia", menu_type: "a_la_carte" },
+  { id: 1, menu_title: "Menu del Dia", menu_type: MENU_TYPE.CLOSED_CONVENTIONAL },
+  { id: 2, menu_title: "Menu Grupo A", menu_type: MENU_TYPE.CLOSED_GROUP },
+  { id: 3, menu_title: "Menu Especial", menu_type: MENU_TYPE.SPECIAL },
+  { id: 4, menu_title: "Carta del Dia", menu_type: MENU_TYPE.A_LA_CARTE },
 ];
 
 describe("MandatoryMenuSelector", () => {

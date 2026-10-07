@@ -39,6 +39,9 @@ export type { SectionKindPresetDef, DessertSource, DessertSourceOptionDef } from
 export { MenuTypePanelGrid } from "./menus/MenuTypePanelGrid";
 export type { MenuTypePanelDef } from "./menus/menuPresentation";
 export { MENU_TYPE_PANELS, MENU_TYPE_ORDER } from "./menus/menuPresentation";
+// Coordination id: menu_type_codes_v1 - numeric menu_type domain single source of truth.
+export { MENU_TYPE, DEFAULT_MENU_TYPE, normalizeMenuType, isALaCarteMenuType, isSpecialMenuType } from "./menus/menuTypeCodes";
+export type { MenuTypeCode } from "./menus/menuTypeCodes";
 export { RoleBadge } from "./roles/RoleBadge";
 export { RoleCard } from "./roles/RoleCard";
 export { RoleCreateModal } from "./roles/RoleCreateModal";

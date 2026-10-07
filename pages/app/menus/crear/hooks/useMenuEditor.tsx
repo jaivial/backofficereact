@@ -20,6 +20,10 @@ import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_B
 import { arrayBufferToBase64, imageUnderBytes } from "../../../../../ui/lib/imageFile";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { normalizeWebPlacement } from "../../../../../ui/widgets/menus/webPlacement";
+// Coordination id: menu_type_codes_v1 - menu_type is a numeric code; every
+// incoming value goes through the single tolerant normaliser.
+import { DEFAULT_MENU_TYPE, isALaCarteMenuType, isSpecialMenuType, normalizeMenuType } from "../../../../../ui/widgets/menus/menuTypeCodes";
+import type { MenuTypeCode } from "../../../../../ui/widgets/menus/menuTypeCodes";
 import { WEEKDAYS, type WeekdayKey } from "../../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 
 import {
@@ -144,7 +148,7 @@ export type UseMenuEditorReturn = {
   menuId: number | null;
   isDraft: boolean;
   step: number;
-  menuType: string;
+  menuType: MenuTypeCode;
   title: string;
   price: string;
   subtitles: string[];
@@ -225,7 +229,7 @@ export type UseMenuEditorReturn = {
   setMenuId: (id: number | null) => void;
   setIsDraft: (v: boolean) => void;
   setStep: (step: number) => void;
-  setMenuType: (type: string) => void;
+  setMenuType: (type: MenuTypeCode) => void;
   setTitle: (title: string) => void;
   setPrice: (price: string) => void;
   setSubtitles: React.Dispatch<React.SetStateAction<string[]>>;
@@ -399,7 +403,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     if (next >= 3) wizardFinishedRef.current = true;
     setStepState(next);
   }, []);
-  const [menuType, setMenuType] = useState<string>(data.menu?.menu_type || "closed_conventional");
+  const [menuType, setMenuType] = useState<MenuTypeCode>(normalizeMenuType(data.menu?.menu_type));
   const [title, setTitle] = useState<string>(data.menu?.menu_title || "");
   const [price, setPrice] = useState<string>(data.menu?.price || "0");
   const [subtitles, setSubtitles] = useState<string[]>(data.menu?.menu_subtitle?.length ? data.menu.menu_subtitle : [""]);
@@ -521,8 +525,8 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   const syncRequestSeqRef = useRef(0);
   const sameDayBookingBlockedRef = useRef<Set<number>>(new Set());
 
-  const isALaCarte = menuType === "a_la_carte" || menuType === "a_la_carte_group";
-  const isSpecial = menuType === "special";
+  const isALaCarte = isALaCarteMenuType(menuType);
+  const isSpecial = isSpecialMenuType(menuType);
   const hasSecondaryBasicsField = !isALaCarte && !isSpecial;
 
   const basicsDraft = useMemo<BasicsDraft>(
@@ -1299,7 +1303,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
 
   const previewThemeId = useMemo(() => {
     if (!previewThemeConfig) return "villa-carmen";
-    const fromOverride = previewThemeConfig.overrides[menuType || "closed_conventional"];
+    const fromOverride = previewThemeConfig.overrides[menuType || DEFAULT_MENU_TYPE];
     return normalizePreviewThemeId(fromOverride || previewThemeConfig.default_theme_id || "villa-carmen");
   }, [menuType, normalizePreviewThemeId, previewThemeConfig]);
 
@@ -1311,10 +1315,10 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   }, [previewThemeConfig, previewThemeId]);
 
   const previewNeedsUpgrade = useMemo(() => {
-    if (menuType === "special") return false;
+    if (isSpecial) return false;
     if (!previewThemeConfig) return false;
     return previewThemeConfig.assigned === false;
-  }, [menuType, previewThemeConfig]);
+  }, [isSpecial, previewThemeConfig]);
 
   const previewUrl = "/menu-preview/index.html";
 
@@ -1428,7 +1432,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       const loaded = await api.menus.gruposV2.get(created.menu_id);
       if (!loaded.success) throw new Error(loaded.message || "No se pudo cargar borrador");
       const mapped = mapApiMenu(loaded.menu);
-      const mappedIsALaCarte = mapped.menuType === "a_la_carte" || mapped.menuType === "a_la_carte_group";
+      const mappedIsALaCarte = isALaCarteMenuType(mapped.menuType);
       setMenuId(created.menu_id);
       setIsDraft(true);
       setTitle(mapped.title);
@@ -2170,13 +2174,13 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   // Coordination id: special_menu_price_date_v1 - special days the menu can
   // be linked to; loaded once for special menus only.
   useEffect(() => {
-    if (menuType !== "special") return;
+    if (!isSpecial) return;
     let cancelled = false;
     void api.config.listSpecialDates().then((res) => {
       if (!cancelled && res.success) setSpecialDateOptions(res.special_dates);
     }).catch(() => console.warn("[special_menu_price_date_v1] special dates unavailable"));
     return () => { cancelled = true; };
-  }, [api, menuType]);
+  }, [api, isSpecial]);
 
   const setMenuSpecialDate = useCallback(async (specialDateId: number) => {
     const option = specialDateOptions.find((entry) => entry.id === specialDateId) ?? null;
@@ -2298,13 +2302,13 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
 
   // Coordination id: special_menu_cta_v1 - active menus the button can open.
   useEffect(() => {
-    if (menuType !== "special") return;
+    if (!isSpecial) return;
     let cancelled = false;
     void api.menus.gruposV2.list(false).then((res) => {
       if (!cancelled && res.success) setCtaMenuOptions(res.menus.filter((m) => m.active && m.id !== menuId));
     }).catch(() => console.warn("[special_menu_cta_v1] menus unavailable"));
     return () => { cancelled = true; };
-  }, [api, menuId, menuType]);
+  }, [api, isSpecial, menuId]);
 
   // Optimistic local update (instant preview) + debounced PUT; the response
   // carries the backend-resolved href on the tenant website.
@@ -2677,7 +2681,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       return;
     }
     const mapped = mapApiMenu(data.menu, sections);
-    const mappedIsALaCarte = mapped.menuType === "a_la_carte" || mapped.menuType === "a_la_carte_group";
+    const mappedIsALaCarte = isALaCarteMenuType(mapped.menuType);
     setTitle(mapped.title);
     setPrice(mapped.price);
     setActive(mapped.active);

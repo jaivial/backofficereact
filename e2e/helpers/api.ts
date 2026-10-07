@@ -4,6 +4,11 @@
  */
 import type { Page } from "@playwright/test";
 import type { BOSession } from "../../api/types";
+// Coordination id: menu_type_codes_v1 - los tipos de menu son codigos numericos;
+// el orden de paneles se toma de la app para no duplicarlo aqui.
+import { MENU_TYPE_ORDER } from "../../ui/widgets/menus/menuPresentation";
+import { normalizeMenuType } from "../../ui/widgets/menus/menuTypeCodes";
+import type { MenuTypeCode } from "../../ui/widgets/menus/menuTypeCodes";
 import { e2eEnv } from "../config";
 
 const BASE_URL = e2eEnv.baseURL;
@@ -89,16 +94,7 @@ export async function pickBookingDates(
   return { withBookings, empty, hasBookings };
 }
 
-/** Orden de paneles de tipo de menú (mismo orden que MENU_TYPE_ORDER en la app). */
-export const MENU_TYPE_ORDER = [
-  "closed_conventional",
-  "closed_group",
-  "a_la_carte",
-  "a_la_carte_group",
-  "special",
-];
-
-type GroupMenusV2 = { success?: boolean; menus?: { menu_type?: string }[] };
+type GroupMenusV2 = { success?: boolean; menus?: { menu_type?: number | string }[] };
 
 /**
  * Elige dinámicamente un tipo de menú que tenga al menos un menú en la DB de dev,
@@ -106,15 +102,15 @@ type GroupMenusV2 = { success?: boolean; menus?: { menu_type?: string }[] };
  */
 export async function pickMenuTypeWithItems(
   page: Page
-): Promise<{ type: string; hasItems: boolean; count: number }> {
+): Promise<{ type: MenuTypeCode; hasItems: boolean; count: number }> {
   const data = (await apiGet(page, "/api/admin/group-menus-v2?includeDrafts=1")) as GroupMenusV2;
   const menus = Array.isArray(data.menus) ? data.menus : [];
   if (!data.success || menus.length === 0) {
     return { type: MENU_TYPE_ORDER[0], hasItems: false, count: 0 };
   }
-  const counts = new Map<string, number>();
+  const counts = new Map<MenuTypeCode, number>();
   for (const m of menus) {
-    const t = m.menu_type || MENU_TYPE_ORDER[0];
+    const t = normalizeMenuType(m.menu_type);
     counts.set(t, (counts.get(t) ?? 0) + 1);
   }
   // Prioriza el orden de la app; si ningún panel tiene menús, usa el primero

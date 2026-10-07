@@ -1,6 +1,9 @@
 import { test, expect } from "../../fixtures/session";
 import { waitForHydration } from "../../helpers/wait";
 import { pickMenuTypeWithItems } from "../../helpers/api";
+// Coordination id: menu_type_codes_v1 - los paneles exponen el codigo numerico.
+import { MENU_TYPE_ORDER } from "../../../ui/widgets/menus/menuPresentation";
+import { MENU_TYPE } from "../../../ui/widgets/menus/menuTypeCodes";
 
 // Pantalla 8: Menus (paneles tipo -> tarjetas -> crear).
 // El tipo con tarjetas se elige dinámicamente desde la API (sin depender de datos fijos).
@@ -9,13 +12,13 @@ async function openMenus(page: import("@playwright/test").Page) {
   await page.goto("/app/menus", { waitUntil: "domcontentloaded" });
   await waitForHydration(page);
   await expect(page.getByTestId("menus-page-section")).toBeVisible({ timeout: 25_000 });
-  await expect(page.getByTestId("menu-type-panel-closed_conventional")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId(`menu-type-panel-${MENU_TYPE.CLOSED_CONVENTIONAL}`)).toBeVisible({ timeout: 20_000 });
 }
 
 test.describe("@edge Menus", () => {
   test("paneles de tipo de menu visibles con contadores", async ({ adminPage }) => {
     await openMenus(adminPage);
-    for (const type of ["closed_conventional", "closed_group", "a_la_carte", "a_la_carte_group", "special"]) {
+    for (const type of MENU_TYPE_ORDER) {
       await expect(adminPage.getByTestId(`menu-type-panel-${type}`)).toBeVisible({ timeout: 10_000 });
     }
   });
@@ -35,7 +38,7 @@ test.describe("@edge Menus", () => {
     }
 
     await adminPage.getByTestId("menus-page-back-button").click();
-    await expect(adminPage.getByTestId("menu-type-panel-closed_conventional")).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByTestId(`menu-type-panel-${MENU_TYPE.CLOSED_CONVENTIONAL}`)).toBeVisible({ timeout: 10_000 });
   });
 
   test("busqueda por titulo filtra tarjetas", async ({ adminPage }) => {

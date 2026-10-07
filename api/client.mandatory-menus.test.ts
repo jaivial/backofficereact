@@ -135,8 +135,8 @@ describe("menus.getSelector", () => {
       "menus/selector": {
         success: true,
         menus: [
-          { id: 1, menu_title: "Menu del día", menu_type: "closed_conventional" },
-          { id: 2, menu_title: "Menú Grupo", menu_type: "closed_group" },
+          { id: 1, menu_title: "Menu del día", menu_type: 1 },
+          { id: 2, menu_title: "Menú Grupo", menu_type: 2 },
         ],
       },
     });

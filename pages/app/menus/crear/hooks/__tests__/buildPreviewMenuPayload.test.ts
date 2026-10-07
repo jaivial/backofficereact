@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { buildPreviewMenuPayload, type BuildPreviewMenuPayloadInput } from '../buildPreviewMenuPayload'
+// Coordination id: menu_type_codes_v1 - menu types are numeric codes now.
+import { MENU_TYPE } from '../../../../../../ui/widgets/menus/menuTypeCodes'
 
 const toNumOrNull = (raw: string) => {
   const n = Number(raw)
@@ -11,7 +13,7 @@ const identity: (values: string[] | null | undefined) => string[] = (values) => 
 const baseInput = (overrides: Partial<BuildPreviewMenuPayloadInput> = {}): BuildPreviewMenuPayloadInput => ({
   menuId: 1,
   title: 'Menu prueba',
-  menuType: 'closed_group',
+  menuType: MENU_TYPE.CLOSED_GROUP,
   price: '38',
   active: true,
   subtitles: ['Linea 1'],
@@ -86,20 +88,20 @@ describe('buildPreviewMenuPayload (preview iframe payload builder)', () => {
 
   it('passes through menu_type, active, included_coffee and other top-level fields', () => {
     const out = buildPreviewMenuPayload(baseInput({
-      menuType: 'a_la_carte_group',
+      menuType: MENU_TYPE.A_LA_CARTE_GROUP,
       active: false,
       includedCoffee: false,
       minPartySize: '12',
     }))
-    expect(out.menu_type).toBe('a_la_carte_group')
+    expect(out.menu_type).toBe(MENU_TYPE.A_LA_CARTE_GROUP)
     expect(out.active).toBe(false)
     expect(out.settings.included_coffee).toBe(false)
     expect(out.settings.min_party_size).toBe(12)
   })
 
-  it('falls back to closed_conventional when menuType is empty', () => {
-    const out = buildPreviewMenuPayload(baseInput({ menuType: '' }))
-    expect(out.menu_type).toBe('closed_conventional')
+  it('falls back to the default closed menu type when menuType is empty', () => {
+    const out = buildPreviewMenuPayload(baseInput({ menuType: 0 }))
+    expect(out.menu_type).toBe(MENU_TYPE.CLOSED_CONVENTIONAL)
   })
 
   it('maps sections and dishes with normalized AI tracker data', () => {

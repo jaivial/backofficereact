@@ -3,6 +3,8 @@ import { fn } from "@storybook/test";
 
 import { MenuSummaryCard } from "./MenuSummaryCard";
 import type { GroupMenuV2Summary } from "../../../api/types";
+// Coordination id: menu_type_codes_v1 - numeric menu_type codes.
+import { MENU_TYPE } from "./menuTypeCodes";
 
 const createMenu = (overrides: Partial<GroupMenuV2Summary> = {}): GroupMenuV2Summary => ({
   id: 1,
@@ -10,7 +12,7 @@ const createMenu = (overrides: Partial<GroupMenuV2Summary> = {}): GroupMenuV2Sum
   price: "45.00",
   active: true,
   is_draft: false,
-  menu_type: "closed_conventional",
+  menu_type: MENU_TYPE.CLOSED_CONVENTIONAL,
   created_at: "2024-01-15T10:00:00Z",
   modified_at: "2024-01-20T14:30:00Z",
   ...overrides,
@@ -161,7 +163,7 @@ export const ALaCarteMenu: Story = {
     menu: createMenu({
       id: 9,
       menu_title: "Carta Tradicional",
-      menu_type: "a_la_carte",
+      menu_type: MENU_TYPE.A_LA_CARTE,
       active: true,
       is_draft: false,
     }),
@@ -176,7 +178,7 @@ export const GroupMenu: Story = {
     menu: createMenu({
       id: 10,
       menu_title: "Menu Grupo Cerrado",
-      menu_type: "closed_group",
+      menu_type: MENU_TYPE.CLOSED_GROUP,
       active: true,
       is_draft: false,
     }),
@@ -191,7 +193,7 @@ export const SpecialMenu: Story = {
     menu: createMenu({
       id: 11,
       menu_title: "Menu Especial Navideno",
-      menu_type: "special",
+      menu_type: MENU_TYPE.SPECIAL,
       active: true,
       is_draft: false,
       price: "65.00",

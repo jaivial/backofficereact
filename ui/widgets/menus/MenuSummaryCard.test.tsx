@@ -21,6 +21,7 @@ vi.mock("../../shadcn/Switch", () => ({
 }));
 
 import { MenuSummaryCard } from "./MenuSummaryCard";
+import { MENU_TYPE } from "./menuTypeCodes";
 
 const menu = {
   id: 42,
@@ -28,7 +29,7 @@ const menu = {
   price: "35",
   active: true,
   is_draft: false,
-  menu_type: "closed_conventional",
+  menu_type: MENU_TYPE.CLOSED_CONVENTIONAL,
 };
 
 describe("MenuSummaryCard", () => {
