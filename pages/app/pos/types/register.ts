@@ -14,6 +14,28 @@ export type ModifierGroup = {
   options: ModifierOption[];
 };
 export type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean; modifierGroups?: ModifierGroup[] };
+/**
+ * One component of a pack. Components sharing a slotGroup are alternatives the
+ * operator chooses between; an empty slotGroup is a fixed part of the menu.
+ */
+export type PackComponent = { productId: number; productName: string; quantity: number; slotGroup?: string; isDefault: boolean; sortOrder?: number; vatRate?: number };
+/**
+ * A pack is a fixed-price menu ("Menú del día") sold as one line, whose
+ * components expand underneath it. The price is the pack price, never the sum
+ * of its parts.
+ */
+export type Pack = {
+  id: number;
+  name: string;
+  description?: string;
+  priceGrossCents: number;
+  vatRate: number;
+  isActive: boolean;
+  sortOrder?: number;
+  components: PackComponent[];
+  /** Slot names in display order; a slot's options come from the components. */
+  slots: string[];
+};
 export type Table = { id: number; name: string; capacity: number; occupied: boolean; areaId?: number; areaName?: string };
 export type TicketLine = {
   id: number;
@@ -28,6 +50,10 @@ export type TicketLine = {
   comped?: boolean;
   compReason?: string;
   tagIds?: number[];
+  /** The pack this line was rung up from; the line carries the pack price. */
+  packId?: number | null;
+  /** Set on the component lines a pack expands into, pointing at the parent. */
+  parentLineId?: number | null;
   /** Chosen modifiers, snapshotted when the line was created. */
   modifiers?: { modifierOptionId?: number | null; name: string; priceDeltaCents: number; quantity: number }[];
   /**
@@ -48,5 +74,5 @@ export type RestaurantProfile = { name: string; taxId?: string; address?: string
 export type StockStatus = "ok" | "low" | "out";
 /** Modifier groups keyed by product id (the API sends JSON object string keys). */
 export type ProductModifiers = Record<string, ModifierGroup[]>;
-export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; productModifiers?: ProductModifiers; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null; productStock?: Record<string, StockStatus> };
+export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; productModifiers?: ProductModifiers; packs?: Pack[]; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null; productStock?: Record<string, StockStatus> };
 export type Reservation = { id: number; customerName: string; reservationDate: string; reservationTime: string; partySize: number; status: string; visitId?: number | null; visitStatus?: string | null };

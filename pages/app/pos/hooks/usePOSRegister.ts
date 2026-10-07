@@ -5,9 +5,9 @@ import { parseAmount } from "../utils/money";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
 import { usePOSCommand } from "./usePOSCommand";
 import { POSToastContext } from "../feedback/POSToastProvider";
-import type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+import type { Area, Bootstrap, Operator, Pack, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
-export type { Area, Bootstrap, Operator, ModifierGroup, ModifierOption, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+export type { Area, Bootstrap, Operator, ModifierGroup, ModifierOption, Pack, PackComponent, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 export { money, parseAmount } from "../utils/money";
 
 export const DEFAULT_SETTINGS: Settings = { isEnabled: false, stockMode: "OFF", coversMode: "MANUAL", timezone: "Europe/Madrid", businessDayCutoff: "05:00", autoCloseVisit: true, receiptPrefix: "TPV" };
@@ -40,6 +40,7 @@ export function checkoutMessage(stockStatus?: string | null): string {
 export function usePOSRegister(date?: string | null) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [restaurant, setRestaurant] = useState<RestaurantProfile | null>(null);
@@ -91,7 +92,7 @@ export function usePOSRegister(date?: string | null) {
       // Modifier groups arrive keyed by product id; attach them so the sell
       // screen knows a dish needs a choice before adding it to a ticket.
       const modifierGroups = data.productModifiers || {};
-      setSettings(data.settings || DEFAULT_SETTINGS); setProducts((data.products || []).map((product) => modifierGroups[String(product.id)]?.length ? { ...product, modifierGroups: modifierGroups[String(product.id)] } : product)); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null); setProductStock(data.productStock || {});
+      setSettings(data.settings || DEFAULT_SETTINGS); setProducts((data.products || []).map((product) => modifierGroups[String(product.id)]?.length ? { ...product, modifierGroups: modifierGroups[String(product.id)] } : product)); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null); setProductStock(data.productStock || {}); setPacks(data.packs || []);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
   }, [date]);
   useEffect(() => { void load(); }, [load]);
@@ -393,6 +394,23 @@ export function usePOSRegister(date?: string | null) {
     catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo añadir producto"); } finally { setBusy(false); setPendingProductId(null); }
   }, [ticket]);
 
+  /**
+   * Rings up a pack: one line at the pack price with the chosen components sent
+   * to the server, which expands them underneath at zero. There is deliberately
+   * no price override and no modifier delta here — the pack price is the price,
+   * and the server rejects both on a pack line rather than letting the receipt
+   * disagree with what the guest agreed to.
+   */
+  const addPack = useCallback(async (pack: Pack, selection: { quantity?: number; choices: Record<string, number> }) => {
+    if (!ticket) return;
+    setBusy(true); setMessage("");
+    const quantity = selection.quantity ?? 1;
+    try {
+      const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ packId: pack.id, quantity, packSelection: { quantity, choices: selection.choices }, idempotencyKey: crypto.randomUUID() }) });
+      setTicket(data.ticket);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo anadir el menu"); } finally { setBusy(false); }
+  }, [ticket]);
+
   const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir") => {
     if (!ticket) return; const trimmed = reason.trim(); if (!trimmed) return;
     try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed }) }); setTicket(data.ticket); }
@@ -504,7 +522,7 @@ export function usePOSRegister(date?: string | null) {
     load, loadReservations, selectReservation, openVisit, openTakeaway, restoreVisit, restoreParkedVisit, moveVisitToTable,
     parkVisit, openBar, mergeVisits, applyAdjustment, compLine, setLineNote, openDrawer,
     setVisitCustomer, setTicketOperator, toggleLineTag, loadTags,
-    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct,
+    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct, addPack, packs,
     setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, checkout,
   };
 }

@@ -1728,3 +1728,67 @@
   .pos-sectionMenuBtn { min-width: 44px; min-height: 44px; }
   .pos-categories .pos-categoryTile .bo-foodMemberBody { min-height: 44px; padding: 6px 4px; }
 }
+
+/* --- Packs (menú del día) -----------------------------------------------------
+   A pack shows as one paid line with its dishes indented underneath, so the
+   guest reads what they ordered rather than a paid menu plus free plates.
+
+   Coordination id: pos_packs_v1 */
+
+.pos-products__packHeading {
+  grid-column: 1 / -1;
+  margin: 8px 0 0;
+  font-size: var(--bo-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bo-muted);
+}
+
+.pos-line__components {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 2px;
+  margin: 4px 0 2px;
+  padding: 4px 0 4px 10px;
+  list-style: none;
+  border-left: 2px solid var(--bo-border);
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+}
+.pos-line__components li { overflow-wrap: anywhere; }
+.pos-line__componentName { display: inline-block; }
+
+.pos-packPicker__desc {
+  margin: 0 0 10px;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+}
+
+.pos-packPicker__includes {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: var(--bo-surface-muted, transparent);
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  overflow-wrap: anywhere;
+}
+.pos-packPicker__includesLabel {
+  display: block;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: var(--bo-text-2xs, 11px);
+  margin-bottom: 2px;
+}
+
+/* The quantity stepper sits in the picker footer next to the running total. */
+.pos-modifierPicker__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  min-height: 44px;
+}
