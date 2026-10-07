@@ -53,6 +53,21 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
       return right - left;
     });
   }, [activeTicketLines]);
+
+  // A pack expands into a parent line plus component lines. Listing them flat
+  // shows the guest a paid menu followed by four 0,00 € plates they never
+  // ordered, so components are nested under their parent and shown read-only.
+  const componentsByParent = useMemo(() => {
+    const out = new Map<number, TicketLine[]>();
+    for (const line of activeTicketLines) {
+      if (line.parentLineId == null) continue;
+      const bucket = out.get(line.parentLineId);
+      if (bucket) bucket.push(line);
+      else out.set(line.parentLineId, [line]);
+    }
+    return out;
+  }, [activeTicketLines]);
+  const topLevelLines = useMemo(() => linesByRecency.filter((line) => line.parentLineId == null), [linesByRecency]);
   const openSplitTickets = useMemo(() => splitTickets.filter((t) => t.status === "OPEN"), [splitTickets]);
   const currentTicketIsEmpty = useMemo(() => ticket && !ticket.lines.filter((line) => line.status !== "VOIDED").length, [ticket]);
   return (
@@ -123,7 +138,7 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
             </div>
           ) : null}
           <div className="pos-ticketPanel__lines" data-testid="pos-ticket-lines">
-            {linesByRecency.map((line) => (
+            {topLevelLines.map((line) => (
               <div
                 className={line.id === selectedLineId ? "pos-line pos-line--selected" : "pos-line"}
                 key={line.id}
@@ -152,6 +167,15 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
                       <li key={`${line.id}-${modifier.modifierOptionId ?? modifier.name}`} data-testid={`pos-line-modifier-${line.id}-${modifier.modifierOptionId ?? modifier.name}`}>
                         {modifier.quantity > 1 ? `${modifier.quantity} × ` : ""}{modifier.name}
                         {modifier.priceDeltaCents !== 0 ? <span className="pos-line__modifierPrice">{modifier.priceDeltaCents > 0 ? `+${money(modifier.priceDeltaCents)}` : money(modifier.priceDeltaCents)}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {(componentsByParent.get(line.id) || []).length ? (
+                  <ul className="pos-line__components" data-testid={`pos-line-components-${line.id}`}>
+                    {(componentsByParent.get(line.id) || []).map((component) => (
+                      <li key={component.id} data-testid={`pos-line-component-${component.id}`}>
+                        <span className="pos-line__componentName">{component.quantity > 1 ? `${component.quantity} × ` : ""}{component.productName}</span>
                       </li>
                     ))}
                   </ul>

@@ -17,6 +17,7 @@ import { useCheckoutTenders } from "../../hooks/useCheckoutTenders";
 import { POS_PAYMENT_METHODS, POS_PAYMENT_METHOD_LABELS, formatTenderInput, tenderedCentsOf, type POSPaymentMethod } from "../../utils/paymentMethods";
 import { POSMoveLineDialog } from "./POSMoveLineDialog";
 import { POSModifierPicker } from "./POSModifierPicker";
+import { POSPackPicker } from "./POSPackPicker";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
@@ -58,6 +59,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [lineToMove, setLineToMove] = useState<TicketLine | null>(null);
   /** A product with modifier groups awaiting the guest's choice. */
   const [productToModify, setProductToModify] = useState<Parameters<typeof register.addProduct>[0] | null>(null);
+  const [packToAdd, setPackToAdd] = useState<Parameters<typeof register.addPack>[0] | null>(null);
   const [voidOrderOpen, setVoidOrderOpen] = useState(false);
   const [voidOrderReason, setVoidOrderReason] = useState("");
   const [discountOpen, setDiscountOpen] = useState(false);
@@ -88,6 +90,13 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     () => register.filteredProducts.filter((product) => !category || product.categoryName === category),
     [category, register.filteredProducts],
   );
+
+  // Packs are not category members — a menú del día spans several — so they
+  // follow the search text but are never hidden by the category strip.
+  const visiblePacks = useMemo(() => {
+    const needle = register.query.trim().toLowerCase();
+    return register.packs.filter((pack) => !needle || pack.name.toLowerCase().includes(needle));
+  }, [register.packs, register.query]);
 
   const keypadNumber = useMemo(() => Number(keypadValue.replace(",", ".")) || 0, [keypadValue]);
 
@@ -445,6 +454,21 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     setKeypadMultiplierQty(null);
   }, [keypadMultiplierQty, productToModify, register]);
 
+  const handleAddPack = useCallback((pack: Parameters<typeof register.addPack>[0]) => {
+    // The pack price is fixed, so a keypad price typed by mistake has nowhere to
+    // go: clear it rather than silently selling the menu at the catalog price
+    // while the operator believes otherwise.
+    setKeypadValue("");
+    setKeypadMultiplierQty(null);
+    setPackToAdd(pack);
+  }, []);
+
+  const handleConfirmPack = useCallback((selection: { quantity: number; choices: Record<string, number> }) => {
+    if (!packToAdd) return;
+    void register.addPack(packToAdd, selection);
+    setPackToAdd(null);
+  }, [packToAdd, register]);
+
   const handleKeypadMultiplier = useCallback((qty: number) => {
     setKeypadMultiplierQty(qty);
   }, []);
@@ -528,7 +552,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                 <input type="search" value={register.query} onChange={(event) => register.setQuery(event.target.value)} placeholder="Buscar producto…" aria-label="Buscar producto" data-pos-command="search-products" data-testid="pos-product-search" />
                 {register.query ? <button className="pos-modal__secondary pos-search__clear" type="button" onClick={() => register.setQuery("")} aria-label="Limpiar búsqueda" data-testid="pos-product-search-clear">×</button> : null}
               </div>
-              <POSProductGrid products={visibleProducts} disabled={!register.ticket || register.busy} readOnly={readOnly} pendingProductId={register.pendingProductId} onAdd={handleAddProduct} stockStatus={register.settings.stockMode === "OFF" ? undefined : register.productStock} />
+              <POSProductGrid products={visibleProducts} packs={visiblePacks} disabled={!register.ticket || register.busy} readOnly={readOnly} pendingProductId={register.pendingProductId} onAdd={handleAddProduct} onAddPack={handleAddPack} stockStatus={register.settings.stockMode === "OFF" ? undefined : register.productStock} />
             </div>
           </div>
         </div>
@@ -753,6 +777,21 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
           </div>
         </POSDialog>
       ) : null}
+
+      <POSPackPicker
+
+        pack={packToAdd}
+
+        busy={register.busy}
+
+        error={register.error || undefined}
+
+        onClose={() => setPackToAdd(null)}
+
+        onConfirm={handleConfirmPack}
+
+      />
+
 
       <POSModifierPicker
         product={productToModify}
