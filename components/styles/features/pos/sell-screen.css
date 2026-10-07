@@ -2290,3 +2290,61 @@
   .pos-fiscal__actions { flex-direction: column; align-items: stretch; }
   .pos-fiscal__actions button { width: 100%; }
 }
+
+/* ===== One account per comensal =====
+   A named check reads as a name, not "Cuenta 3", so the tab shows the guest and
+   only falls back to the number when nobody gave one. */
+.pos-ticketPanel__tabRename {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--bo-radius-full);
+  color: var(--bo-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease-in-out;
+}
+.pos-ticketPanel__tab:hover .pos-ticketPanel__tabRename,
+.pos-ticketPanel__tab:focus-within .pos-ticketPanel__tabRename { opacity: 1; }
+.pos-ticketPanel__tabRename:hover { background: color-mix(in srgb, var(--bo-text) 12%, transparent); color: var(--bo-text); }
+/* Touch has no hover: keep the pencil permanently visible instead of hiding it. */
+@media (hover: none) {
+  .pos-ticketPanel__tabRename { opacity: 1; }
+}
+
+.pos-guest {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-space-3);
+  padding: var(--bo-space-4);
+}
+.pos-guest__label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--bo-text-sm);
+  color: var(--bo-text);
+  font-weight: var(--bo-weight-medium);
+}
+.pos-guest__label input {
+  min-height: 48px;
+  padding: 0 var(--bo-space-3);
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-size: var(--bo-text-base, 1rem);
+}
+.pos-guest__label input:focus-visible { outline: 2px solid var(--bo-primary, var(--bo-color-primary)); outline-offset: 1px; }
+.pos-guest__hint { margin: 0; font-size: var(--bo-text-xs); color: var(--bo-muted); }
+.pos-guest__actions { display: flex; justify-content: flex-end; gap: var(--bo-space-3); }
+.pos-guest__actions button { min-height: 44px; padding: 0 var(--bo-space-4); border-radius: var(--bo-radius-sm); font-size: var(--bo-text-sm); font-weight: var(--bo-weight-semibold); cursor: pointer; }
+@media (max-width: 560px) {
+  .pos-guest__actions { flex-direction: column-reverse; }
+  .pos-guest__actions button { width: 100%; }
+}

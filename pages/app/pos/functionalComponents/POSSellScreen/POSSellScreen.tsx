@@ -24,6 +24,7 @@ import { printTicketReceipt } from "./printReceipt";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { POSFiscalDialog } from "./POSFiscalDialog";
+import { POSGuestDialog } from "./POSGuestDialog";
 import { POSOfflineBar } from "./POSOfflineBar";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
@@ -78,6 +79,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [divideOpen, setDivideOpen] = useState(false);
   const [divideGuests, setDivideGuests] = useState("2");
   const [prompt, setPrompt] = useState<RailFeatureKey | null>(null);
+  // "create" names a check that does not exist yet; "rename" names the current one.
+  const [guestDialog, setGuestDialog] = useState<"create" | "rename" | null>(null);
   const [areaFilter, setAreaFilter] = useState(0);
   const [ticketExpanded, setTicketExpanded] = useState(false);
   const [syncingOffline, setSyncingOffline] = useState(false);
@@ -527,7 +530,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       case "comanda": void printComanda(); break;
       case "cocina": void register.sendKitchen(); break;
       case "descuento": if (register.ticket) { register.setError(""); setKeypadContext({ kind: "discount" }); setDiscountOpen(true); } break;
-      case "separar-comanda": void register.createSplitTicket(); break;
+      case "separar-comanda": if (register.visit) { register.setError(""); setGuestDialog("create"); } break;
       case "borrar-comanda": if (register.ticket) { register.setError(""); setVoidOrderOpen(true); } break;
       case "dividir-comanda": if (register.ticket) { register.setError(""); setDivideOpen(true); } break;
       case "salon": setAreaFilter(0); setShowTables(true); break;
@@ -599,6 +602,13 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               canMoveLine={register.otherOpenSplitTickets.length > 0}
               onMergeSplitTickets={() => void register.mergeSplitTickets()}
               onDeleteEmptyTicket={(t) => void register.voidEmptyTicket(t)}
+              onRenameTicket={(target) => {
+                // Rename the check whose pencil was pressed, not whichever one
+                // happens to be active: the panel shows every split tab at once.
+                register.switchTicket(target);
+                register.setError("");
+                setGuestDialog("rename");
+              }}
               busy={register.busy}
               readOnly={readOnly}
             />
@@ -621,6 +631,20 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       {billingOpen && date ? <POSDayBillingDialog date={date} onClose={() => setBillingOpen(false)} /> : null}
 
       {prompt === "factura" ? <POSFiscalDialog ticket={register.ticket} visit={register.visit} online={register.online} onClose={closePrompt} /> : null}
+
+      {guestDialog ? (
+        <POSGuestDialog
+          ticket={guestDialog === "rename" ? register.ticket : null}
+          title={guestDialog === "rename" ? "Nombre del comensal" : "Separar comanda"}
+          confirmText={guestDialog === "rename" ? "Guardar" : "Separar"}
+          onClose={() => setGuestDialog(null)}
+          onSave={async (label) => {
+            if (guestDialog === "rename") return register.setTicketGuestLabel(label);
+            await register.createSplitTicket(label);
+            return true;
+          }}
+        />
+      ) : null}
 
       <ConfirmDialog
         open={Boolean(lineToVoid)}
