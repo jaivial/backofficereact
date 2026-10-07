@@ -120,7 +120,45 @@ service instead of queuing.
 4. Add G2 coursing — high value for kitchen, medium effort. **NEXT**
 5. G8 fiscal slice (Factura simplificada + series/QR) — compliance, larger.
 6. G10 packs. **DONE** (backend #389/#390/#391, backofficereact #532)
-7. G3 allergens, G9 receipt, G11 PIN, G12 recall, G13 offline.
+7. G12 recall. **DONE** (backend #392, backofficereact #534)
+8. G3 allergens, G9 receipt, G11 PIN, G13 offline.
+
+---
+
+## G12 — Recall ("traer cuenta"): what shipped
+
+A guest at the same table asks for the same thing and the waiter retypes it.
+
+**Backend** (herorestaurant-backend #392)
+- `POST /pos/tickets/{id}/recall` copies a finished ticket's lines onto an open one.
+- Prices and modifiers are copied **as sold**, not re-read from the catalogue: the
+  guest is owed the dish they had last time even if the recipe or price changed.
+- Packs survive: parents keep `pack_id` and components are re-pointed at the
+  *copied* parent, so a recalled menú is one paid line with its dishes under it.
+- Idempotent (`target:source:index` keys), bounded to 120 lines, refuses an empty
+  source, a non-OPEN target and a closed cash day. Two queries to read the source.
+
+**Frontend** (backofficereact #534)
+- "Traer cuenta" in the ticket header, hidden on a sealed day or closed ticket.
+- Picker of the day's closed tickets (table, number, covers, total), Confirm
+  gated until a pick, and an honest empty state instead of a blank box.
+
+**Verified against dev** (measured):
+
+| case | result |
+|---|---|
+| recall a 26-line ticket with packs | 201, copied 26, total 27830 = source ✅ |
+| pack parents preserved | 4 ✅ |
+| components nested under the copy | 14 ✅ |
+| modifier snapshots copied | 10 ✅ |
+| same recall twice | copied 0, total unchanged ✅ |
+| unknown source ticket | 404 ✅ |
+| target not OPEN (PAID) | 409 ✅ |
+| zero source id | 400 ✅ |
+| UI: trigger size | 115×44 ✅ |
+| UI: Confirm before / after choosing | disabled / enabled ✅ |
+| UI: candidates shown | 9 ✅ |
+| UI at 390×844 touch | 0 controls <44px, no overflow, no errors ✅ |
 
 ---
 
