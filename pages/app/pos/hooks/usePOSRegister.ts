@@ -88,7 +88,10 @@ export function usePOSRegister(date?: string | null) {
     setError("");
     try {
       const data = await request<Bootstrap>(date ? `/bootstrap?date=${encodeURIComponent(date)}` : "/bootstrap");
-      setSettings(data.settings || DEFAULT_SETTINGS); setProducts(data.products || []); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null); setProductStock(data.productStock || {});
+      // Modifier groups arrive keyed by product id; attach them so the sell
+      // screen knows a dish needs a choice before adding it to a ticket.
+      const modifierGroups = data.productModifiers || {};
+      setSettings(data.settings || DEFAULT_SETTINGS); setProducts((data.products || []).map((product) => modifierGroups[String(product.id)]?.length ? { ...product, modifierGroups: modifierGroups[String(product.id)] } : product)); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null); setProductStock(data.productStock || {});
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
   }, [date]);
   useEffect(() => { void load(); }, [load]);
