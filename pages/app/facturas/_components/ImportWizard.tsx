@@ -704,7 +704,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
       "FechaFactura",
       "MetodoPago",
       "Estado",
-      "Categoria",
+      "Categoría",
     ];
 
     const sampleData = [
@@ -837,7 +837,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                     </select>
                   </div>
                   <div data-testid="importWizard-importWizardSetting-2" className="bo-importWizardSetting" data-slot="importWizard-importWizardSetting">
-                    <label data-testid="import-wizard-default-category-label" data-slot="import-wizard-default-category-label">Categoria por defecto</label>
+                    <label data-testid="import-wizard-default-category-label" data-slot="import-wizard-default-category-label">Categoría por defecto</label>
                     <select
                       value={localSettings.defaultCategory}
                       onChange={(e) => setLocalSettings((s) => ({ ...s, defaultCategory: e.target.value as InvoiceCategory }))}

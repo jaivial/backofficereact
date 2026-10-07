@@ -188,7 +188,7 @@ export default function Page() {
 
         autoTable(doc, {
           startY: currentY + 5,
-          head: [["Factura", "Fecha", "Metodo", "Importe"]],
+          head: [["Factura", "Fecha", "Método", "Importe"]],
           body: paymentBody,
           theme: "striped",
         });
@@ -377,7 +377,7 @@ export default function Page() {
         <>
           {/* Customer Info */}
           <Card variant="tailwind" padding className="mb-6" data-slot="estado-cuenta-customer-info-card">
-            <h3 className="text-lg font-semibold text-[var(--bo-text)] mb-4" data-slot="estado-cuenta-customer-info-title">Informacion del Cliente</h3>
+            <h3 className="text-lg font-semibold text-[var(--bo-text)] mb-4" data-slot="estado-cuenta-customer-info-title">Información del Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-slot="estado-cuenta-customer-info-grid">
               <div data-slot="estado-cuenta-customer-name-field">
                 <span className="text-sm text-[var(--bo-muted)]" data-slot="estado-cuenta-text-[var(--bo-muted)]">Nombre</span>
@@ -502,7 +502,7 @@ export default function Page() {
                       <tr data-slot="estado-cuenta-tr">
                         <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Factura</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Fecha</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Metodo</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Método</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-[var(--bo-muted)] uppercase" data-slot="estado-cuenta-uppercase">Importe</th>
                       </tr>
                     </thead>

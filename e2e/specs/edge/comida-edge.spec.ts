@@ -16,7 +16,7 @@ test.describe("@edge Comida", () => {
   test("hub muestra categorias de la carta", async ({ adminPage }) => {
     await openComida(adminPage);
     await expect(adminPage.locator('[data-ui="food-hub-section"]')).toBeVisible({ timeout: 15_000 });
-    for (const label of ["Platos", "Bebidas", "Cafes", "Vinos"]) {
+    for (const label of ["Platos", "Bebidas", "Cafés", "Vinos"]) {
       await expect(adminPage.locator(`[data-ui="food-hub-card"]`, { hasText: label }).first()).toBeVisible({ timeout: 10_000 });
     }
   });

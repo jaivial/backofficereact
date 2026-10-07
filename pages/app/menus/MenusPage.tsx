@@ -16,6 +16,9 @@ import { MenuSummaryCard } from "../../../ui/widgets/menus/MenuSummaryCard";
 import { MenuTypeChangeModal } from "../../../ui/widgets/menus/MenuTypeChangeModal";
 import { MenuTypePanelGrid } from "../../../ui/widgets/menus/MenuTypePanelGrid";
 import { MENU_TYPE_ORDER, menuTypeFromQuerySlug, menuTypeLabel, menuTypeQuerySlug } from "../../../ui/widgets/menus/menuPresentation";
+// Coordination id: menu_type_codes_v1 - menu_type is a numeric code everywhere.
+import { DEFAULT_MENU_TYPE, normalizeMenuType } from "../../../ui/widgets/menus/menuTypeCodes";
+import type { MenuTypeCode } from "../../../ui/widgets/menus/menuTypeCodes";
 import { CrearPage } from "./crear/crear";
 
 type PageData = {
@@ -24,6 +27,8 @@ type PageData = {
 };
 
 type MenuStatusFilter = "all" | "active" | "inactive";
+/** The menus list is either unfiltered ("all") or pinned to a single menu type code. */
+type MenuTypeFilter = MenuTypeCode | "all";
 type MenuSortOption = "created_desc" | "created_asc" | "price_asc" | "price_desc";
 
 const MENU_STATUS_FILTER_OPTIONS: { value: MenuStatusFilter; label: string }[] = [
@@ -58,15 +63,15 @@ function menuPriceNumber(menu: Pick<GroupMenuV2Summary, "price">): number {
 type MenuFiltersProps = {
   searchText: string;
   statusFilter: MenuStatusFilter;
-  menuTypeFilter: string;
+  menuTypeFilter: MenuTypeFilter;
   sortBy: MenuSortOption;
-  menuTypeOptions: string[];
+  menuTypeOptions: MenuTypeCode[];
   hasFilters: boolean;
   summaryText: string;
   disableActions: boolean;
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: MenuStatusFilter) => void;
-  onMenuTypeFilterChange: (value: string) => void;
+  onMenuTypeFilterChange: (value: MenuTypeFilter) => void;
   onSortByChange: (value: MenuSortOption) => void;
   onResetFilters: () => void;
 };
@@ -91,7 +96,7 @@ const MenuFilters = React.memo(function MenuFilters({
   const menuTypeFilterOptions = useMemo(
     () => [
       { value: "all", label: "Todos los tipos" },
-      ...menuTypeOptions.map((type) => ({ value: type, label: menuTypeLabel(type) })),
+      ...menuTypeOptions.map((type) => ({ value: String(type), label: menuTypeLabel(type) })),
     ],
     [menuTypeOptions],
   );
@@ -154,7 +159,7 @@ const MenuFilters = React.memo(function MenuFilters({
 
               <label className="bo-field bo-menuV2Filter bo-menuV2Filter--type" data-slot="menus-menuV2Filter--type">
                 <span className="bo-label" data-slot="menus-label">Tipo de menu</span>
-                <Select value={menuTypeFilter} onChange={onMenuTypeFilterChange} options={menuTypeFilterOptions} ariaLabel="Tipo de menu" />
+                <Select value={String(menuTypeFilter)} onChange={(value) => onMenuTypeFilterChange(normalizeMenuType(value))} options={menuTypeFilterOptions} ariaLabel="Tipo de menu" />
               </label>
 
               <label className="bo-field bo-menuV2Filter bo-menuV2Filter--sort" data-slot="menus-menuV2Filter--sort">
@@ -204,16 +209,16 @@ export default function Page() {
   const menusData = Array.isArray(data.menus) ? data.menus : [];
   const [menus, setMenus] = useState<GroupMenuV2Summary[]>(menusData);
   const [confirmDel, setConfirmDel] = useState<{ open: boolean; menu: GroupMenuV2Summary | null }>({ open: false, menu: null });
-  const [changeTypeDialog, setChangeTypeDialog] = useState<{ open: boolean; menu: GroupMenuV2Summary | null; nextType: string }>({
+  const [changeTypeDialog, setChangeTypeDialog] = useState<{ open: boolean; menu: GroupMenuV2Summary | null; nextType: MenuTypeCode }>({
     open: false,
     menu: null,
-    nextType: "closed_conventional",
+    nextType: DEFAULT_MENU_TYPE,
   });
   const [searchText, setSearchText] = useState("");
   const selectedMenuTypeFromUrl = menuTypeFromQuerySlug(pageContext.urlParsed?.search?.menutype);
   const [showTypeSelector, setShowTypeSelector] = useState(() => !selectedMenuTypeFromUrl);
   const [statusFilter, setStatusFilter] = useState<MenuStatusFilter>("all");
-  const [menuTypeFilter, setMenuTypeFilter] = useState(() => selectedMenuTypeFromUrl ?? "all");
+  const [menuTypeFilter, setMenuTypeFilter] = useState<MenuTypeFilter>(() => selectedMenuTypeFromUrl ?? "all");
   const [sortBy, setSortBy] = useState<MenuSortOption>("created_desc");
   useErrorToast(error);
 
@@ -273,21 +278,21 @@ export default function Page() {
     setChangeTypeDialog({
       open: true,
       menu,
-      nextType: menu.menu_type || "closed_conventional",
+      nextType: normalizeMenuType(menu.menu_type),
     });
   }, []);
 
   const closeChangeTypeDialog = useCallback(() => {
     if (changingMenuTypeId !== null) return;
-    setChangeTypeDialog({ open: false, menu: null, nextType: "closed_conventional" });
+    setChangeTypeDialog({ open: false, menu: null, nextType: DEFAULT_MENU_TYPE });
   }, [changingMenuTypeId]);
 
   const onChangeTypeConfirm = useCallback(async () => {
     const menu = changeTypeDialog.menu;
     if (!menu) return;
 
-    const previousType = menu.menu_type || "closed_conventional";
-    const requestedType = changeTypeDialog.nextType || previousType;
+    const previousType = normalizeMenuType(menu.menu_type);
+    const requestedType = normalizeMenuType(changeTypeDialog.nextType);
     if (requestedType === previousType) {
       closeChangeTypeDialog();
       return;
@@ -302,10 +307,10 @@ export default function Page() {
         throw new Error(res.message || "No se pudo cambiar el tipo de menu");
       }
 
-      const savedType = res.menu_type || requestedType;
+      const savedType = normalizeMenuType(res.menu_type);
       setMenus((prev) => prev.map((item) => (item.id === menu.id ? { ...item, menu_type: savedType } : item)));
       pushToast({ kind: "success", title: "Tipo actualizado" });
-      setChangeTypeDialog({ open: false, menu: null, nextType: "closed_conventional" });
+      setChangeTypeDialog({ open: false, menu: null, nextType: DEFAULT_MENU_TYPE });
     } catch (error) {
       setMenus((prev) => prev.map((item) => (item.id === menu.id ? { ...item, menu_type: previousType } : item)));
       pushToast({
@@ -318,7 +323,7 @@ export default function Page() {
     }
   }, [api, changeTypeDialog.menu, changeTypeDialog.nextType, closeChangeTypeDialog, pushToast]);
 
-  const onChangeTypeSelection = useCallback((value: string) => {
+  const onChangeTypeSelection = useCallback((value: MenuTypeCode) => {
     setChangeTypeDialog((prev) => (prev.open ? { ...prev, nextType: value } : prev));
   }, []);
 
@@ -337,7 +342,7 @@ export default function Page() {
     setStatusFilter(value);
   }, []);
 
-  const handleMenuTypeFilterChange = useCallback((value: string) => {
+  const handleMenuTypeFilterChange = useCallback((value: MenuTypeFilter) => {
     setMenuTypeFilter(value);
   }, []);
 
@@ -346,18 +351,18 @@ export default function Page() {
   }, []);
 
   const menuTypeCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
+    const counts: Partial<Record<MenuTypeCode, number>> = {};
     for (const menu of menus) {
-      const menuType = menu.menu_type || "closed_conventional";
+      const menuType = normalizeMenuType(menu.menu_type);
       counts[menuType] = (counts[menuType] || 0) + 1;
     }
     return counts;
   }, [menus]);
 
   const menuTypeOptions = useMemo(() => {
-    const out: string[] = [];
-    const seen = new Set<string>();
-    for (const type of MENU_TYPE_ORDER.concat(menus.map((m) => m.menu_type || "closed_conventional"))) {
+    const out: MenuTypeCode[] = [];
+    const seen = new Set<MenuTypeCode>();
+    for (const type of MENU_TYPE_ORDER.concat(menus.map((m) => normalizeMenuType(m.menu_type)))) {
       if (!type || seen.has(type)) continue;
       seen.add(type);
       out.push(type);
@@ -368,7 +373,7 @@ export default function Page() {
   const filteredMenus = useMemo(() => {
     const searchNorm = normalizedSearchValue(searchText);
     const next = menus.filter((menu) => {
-      const menuType = menu.menu_type || "closed_conventional";
+      const menuType = normalizeMenuType(menu.menu_type);
       if (statusFilter === "active" && !menu.active) return false;
       if (statusFilter === "inactive" && menu.active) return false;
       if (menuTypeFilter !== "all" && menuType !== menuTypeFilter) return false;
@@ -398,7 +403,7 @@ export default function Page() {
     [confirmDel.menu],
   );
 
-  const handleTypePanelClick = useCallback((type: string) => {
+  const handleTypePanelClick = useCallback((type: MenuTypeCode) => {
     setShowTypeSelector(false);
     setMenuTypeFilter(type);
     const query = new URLSearchParams({ menutype: menuTypeQuerySlug(type) });
@@ -478,7 +483,7 @@ export default function Page() {
       <MenuTypeChangeModal
         open={changeTypeDialog.open}
         title="Cambiar tipo de menu"
-        currentType={changeTypeDialog.menu?.menu_type || "closed_conventional"}
+        currentType={normalizeMenuType(changeTypeDialog.menu?.menu_type)}
         nextType={changeTypeDialog.nextType}
         saving={changingMenuTypeId !== null}
         onClose={closeChangeTypeDialog}

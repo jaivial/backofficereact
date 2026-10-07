@@ -38,7 +38,7 @@ test.describe("Menus - Editor", () => {
       const res = await fetch("/api/admin/group-menus-v2/drafts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ menu_type: "closed_conventional" }),
+        body: JSON.stringify({ menu_type: 1 }),
         credentials: "include",
       });
       return res.json();
@@ -97,7 +97,7 @@ test.describe("Menus - Editor", () => {
       const res = await fetch("/api/admin/group-menus-v2/drafts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ menu_type: "closed_conventional" }),
+        body: JSON.stringify({ menu_type: 1 }),
         credentials: "include",
       });
       return res.json();

@@ -39,9 +39,10 @@ vi.mock("../../../ui/overlays/Modal", () => ({
 vi.mock("../../../ui/overlays/ConfirmDialog", () => ({ ConfirmDialog: () => null }));
 vi.mock("../../../ui/widgets/menus/MenuTypeChangeModal", () => ({ MenuTypeChangeModal: () => null }));
 vi.mock("../../../ui/widgets/menus/MenuTypePanelGrid", () => ({
-  MenuTypePanelGrid: ({ onSelect }: { onSelect: (type: string) => void }) => React.createElement(
+  MenuTypePanelGrid: ({ onSelect }: { onSelect: (type: number) => void }) => React.createElement(
     "button",
-    { "data-testid": "type-grid", onClick: () => onSelect("closed_conventional") },
+    // Coordination id: menu_type_codes_v1 - the panel hands over the numeric code.
+    { "data-testid": "type-grid", onClick: () => onSelect(1) },
     "Menu cerrado convencional",
   ),
 }));

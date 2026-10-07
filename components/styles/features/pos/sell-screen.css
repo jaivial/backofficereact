@@ -1450,10 +1450,12 @@
   .pos-sell__row--register { padding-top: 0.5rem; }
   .pos-keypad__display { padding: 4px 10px; }
   .pos-keypad__value { font-size: var(--bo-text-lg); }
-  .pos-keypad__key, .pos-keypad__calcOp { min-height: 40px; font-size: var(--bo-text-base); }
+  /* Compact the visuals, never the touch target: 44px is the floor for a
+     finger on a tablet/laptop trackpad-sized keypad (WCAG 2.5.8 / iOS HIG). */
+  .pos-keypad__key, .pos-keypad__calcOp { min-height: 44px; font-size: var(--bo-text-base); }
   .pos-products .bo-foodMemberMedia { aspect-ratio: 16 / 9; }
   .pos-categories [data-ui="dish-card-media"] { display: none; }
-  .pos-rail__btn { min-height: 40px; padding: 6px 8px; }
+  .pos-rail__btn { min-height: 44px; padding: 6px 8px; }
 }
 
 /* Large desktops: more product columns and a roomier rail. */
@@ -1587,3 +1589,527 @@
 .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile:hover .bo-foodMemberTitle { color: var(--bo-text); }
 .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile.pos-dishCard--active .bo-foodMemberTitle { color: var(--bo-accent); }
 .pos-categories .bo-memberCard.bo-foodMemberCard.pos-categoryTile .bo-foodMemberTitle { transition-property: color; transition-duration: 150ms; transition-timing-function: ease-out; }
+
+/* --- Modifiers (variantes/extras) ---------------------------------------
+   The picker is the most repeated dialog of a service: the guest orders the
+   same dish with different sizes/extras all night, so the options are big
+   touch targets and the running total stays visible next to Confirm. */
+.pos-modifierPicker {
+  display: grid;
+  gap: var(--bo-space-4);
+  padding: var(--bo-space-4);
+  overflow-y: auto;
+  max-height: min(60vh, 30rem);
+}
+.pos-modifierGroup {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.pos-modifierGroup__legend {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bo-space-2);
+  width: 100%;
+  padding: 0 0 var(--bo-space-2);
+  font-size: var(--bo-text-sm);
+  font-weight: 600;
+  color: var(--bo-text);
+}
+.pos-modifierGroup__rule {
+  font-size: var(--bo-text-xs);
+  font-weight: 500;
+  color: var(--bo-muted);
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.pos-modifierGroup__options {
+  display: grid;
+  gap: 6px;
+}
+.pos-modifierOption {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--bo-space-2);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface);
+  overflow: hidden;
+}
+.pos-modifierOption--on {
+  border-color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 10%, var(--bo-surface));
+}
+.pos-modifierOption--blocked { opacity: 0.5; }
+.pos-modifierOption__pick {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bo-space-3);
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.pos-modifierOption__pick:disabled { cursor: not-allowed; }
+.pos-modifierOption__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--bo-text-sm);
+  font-weight: 500;
+}
+.pos-modifierOption__price {
+  flex: none;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pos-modifierOption__qty {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 8px;
+  font-size: var(--bo-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.pos-modifierOption__step {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--bo-radius-sm);
+  background: transparent;
+  color: var(--bo-text);
+  cursor: pointer;
+}
+.pos-modifierOption__step:hover:not(:disabled) { background: color-mix(in srgb, var(--bo-text) 8%, transparent); }
+.pos-modifierOption__step:disabled { opacity: 0.5; cursor: not-allowed; }
+.pos-modifierPicker__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bo-space-3);
+}
+.pos-modifierPicker__total {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pos-modifierPicker__delta { color: var(--bo-muted); font-weight: 500; }
+
+/* The chosen extras sit under the dish name so a waiter can read the order
+   back without opening the line. */
+.pos-line__modifiers {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 2px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+}
+.pos-line__modifiers li { overflow-wrap: anywhere; }
+.pos-line__modifierPrice { margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* Coarse pointers (the till is a tablet operated with a finger): the section
+   menu and the category chips measured 40px/41px, just under the 44px minimum.
+   `pointer: coarse` keeps a mouse-driven desktop window unchanged.
+   Coordination id: pos_touch_targets_v1 */
+@media (pointer: coarse) {
+  .pos-sectionMenuBtn { min-width: 44px; min-height: 44px; }
+  .pos-categories .pos-categoryTile .bo-foodMemberBody { min-height: 44px; padding: 6px 4px; }
+}
+
+/* --- Packs (menú del día) -----------------------------------------------------
+   A pack shows as one paid line with its dishes indented underneath, so the
+   guest reads what they ordered rather than a paid menu plus free plates.
+
+   Coordination id: pos_packs_v1 */
+
+.pos-products__packHeading {
+  grid-column: 1 / -1;
+  margin: 8px 0 0;
+  font-size: var(--bo-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bo-muted);
+}
+
+.pos-line__components {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 2px;
+  margin: 4px 0 2px;
+  padding: 4px 0 4px 10px;
+  list-style: none;
+  border-left: 2px solid var(--bo-border);
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+}
+.pos-line__components li { overflow-wrap: anywhere; }
+.pos-line__componentName { display: inline-block; }
+
+.pos-packPicker__desc {
+  margin: 0 0 10px;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-sm);
+}
+
+.pos-packPicker__includes {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: var(--bo-surface-muted, transparent);
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  overflow-wrap: anywhere;
+}
+.pos-packPicker__includesLabel {
+  display: block;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: var(--bo-text-2xs, 11px);
+  margin-bottom: 2px;
+}
+
+/* The quantity stepper sits in the picker footer next to the running total. */
+.pos-modifierPicker__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  min-height: 44px;
+}
+
+/* --- Recall ("traer una cuenta") ----------------------------------------------
+   The trigger lives in the ticket header so it is one tap from the rail, and the
+   picker lists closed tickets newest first.
+
+   Coordination id: pos_recall_v1 */
+
+.pos-ticketPanel__recall {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: transparent;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.pos-ticketPanel__recall:hover:not(:disabled) { color: var(--bo-text); border-color: var(--bo-primary, currentColor); }
+.pos-ticketPanel__recall:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pos-recallList {
+  display: grid;
+  gap: 6px;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+}
+
+.pos-recallItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "table total" "meta total";
+  gap: 2px 10px;
+  align-items: center;
+  min-height: 56px;
+  padding: 8px 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pos-recallItem:hover:not(:disabled) { border-color: var(--bo-primary, currentColor); }
+.pos-recallItem.is-selected {
+  border-color: var(--bo-primary, currentColor);
+  background: var(--bo-surface-muted, rgba(127, 127, 127, 0.12));
+}
+.pos-recallItem:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pos-recallItem__table {
+  grid-area: table;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: var(--bo-text-sm);
+}
+.pos-recallItem__meta {
+  grid-area: meta;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  overflow-wrap: anywhere;
+}
+.pos-recallItem__total {
+  grid-area: total;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.pos-recallEmpty { margin: 0; color: var(--bo-muted); font-size: var(--bo-text-sm); }
+
+/* On a phone the label does not fit next to the icon; the title still names it. */
+@media (max-width: 420px) {
+  .pos-ticketPanel__recall span { display: none; }
+  .pos-ticketPanel__recall { padding: 6px 8px; }
+}
+
+/* --- Staff PIN ---------------------------------------------------------------
+   A shared terminal needs a keypad that is legible from standing up and
+   impossible to read over a shoulder.
+
+   Coordination id: pos_pin_v1 */
+
+.pos-pinDialog__hint { margin: 0 0 10px; color: var(--bo-muted); font-size: var(--bo-text-sm); }
+
+.pos-pinDialog__steps {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  font-size: var(--bo-text-xs);
+}
+.pos-pinDialog__steps li {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: var(--bo-radius-sm, 6px);
+  background: var(--bo-surface-muted, rgba(127, 127, 127, 0.12));
+  color: var(--bo-muted);
+  text-align: center;
+}
+.pos-pinDialog__steps li.is-current { background: var(--bo-primary, currentColor); color: #fff; }
+.pos-pinDialog__steps li.is-done { color: var(--bo-text); }
+
+.pos-pinDialog__dots { display: flex; justify-content: center; gap: 10px; margin: 4px 0 14px; }
+.pos-pinDialog__dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--bo-border);
+  border-radius: 999px;
+}
+/* Filled dots show a digit was typed but never which one. */
+.pos-pinDialog__dot.is-filled { background: var(--bo-text); border-color: var(--bo-text); }
+
+.pos-pinDialog__keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 260px;
+  margin: 0 auto;
+}
+.pos-pinDialog__key {
+  min-height: 52px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: transparent;
+  color: inherit;
+  font-size: var(--bo-text-lg, 20px);
+  font-weight: 600;
+  cursor: pointer;
+}
+.pos-pinDialog__key:hover:not(:disabled) { border-color: var(--bo-primary, currentColor); }
+.pos-pinDialog__key:active:not(:disabled) { transform: scale(0.97); }
+.pos-pinDialog__key:disabled { opacity: 0.5; cursor: not-allowed; }
+.pos-pinDialog__key--ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--bo-text-xs);
+  font-weight: 500;
+  color: var(--bo-muted);
+}
+
+/* --- Coursing -----------------------------------------------------------------
+   The course strip sits under the ticket header: which course new dishes join,
+   and a fire button on the ones the kitchen has not got yet.
+
+   Coordination id: pos_courses_v1 */
+
+.pos-courses {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--bo-border);
+}
+.pos-courses__label {
+  font-size: var(--bo-text-xs);
+  font-weight: 600;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pos-courses__list { display: flex; flex-wrap: wrap; gap: 6px; }
+.pos-courses__item { display: inline-flex; align-items: stretch; }
+
+/* Two targets side by side rather than one small one: on a busy floor a
+   mis-tap here sends food to the pass. */
+.pos-courses__button,
+.pos-courses__fire {
+  min-height: 44px;
+  min-width: 44px;
+  border: 1px solid var(--bo-border);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.pos-courses__button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: var(--bo-radius-sm, 6px) 0 0 var(--bo-radius-sm, 6px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pos-courses__button.is-selected {
+  border-color: var(--bo-primary, currentColor);
+  background: var(--bo-primary, currentColor);
+  color: #fff;
+}
+.pos-courses__button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.pos-courses__pending {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--bo-danger, #c0392b);
+  color: #fff;
+  font-size: 10px;
+  line-height: 17px;
+  text-align: center;
+}
+
+.pos-courses__fire {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -1px;
+  border-radius: 0 var(--bo-radius-sm, 6px) var(--bo-radius-sm, 6px) 0;
+  color: var(--bo-muted);
+}
+.pos-courses__fire:hover:not(:disabled) { color: var(--bo-danger, #c0392b); border-color: var(--bo-danger, #c0392b); }
+.pos-courses__fire:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* On a phone the label is the first thing to go; the numbers carry the meaning. */
+@media (max-width: 420px) {
+  .pos-courses { padding: 6px 8px; gap: 6px; }
+  .pos-courses__label { display: none; }
+  .pos-courses__button { padding: 0 10px; }
+}
+
+/* G3 allergens: a small warning mark plus the list, kept to one line so a dish
+   card does not grow and push the grid out of alignment. */
+.pos-allergens {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bo-warning-text, #8a5a00);
+  font-size: 0.6875rem;
+}
+.pos-allergens__mark { flex: none; }
+
+/* G3 allergen chips in the product editor. */
+.pos-allergen-chip {
+  min-height: 2.25rem;
+  padding: 0 0.625rem;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border-2);
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+.pos-allergen-chip.is-on {
+  border-color: var(--bo-warning-border, #b45309);
+  background: var(--bo-warning-bg, #fef3c7);
+  color: var(--bo-warning-text, #8a5a00);
+  font-weight: 600;
+}
+
+/* ===== Offline queue bar =====
+   Visible only while the terminal is disconnected or has writes waiting. The
+   colour carries the state (amber = offline, blue = sending, green = done) and
+   is never the only signal: the title says which one it is. */
+.pos-offline {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-3);
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bo-surface) 96%, transparent), color-mix(in srgb, var(--bo-shell) 90%, transparent));
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--bo-bg) 18%, transparent);
+}
+
+.pos-offline__dot {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border-radius: 50%;
+  background: var(--bo-color-warning, #b45309);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--bo-color-warning, #b45309) 22%, transparent);
+}
+.pos-offline--offline { border-color: color-mix(in srgb, var(--bo-color-warning, #b45309) 45%, var(--bo-border)); }
+.pos-offline--syncing .pos-offline__dot { background: var(--bo-color-info, #1d4ed8); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bo-color-info, #1d4ed8) 22%, transparent); }
+.pos-offline--restored { border-color: color-mix(in srgb, var(--bo-color-success) 40%, var(--bo-border)); }
+.pos-offline--restored .pos-offline__dot { background: var(--bo-color-success); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bo-color-success) 22%, transparent); }
+
+.pos-offline__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }
+.pos-offline__title { font-size: var(--bo-text-sm); font-weight: var(--bo-weight-semibold); color: var(--bo-text); }
+.pos-offline__detail { font-size: var(--bo-text-xs); color: var(--bo-muted); overflow-wrap: anywhere; }
+.pos-offline__stuck {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text-danger);
+  border: 1px solid color-mix(in srgb, var(--bo-color-danger) 40%, var(--bo-border));
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.pos-offline__action {
+  min-height: 44px;
+  padding: 0 var(--bo-space-4);
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pos-offline__action:disabled { opacity: 0.6; cursor: progress; }
+
+/* Offline lines are on this tablet only; the panel marks them so the waiter can
+   see which part of the comanda the kitchen has not received yet. */
+.pos-line--pending { opacity: 0.82; border-style: dashed; }

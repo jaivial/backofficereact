@@ -7,13 +7,10 @@
  * Drafts are safe to delete at any time (no published-state side effects).
  */
 import type { TestApiClient } from "../helpers/api-client";
+// Coordination id: menu_type_codes_v1 - los drafts se crean con codigo numerico.
+import type { MenuTypeCode } from "../../ui/widgets/menus/menuTypeCodes";
 
-export type MenuType =
-  | "closed_conventional"
-  | "closed_group"
-  | "a_la_carte"
-  | "a_la_carte_group"
-  | "special";
+export type MenuType = MenuTypeCode;
 
 export interface MenuInput {
   menu_type?: MenuType;
@@ -31,7 +28,7 @@ export async function createMenuDraft(
   const res = await api.post<{ success: boolean; menu_id?: number; message?: string }>(
     "/api/admin/group-menus-v2/drafts",
     {
-      menu_type: "closed_conventional",
+      menu_type: 1,
       ...overrides,
     },
   );

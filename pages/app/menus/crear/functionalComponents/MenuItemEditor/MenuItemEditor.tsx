@@ -148,7 +148,7 @@ export function MenuItemEditor({
                 data-testid={`menu-item-editor-allergen-btn-${dish.clientId}`}
               >
                 <Wheat size={16} data-slot="menuItemEditor-allergenIcon" />
-                <span className="bo-dishAllergenText" data-slot="menuItemEditor-allergenText">Editar alergenos</span>
+                <span className="bo-dishAllergenText" data-slot="menuItemEditor-allergenText">Editar alérgenos</span>
               </button>
               <button
                 className="bo-btn bo-btn--ghost bo-btn--sm bo-dishIconOnlyBtn bo-dishDeleteIconBtn"
@@ -189,7 +189,7 @@ export function MenuItemEditor({
                   }}
                   data-testid={`menu-item-editor-description-switch-${dish.clientId}`}
                 />
-                <span data-slot="menuItemEditor-ion">Descripcion</span>
+                <span data-slot="menuItemEditor-ion">Descripción</span>
               </label>
               {dish.description_enabled ? (
                 <AutosaveInput multiline
@@ -265,7 +265,7 @@ export function MenuItemEditor({
               </div>
               {dish.allergens.length > 0 ? (
                 <div className="bo-allergenRow" data-slot="menuItemEditor-allergenRow">
-                  <span className="bo-label bo-allergenRowLabel" data-slot="menuItemEditor-allergenLabel">Alergenos</span>
+                  <span className="bo-label bo-allergenRowLabel" data-slot="menuItemEditor-allergenLabel">Alérgenos</span>
                   <div className="bo-allergenBadges" data-slot="menuItemEditor-allergenBadges">
                     {dish.allergens.map((name) => {
                       const entry = ALLERGENS.find((item) => item.key === name);

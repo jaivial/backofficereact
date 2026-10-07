@@ -16,8 +16,14 @@ import { POSDialog } from "./POSDialog";
 import { useCheckoutTenders } from "../../hooks/useCheckoutTenders";
 import { POS_PAYMENT_METHODS, POS_PAYMENT_METHOD_LABELS, formatTenderInput, tenderedCentsOf, type POSPaymentMethod } from "../../utils/paymentMethods";
 import { POSMoveLineDialog } from "./POSMoveLineDialog";
+import { POSModifierPicker } from "./POSModifierPicker";
+import { POSPackPicker } from "./POSPackPicker";
+import { POSRecallDialog } from "./POSRecallDialog";
+import { POSPinDialog } from "./POSPinDialog";
+import { printTicketReceipt } from "./printReceipt";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
+import { POSOfflineBar } from "./POSOfflineBar";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
 import type { POSCashDay, POSCashDayTotals } from "../../../../../api/types";
@@ -55,6 +61,13 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [checkoutKeypad, setCheckoutKeypad] = useState(false);
   const [lineToVoid, setLineToVoid] = useState<TicketLine | null>(null);
   const [lineToMove, setLineToMove] = useState<TicketLine | null>(null);
+  /** A product with modifier groups awaiting the guest's choice. */
+  const [productToModify, setProductToModify] = useState<Parameters<typeof register.addProduct>[0] | null>(null);
+  const [packToAdd, setPackToAdd] = useState<Parameters<typeof register.addPack>[0] | null>(null);
+  const [showRecall, setShowRecall] = useState(false);
+  const [showPinSetup, setShowPinSetup] = useState(false);
+  const [pinApproval, setPinApproval] = useState(false);
+  const [pinError, setPinError] = useState("");
   const [voidOrderOpen, setVoidOrderOpen] = useState(false);
   const [voidOrderReason, setVoidOrderReason] = useState("");
   const [discountOpen, setDiscountOpen] = useState(false);
@@ -66,6 +79,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [prompt, setPrompt] = useState<RailFeatureKey | null>(null);
   const [areaFilter, setAreaFilter] = useState(0);
   const [ticketExpanded, setTicketExpanded] = useState(false);
+  const [syncingOffline, setSyncingOffline] = useState(false);
   const [multiSelectIds, setMultiSelectIds] = useState<number[]>([]);
   const [comandaBusy, setComandaBusy] = useState(false);
   const comandaInFlight = useRef(false);
@@ -85,6 +99,13 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     () => register.filteredProducts.filter((product) => !category || product.categoryName === category),
     [category, register.filteredProducts],
   );
+
+  // Packs are not category members — a menú del día spans several — so they
+  // follow the search text but are never hidden by the category strip.
+  const visiblePacks = useMemo(() => {
+    const needle = register.query.trim().toLowerCase();
+    return register.packs.filter((pack) => !needle || pack.name.toLowerCase().includes(needle));
+  }, [register.packs, register.query]);
 
   const keypadNumber = useMemo(() => Number(keypadValue.replace(",", ".")) || 0, [keypadValue]);
 
@@ -123,7 +144,34 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
   const confirmVoidLine = useCallback(async () => {
     if (!lineToVoid) return;
+    // A void is the one action that takes money off a bill, so it is signed: the
+    // manager's PIN is verified first and their name travels with the request.
+    // A terminal whose staff have no PIN still works, it just skips the signature.
+    if (!register.hasPin) {
+      setPinError("");
+      setPinApproval(true);
+      return;
+    }
     await register.voidLine(lineToVoid);
+    setLineToVoid(null);
+  }, [lineToVoid, register]);
+
+  const approveVoid = useCallback(async (payload: { pin: string }) => {
+    if (!lineToVoid) return;
+    // Verified twice on purpose: once here so the dialog can refuse a wrong PIN
+    // without touching the ticket, and again on the void itself, because the
+    // server is the only place that can be trusted to check it.
+    try {
+      await register.verifyPin(payload.pin);
+      setPinError("");
+    } catch (failure) {
+      // Kept in local state: the shared error belongs to the till, not to a
+      // dialog the waiter is about to dismiss.
+      setPinError(failure instanceof Error ? failure.message : "PIN incorrecto");
+      return;
+    }
+    setPinApproval(false);
+    await register.voidLine(lineToVoid, "Anulado con PIN de jefe", payload.pin);
     setLineToVoid(null);
   }, [lineToVoid, register]);
 
@@ -158,6 +206,11 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   );
 
   useEffect(() => { setSelectedLineId(0); }, [register.ticket?.id, register.visit?.id]);
+  // Knowing whether this user has a PIN decides if a void asks for a manager, so it is
+  // fetched once when the till opens rather than on the first void.
+  useEffect(() => { void register.loadPinStatus(); }, [register.loadPinStatus]);
+  // The strip shows what the kitchen has not got, so it follows the open ticket.
+  useEffect(() => { void register.loadCourses(); }, [register.loadCourses, register.ticket?.id]);
 
   const visibleTables = useMemo(
     () => register.tables.filter((table) => !areaFilter || table.areaId === areaFilter),
@@ -399,6 +452,12 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       register.setError(`Sin stock: ${product.name} no disponible.`);
       return;
     }
+    // A product with modifier groups needs the guest's choice first: the price
+    // of the line is not final until the extras are picked.
+    if (product.modifierGroups?.length) {
+      setProductToModify(product);
+      return;
+    }
     const priceValue = Number(keypadValue.replace(",", ".")) || 0;
     const hasMultiplier = keypadMultiplierQty != null && keypadMultiplierQty > 0;
     const hasPrice = priceValue > 0;
@@ -423,6 +482,34 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     setKeypadMultiplierQty(null);
   }, [keypadMultiplierQty, keypadValue, register]);
 
+  const handleConfirmModifiers = useCallback((modifiers: { modifierOptionId: number; quantity: number }[]) => {
+    if (!productToModify) return;
+    // The pending qty x price multiplier is honoured, but the pending price
+    // override is not: the picker already showed the price the guest is
+    // agreeing to, and a hidden override underneath it would be a surprise on
+    // the receipt. An override typed by mistake can be cleared with "C".
+    const quantity = keypadMultiplierQty && keypadMultiplierQty > 0 ? keypadMultiplierQty : undefined;
+    void register.addProduct(productToModify, { modifiers, ...(quantity ? { quantity } : {}) });
+    setProductToModify(null);
+    setKeypadValue("");
+    setKeypadMultiplierQty(null);
+  }, [keypadMultiplierQty, productToModify, register]);
+
+  const handleAddPack = useCallback((pack: Parameters<typeof register.addPack>[0]) => {
+    // The pack price is fixed, so a keypad price typed by mistake has nowhere to
+    // go: clear it rather than silently selling the menu at the catalog price
+    // while the operator believes otherwise.
+    setKeypadValue("");
+    setKeypadMultiplierQty(null);
+    setPackToAdd(pack);
+  }, []);
+
+  const handleConfirmPack = useCallback((selection: { quantity: number; choices: Record<string, number> }) => {
+    if (!packToAdd) return;
+    void register.addPack(packToAdd, selection);
+    setPackToAdd(null);
+  }, [packToAdd, register]);
+
   const handleKeypadMultiplier = useCallback((qty: number) => {
     setKeypadMultiplierQty(qty);
   }, []);
@@ -434,6 +521,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const railAction = useCallback((key: RailFeatureKey) => {
     switch (key) {
       case "mesa": setShowTables(true); break;
+      case "mi-pin": void register.loadPinStatus().then(() => setShowPinSetup(true)); break;
       case "total": if (register.ticket) { register.setError(""); setKeypadContext({ kind: "cash" }); setShowCheckout(true); } break;
       case "comanda": void printComanda(); break;
       case "cocina": void register.sendKitchen(); break;
@@ -462,6 +550,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     <div className="pos-sell" data-ui="pos-sell-screen" data-testid="pos-sell-screen" data-readonly={readOnly ? "true" : undefined}>
       <div className="pos-sell__top" data-testid="pos-sell-top">
         {readOnly ? <div className="pos-sell__alert" role="status" data-ui="pos-readonly-notice" data-testid="pos-readonly-notice">Día cerrado: solo consulta.</div> : null}
+        <POSOfflineBar online={register.online} entries={register.offlineEntries} notice={register.offlineNotice} syncing={syncingOffline} onSync={() => { setSyncingOffline(true); void register.flushOffline().finally(() => setSyncingOffline(false)); }} />
         {/* Feedback now travels through the POS toast portal (see POSToastProvider);
             the inline banners used to sit here and pushed the order down. */}
         <span className="sr-only" role="status" aria-live="polite" data-ui="pos-message-sink" data-testid="pos-message">{register.message}</span>
@@ -469,14 +558,26 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
         {register.lastPaidTicket ? (
           <div className="pos-sell__status" data-ui="pos-last-receipt" data-testid="pos-last-receipt">
             Recibo no fiscal · {register.lastPaidTicket.ticketNumber} · {money(register.lastPaidTicket.totalGrossCents)}
-            <button className="pos-modal__secondary" type="button" onClick={() => window.print()} data-ui="pos-last-receipt-print" data-testid="pos-last-receipt-print" style={{ marginLeft: "0.5rem" }}>Imprimir</button>
+            <button className="pos-modal__secondary" type="button" onClick={() => {
+              if (!register.lastPaidTicket) return;
+              try {
+                printTicketReceipt({
+                  ticket: register.lastPaidTicket,
+                  visit: register.visit,
+                  restaurant: register.restaurant,
+                  operatorName: register.operators.find((entry) => entry.id === register.lastPaidTicket?.operatorMemberId)?.displayName,
+                });
+              } catch (reason) {
+                register.setError(reason instanceof Error ? reason.message : "No se pudo imprimir el recibo.");
+              }
+            }} data-ui="pos-last-receipt-print" data-testid="pos-last-receipt-print" style={{ marginLeft: "0.5rem" }}>Imprimir</button>
           </div>
         ) : null}
       </div>
       <div className="pos-sell__body" data-testid="pos-sell-body">
         <div className="pos-sell__work" data-testid="pos-sell-work">
           <div className={ticketExpanded ? "pos-sell__row pos-sell__row--register is-expanded" : "pos-sell__row pos-sell__row--register"} data-testid="pos-sell-row-register">
-            <POSTicketPanel onRequestTable={() => setShowTables(true)}
+            <POSTicketPanel courses={register.courses} activeCourse={register.activeCourse} onSelectCourse={register.setActiveCourse} onFireCourse={(course) => void register.fireCourse(course)} onRequestTable={() => setShowTables(true)} onRequestRecall={() => { void register.loadRecallCandidates(); setShowRecall(true); }}
               expanded={ticketExpanded}
               onToggleExpand={toggleTicketExpanded}
               ticket={register.ticket}
@@ -506,7 +607,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                 <input type="search" value={register.query} onChange={(event) => register.setQuery(event.target.value)} placeholder="Buscar producto…" aria-label="Buscar producto" data-pos-command="search-products" data-testid="pos-product-search" />
                 {register.query ? <button className="pos-modal__secondary pos-search__clear" type="button" onClick={() => register.setQuery("")} aria-label="Limpiar búsqueda" data-testid="pos-product-search-clear">×</button> : null}
               </div>
-              <POSProductGrid products={visibleProducts} disabled={!register.ticket || register.busy} readOnly={readOnly} pendingProductId={register.pendingProductId} onAdd={handleAddProduct} stockStatus={register.settings.stockMode === "OFF" ? undefined : register.productStock} />
+              <POSProductGrid products={visibleProducts} packs={visiblePacks} disabled={!register.ticket || register.busy} readOnly={readOnly} pendingProductId={register.pendingProductId} onAdd={handleAddProduct} onAddPack={handleAddPack} stockStatus={register.settings.stockMode === "OFF" ? undefined : register.productStock} />
             </div>
           </div>
         </div>
@@ -731,6 +832,93 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
           </div>
         </POSDialog>
       ) : null}
+
+      {showPinSetup ? (
+
+        <POSPinDialog
+
+          title={register.hasPin ? "Cambiar mi PIN" : "Crear mi PIN"}
+
+          description={register.hasPin ? "Necesitas el PIN actual para cambiarlo." : "Un PIN de 4 a 6 dígitos. Cada persona del sala firma con el suyo."}
+
+          confirmLabel="Guardar PIN"
+
+          busy={register.busy}
+
+          error={register.error || undefined}
+
+          requireExisting={register.hasPin}
+
+          onClose={() => setShowPinSetup(false)}
+
+          onSubmit={(value) => void register.setPin(value.pin, value.currentPin).then(() => setShowPinSetup(false))}
+
+        />
+
+      ) : null}
+
+      {pinApproval && lineToVoid ? (
+
+        <POSPinDialog
+
+          title="Anular línea"
+
+          description={`Pide el PIN de un jefe para anular "{lineToVoid.name}".`}
+
+          confirmLabel="Anular con PIN"
+
+          busy={register.busy}
+
+          onClose={() => setPinApproval(false)}
+
+          onSubmit={approveVoid}
+
+        />
+
+      ) : null}
+
+
+      {showRecall ? (
+
+        <POSRecallDialog
+
+          tickets={register.recallTickets}
+
+          busy={register.busy}
+
+          error={register.error || undefined}
+
+          onClose={() => setShowRecall(false)}
+
+          onPick={(sourceTicketId) => { void register.recallTicket(sourceTicketId); setShowRecall(false); }}
+
+        />
+
+      ) : null}
+
+
+      <POSPackPicker
+
+        pack={packToAdd}
+
+        busy={register.busy}
+
+        error={register.error || undefined}
+
+        onClose={() => setPackToAdd(null)}
+
+        onConfirm={handleConfirmPack}
+
+      />
+
+
+      <POSModifierPicker
+        product={productToModify}
+        busy={register.busy}
+        error={register.error}
+        onClose={() => setProductToModify(null)}
+        onConfirm={handleConfirmModifiers}
+      />
 
       <POSMoveLineDialog
         line={lineToMove}

@@ -18,7 +18,7 @@ vi.mock("../../lib/rbac", () => ({
     { key: "fichaje", label: "Fichaje", href: "/app/fichaje" },
     { key: "stock", label: "Stock", href: "/app/stock" },
     { key: "pos", label: "TPV", href: "/app/pos" },
-    { key: "estadisticas", label: "Estadisticas", href: "/app/estadisticas" },
+    { key: "estadisticas", label: "Estadísticas", href: "/app/estadisticas" },
   ],
 }));
 
@@ -51,7 +51,7 @@ describe("MobileNav", () => {
 
   it("renders statistics module", () => {
     render(<MobileNav pathname="/app" />);
-    expect(screen.getByRole("link", { name: "Estadisticas" })).toHaveAttribute("href", "/app/estadisticas");
+    expect(screen.getByRole("link", { name: "Estadísticas" })).toHaveAttribute("href", "/app/estadisticas");
   });
 
   it("applies className prop", () => {

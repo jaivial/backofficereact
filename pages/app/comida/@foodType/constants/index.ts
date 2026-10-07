@@ -15,9 +15,9 @@ export type FoodEntry = {
 export const FOOD_ENTRIES: FoodEntry[] = [
   { type: "platos", label: "Platos", hint: "Carta principal", icon: UtensilsCrossed },
   { type: "bebidas", label: "Bebidas", hint: "Refrescos y cocteles", icon: GlassWater },
-  { type: "cafes", label: "Cafes", hint: "Cafe e infusiones", icon: Coffee },
+  { type: "cafes", label: "Cafés", hint: "Cafe e infusiones", icon: Coffee },
   { type: "postres", label: "Postres", hint: "Dulces y postres", icon: IceCreamCone },
-  { type: "vinos", label: "Vinos", hint: "Bodega y anadas", icon: Wine },
+  { type: "vinos", label: "Vinos", hint: "Bodega y añadas", icon: Wine },
 ];
 
 export const PAGE_SIZE_OPTIONS = [

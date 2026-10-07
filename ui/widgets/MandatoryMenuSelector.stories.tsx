@@ -2,13 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { MandatoryMenuSelector } from "./MandatoryMenuSelector";
 import type { MenuSelectorItem } from "../../api/types";
+// Coordination id: menu_type_codes_v1 - numeric menu_type codes.
+import { MENU_TYPE } from "./menus/menuTypeCodes";
 
 const mockMenus: MenuSelectorItem[] = [
-  { id: 1, menu_title: "Menu Degustacion Premium", menu_type: "closed_conventional" },
-  { id: 2, menu_title: "Menu del Dia", menu_type: "a_la_carte" },
-  { id: 3, menu_title: "Menu Grupo Temporada", menu_type: "closed_group" },
-  { id: 4, menu_title: "Menu Especial Navideno", menu_type: "special" },
-  { id: 5, menu_title: "Menu Grupo A la Carte", menu_type: "a_la_carte_group" },
+  { id: 1, menu_title: "Menu Degustacion Premium", menu_type: MENU_TYPE.CLOSED_CONVENTIONAL },
+  { id: 2, menu_title: "Menu del Dia", menu_type: MENU_TYPE.A_LA_CARTE },
+  { id: 3, menu_title: "Menu Grupo Temporada", menu_type: MENU_TYPE.CLOSED_GROUP },
+  { id: 4, menu_title: "Menu Especial Navideno", menu_type: MENU_TYPE.SPECIAL },
+  { id: 5, menu_title: "Menu Grupo A la Carte", menu_type: MENU_TYPE.A_LA_CARTE_GROUP },
 ];
 
 const meta = {

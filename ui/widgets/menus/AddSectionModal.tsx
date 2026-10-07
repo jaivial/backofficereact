@@ -23,7 +23,7 @@ export type AddSectionSelection = {
 };
 
 /**
- * Two-step "Anadir seccion" modal shared by every conventional closed menu and
+ * Two-step "Añadir seccion" modal shared by every conventional closed menu and
  * a la carta menu editor.
  *
  * Step 1 asks the section type with the reusable Select (never the native

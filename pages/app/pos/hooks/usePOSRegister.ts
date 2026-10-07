@@ -1,13 +1,16 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { allocatePayments } from "../utils/paymentAllocation";
 import type { POSPaymentTender } from "../utils/paymentMethods";
 import { parseAmount } from "../utils/money";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
+import { POSOfflineQueue, posBrowserOffline, type POSQueuedRequest } from "../utils/offlineQueue";
+import { offlineDecision, offlineRejectMessage } from "../utils/offlinePolicy";
+import { applyQueuedLine } from "../utils/offlineTicketPatch";
 import { usePOSCommand } from "./usePOSCommand";
 import { POSToastContext } from "../feedback/POSToastProvider";
-import type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+import type { Area, Bootstrap, Operator, Pack, Product, POSCourseSummary, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
-export type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+export type { Area, Bootstrap, Operator, ModifierGroup, ModifierOption, Pack, PackComponent, Product, POSCourseSummary, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 export { money, parseAmount } from "../utils/money";
 
 export const DEFAULT_SETTINGS: Settings = { isEnabled: false, stockMode: "OFF", coversMode: "MANUAL", timezone: "Europe/Madrid", businessDayCutoff: "05:00", autoCloseVisit: true, receiptPrefix: "TPV" };
@@ -19,6 +22,43 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const body = await response.json();
   if (!response.ok || !body.success) throw new Error(body.message || "Error de TPV");
   return body as T;
+}
+
+/** Thrown when the network is down and the write cannot be held for replay. */
+export class POSOfflineError extends Error {
+  constructor(message: string) { super(message); this.name = "POSOfflineError"; }
+}
+
+/** True for a failed fetch caused by no connectivity, as opposed to a server answer. */
+function isNetworkFailure(reason: unknown): boolean {
+  if (reason instanceof POSOfflineError) return false;
+  if (reason instanceof TypeError) return true; // fetch() rejects with TypeError when the socket never answers
+  return reason instanceof Error && /network|failed to fetch|load failed/i.test(reason.message);
+}
+
+/**
+ * A request that survives a dead network.
+ *
+ * A queueable write is stored and acknowledged locally, so the waiter keeps
+ * ringing instead of losing the order. Anything else (charging a guest,
+ * opening the drawer, closing the day) is refused with a message that says why,
+ * because promising a sale that never happened is worse than an error.
+ */
+export async function posRequest<T>(path: string, init?: RequestInit, queue?: POSOfflineQueue): Promise<T> {
+  const method = (init?.method || "GET").toUpperCase();
+  const body = typeof init?.body === "string" ? safeParse(init.body) : undefined;
+  try {
+    return await request<T>(path, init);
+  } catch (reason) {
+    if (!queue || !(isNetworkFailure(reason) || posBrowserOffline())) throw reason;
+    if (offlineDecision(path, method, body) !== "queue") throw new POSOfflineError(offlineRejectMessage(path));
+    queue.enqueue({ idempotencyKey: String(body?.idempotencyKey), path, method, body: (body ?? {}) as Record<string, unknown> });
+    return { queuedOffline: true } as T;
+  }
+}
+
+function safeParse(raw: string): Record<string, unknown> | undefined {
+  try { const parsed = JSON.parse(raw); return parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : undefined; } catch { return undefined; }
 }
 
 /** Operator-facing checkout confirmation; raw stock enums stay out of the till UI. */
@@ -40,6 +80,8 @@ export function checkoutMessage(stockStatus?: string | null): string {
 export function usePOSRegister(date?: string | null) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
+  const [recallTickets, setRecallTickets] = useState<TicketSummary[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [restaurant, setRestaurant] = useState<RestaurantProfile | null>(null);
@@ -84,13 +126,104 @@ export function usePOSRegister(date?: string | null) {
   const [pendingProductId, setPendingProductId] = useState<number | null>(null);
   const { isInFlight, keyFor, clear, run, busy: commandBusy } = usePOSCommand();
 
+  // One queue per terminal, persisted so a page reload or a closed lid does not
+  // lose what the waiter rang in the cellar.
+  const queueRef = useRef<POSOfflineQueue | null>(null);
+  if (queueRef.current === null) queueRef.current = new POSOfflineQueue();
+  const offlineQueue = queueRef.current;
+  const [offlineEntries, setOfflineEntries] = useState(() => offlineQueue.list());
+  /** Counter that keeps optimistic line ids unique and distinguishable from server ids. */
+  const offlineSeq = useRef(1);
+  const [offlineNotice, setOfflineNotice] = useState("");
+  const [online, setOnline] = useState(() => !posBrowserOffline());
+
+  // Replay whatever is waiting as soon as the connection is back. The reload
+  // afterwards is what reconciles the optimistic lines with the server's truth.
+  useEffect(() => {
+    const unsubscribe = offlineQueue.subscribe(setOfflineEntries);
+    const goOnline = () => setOnline(true);
+    const goOffline = () => setOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => { unsubscribe(); window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
+  }, [offlineQueue]);
+
+  // The "guardado, se enviará al volver la red" confirmation only means something
+  // for a few seconds. Left up it becomes a permanent banner that hides the real
+  // state of the strip (offline vs sending) behind a stale sentence.
+  useEffect(() => {
+    if (!offlineNotice) return;
+    const timer = window.setTimeout(() => setOfflineNotice(""), 6000);
+    return () => window.clearTimeout(timer);
+  }, [offlineNotice]);
+
+
+
   const load = useCallback(async () => {
     setError("");
     try {
       const data = await request<Bootstrap>(date ? `/bootstrap?date=${encodeURIComponent(date)}` : "/bootstrap");
-      setSettings(data.settings || DEFAULT_SETTINGS); setProducts(data.products || []); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null); setProductStock(data.productStock || {});
+      // Modifier groups arrive keyed by product id; attach them so the sell
+      // screen knows a dish needs a choice before adding it to a ticket.
+      const modifierGroups = data.productModifiers || {};
+      setSettings(data.settings || DEFAULT_SETTINGS); setProducts((data.products || []).map((product) => modifierGroups[String(product.id)]?.length ? { ...product, modifierGroups: modifierGroups[String(product.id)] } : product)); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null); setProductStock(data.productStock || {}); setPacks(data.packs || []);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
   }, [date]);
+
+  /**
+   * Re-reads the open ticket (and its split siblings) from the server. This is
+   * what reconciles anything the offline queue drew optimistically: the local
+   * lines carried temporary negative ids, and the server answers with the real
+   * ones and the real totals.
+   */
+  const reloadCurrentTicket = useCallback(async () => {
+    const visitId = visit?.id;
+    const ticketId = ticket?.id;
+    try {
+      if (visitId) {
+        const data = await request<{ visit: Visit & { tickets: Ticket[] } }>(`/visits/${visitId}`);
+        const tickets = data.visit.tickets || [];
+        setVisit(data.visit);
+        setSplitTickets(tickets);
+        setTicket(tickets.find((entry) => entry.status === "OPEN") || tickets[0] || null);
+        return;
+      }
+      if (ticketId) {
+        const data = await request<{ ticket: Ticket }>(`/tickets/${ticketId}`);
+        setTicket(data.ticket);
+        setSplitTickets((current) => current.map((entry) => (entry.id === data.ticket.id ? data.ticket : entry)));
+      }
+    } catch {
+      // A reload failure must not eat the replay: the queue is already empty
+      // and the next load/touch reconciles. Staying on the optimistic view is
+      // better than blanking the comanda in front of a guest.
+    }
+  }, [ticket?.id, visit?.id]);
+
+  const flushOffline = useCallback(async () => {
+    if (!offlineQueue.size) { await load(); return 0; }
+    const sent = await offlineQueue.flush(async (entry: POSQueuedRequest) => {
+      // entry.path is already relative to /api/admin/pos (that is how the
+      // sell screen addressed it), so it goes straight to request(), which
+      // adds the prefix. Re-prefixing here produced a doubled path that 404ed.
+      await request(entry.path, { method: entry.method, body: JSON.stringify(entry.body) });
+    });
+    await load();
+    // Bootstrap does not carry the open ticket, so the optimistic lines the
+    // waiter saw offline would stay on the comanda forever (with their negative
+    // ids and the "Sin enviar" badge). Reload the ticket so the server's
+    // numbers replace the local guess.
+    await reloadCurrentTicket();
+    if (sent > 0) { setMessage(`${sent} ${sent === 1 ? "operación guardada" : "operaciones guardadas"} se enviaron al TPV.`); setOfflineNotice(""); }
+    return sent;
+  }, [load, offlineQueue, reloadCurrentTicket, setMessage]);
+
+  useEffect(() => {
+    if (!online || offlineQueue.size === 0) return;
+    const timer = window.setTimeout(() => { void flushOffline(); }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [flushOffline, offlineEntries.length, offlineQueue, online]);
+
   useEffect(() => { void load(); }, [load]);
 
   const filteredProducts = useMemo(() => products.filter((product) => product.isActive && product.name.toLowerCase().includes(query.trim().toLowerCase())), [products, query]);
@@ -360,28 +493,142 @@ export function usePOSRegister(date?: string | null) {
     catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron cargar etiquetas"); }
   }, []);
 
-  const addProduct = useCallback(async (product: Product, options?: { quantity?: number; unitPriceOverrideCents?: number }) => {
+  const addProduct = useCallback(async (product: Product, options?: { quantity?: number; unitPriceOverrideCents?: number; modifiers?: { modifierOptionId: number; quantity: number }[] }) => {
     if (!ticket) return;
     setBusy(true); setMessage(""); setPendingProductId(product.id);
     const qty = options?.quantity ?? 1;
     const priceOverride = options?.unitPriceOverrideCents;
-    // Merge into existing line only if the unit price matches:
-    // - If price override: find line with same product AND same overridden price
-    // - If no override: find line with same product AND catalog price
-    const targetPrice = priceOverride ?? product.priceGrossCents;
-    const existing = ticket.lines.find((line) => line.status !== "VOIDED" && (line.productId === product.id || (line.productId == null && line.productName === product.name)) && line.unitPriceGrossCents === targetPrice);
+    const modifiers = options?.modifiers ?? [];
+    // Merge into an existing line only when the whole price agrees: same
+    // product, same resulting unit price (catalog/override plus the modifier
+    // delta) AND the same picked modifiers. Two identical espressos merge, but
+    // a "grande + descafeinado" never merges into a plain "grande", or the
+    // receipt would quietly lose the second one.
+    const delta = modifiers.reduce((sum, m) => {
+      const option = product.modifierGroups?.flatMap((g) => g.options).find((o) => o.id === m.modifierOptionId);
+      return sum + (option ? option.priceDeltaCents * m.quantity : 0);
+    }, 0);
+    const targetPrice = (priceOverride ?? product.priceGrossCents) + delta;
+    const sameModifiers = (line: TicketLine) => {
+      if ((line.modifiers?.length ?? 0) !== modifiers.length) return false;
+      return modifiers.every((m) => line.modifiers?.some((l) => l.modifierOptionId === m.modifierOptionId && l.quantity === m.quantity));
+    };
+    const existing = ticket.lines.find((line) => line.status !== "VOIDED" && (line.productId === product.id || (line.productId == null && line.productName === product.name)) && line.unitPriceGrossCents === targetPrice && sameModifiers(line));
     try {
       const data = existing
-        ? await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${existing.id}`, { method: "PATCH", body: JSON.stringify({ quantity: existing.quantity + qty, expectedVersion: ticket.version }) })
-        : await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), idempotencyKey: crypto.randomUUID() }) });
-      setTicket(data.ticket);
+        // Raising the quantity of a line already on the server is a PATCH, and a
+        // PATCH carries no idempotency key: replaying it after a reconnect would
+        // add the quantity a second time. So it is refused offline with the
+        // reason, instead of failing with a bare network error the waiter cannot
+        // act on.
+        ? await request<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines/${existing.id}`, { method: "PATCH", body: JSON.stringify({ quantity: existing.quantity + qty, expectedVersion: ticket.version }) })
+        : await posRequest<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, course: activeCourse, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), ...(modifiers.length > 0 && { modifiers }), idempotencyKey: crypto.randomUUID() }) }, offlineQueue);
+      if (data.queuedOffline) {
+        // No server to reload from: draw the line here so the comanda and the
+        // total are already right when the network returns. The modifiers come
+        // along because the guest is reading this comanda: a "2 x cafe" without
+        // the "sin azúcar" would be rung a second time out of fear.
+        const lineModifiers = modifiers.map((modifier) => {
+          const option = product.modifierGroups?.flatMap((group) => group.options).find((candidate) => candidate.id === modifier.modifierOptionId);
+          return { modifierOptionId: modifier.modifierOptionId, name: option?.name ?? "Opción", priceDeltaCents: option?.priceDeltaCents ?? 0, quantity: modifier.quantity };
+        });
+        setTicket((current) => current ? applyQueuedLine(current, { path: "", body: { productId: product.id, quantity: qty, course: activeCourse }, modifiers: lineModifiers }, product.name, targetPrice, product.vatRate, offlineSeq.current++) : current);
+        setOfflineNotice(`${product.name} guardado. Se enviará al volver la red.`);
+        setOfflineEntries(offlineQueue.list());
+      } else {
+        setTicket(data.ticket);
+      }
     }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo añadir producto"); } finally { setBusy(false); setPendingProductId(null); }
+    catch (reason) {
+      // A merge that dies on a dead socket is not a bug the waiter can fix, and
+      // "Failed to fetch" tells them nothing about what to do. Say it plainly.
+      setError(existing && isNetworkFailure(reason) ? "Sin conexión: esa línea ya está en el TPV y no se puede sumar otra unidad sin conexión. Añade la unidad cuando vuelva la red." : reason instanceof Error ? reason.message : "No se pudo añadir producto");
+    } finally { setBusy(false); setPendingProductId(null); }
+  }, [offlineQueue, ticket]);
+
+  /**
+   * Rings up a pack: one line at the pack price with the chosen components sent
+   * to the server, which expands them underneath at zero. There is deliberately
+   * no price override and no modifier delta here — the pack price is the price,
+   * and the server rejects both on a pack line rather than letting the receipt
+   * disagree with what the guest agreed to.
+   */
+  const addPack = useCallback(async (pack: Pack, selection: { quantity?: number; choices: Record<string, number> }) => {
+    if (!ticket) return;
+    setBusy(true); setMessage("");
+    const quantity = selection.quantity ?? 1;
+    try {
+      const data = await posRequest<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ packId: pack.id, quantity, course: activeCourse, packSelection: { quantity, choices: selection.choices }, idempotencyKey: crypto.randomUUID() }) }, offlineQueue);
+      if (data.queuedOffline) {
+        setTicket((current) => current ? applyQueuedLine(current, { path: "", body: { quantity }, packId: pack.id }, pack.name, pack.priceGrossCents, pack.vatRate, offlineSeq.current++) : current);
+        setOfflineNotice(`${pack.name} guardado. Se enviará al volver la red.`);
+        setOfflineEntries(offlineQueue.list());
+      } else {
+        setTicket(data.ticket);
+      }
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo anadir el menu"); } finally { setBusy(false); }
+  }, [offlineQueue, ticket]);
+
+  /**
+   * Copies a finished ticket's lines onto the open one. The server revalidates
+   * everything (source closed, target open, within the same restaurant) and
+   * returns the reloaded ticket, so the panel always shows the server's truth
+   * rather than a local guess at what was copied.
+   */
+  const recallTicket = useCallback(async (sourceTicketId: number) => {
+    if (!ticket) return;
+    setBusy(true); setError("");
+    try {
+      const data = await request<{ ticket: Ticket; copied?: number }>(`/tickets/${ticket.id}/recall`, { method: "POST", body: JSON.stringify({ sourceTicketId }) });
+      setTicket(data.ticket);
+      setMessage(data.copied ? `Se trajeron ${data.copied} líneas.` : "Esa cuenta ya estaba traída.");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo traer la cuenta"); } finally { setBusy(false); }
   }, [ticket]);
 
-  const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir") => {
+  /** Recent tickets for the recall picker; loaded when the dialog opens. */
+  const loadRecallCandidates = useCallback(async () => {
+    try {
+      const data = await request<{ items: TicketSummary[] }>("/tickets");
+      setRecallTickets(data.items || []);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron cargar las cuentas"); }
+  }, []);
+
+  /** True when the signed-in user has set a PIN on this terminal. */
+  const [hasPin, setHasPin] = useState(false);
+
+  const loadPinStatus = useCallback(async () => {
+    try {
+      const data = await request<{ hasPin: boolean }>("/pin");
+      setHasPin(!!data.hasPin);
+    } catch { /* the PIN is optional; never block the till on it */ }
+  }, []);
+
+  const setPin = useCallback(async (pin: string, currentPin?: string) => {
+    setBusy(true); setError("");
+    try {
+      await request("/pin", { method: "POST", body: JSON.stringify({ pin, currentPin }) });
+      setHasPin(true);
+      setMessage("PIN guardado.");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo guardar el PIN"); throw reason; } finally { setBusy(false); }
+  }, []);
+
+  /**
+   * Asks a manager to approve an action with their PIN and returns their name so
+   * it can be written next to the action in the audit trail.
+   */
+  const verifyPin = useCallback(async (pin: string) => {
+    const data = await request<{ memberId: number; displayName: string }>("/pin/verify", { method: "POST", body: JSON.stringify({ pin }) });
+    return data.displayName;
+  }, []);
+
+  /**
+   * `approvalPin` is the manager's PIN. The PIN itself travels, never the name:
+   * the server resolves who it belongs to, so a tampered label in the browser
+   * cannot put the wrong person in the audit trail.
+   */
+  const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir", approvalPin?: string) => {
     if (!ticket) return; const trimmed = reason.trim(); if (!trimmed) return;
-    try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed }) }); setTicket(data.ticket); }
+    try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed, approvalPin }) }); setTicket(data.ticket); }
     catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo anular línea"); }
   }, [ticket]);
 
@@ -443,6 +690,35 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo enviar a cocina"); }
   }, [activeTicketLines, hasPendingKitchenLines, pendingKitchenLines, pendingKitchenVoids, ticket]);
 
+  /**
+   * The course new dishes join. A waiter picks "2" once the starters are away and
+   * everything rung afterwards waits for that course to be fired, instead of
+   * reaching the kitchen the moment it is rung.
+   */
+  const [activeCourse, setActiveCourse] = useState("1");
+
+  const [courses, setCourses] = useState<POSCourseSummary[]>([]);
+
+  const loadCourses = useCallback(async () => {
+    if (!ticket) return;
+    try {
+      const data = await request<{ courses: POSCourseSummary[] }>(`/tickets/${ticket.id}/courses`);
+      setCourses(data.courses || []);
+    } catch { /* the course strip is an aid, never a blocker */ }
+  }, [ticket]);
+
+  /** Fires one course to the kitchen. Firing twice sends nothing the second time. */
+  const fireCourse = useCallback(async (course: string) => {
+    if (!ticket) return;
+    setBusy(true); setError("");
+    try {
+      await request(`/tickets/${ticket.id}/courses/fire`, { method: "POST", body: JSON.stringify({ course }) });
+      setMessage(`Curso ${course} enviado a cocina.`);
+      await load();
+      await loadCourses();
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo enviar el curso"); } finally { setBusy(false); }
+  }, [ticket, load, loadCourses]);
+
   const checkout = useCallback(async (requestedTipCents = tipCents, tenders?: POSPaymentTender[]) => {
     const checkoutDue = ticketTotal + requestedTipCents;
     if (!ticket || ticketTotal < 0) { setError("El pago no cubre el total."); return false; }
@@ -482,6 +758,7 @@ export function usePOSRegister(date?: string | null) {
     splitTickets, splitTargetId, setSplitTargetId, selectedTable, setSelectedTable,
     covers, setCovers, reservations, reservationsLoading, reservationsLoaded, bookingId, query, setQuery,
     message, setMessage, error, setError, busy, commandBusy, pendingProductId,
+    online, offlineEntries, offlineNotice, setOfflineNotice, flushOffline,
     cash, setCash, card, setCard, cardReference, setCardReference, discount, setDiscount,
     filteredProducts, ticketTotal, activeTicketLines, openSplitTickets, otherOpenSplitTickets, paymentTotal,
     pendingKitchenLines, hasPendingKitchenLines, sentKitchenQuantities,
@@ -490,7 +767,7 @@ export function usePOSRegister(date?: string | null) {
     load, loadReservations, selectReservation, openVisit, openTakeaway, restoreVisit, restoreParkedVisit, moveVisitToTable,
     parkVisit, openBar, mergeVisits, applyAdjustment, compLine, setLineNote, openDrawer,
     setVisitCustomer, setTicketOperator, toggleLineTag, loadTags,
-    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct,
-    setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, checkout,
+    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct, addPack, packs, hasPin, loadPinStatus, setPin, verifyPin, recallTicket, recallTickets, loadRecallCandidates,
+    setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, activeCourse, setActiveCourse, courses, loadCourses, fireCourse, checkout,
   };
 }

@@ -167,12 +167,12 @@ export const FoodFilters = React.memo(function FoodFilters({
 
               {supportsCategories ? (
                 <div className="bo-field bo-foodFilter" data-slot="food-filters-category" data-role="food-filters-category">
-                  <span className="bo-label" data-role="food-filters-category-label">Categoria</span>
+                  <span className="bo-label" data-role="food-filters-category-label">Categoría</span>
                   <Select
                     value={categoryFilter}
                     onChange={onCategoryChange}
                     options={categoryOptions}
-                    ariaLabel="Categoria"
+                    ariaLabel="Categoría"
                   />
                 </div>
               ) : null}

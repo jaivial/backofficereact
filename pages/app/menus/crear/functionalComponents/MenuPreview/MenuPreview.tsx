@@ -2,13 +2,16 @@ import React from "react";
 import { Eye, Settings2 } from "lucide-react";
 import { LoadingSpinner } from "../../../../../../ui/feedback/LoadingSpinner";
 import { Panel } from "../../../../../../ui/shell/Panel";
+// Coordination id: menu_type_codes_v1 - the iframe payload carries the numeric code.
+import { normalizeMenuType } from "../../../../../../ui/widgets/menus/menuTypeCodes";
+import type { MenuTypeCode } from "../../../../../../ui/widgets/menus/menuTypeCodes";
 
 export type MenuPreviewProps = {
   previewThemeLoading: boolean;
   previewNeedsUpgrade: boolean;
   previewThemeLabel: string;
   previewThemeId: string;
-  menuType: string;
+  menuType: MenuTypeCode;
   previewMenuPayload: Record<string, unknown>;
   previewUrl: string;
   mobileTab: "editor" | "preview";
@@ -108,7 +111,7 @@ export function MenuPreview({
               {
                 type: "vc_preview:init",
                 theme_id: previewThemeId,
-                menu_type: menuType || "closed_conventional",
+                menu_type: normalizeMenuType(menuType),
                 menu: previewMenuPayload,
               },
               "*",

@@ -272,7 +272,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
             <div data-testid="splitInvoiceModal-formSection-3" className="bo-formSection" data-slot="splitInvoiceModal-formSection">
               {method === "equal" ? (
                 <div data-testid="splitInvoiceModal-formGroup-2" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                  <label data-testid="split-invoice-split-count-label" htmlFor="splitCount" className="bo-label" data-slot="split-invoice-split-count-label">Numero de partes</label>
+                  <label data-testid="split-invoice-split-count-label" htmlFor="splitCount" className="bo-label" data-slot="split-invoice-split-count-label">Número de partes</label>
                   <input
                     id="splitCount"
                     type="number"
@@ -393,7 +393,7 @@ export function SplitInvoiceModal({ invoice, isOpen, onClose, onSplit }: SplitIn
 
                           <div data-testid="splitInvoiceModal-formRow-3" className="bo-formRow" data-slot="splitInvoiceModal-formRow">
                             <div data-testid="splitInvoiceModal-formGroup-7" className="bo-formGroup" data-slot="splitInvoiceModal-formGroup">
-                              <label data-testid="split-invoice-customer-phone-label" className="bo-label" data-slot="split-invoice-customer-phone-label">Telefono</label>
+                              <label data-testid="split-invoice-customer-phone-label" className="bo-label" data-slot="split-invoice-customer-phone-label">Teléfono</label>
                               <input
                                 type="tel"
                                 value={item.customer_phone || ""}

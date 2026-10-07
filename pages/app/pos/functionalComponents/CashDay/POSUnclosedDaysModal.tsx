@@ -6,6 +6,7 @@ import type { POSCashDay } from "../../../../../api/types";
 import { formatSpanishLongDate } from "./POSNoCashDayModal";
 import { POSForceOpenConfirmModal } from "./POSForceOpenConfirmModal";
 import { money } from "../../utils/money";
+import { posPortalRoot } from "../../utils/portal";
 
 /** RFC3339 openedAt → "08:30". Falls back to "—" so a missing time never reads as 00:00. */
 function formatTime(iso: string | null | undefined): string {
@@ -50,6 +51,10 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
 
   const count = unclosedPrevious.length;
   const plural = count !== 1;
+
+  // No DOM during SSR: render nothing there instead of crashing the page.
+  const root = posPortalRoot();
+  if (!root) return null;
 
   return createPortal(
     <>
@@ -155,6 +160,6 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
         />
       ) : null}
     </>,
-    document.getElementById("bo-portal") || document.body,
+    root,
   );
 }

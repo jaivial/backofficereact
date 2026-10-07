@@ -1,10 +1,12 @@
 import React, { useMemo } from "react";
-import { ArrowRightLeft, Merge, Minus, Plus, Receipt, Trash2, Users, X } from "lucide-react";
+import { ArrowRightLeft, History, Merge, Minus, Plus, Receipt, Trash2, Users, X } from "lucide-react";
 import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { cn } from "../../../../../ui/shadcn/utils";
+import { POSCourseStrip } from "./POSCourseStrip";
+import type { POSCourseSummary } from "../../types/register";
 import { money, type Tag, type Ticket, type TicketLine, type Visit } from "../../hooks/usePOSRegister";
 
-export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
+export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, onRequestRecall, courses = [], activeCourse = "1", onSelectCourse, onFireCourse, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
   ticket: Ticket | null;
   visit: Visit | null;
   tags?: Tag[];
@@ -16,6 +18,13 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
   onRequestTable?: () => void;
   expanded?: boolean;
   onToggleExpand?: () => void;
+  /** Opens the "traer una cuenta" picker; hidden when the ticket is not open. */
+  onRequestRecall?: () => void;
+  /** Coursing: which course new dishes join, and what the kitchen still has not got. */
+  courses?: POSCourseSummary[];
+  activeCourse?: string;
+  onSelectCourse?: (course: string) => void;
+  onFireCourse?: (course: string) => void;
   splitTickets?: Ticket[];
   sentKitchenQuantities?: Record<number, number>;
   onSelectTicket?: (next: Ticket) => void;
@@ -53,6 +62,21 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
       return right - left;
     });
   }, [activeTicketLines]);
+
+  // A pack expands into a parent line plus component lines. Listing them flat
+  // shows the guest a paid menu followed by four 0,00 € plates they never
+  // ordered, so components are nested under their parent and shown read-only.
+  const componentsByParent = useMemo(() => {
+    const out = new Map<number, TicketLine[]>();
+    for (const line of activeTicketLines) {
+      if (line.parentLineId == null) continue;
+      const bucket = out.get(line.parentLineId);
+      if (bucket) bucket.push(line);
+      else out.set(line.parentLineId, [line]);
+    }
+    return out;
+  }, [activeTicketLines]);
+  const topLevelLines = useMemo(() => linesByRecency.filter((line) => line.parentLineId == null), [linesByRecency]);
   const openSplitTickets = useMemo(() => splitTickets.filter((t) => t.status === "OPEN"), [splitTickets]);
   const currentTicketIsEmpty = useMemo(() => ticket && !ticket.lines.filter((line) => line.status !== "VOIDED").length, [ticket]);
   return (
@@ -66,6 +90,15 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
     >
       <header className="pos-ticketPanel__header" data-testid="pos-ticket-header">
         <h2 className="pos-ticketPanel__title" data-testid="pos-ticket-title"><Receipt className="mr-2 inline h-4 w-4" aria-hidden="true" data-testid="pos-ticket-title-icon" />Cuenta{ticket?.ticketNumber ? ` · ${ticket.ticketNumber}` : ""}</h2>
+        {onSelectCourse && onFireCourse && ticket?.status === "OPEN" ? (
+          <POSCourseStrip courses={courses} activeCourse={activeCourse} onSelect={onSelectCourse} onFire={onFireCourse} busy={busy} readOnly={readOnly} />
+        ) : null}
+        {onRequestRecall && ticket?.status !== "PAID" && !readOnly ? (
+          <button className="pos-ticketPanel__recall" type="button" onClick={onRequestRecall} title="Traer una cuenta ya cerrada" data-testid="pos-recall-open" disabled={busy}>
+            <History className="h-4 w-4" aria-hidden="true" />
+            <span>Traer cuenta</span>
+          </button>
+        ) : null}
         {visit ? (
           <span className="pos-ticketPanel__meta" data-ui="pos-ticket-meta" data-testid="pos-ticket-meta">
             <StatusBadge variant={isOpen ? "success" : "neutral"} size="sm" data-ui="pos-ticket-status" data-testid="pos-ticket-status">{isOpen ? "Abierta" : "Cerrada"}</StatusBadge>
@@ -123,9 +156,9 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
             </div>
           ) : null}
           <div className="pos-ticketPanel__lines" data-testid="pos-ticket-lines">
-            {linesByRecency.map((line) => (
+            {topLevelLines.map((line) => (
               <div
-                className={line.id === selectedLineId ? "pos-line pos-line--selected" : "pos-line"}
+                className={cn(line.id === selectedLineId && "pos-line--selected", line.id < 0 && "pos-line--pending", "pos-line")}
                 key={line.id}
                 onClick={() => onSelectLine(line)}
                 onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelectLine(line); } }}
@@ -145,7 +178,27 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
                     <StatusBadge variant="neutral" size="sm" data-ui="pos-line-sent" data-testid={`pos-line-sent-${line.id}`}>Cocina</StatusBadge>
                   ) : null}
                   {line.comped ? <StatusBadge variant="warning" size="sm" data-ui={`pos-line-comp-${line.id}`} data-testid={`pos-line-comp-${line.id}`}>Invitada{line.compReason ? ` · ${line.compReason}` : ""}</StatusBadge> : null}
+                  {line.id < 0 ? <StatusBadge variant="warning" size="sm" data-ui={`pos-line-offline-${line.id}`} data-testid={`pos-line-offline-${line.id}`}>Sin enviar</StatusBadge> : null}
                 </div>
+                {(line.modifiers || []).length ? (
+                  <ul className="pos-line__modifiers" data-testid={`pos-line-modifiers-${line.id}`}>
+                    {line.modifiers?.map((modifier) => (
+                      <li key={`${line.id}-${modifier.modifierOptionId ?? modifier.name}`} data-testid={`pos-line-modifier-${line.id}-${modifier.modifierOptionId ?? modifier.name}`}>
+                        {modifier.quantity > 1 ? `${modifier.quantity} × ` : ""}{modifier.name}
+                        {modifier.priceDeltaCents !== 0 ? <span className="pos-line__modifierPrice">{modifier.priceDeltaCents > 0 ? `+${money(modifier.priceDeltaCents)}` : money(modifier.priceDeltaCents)}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {(componentsByParent.get(line.id) || []).length ? (
+                  <ul className="pos-line__components" data-testid={`pos-line-components-${line.id}`}>
+                    {(componentsByParent.get(line.id) || []).map((component) => (
+                      <li key={component.id} data-testid={`pos-line-component-${component.id}`}>
+                        <span className="pos-line__componentName">{component.quantity > 1 ? `${component.quantity} × ` : ""}{component.productName}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
                 {line.notes ? <p className="pos-line__note" data-testid={`pos-line-note-${line.id}`}>{line.notes}</p> : null}
                 {(line.tagIds || []).length ? <div className="pos-line__tags" data-testid={`pos-line-tags-${line.id}`}>{line.tagIds?.map((tagId) => <span key={tagId} data-ui={`pos-line-tag-${line.id}-${tagId}`}>{tags.find((tag) => tag.id === tagId)?.name || `#${tagId}`}</span>)}</div> : null}
                 <span className="pos-line__total" data-testid={`pos-line-total-${line.id}`}>{money(line.lineTotalGrossCents)}</span>

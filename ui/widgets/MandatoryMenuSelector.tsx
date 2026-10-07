@@ -3,6 +3,8 @@ import { Plus, Trash2 } from "lucide-react";
 import { cn } from "../shadcn/utils";
 import { Select } from "../inputs/Select";
 import type { MenuSelectorItem } from "../../api/types";
+// Coordination id: menu_type_codes_v1 - labels come from the shared menu type module.
+import { menuTypeLabel } from "./menus/menuPresentation";
 
 type MandatoryMenuSelectorProps = {
   menus: MenuSelectorItem[];
@@ -11,18 +13,6 @@ type MandatoryMenuSelectorProps = {
   onChange: (menuIds: number[], menuChooseMain: number[]) => void;
   className?: string;
 };
-
-const MENU_TYPE_LABELS: Record<string, string> = {
-  closed_conventional: "Cerrado convencional",
-  a_la_carte_group: "Menu grupo a la carta",
-  closed_group: "Menu de grupo cerrado",
-  special: "Especial",
-  a_la_carte: "A la carta convencional",
-};
-
-function getMenuTypeLabel(menuType: string): string {
-  return MENU_TYPE_LABELS[menuType] ?? menuType;
-}
 
 export function MandatoryMenuSelector({
   menus,
@@ -35,7 +25,7 @@ export function MandatoryMenuSelector({
     return menus.map((m) => ({
       value: String(m.id),
       label: m.menu_title,
-      right: getMenuTypeLabel(m.menu_type),
+      right: menuTypeLabel(m.menu_type),
     }));
   }, [menus]);
 
@@ -143,7 +133,7 @@ export function MandatoryMenuSelector({
             />
             {/* Show menu type label on mobile */}
             <div className="sm:hidden text-xs text-(--bo-muted) mt-1" data-slot="mandatory-menu-selector-menu-type">
-              {getMenuTypeLabel(menu.menu_type)}
+              {menuTypeLabel(menu.menu_type)}
             </div>
           </div>
 

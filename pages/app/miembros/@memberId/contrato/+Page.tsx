@@ -107,7 +107,7 @@ export default function Page() {
         <div className="bo-panel" data-slot="contrato-panel">
           <div className="bo-panelHead bo-memberStatsHead" data-slot="contrato-memberStatsHead">
             <div data-slot="contrato-div">
-              <div className="bo-panelTitle" data-slot="contrato-panelTitle">Configuracion de contrato</div>
+              <div className="bo-panelTitle" data-slot="contrato-panelTitle">Configuración de contrato</div>
               <div className="bo-panelMeta" data-slot="contrato-panelMeta">Ajusta horas semanales y seguimiento del periodo.</div>
             </div>
             <div className="bo-memberStatsControls" data-slot="contrato-memberStatsControls">

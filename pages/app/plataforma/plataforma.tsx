@@ -39,7 +39,7 @@ export default function Page() {
     <div className="bo-platformPage" data-ui="platform-page">
       <header data-testid="platformheader" className="bo-platformHeader">
         <h1 data-slot="plataforma-platformTitle" className="bo-platformTitle">Panel de Plataforma</h1>
-        <p data-slot="plataforma-platformSub" className="bo-platformSub">Gestion de todos los restaurantes y cuentas</p>
+        <p data-slot="plataforma-platformSub" className="bo-platformSub">Gestión de todos los restaurantes y cuentas</p>
       </header>
 
       <nav className="bo-platformTabs" data-ui="platform-tabs">
@@ -462,7 +462,7 @@ function WhatsAppTab() {
           <table className="bo-platformTable" data-ui="whatsapp-table">
             <thead data-slot="plataforma-thead">
               <tr data-slot="plataforma-tr">
-                <th data-slot="plataforma-th">ID</th><th>Restaurante</th><th>Instancia</th><th>Telefono</th>
+                <th data-slot="plataforma-th">ID</th><th>Restaurante</th><th>Instancia</th><th>Teléfono</th>
                 <th data-slot="plataforma-th">Estado</th><th>Pair Code</th><th>Activa</th><th>Acciones</th>
               </tr>
             </thead>
@@ -556,7 +556,7 @@ function StripeTab() {
             <thead data-slot="plataforma-thead">
               <tr data-slot="plataforma-tr">
                 <th data-slot="plataforma-th">Charge ID</th><th>Importe</th><th>Estado</th><th>Email</th>
-                <th data-slot="plataforma-th">Descripcion</th><th>Metadata</th><th>Fecha</th>
+                <th data-slot="plataforma-th">Descripción</th><th>Metadata</th><th>Fecha</th>
               </tr>
             </thead>
             <tbody data-slot="plataforma-tbody">

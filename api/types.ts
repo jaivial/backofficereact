@@ -1,4 +1,7 @@
 import type { BORole, BOSection } from "../lib/rbac";
+// Coordination id: menu_type_codes_v1 - the numeric menu_type contract shared
+// with the Go backend is defined once in the front source of truth module.
+import type { MenuTypeCode } from "../ui/widgets/menus/menuTypeCodes";
 
 export type BOUser = {
   id: number;
@@ -486,7 +489,8 @@ export type GroupMenuV2Summary = {
   price: string;
   active: boolean;
   is_draft: boolean;
-  menu_type: string;
+  /** Coordination id: menu_type_codes_v1 - numeric menu_type code. */
+  menu_type: MenuTypeCode;
   created_at?: string;
   modified_at?: string;
 };
@@ -599,7 +603,8 @@ export type GroupMenuV2 = {
   price: string;
   active: boolean;
   is_draft: boolean;
-  menu_type: string;
+  /** Coordination id: menu_type_codes_v1 - numeric menu_type code. */
+  menu_type: MenuTypeCode;
   menu_subtitle: string[];
   show_dish_images: boolean;
   show_section_tabs: boolean;
@@ -621,6 +626,10 @@ export type GroupMenuV2 = {
   special_cta?: SpecialMenuCta | null;
   // Coordination id: special_menu_principales_v1 - "Anadir platos principales".
   special_principales_enabled?: boolean;
+  // Coordination id: special_menu_group_booking_v1 - the special menu can be
+  // offered as a group menu and its principals become mandatory when booking.
+  special_group_menu_enabled?: boolean;
+  special_principales_required?: boolean;
   // Coordination id: special_menu_visibility_v1 - same dropdown the food-type
   // settings already use (inside_menus | independent_section) plus an on/off
   // toggle scoped per menu.
@@ -1583,12 +1592,11 @@ export type RestaurantInvoiceSettings = {
   default_payment_terms?: number;
 };
 
-export type MenuTemplateType =
-  | "closed_conventional"
-  | "closed_group"
-  | "a_la_carte"
-  | "a_la_carte_group"
-  | "special";
+/**
+ * Coordination id: menu_type_codes_v1 - website theme overrides are keyed by
+ * the numeric menu_type code, exactly like the menus themselves.
+ */
+export type MenuTemplateType = MenuTypeCode;
 
 export type WebsiteThemeOption = {
   id: string;
@@ -2423,7 +2431,8 @@ export type MandatoryMenuSavePayload = {
 export type MenuSelectorItem = {
   id: number;
   menu_title: string;
-  menu_type: string;
+  /** Coordination id: menu_type_codes_v1 - numeric menu_type code. */
+  menu_type: MenuTypeCode;
 };
 
 export type AIImageProvider = {
@@ -2564,10 +2573,23 @@ export type WidgetSettings = {
 
 export type POSSettings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit: boolean; requireOpenShift: boolean; receiptPrefix: string };
 export type POSProduct = { id: number; name: string; sku?: string; categoryName?: string; priceGrossCents: number; vatRate: number; isActive: boolean };
-export type POSTicketLine = { id: number; productId?: number | null; productName: string; quantity: number; unitPriceGrossCents: number; vatRate: number; discountCents: number; lineTotalGrossCents: number; notes?: string; status: "ACTIVE" | "VOIDED" };
+/** One picked modifier (size, extra, preparation). Snapshotted on the ticket. */
+export type POSTicketLineModifier = { modifierOptionId?: number | null; name: string; priceDeltaCents: number; quantity: number };
+export type POSTicketLine = { id: number; productId?: number | null; productName: string; quantity: number; unitPriceGrossCents: number; vatRate: number; discountCents: number; lineTotalGrossCents: number; notes?: string; status: "ACTIVE" | "VOIDED"; modifiers?: POSTicketLineModifier[] };
 export type POSTicket = { id: number; ticketNumber: string; status: "OPEN" | "PAID" | "VOIDED" | "PARTIALLY_REFUNDED" | "REFUNDED"; subtotalGrossCents: number; discountCents: number; taxCents: number; totalGrossCents: number; paidCents: number; refundedCents: number; version: number; lines: POSTicketLine[] };
 export type POSVisit = { id: number; channel: "DINE_IN" | "TAKEAWAY" | "DELIVERY"; tableId?: number | null; tableName?: string; covers: number; serviceDate: string; serviceType: "LUNCH" | "DINNER" | "OTHER"; status: "OPEN" | "CLOSED" | "CANCELLED"; version: number; tickets?: POSTicket[] };
-export type POSBootstrap = { success: true; settings: POSSettings; products: POSProduct[]; tables: Array<{ id: number; name: string; capacity: number; occupied: boolean }>; visits: POSVisit[] };
+/** A modifier option: the priced choice inside a group. */
+export type POSModifierOption = { id: number; name: string; priceDeltaCents: number; sortOrder: number; isActive: boolean };
+/**
+ * A modifier group ("Talla", "Extras"). `minSelect`/`maxSelect` bound the
+ * picks; `maxSelect: 0` means unlimited (a COMBO-style group).
+ * `kind`: OPTION (pick N of these), SUPPLEMENT (extras that add on),
+ * COMBO (unlimited picks).
+ */
+export type POSModifierGroup = { id: number; name: string; kind: "OPTION" | "SUPPLEMENT" | "COMBO"; minSelect: number; maxSelect: number; sortOrder: number; isActive: boolean; options: POSModifierOption[] };
+/** Modifier groups keyed by product id (the API sends JSON object string keys). */
+export type POSProductModifiers = Record<string, POSModifierGroup[]>;
+export type POSBootstrap = { success: true; settings: POSSettings; products: POSProduct[]; productModifiers?: POSProductModifiers; tables: Array<{ id: number; name: string; capacity: number; occupied: boolean }>; visits: POSVisit[] };
 
 export type LegalPageSlug = "aviso-legal" | "booking-policies" | "proteccion-datos" | "special-booking-politics";
 

@@ -111,7 +111,7 @@ export default function Page() {
       <div className="bo-panel bo-memberStatsPanel" data-slot="estadisticas-memberStatsPanel">
         <div className="bo-panelHead bo-memberStatsHead" data-slot="estadisticas-memberStatsHead">
           <div data-slot="estadisticas-div">
-            <div className="bo-panelTitle" data-slot="estadisticas-panelTitle">Estadisticas</div>
+            <div className="bo-panelTitle" data-slot="estadisticas-panelTitle">Estadísticas</div>
             <div className="bo-panelMeta" data-slot="estadisticas-panelMeta">Horas trabajadas y progreso respecto al contrato semanal.</div>
           </div>
           <div className="bo-memberStatsControls" data-slot="estadisticas-memberStatsControls">

@@ -540,7 +540,7 @@ function AdminHorariosView({ data }: { data: Data }) {
                     <th data-slot="col-member">Miembro</th>
                     <th data-slot="col-start">Entrada</th>
                     <th data-slot="col-end">Salida</th>
-                    <th data-slot="col-duration">Duracion</th>
+                    <th data-slot="col-duration">Duración</th>
                     <th data-slot="col-live">Fichaje en vivo</th>
                     <th data-slot="col-action">Accion</th>
                   </tr>

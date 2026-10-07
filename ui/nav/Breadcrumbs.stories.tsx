@@ -114,7 +114,7 @@ export const MiembroDetalle: Story = {
       { label: "Backoffice", href: "/app/backoffice" },
       { label: "Miembros", href: "/app/miembros" },
       { label: "Miembro #42", href: "/app/miembros/42" },
-      { label: "Estadisticas" },
+      { label: "Estadísticas" },
     ],
   },
 };

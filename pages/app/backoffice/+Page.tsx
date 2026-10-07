@@ -39,7 +39,7 @@ export default function Page() {
   return (
     <div className="bo-homePage" data-ui="backoffice-home">
       <header className="bo-homeHero" data-ui="backoffice-hero">
-        <div className="bo-homeKicker" data-ui="backoffice-kicker">Panel de administracion</div>
+        <div className="bo-homeKicker" data-ui="backoffice-kicker">Panel de administración</div>
         <h1 className="bo-homeTitle" data-ui="backoffice-title">
           Bienvenido, <span className="bo-homeTitleAccent" data-ui="backoffice-name">{firstName}</span>
         </h1>

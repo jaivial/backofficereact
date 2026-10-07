@@ -7,7 +7,7 @@ export type CreateFoodType = "platos" | "bebidas" | "vinos" | "cafes" | "menus";
 const OPTIONS: Array<{ type: CreateFoodType; label: string; hint: string; icon: typeof Coffee }> = [
   { type: "platos", label: "Plato", hint: "Carta principal", icon: UtensilsCrossed },
   { type: "bebidas", label: "Bebida", hint: "Refrescos y cocteles", icon: GlassWater },
-  { type: "vinos", label: "Vino", hint: "Bodega y anadas", icon: Wine },
+  { type: "vinos", label: "Vino", hint: "Bodega y añadas", icon: Wine },
   { type: "cafes", label: "Cafe", hint: "Cafe e infusiones", icon: Coffee },
   { type: "menus", label: "Menu", hint: "Carta, grupo, dia o fin de semana", icon: Utensils },
 ];

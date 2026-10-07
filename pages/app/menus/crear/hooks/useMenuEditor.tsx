@@ -20,6 +20,10 @@ import { cropSquareImageToWebp, isSupportedDishImageFile, MAX_DISH_IMAGE_INPUT_B
 import { arrayBufferToBase64, imageUnderBytes } from "../../../../../ui/lib/imageFile";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { normalizeWebPlacement } from "../../../../../ui/widgets/menus/webPlacement";
+// Coordination id: menu_type_codes_v1 - menu_type is a numeric code; every
+// incoming value goes through the single tolerant normaliser.
+import { DEFAULT_MENU_TYPE, isALaCarteMenuType, isSpecialMenuType, normalizeMenuType } from "../../../../../ui/widgets/menus/menuTypeCodes";
+import type { MenuTypeCode } from "../../../../../ui/widgets/menus/menuTypeCodes";
 import { WEEKDAYS, type WeekdayKey } from "../../../../../ui/widgets/WeekdayGrid/WeekdayGrid";
 
 import {
@@ -144,7 +148,7 @@ export type UseMenuEditorReturn = {
   menuId: number | null;
   isDraft: boolean;
   step: number;
-  menuType: string;
+  menuType: MenuTypeCode;
   title: string;
   price: string;
   subtitles: string[];
@@ -225,7 +229,7 @@ export type UseMenuEditorReturn = {
   setMenuId: (id: number | null) => void;
   setIsDraft: (v: boolean) => void;
   setStep: (step: number) => void;
-  setMenuType: (type: string) => void;
+  setMenuType: (type: MenuTypeCode) => void;
   setTitle: (title: string) => void;
   setPrice: (price: string) => void;
   setSubtitles: React.Dispatch<React.SetStateAction<string[]>>;
@@ -287,6 +291,11 @@ export type UseMenuEditorReturn = {
   specialPrincipalesSearchTerms: Record<number, string>;
   specialPrincipalesSearchResults: Record<number, DishCatalogItem[]>;
   setSpecialPrincipalesEnabled: (enabled: boolean) => Promise<void>;
+  // Coordination id: special_menu_group_booking_v1
+  specialGroupMenuEnabled: boolean;
+  specialPrincipalesRequired: boolean;
+  specialGroupBookingBusy: boolean;
+  setSpecialGroupBooking: (patch: { groupMenuEnabled: boolean; principalesRequired: boolean }) => Promise<void>;
   searchSpecialPrincipal: (sectionId: number, term: string) => void;
   addSpecialPrincipal: (sectionId: number, dishId: number) => Promise<void>;
   removeSpecialPrincipal: (sectionId: number, dishId: number) => Promise<void>;
@@ -394,7 +403,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     if (next >= 3) wizardFinishedRef.current = true;
     setStepState(next);
   }, []);
-  const [menuType, setMenuType] = useState<string>(data.menu?.menu_type || "closed_conventional");
+  const [menuType, setMenuType] = useState<MenuTypeCode>(normalizeMenuType(data.menu?.menu_type));
   const [title, setTitle] = useState<string>(data.menu?.menu_title || "");
   const [price, setPrice] = useState<string>(data.menu?.price || "0");
   const [subtitles, setSubtitles] = useState<string[]>(data.menu?.menu_subtitle?.length ? data.menu.menu_subtitle : [""]);
@@ -433,6 +442,11 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   // Coordination id: special_menu_principales_v1
   const [specialPrincipalesEnabled, setSpecialPrincipalesEnabledState] = useState<boolean>(!!data.menu?.special_principales_enabled);
   const [specialPrincipalesBusy, setSpecialPrincipalesBusy] = useState(false);
+  // Coordination id: special_menu_group_booking_v1 - Si/No dropdowns that make
+  // this special menu bookable as a group menu with mandatory principals.
+  const [specialGroupMenuEnabled, setSpecialGroupMenuEnabledState] = useState<boolean>(!!data.menu?.special_group_menu_enabled);
+  const [specialPrincipalesRequired, setSpecialPrincipalesRequiredState] = useState<boolean>(!!data.menu?.special_principales_required);
+  const [specialGroupBookingBusy, setSpecialGroupBookingBusy] = useState(false);
   const [specialPrincipalesSearchTerms, setSpecialPrincipalesSearchTerms] = useState<Record<number, string>>({});
   const [specialPrincipalesSearchResults, setSpecialPrincipalesSearchResults] = useState<Record<number, DishCatalogItem[]>>({});
   const specialPrincipalesTimerRef = useRef<Record<number, number>>({});
@@ -511,8 +525,8 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   const syncRequestSeqRef = useRef(0);
   const sameDayBookingBlockedRef = useRef<Set<number>>(new Set());
 
-  const isALaCarte = menuType === "a_la_carte" || menuType === "a_la_carte_group";
-  const isSpecial = menuType === "special";
+  const isALaCarte = isALaCarteMenuType(menuType);
+  const isSpecial = isSpecialMenuType(menuType);
   const hasSecondaryBasicsField = !isALaCarte && !isSpecial;
 
   const basicsDraft = useMemo<BasicsDraft>(
@@ -1289,7 +1303,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
 
   const previewThemeId = useMemo(() => {
     if (!previewThemeConfig) return "villa-carmen";
-    const fromOverride = previewThemeConfig.overrides[menuType || "closed_conventional"];
+    const fromOverride = previewThemeConfig.overrides[menuType || DEFAULT_MENU_TYPE];
     return normalizePreviewThemeId(fromOverride || previewThemeConfig.default_theme_id || "villa-carmen");
   }, [menuType, normalizePreviewThemeId, previewThemeConfig]);
 
@@ -1301,10 +1315,10 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   }, [previewThemeConfig, previewThemeId]);
 
   const previewNeedsUpgrade = useMemo(() => {
-    if (menuType === "special") return false;
+    if (isSpecial) return false;
     if (!previewThemeConfig) return false;
     return previewThemeConfig.assigned === false;
-  }, [menuType, previewThemeConfig]);
+  }, [isSpecial, previewThemeConfig]);
 
   const previewUrl = "/menu-preview/index.html";
 
@@ -1418,7 +1432,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       const loaded = await api.menus.gruposV2.get(created.menu_id);
       if (!loaded.success) throw new Error(loaded.message || "No se pudo cargar borrador");
       const mapped = mapApiMenu(loaded.menu);
-      const mappedIsALaCarte = mapped.menuType === "a_la_carte" || mapped.menuType === "a_la_carte_group";
+      const mappedIsALaCarte = isALaCarteMenuType(mapped.menuType);
       setMenuId(created.menu_id);
       setIsDraft(true);
       setTitle(mapped.title);
@@ -1492,7 +1506,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   }, [api]);
 
   // --- addSection ---
-  // Coordination id: menu_section_kind_presets_v1 - the "Anadir seccion" modal
+  // Coordination id: menu_section_kind_presets_v1 - the "Añadir seccion" modal
   // passes the chosen preset, so Entrantes/Principal/Arroz/Postres land with
   // their title already filled and "Personalizada" lands blank.
   const addSection = useCallback((selection?: AddSectionSelection) => {
@@ -2160,13 +2174,13 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   // Coordination id: special_menu_price_date_v1 - special days the menu can
   // be linked to; loaded once for special menus only.
   useEffect(() => {
-    if (menuType !== "special") return;
+    if (!isSpecial) return;
     let cancelled = false;
     void api.config.listSpecialDates().then((res) => {
       if (!cancelled && res.success) setSpecialDateOptions(res.special_dates);
     }).catch(() => console.warn("[special_menu_price_date_v1] special dates unavailable"));
     return () => { cancelled = true; };
-  }, [api, menuType]);
+  }, [api, isSpecial]);
 
   const setMenuSpecialDate = useCallback(async (specialDateId: number) => {
     const option = specialDateOptions.find((entry) => entry.id === specialDateId) ?? null;
@@ -2189,6 +2203,12 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   // replace that section's principales with the server's answer.
   const setSpecialPrincipalesEnabled = useCallback(async (enabled: boolean) => {
     setSpecialPrincipalesEnabledState(enabled);
+    // Coordination id: special_menu_group_booking_v1 - neither dropdown means
+    // anything without the principales, so both fall back to "No" with them.
+    if (!enabled) {
+      setSpecialGroupMenuEnabledState(false);
+      setSpecialPrincipalesRequiredState(false);
+    }
     if (!menuId) return;
     setSpecialPrincipalesBusy(true);
     try {
@@ -2251,15 +2271,44 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     }
   }, [api, applySectionPrincipales, menuId, pushToast]);
 
+  // Coordination id: special_menu_group_booking_v1 - one request for both
+  // toggles, optimistic like the rest: state first, revert + toast on failure.
+  // The backend forces group_menu_enabled when principales are required, so we
+  // mirror its answer instead of second-guessing it here.
+  const setSpecialGroupBooking = useCallback(async (patch: { groupMenuEnabled: boolean; principalesRequired: boolean }) => {
+    const previous = { groupMenuEnabled: specialGroupMenuEnabled, principalesRequired: specialPrincipalesRequired };
+    const next = { ...previous, ...patch };
+    setSpecialGroupMenuEnabledState(next.groupMenuEnabled);
+    setSpecialPrincipalesRequiredState(next.principalesRequired);
+    if (!menuId) return;
+    setSpecialGroupBookingBusy(true);
+    try {
+      const res = await api.menus.gruposV2.setSpecialGroupBooking(menuId, {
+        group_menu_enabled: next.groupMenuEnabled,
+        principales_required: next.principalesRequired,
+      });
+      if (!res.success) throw new Error(res.message || "No se pudo guardar");
+      setSpecialGroupMenuEnabledState(res.group_menu_enabled);
+      setSpecialPrincipalesRequiredState(res.principales_required);
+      console.log("[checkpoint] special_menu_group_booking_saved", `group_menu_enabled=${res.group_menu_enabled}`, `principales_required=${res.principales_required}`);
+    } catch (e) {
+      setSpecialGroupMenuEnabledState(previous.groupMenuEnabled);
+      setSpecialPrincipalesRequiredState(previous.principalesRequired);
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar" });
+    } finally {
+      setSpecialGroupBookingBusy(false);
+    }
+  }, [api, menuId, pushToast, specialGroupMenuEnabled, specialPrincipalesRequired]);
+
   // Coordination id: special_menu_cta_v1 - active menus the button can open.
   useEffect(() => {
-    if (menuType !== "special") return;
+    if (!isSpecial) return;
     let cancelled = false;
     void api.menus.gruposV2.list(false).then((res) => {
       if (!cancelled && res.success) setCtaMenuOptions(res.menus.filter((m) => m.active && m.id !== menuId));
     }).catch(() => console.warn("[special_menu_cta_v1] menus unavailable"));
     return () => { cancelled = true; };
-  }, [api, menuId, menuType]);
+  }, [api, isSpecial, menuId]);
 
   // Optimistic local update (instant preview) + debounced PUT; the response
   // carries the backend-resolved href on the tenant website.
@@ -2632,7 +2681,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       return;
     }
     const mapped = mapApiMenu(data.menu, sections);
-    const mappedIsALaCarte = mapped.menuType === "a_la_carte" || mapped.menuType === "a_la_carte_group";
+    const mappedIsALaCarte = isALaCarteMenuType(mapped.menuType);
     setTitle(mapped.title);
     setPrice(mapped.price);
     setActive(mapped.active);
@@ -2646,6 +2695,8 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     setMenuPreviewAIGenerating(mapped.menuPreviewAIGenerating);
     setSpecialMenuSections(data.menu?.special_menu_sections ? [...data.menu.special_menu_sections].sort((a, b) => a.position - b.position) : []);
     setSpecialPrincipalesEnabledState(!!data.menu?.special_principales_enabled);
+    setSpecialGroupMenuEnabledState(!!data.menu?.special_group_menu_enabled);
+    setSpecialPrincipalesRequiredState(!!data.menu?.special_principales_required);
     setSpecialMenuSectionBusy({});
     setSections(mapped.sections);
     setMenuAITracker(buildMenuAITracker(data.menu, mapped.sections));
@@ -2831,6 +2882,8 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     // Coordination id: special_menu_principales_v1
     specialPrincipalesEnabled, specialPrincipalesBusy, specialPrincipalesSearchTerms, specialPrincipalesSearchResults,
     setSpecialPrincipalesEnabled, searchSpecialPrincipal, addSpecialPrincipal, removeSpecialPrincipal,
+    // Coordination id: special_menu_group_booking_v1
+    specialGroupMenuEnabled, specialPrincipalesRequired, specialGroupBookingBusy, setSpecialGroupBooking,
     // Render helpers
     renderMenuPreviewUploadArea,
   };

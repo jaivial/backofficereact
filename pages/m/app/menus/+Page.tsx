@@ -55,7 +55,7 @@ export default function MobileMenusPage() {
   return (
     <div className="flex flex-col gap-4 p-4" data-ui="mobile-menus">
       <header className="pt-2" data-ui="mobile-menus-header">
-        <h1 className="text-xl font-bold text-[hsl(var(--foreground))]" data-ui="mobile-menus-title">Menus</h1>
+        <h1 className="text-xl font-bold text-[hsl(var(--foreground))]" data-ui="mobile-menus-title">Menús</h1>
         <p className="text-sm text-[hsl(var(--muted-foreground))]" data-ui="mobile-menus-subtitle">Selecciona un tipo de menu</p>
       </header>
 

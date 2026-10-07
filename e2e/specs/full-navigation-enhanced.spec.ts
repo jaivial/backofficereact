@@ -132,7 +132,7 @@ async function discoverTabs(page: Page): Promise<string[]> {
   });
 
   // Strategy 3: Links/tabs with common tab-like text
-  const linkTexts = ["Platos", "Vinos", "Bebidas", "Cafes", "Postres", "Turnos", 
+  const linkTexts = ["Platos", "Vinos", "Bebidas", "Cafés", "Postres", "Turnos", 
                      "Config", "Lista", "Create", "Nuevo", "Settings", "General",
                      "Email", "SMS", "Horarios", "Preview", "Roles", "Miembros"];
 

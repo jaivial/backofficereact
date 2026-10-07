@@ -14,7 +14,7 @@ function DescripcionToggle({ value, onChange, disabled }: { value: string; onCha
   return (
     <div className="bo-foodDetailQuickDescription" data-slot="food-detail-quick-description-field">
       <div data-slot="foodDetailQuickEditor-mb-2" className="flex items-center justify-between mb-2">
-        <span className="bo-label" data-role="food-detail-quick-description-label">Descripcion</span>
+        <span className="bo-label" data-role="food-detail-quick-description-label">Descripción</span>
         <Switch
           checked={show}
           onCheckedChange={(v) => {
@@ -163,7 +163,7 @@ export function FoodDetailQuickEditor({
           ) : <div />}
           <label className="bo-field" data-slot="food-detail-quick-categoria-field">
             <div className="flex items-center gap-2" data-slot="foodDetailQuickEditor-mb-2">
-              <span className="bo-label" data-role="food-detail-quick-categoria-label">Categoria</span>
+              <span className="bo-label" data-role="food-detail-quick-categoria-label">Categoría</span>
               {isBebida ? (
                 <button
                   data-role="food-detail-add-category-btn"
@@ -181,7 +181,7 @@ export function FoodDetailQuickEditor({
               onChange={onQuickCategoriaChange}
               options={quickCategorySelectOptions}
               className="bo-foodDetailSelect"
-              ariaLabel="Categoria del plato"
+              ariaLabel="Categoría del plato"
               disabled={savingQuick || categoriesLoading}
             />
           </label>
@@ -255,7 +255,7 @@ export function FoodDetailQuickEditor({
           {/* Alergenos — inline tags, inside form */}
           <div className="bo-foodDetailQuickAlergenos" data-slot="food-detail-quick-alergenos">
             <div data-slot="foodDetailQuickEditor-gap-4" className="flex items-center justify-start gap-4">
-              <span className="bo-label" data-role="food-detail-quick-alergenos-label">Alergenos</span>
+              <span className="bo-label" data-role="food-detail-quick-alergenos-label">Alérgenos</span>
               <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={onOpenAllergenModal} data-role="food-detail-allergens-edit-btn">
                 <Plus size={14} />
                 Añadir
@@ -285,7 +285,7 @@ export function FoodDetailQuickEditor({
                 ))}
               </div>
             ) : (
-              <div className="bo-foodDetailEmptyNote" data-role="food-detail-allergens-empty">Sin alergenos</div>
+              <div className="bo-foodDetailEmptyNote" data-role="food-detail-allergens-empty">Sin alérgenos</div>
             )}
           </div>
 

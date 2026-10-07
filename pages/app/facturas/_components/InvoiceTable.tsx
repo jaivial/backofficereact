@@ -809,7 +809,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                 </td>
                 )}
                 {visibleSet.has("payment_method") && (
-                <td data-testid="invoice-table-cell-22" className={`col-payment_method`} data-label="Metodo" data-slot="invoice-table-cell">
+                <td data-testid="invoice-table-cell-22" className={`col-payment_method`} data-label="Método" data-slot="invoice-table-cell">
                   {invoice.payment_method ? (
                     <span data-testid="invoiceTable-paymentMethod" className="bo-paymentMethod" title={PAYMENT_METHOD_LABELS[invoice.payment_method]} data-slot="invoiceTable-paymentMethod">
                       <CreditCard size={12} />
@@ -836,12 +836,12 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                 </td>
                 )}
                 {visibleSet.has("deposit") && (
-                <td data-testid="invoice-table-cell-25" className={`col-deposit`} data-label="Deposito" data-slot="invoice-table-cell">
+                <td data-testid="invoice-table-cell-25" className={`col-deposit`} data-label="Depósito" data-slot="invoice-table-cell">
                   <DepositBadge invoice={invoice} />
                 </td>
                 )}
                 {visibleSet.has("category") && (
-                <td data-testid="invoice-table-cell-26" className={`col-category`} data-label="Categoria" data-slot="invoice-table-cell">
+                <td data-testid="invoice-table-cell-26" className={`col-category`} data-label="Categoría" data-slot="invoice-table-cell">
                   <CreditNoteBadge invoice={invoice} />
                   <CategoryBadge category={invoice.category} />
                   <TagsList tags={invoice.tags} />
@@ -930,7 +930,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
               <td data-testid="invoice-table-cell-38" className="col-payment_date" data-label="F. Pago" data-slot="invoice-table-cell"></td>
               )}
               {visibleSet.has("payment_method") && (
-              <td data-testid="invoice-table-cell-39" className="col-payment_method" data-label="Metodo" data-slot="invoice-table-cell"></td>
+              <td data-testid="invoice-table-cell-39" className="col-payment_method" data-label="Método" data-slot="invoice-table-cell"></td>
               )}
               {visibleSet.has("status") && (
               <td data-testid="invoice-table-cell-40" className="col-status" data-label="Estado" data-slot="invoice-table-cell"></td>
@@ -939,10 +939,10 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
               <td data-testid="invoice-table-cell-41" className="col-is_reservation" data-label="Tipo" data-slot="invoice-table-cell"></td>
               )}
               {visibleSet.has("deposit") && (
-              <td data-testid="invoice-table-cell-42" className="col-deposit" data-label="Deposito" data-slot="invoice-table-cell"></td>
+              <td data-testid="invoice-table-cell-42" className="col-deposit" data-label="Depósito" data-slot="invoice-table-cell"></td>
               )}
               {visibleSet.has("category") && (
-              <td data-testid="invoice-table-cell-43" className="col-category" data-label="Categoria" data-slot="invoice-table-cell"></td>
+              <td data-testid="invoice-table-cell-43" className="col-category" data-label="Categoría" data-slot="invoice-table-cell"></td>
               )}
               <td data-testid="invoice-table-cell-44" className="col-attachment" data-label="" data-slot="invoice-table-cell"></td>
               <td data-testid="invoice-table-cell-45" className="col-actions" data-label="" data-slot="invoice-table-cell"></td>

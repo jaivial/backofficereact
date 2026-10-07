@@ -1284,7 +1284,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
               {overrideInvoiceNumber && (
                 <label data-testid="invoice-form-invoice-number-label" className="bo-field" data-slot="invoice-form-invoice-number-label">
-                  <span data-testid="invoiceForm-label-15" className="bo-label" data-slot="invoiceForm-label">Numero de factura</span>
+                  <span data-testid="invoiceForm-label-15" className="bo-label" data-slot="invoiceForm-label">Número de factura</span>
                   <input
                     className="bo-input"
                     type="text"
@@ -1299,7 +1299,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
 
               {!overrideInvoiceNumber && invoice && invoice.invoice_number && (
                 <div data-testid="invoiceForm-field" className="bo-field" data-slot="invoiceForm-field">
-                  <span data-testid="invoiceForm-label-16" className="bo-label" data-slot="invoiceForm-label">Numero de factura (automatico)</span>
+                  <span data-testid="invoiceForm-label-16" className="bo-label" data-slot="invoiceForm-label">Número de factura (automatico)</span>
                   <div data-testid="invoiceForm-input" className="bo-input" style={{ backgroundColor: "var(--bo-bg-muted)", fontFamily: "monospace", fontWeight: 600 }} data-slot="invoiceForm-input">
                     {invoice.invoice_number}
                   </div>

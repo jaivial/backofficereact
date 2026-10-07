@@ -29,7 +29,7 @@ export const FoodCategoryModal = React.memo(function FoodCategoryModal({
   }, [name, onCreate]);
 
   return (
-    <Modal open={open} onClose={onClose} title="Anadir categoria custom" size="sm">
+    <Modal open={open} onClose={onClose} title="Añadir categoría personalizada" size="sm">
       <form onSubmit={onSubmit} data-ui="food-cat-modal-form">
         <div className="bo-field" data-ui="food-cat-modal-field">
           <label className="bo-label" htmlFor="food-category-name" data-ui="food-cat-modal-label">Nombre categoria *</label>

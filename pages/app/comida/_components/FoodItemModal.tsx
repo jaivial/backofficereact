@@ -608,7 +608,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
               <div data-ui="food-modal-field-nombre" className="bo-field">
                 <label data-role="food-modal-label-nombre" className="bo-label" htmlFor="nombre">
-                  {isPostre ? "Descripcion *" : "Nombre *"}
+                  {isPostre ? "Descripción *" : "Nombre *"}
                 </label>
                 <input
                   data-role="food-modal-input-nombre"
@@ -620,7 +620,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                     if (isPostre) setDescripcion(e.target.value);
                     else setNombre(e.target.value);
                   }}
-                  placeholder={isPostre ? "Descripcion del postre" : "Nombre del elemento"}
+                  placeholder={isPostre ? "Descripción del postre" : "Nombre del elemento"}
                   required
                 />
               </div>
@@ -672,7 +672,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                       value={categoria}
                       onChange={setCategoria}
                       options={[{ value: "", label: "Sin categoria" }, ...effectiveCategoryOptions]}
-                      ariaLabel="Categoria"
+                      ariaLabel="Categoría"
                     />
                   </div>
                 ) : null}
@@ -701,12 +701,12 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
               {isBebida && supportsCategoria ? (
                 <div data-ui="food-modal-field-categoria" className="bo-field">
-                  <label data-role="food-modal-label-categoria" className="bo-label">Categoria</label>
+                  <label data-role="food-modal-label-categoria" className="bo-label">Categoría</label>
                   <Select
                     value={categoria}
                     onChange={setCategoria}
                     options={[{ value: "", label: "Sin categoria" }, ...effectiveCategoryOptions]}
-                    ariaLabel="Categoria"
+                    ariaLabel="Categoría"
                   />
                   <button
                     data-role="food-modal-add-category-btn"
@@ -774,7 +774,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
               {supportsAlergenos ? (
                 <div data-ui="food-modal-field-alergenos" className="bo-field">
-                  <label data-role="food-modal-label-alergenos" className="bo-label">Alergenos</label>
+                  <label data-role="food-modal-label-alergenos" className="bo-label">Alérgenos</label>
                   {/* Shared with the technical sheet, so both grids stay identical. */}
                   <AllergenSelectGrid
                     data-slot="food-modal-alergenos-list"

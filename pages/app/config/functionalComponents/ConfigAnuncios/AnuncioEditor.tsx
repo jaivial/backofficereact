@@ -853,7 +853,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             )}
 
         <div className="bo-adInsertPalette" data-testid="ad-insert-palette">
-          <div className="bo-adStudioSectionTitle">Anadir</div>
+          <div className="bo-adStudioSectionTitle">Añadir</div>
           <div className="bo-anunciosAddList bo-anunciosAddList--inline">
             {(editingCard ? [] : addContentItems).map((item) => (
               <button
@@ -978,7 +978,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             <>
               {isMultiple && activeStep ? <StepInspector step={activeStep} onChange={(patch) => setAd(updateStep(ad, activeStep.id, patch))} onBackgroundImage={(which) => { setImageTarget({ kind: which, stepId: activeStep.id }); setImageOpen(true); setImageStep("choose"); }} imageBusy={imageEnhancing} onSelectButton={(buttonId) => setSelectedId(buttonId)} /> : null}
               <div className="bo-anunciosDurationSection" data-slot="ads-duration-section">
-                <div className="bo-anunciosCtasTitle">Duracion</div>
+                <div className="bo-anunciosCtasTitle">Duración</div>
                 <div className="bo-anunciosCtasHint">El anuncio solo se muestra dentro de este periodo.</div>
                 <InlineDateRangeCalendar from={ad.starts_at || ""} to={ad.ends_at || ""} disabledDates={blockedDates} disabledDateLabels={blockedDateLabels} onChange={(range) => {
                   if (range.from && range.to && sendAdScheduleCheck) {
@@ -1820,10 +1820,10 @@ export function ButtonInspector({
         {whatsappStyle ? (
           <div className="bo-adGroup bo-adWhatsapp" data-testid={`ad-cta-${cta.id}-whatsapp`}>
             <div className="bo-adGroupTitle">WhatsApp</div>
-            <Field label="Telefono del restaurante" testId={`ad-cta-${cta.id}-phone-restaurant`}>
+            <Field label="Teléfono del restaurante" testId={`ad-cta-${cta.id}-phone-restaurant`}>
               <input value={phone || "Sin telefono"} readOnly className="bo-input bo-inputReadonly" />
             </Field>
-            <Field label="Telefono personalizado" testId={`ad-cta-${cta.id}-phone-custom`}>
+            <Field label="Teléfono personalizado" testId={`ad-cta-${cta.id}-phone-custom`}>
               <input
                 value={whatsapp?.phone ?? ""}
                 onChange={(event) => onChange(patchWhatsAppButton(cta, { phone: event.target.value }))}

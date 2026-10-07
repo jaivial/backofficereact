@@ -438,12 +438,12 @@ export const InvoiceFilters = forwardRef<InvoiceFiltersRef, InvoiceFiltersProps>
                 </label>
 
                 <label data-testid="invoiceFilters-invoiceFilter-category" className="bo-field bo-invoiceFilter bo-invoiceFilter--category" data-slot="invoiceFilters-invoiceFilter--category">
-                  <span data-testid="invoiceFilters-label-3" className="bo-label" data-slot="invoiceFilters-label">Categoria</span>
+                  <span data-testid="invoiceFilters-label-3" className="bo-label" data-slot="invoiceFilters-label">Categoría</span>
                   <Select
                     value={categoryFilter}
                     onChange={(value) => onCategoryFilterChange(value as InvoiceCategory | "")}
                     options={categoryOptions}
-                    ariaLabel="Categoria"
+                    ariaLabel="Categoría"
                     data-testid="invoice-filter-category-select"
                   />
                 </label>
