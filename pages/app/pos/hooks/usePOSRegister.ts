@@ -436,9 +436,42 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron cargar las cuentas"); }
   }, []);
 
-  const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir") => {
+  /** True when the signed-in user has set a PIN on this terminal. */
+  const [hasPin, setHasPin] = useState(false);
+
+  const loadPinStatus = useCallback(async () => {
+    try {
+      const data = await request<{ hasPin: boolean }>("/pin");
+      setHasPin(!!data.hasPin);
+    } catch { /* the PIN is optional; never block the till on it */ }
+  }, []);
+
+  const setPin = useCallback(async (pin: string, currentPin?: string) => {
+    setBusy(true); setError("");
+    try {
+      await request("/pin", { method: "POST", body: JSON.stringify({ pin, currentPin }) });
+      setHasPin(true);
+      setMessage("PIN guardado.");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo guardar el PIN"); throw reason; } finally { setBusy(false); }
+  }, []);
+
+  /**
+   * Asks a manager to approve an action with their PIN and returns their name so
+   * it can be written next to the action in the audit trail.
+   */
+  const verifyPin = useCallback(async (pin: string) => {
+    const data = await request<{ memberId: number; displayName: string }>("/pin/verify", { method: "POST", body: JSON.stringify({ pin }) });
+    return data.displayName;
+  }, []);
+
+  /**
+   * `approvalPin` is the manager's PIN. The PIN itself travels, never the name:
+   * the server resolves who it belongs to, so a tampered label in the browser
+   * cannot put the wrong person in the audit trail.
+   */
+  const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir", approvalPin?: string) => {
     if (!ticket) return; const trimmed = reason.trim(); if (!trimmed) return;
-    try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed }) }); setTicket(data.ticket); }
+    try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed, approvalPin }) }); setTicket(data.ticket); }
     catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "No se pudo anular línea"); }
   }, [ticket]);
 
@@ -547,7 +580,7 @@ export function usePOSRegister(date?: string | null) {
     load, loadReservations, selectReservation, openVisit, openTakeaway, restoreVisit, restoreParkedVisit, moveVisitToTable,
     parkVisit, openBar, mergeVisits, applyAdjustment, compLine, setLineNote, openDrawer,
     setVisitCustomer, setTicketOperator, toggleLineTag, loadTags,
-    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct, addPack, packs, recallTicket, recallTickets, loadRecallCandidates,
+    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct, addPack, packs, hasPin, loadPinStatus, setPin, verifyPin, recallTicket, recallTickets, loadRecallCandidates,
     setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, checkout,
   };
 }

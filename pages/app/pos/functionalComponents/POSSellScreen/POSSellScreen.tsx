@@ -19,6 +19,7 @@ import { POSMoveLineDialog } from "./POSMoveLineDialog";
 import { POSModifierPicker } from "./POSModifierPicker";
 import { POSPackPicker } from "./POSPackPicker";
 import { POSRecallDialog } from "./POSRecallDialog";
+import { POSPinDialog } from "./POSPinDialog";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
@@ -62,6 +63,9 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [productToModify, setProductToModify] = useState<Parameters<typeof register.addProduct>[0] | null>(null);
   const [packToAdd, setPackToAdd] = useState<Parameters<typeof register.addPack>[0] | null>(null);
   const [showRecall, setShowRecall] = useState(false);
+  const [showPinSetup, setShowPinSetup] = useState(false);
+  const [pinApproval, setPinApproval] = useState(false);
+  const [pinError, setPinError] = useState("");
   const [voidOrderOpen, setVoidOrderOpen] = useState(false);
   const [voidOrderReason, setVoidOrderReason] = useState("");
   const [discountOpen, setDiscountOpen] = useState(false);
@@ -137,7 +141,34 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
   const confirmVoidLine = useCallback(async () => {
     if (!lineToVoid) return;
+    // A void is the one action that takes money off a bill, so it is signed: the
+    // manager's PIN is verified first and their name travels with the request.
+    // A terminal whose staff have no PIN still works, it just skips the signature.
+    if (!register.hasPin) {
+      setPinError("");
+      setPinApproval(true);
+      return;
+    }
     await register.voidLine(lineToVoid);
+    setLineToVoid(null);
+  }, [lineToVoid, register]);
+
+  const approveVoid = useCallback(async (payload: { pin: string }) => {
+    if (!lineToVoid) return;
+    // Verified twice on purpose: once here so the dialog can refuse a wrong PIN
+    // without touching the ticket, and again on the void itself, because the
+    // server is the only place that can be trusted to check it.
+    try {
+      await register.verifyPin(payload.pin);
+      setPinError("");
+    } catch (failure) {
+      // Kept in local state: the shared error belongs to the till, not to a
+      // dialog the waiter is about to dismiss.
+      setPinError(failure instanceof Error ? failure.message : "PIN incorrecto");
+      return;
+    }
+    setPinApproval(false);
+    await register.voidLine(lineToVoid, "Anulado con PIN de jefe", payload.pin);
     setLineToVoid(null);
   }, [lineToVoid, register]);
 
@@ -172,6 +203,9 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   );
 
   useEffect(() => { setSelectedLineId(0); }, [register.ticket?.id, register.visit?.id]);
+  // Knowing whether this user has a PIN decides if a void asks for a manager, so it is
+  // fetched once when the till opens rather than on the first void.
+  useEffect(() => { void register.loadPinStatus(); }, [register.loadPinStatus]);
 
   const visibleTables = useMemo(
     () => register.tables.filter((table) => !areaFilter || table.areaId === areaFilter),
@@ -482,6 +516,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const railAction = useCallback((key: RailFeatureKey) => {
     switch (key) {
       case "mesa": setShowTables(true); break;
+      case "mi-pin": void register.loadPinStatus().then(() => setShowPinSetup(true)); break;
       case "total": if (register.ticket) { register.setError(""); setKeypadContext({ kind: "cash" }); setShowCheckout(true); } break;
       case "comanda": void printComanda(); break;
       case "cocina": void register.sendKitchen(); break;
@@ -779,6 +814,51 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
           </div>
         </POSDialog>
       ) : null}
+
+      {showPinSetup ? (
+
+        <POSPinDialog
+
+          title={register.hasPin ? "Cambiar mi PIN" : "Crear mi PIN"}
+
+          description={register.hasPin ? "Necesitas el PIN actual para cambiarlo." : "Un PIN de 4 a 6 dígitos. Cada persona del sala firma con el suyo."}
+
+          confirmLabel="Guardar PIN"
+
+          busy={register.busy}
+
+          error={register.error || undefined}
+
+          requireExisting={register.hasPin}
+
+          onClose={() => setShowPinSetup(false)}
+
+          onSubmit={(value) => void register.setPin(value.pin, value.currentPin).then(() => setShowPinSetup(false))}
+
+        />
+
+      ) : null}
+
+      {pinApproval && lineToVoid ? (
+
+        <POSPinDialog
+
+          title="Anular línea"
+
+          description={`Pide el PIN de un jefe para anular "{lineToVoid.name}".`}
+
+          confirmLabel="Anular con PIN"
+
+          busy={register.busy}
+
+          onClose={() => setPinApproval(false)}
+
+          onSubmit={approveVoid}
+
+        />
+
+      ) : null}
+
 
       {showRecall ? (
 
