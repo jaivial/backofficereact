@@ -315,7 +315,19 @@ export function usePOSRegister(date?: string | null) {
 
   const switchTicket = useCallback((next: Ticket) => { setTicket(next); setSplitTargetId(0); setCash(""); setCard(""); setCardReference(""); setTipCents(0); }, []);
   const voidEmptyTicket = useCallback(async (next: Ticket) => { if (next.lines.filter((line) => line.status !== "VOIDED").length) return; try { await request(`/tickets/${next.id}/void`, { method: "POST", body: JSON.stringify({ reason: "Cuenta separada vacía" }) }); setSplitTickets((current) => current.filter((entry) => entry.id !== next.id)); if (ticket?.id === next.id) { const fallback = splitTickets.find((entry) => entry.id !== next.id && entry.status === "OPEN"); setTicket(fallback || null); } } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo anular cuenta"); } }, [splitTickets, ticket]);
-  const createSplitTicket = useCallback(async () => { if (!visit) return; try { const data = await request<{ ticket: Ticket }>(`/visits/${visit.id}/tickets`, { method: "POST", body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) }); setSplitTickets((current) => [...current, data.ticket]); setSplitTargetId(data.ticket.id); setMessage("Cuenta separada creada."); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo separar cuenta"); } }, [visit]);
+  /**
+   * Opens another check for the same table. The guest name is optional: a table
+   * paying apart but not wanting to give names still gets a working separate
+   * check, exactly as before.
+   */
+  const createSplitTicket = useCallback(async (guestLabel?: string) => { if (!visit) return; try { const data = await request<{ ticket: Ticket }>(`/visits/${visit.id}/tickets`, { method: "POST", body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), guestLabel: (guestLabel || "").trim() || undefined }) }); setSplitTickets((current) => [...current, data.ticket]); setSplitTargetId(data.ticket.id); setMessage(data.ticket.guestLabel ? `Cuenta separada creada para ${data.ticket.guestLabel}.` : "Cuenta separada creada."); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo separar cuenta"); } }, [visit]);
+
+  /**
+   * Names the current check. Only an open check can be renamed; once it is paid
+   * the name is on a printed record, so the server refuses and we surface that
+   * instead of pretending it saved.
+   */
+  const setTicketGuestLabel = useCallback(async (guestLabel: string) => { if (!ticket) return false; try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/guest-label`, { method: "POST", body: JSON.stringify({ guestLabel: guestLabel.trim() }) }); setTicket(data.ticket); setSplitTickets((current) => current.map((entry) => entry.id === data.ticket.id ? data.ticket : entry)); setMessage(guestLabel.trim() ? `Comensal: ${guestLabel.trim()}.` : "Se quitó el nombre del comensal."); return true; } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo guardar el comensal"); return false; } }, [ticket]);
   const moveLine = useCallback(async (line: TicketLine, quantity = line.quantity, targetId = splitTargetId) => { if (!ticket || !targetId) return; const moved = Math.min(Math.round(quantity), line.quantity); if (moved <= 0) return; try { const data = await request<{ sourceTicket: Ticket; targetTicket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/move`, { method: "POST", body: JSON.stringify({ targetTicketId: targetId, quantity: moved, idempotencyKey: crypto.randomUUID() }) }); setTicket(data.sourceTicket); setSplitTickets((current) => current.map((entry) => entry.id === data.sourceTicket.id ? data.sourceTicket : entry.id === data.targetTicket.id ? data.targetTicket : entry)); return true; } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo mover línea"); return false; } }, [splitTargetId, ticket]);
 
   const mergeSplitTickets = useCallback(async () => {
@@ -771,7 +783,7 @@ export function usePOSRegister(date?: string | null) {
     load, loadReservations, selectReservation, openVisit, openTakeaway, restoreVisit, restoreParkedVisit, moveVisitToTable,
     parkVisit, openBar, mergeVisits, applyAdjustment, compLine, setLineNote, openDrawer,
     setVisitCustomer, setTicketOperator, toggleLineTag, loadTags,
-    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct, addPack, packs, hasPin, loadPinStatus, setPin, verifyPin, recallTicket, recallTickets, loadRecallCandidates,
+    switchTicket, voidEmptyTicket, createSplitTicket, setTicketGuestLabel, moveLine, mergeSplitTickets, addProduct, addPack, packs, hasPin, loadPinStatus, setPin, verifyPin, recallTicket, recallTickets, loadRecallCandidates,
     setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, activeCourse, setActiveCourse, courses, loadCourses, fireCourse, checkout,
   };
 }
