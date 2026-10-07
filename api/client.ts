@@ -1990,6 +1990,19 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             body: JSON.stringify({ enabled }),
           });
         },
+        // Coordination id: special_menu_group_booking_v1 - both group-booking
+        // toggles travel in one request; the backend forces group_menu_enabled
+        // when principales_required is on, so we mirror its answer back.
+        async setSpecialGroupBooking(
+          menuId: number,
+          input: { group_menu_enabled: boolean; principales_required: boolean },
+        ): Promise<APISuccess<{ group_menu_enabled: boolean; principales_required: boolean }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/special-group-booking`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
         async addSpecialSectionPrincipal(
           menuId: number,
           sectionId: number,
