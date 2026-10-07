@@ -121,7 +121,8 @@ service instead of queuing.
 5. G8 fiscal slice (Factura simplificada + series/QR) — compliance, larger.
 6. G10 packs. **DONE** (backend #389/#390/#391, backofficereact #532)
 7. G12 recall. **DONE** (backend #392, backofficereact #534)
-8. G3 allergens, G9 receipt, G11 PIN, G13 offline.
+8. G11 staff PIN. **DONE** (backend #393/#400, backofficereact #537/#539)
+9. G3 allergens, G9 receipt, G13 offline.
 
 ---
 
@@ -255,3 +256,64 @@ Reuses the schema that was already in the database with zero rows
 | UI: pick + step to qty 2 | total 13,50 → 18,50 € ✅ |
 | UI: target sizes | all 44px ✅ |
 
+
+
+---
+
+## G11 — Staff PIN: what shipped
+
+A POS tablet is shared by the whole floor. Before this, every void and discount
+landed in the audit trail under whoever opened the session, so a void taken three
+hours later could not be traced to a person.
+
+**Backend** (herorestaurant-backend #393, #400)
+- `pos_pin_hash` / `pos_pin_set_at` on `restaurant_members`, bcrypt, and a member
+  without a PIN keeps working exactly as before.
+- `POST /pos/pin` sets **your own** PIN; changing one needs the current one.
+- `POST /pos/pin/verify` returns the member's name and says nothing about whether
+  a member exists.
+- **Line voids are now audited at all** (`LINE_VOID` with reason and approver).
+  They were not before — the one action that quietly takes money off a bill was
+  the one action you could not ask about afterwards.
+- The approval PIN is **verified server-side**; the frontend never sends a name,
+  only the PIN, so a tampered label cannot put the wrong person in the trail.
+
+**Frontend** (backofficereact #537, #539)
+- `POSPinDialog`: numeric keypad, 52px keys, dots that show how many digits were
+  typed and never which ones. Changing a PIN walks current → new automatically.
+- `Mi PIN` in the control rail.
+- A void asks for a manager's PIN when the signed-in user has none.
+
+**Verified against dev** (measured):
+
+| case | result |
+|---|---|
+| PIN shorter than 4 / non-numeric | 400, 400 ✅ |
+| set a valid PIN, then read status | 200, `hasPin` true ✅ |
+| verify correct / wrong PIN | 200 + name / 401 ✅ |
+| change a PIN without the current one | 403 ✅ |
+| change a PIN with the wrong current one | 403 ✅ |
+| change a PIN with the right current one | 200 ✅ |
+| 4 wrong PINs then a correct one | 200, counter reset ✅ |
+| 5th wrong PIN | 429, terminal locked ✅ |
+| correct PIN while locked | 429 (no way through) ✅ |
+| void with a wrong approval PIN | 403 and the line stays ACTIVE ✅ |
+| void with the right approval PIN | 200, line VOIDED ✅ |
+| audit row after an approved void | `{"reason":..., "approvedBy":"Root POS"}` ✅ |
+| UI at 1280x800 | step advances, 4 dots, Submit enables, saves, closes ✅ |
+| UI at 390x844 touch | 0 controls <44px, keys 81x44, no errors ✅ |
+
+**Four bugs found by running it, all fixed:**
+1. `bo_users` has a `name` column, not `first_name`/`last_name` (#396) — every PIN
+   set answered 500.
+2. `pos_pin_attempts` had an FK to `restaurant_members(id)` but was written with
+   `bo_users.id` (#395) — every wrong PIN answered 500.
+3. `INTERVAL ? MINUTE` is not a bind parameter (#398) — the throttle row was never
+   written, so the lockout was a no-op.
+4. The lockout armed on the **first** typo rather than the fifth (#399) — measured
+   on dev as "two wrong PINs and the terminal is locked", which would have taken a
+   waiter out of service over one mistyped digit.
+
+Plus two found in the browser: the PIN was unhangable for anyone whose staff row
+had no `bo_user_id` (#395, most of them), and the change-PIN dialog could never
+reach the new-PIN step (#539) — a staff member with a PIN could never change it.
