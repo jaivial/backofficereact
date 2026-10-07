@@ -1450,10 +1450,12 @@
   .pos-sell__row--register { padding-top: 0.5rem; }
   .pos-keypad__display { padding: 4px 10px; }
   .pos-keypad__value { font-size: var(--bo-text-lg); }
-  .pos-keypad__key, .pos-keypad__calcOp { min-height: 40px; font-size: var(--bo-text-base); }
+  /* Compact the visuals, never the touch target: 44px is the floor for a
+     finger on a tablet/laptop trackpad-sized keypad (WCAG 2.5.8 / iOS HIG). */
+  .pos-keypad__key, .pos-keypad__calcOp { min-height: 44px; font-size: var(--bo-text-base); }
   .pos-products .bo-foodMemberMedia { aspect-ratio: 16 / 9; }
   .pos-categories [data-ui="dish-card-media"] { display: none; }
-  .pos-rail__btn { min-height: 40px; padding: 6px 8px; }
+  .pos-rail__btn { min-height: 44px; padding: 6px 8px; }
 }
 
 /* Large desktops: more product columns and a roomier rail. */
