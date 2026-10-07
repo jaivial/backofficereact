@@ -5,9 +5,9 @@ import { parseAmount } from "../utils/money";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
 import { usePOSCommand } from "./usePOSCommand";
 import { POSToastContext } from "../feedback/POSToastProvider";
-import type { Area, Bootstrap, Operator, Pack, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+import type { Area, Bootstrap, Operator, Pack, Product, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
-export type { Area, Bootstrap, Operator, ModifierGroup, ModifierOption, Pack, PackComponent, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+export type { Area, Bootstrap, Operator, ModifierGroup, ModifierOption, Pack, PackComponent, Product, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 export { money, parseAmount } from "../utils/money";
 
 export const DEFAULT_SETTINGS: Settings = { isEnabled: false, stockMode: "OFF", coversMode: "MANUAL", timezone: "Europe/Madrid", businessDayCutoff: "05:00", autoCloseVisit: true, receiptPrefix: "TPV" };
@@ -41,6 +41,7 @@ export function usePOSRegister(date?: string | null) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
+  const [recallTickets, setRecallTickets] = useState<TicketSummary[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [restaurant, setRestaurant] = useState<RestaurantProfile | null>(null);
@@ -411,6 +412,30 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo anadir el menu"); } finally { setBusy(false); }
   }, [ticket]);
 
+  /**
+   * Copies a finished ticket's lines onto the open one. The server revalidates
+   * everything (source closed, target open, within the same restaurant) and
+   * returns the reloaded ticket, so the panel always shows the server's truth
+   * rather than a local guess at what was copied.
+   */
+  const recallTicket = useCallback(async (sourceTicketId: number) => {
+    if (!ticket) return;
+    setBusy(true); setError("");
+    try {
+      const data = await request<{ ticket: Ticket; copied?: number }>(`/tickets/${ticket.id}/recall`, { method: "POST", body: JSON.stringify({ sourceTicketId }) });
+      setTicket(data.ticket);
+      setMessage(data.copied ? `Se trajeron ${data.copied} líneas.` : "Esa cuenta ya estaba traída.");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo traer la cuenta"); } finally { setBusy(false); }
+  }, [ticket]);
+
+  /** Recent tickets for the recall picker; loaded when the dialog opens. */
+  const loadRecallCandidates = useCallback(async () => {
+    try {
+      const data = await request<{ items: TicketSummary[] }>("/tickets");
+      setRecallTickets(data.items || []);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron cargar las cuentas"); }
+  }, []);
+
   const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir") => {
     if (!ticket) return; const trimmed = reason.trim(); if (!trimmed) return;
     try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed }) }); setTicket(data.ticket); }
@@ -522,7 +547,7 @@ export function usePOSRegister(date?: string | null) {
     load, loadReservations, selectReservation, openVisit, openTakeaway, restoreVisit, restoreParkedVisit, moveVisitToTable,
     parkVisit, openBar, mergeVisits, applyAdjustment, compLine, setLineNote, openDrawer,
     setVisitCustomer, setTicketOperator, toggleLineTag, loadTags,
-    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct, addPack, packs,
+    switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct, addPack, packs, recallTicket, recallTickets, loadRecallCandidates,
     setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, checkout,
   };
 }

@@ -63,6 +63,19 @@ export type TicketLine = {
    */
   updatedAt?: string;
 };
+/** One row of GET /pos/tickets, used by the recall picker. */
+export type TicketSummary = {
+  id: number;
+  visitId?: number;
+  ticketNumber?: string;
+  tableId?: number | null;
+  tableName?: string | null;
+  covers?: number;
+  status?: string;
+  totalGrossCents?: number;
+  paidAt?: string | null;
+  refundedCents?: number;
+};
 export type Ticket = { id: number; ticketNumber?: string; version: number; status?: string; lines: TicketLine[]; subtotalGrossCents?: number; discountCents?: number; surchargeCents?: number; tipCents?: number; taxCents?: number; totalGrossCents: number; operatorMemberId?: number | null; note?: string };
 export type Visit = { id: number; channel?: string; tableId?: number | null; tableName?: string; covers: number; status?: string; totalGrossCents?: number; parked?: boolean; parkedNote?: string; openedAt?: string; customerName?: string; customerTaxId?: string; ticket?: Ticket; tickets?: Ticket[] };
 export type VisitSummary = Pick<Visit, "id" | "channel" | "tableId" | "tableName" | "covers" | "status" | "totalGrossCents" | "parked" | "parkedNote"> & { openedAt?: string; lineCount?: number };
