@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import {
   allocateTenders, cashChangeDueCents, entriesTotalCents, formatTenderInput, isCashlessMethod,
-  newTenderEntry, remainingCents, tenderedCentsOf,
+  isTenderUsed, newTenderEntry, remainingCents, tenderedCentsOf,
   POS_PAYMENT_METHOD_LABELS,
   type POSPaymentMethod, type POSPaymentTender, type TenderEntry,
 } from "../utils/paymentMethods";
@@ -29,7 +29,14 @@ export function useCheckoutTenders(params: { saleTotalCents: number; tipCents: n
    * the split stays unconfirmable until it is corrected.
    */
   const changeResolved = useMemo(() => cashChangeDueCents({ amountDueCents, entries }) >= overCents, [amountDueCents, entries, overCents]);
-  const valid = useMemo(() => entries.every((entry) => tenderedCentsOf(entry.amount) >= 0), [entries]);
+  /**
+   * An empty split line means the waiter opened that method and then left it
+   * alone, which is the default state of every line but the first: `clear()`
+   * seeds a CASH and a CARD row. Only rows that were actually filled in have to
+   * hold a valid amount, otherwise an untouched empty line blocks the sale and
+   * the only way out is to delete a row the waiter never intended to use.
+   */
+  const valid = useMemo(() => entries.every((entry) => !isTenderUsed(entry) || tenderedCentsOf(entry.amount) >= 0), [entries]);
   const canConfirm = valid && paidCents >= amountDueCents;
 
   const allocations = useMemo(() => {
