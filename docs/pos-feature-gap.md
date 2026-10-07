@@ -381,3 +381,56 @@ twenty minutes early.
    the waiter never cancelled (#403). Measured on dev: after firing course 2,
    course 1 dropped back to `firedLines: 0` with a VOID for a dish still on the
    bill.
+
+
+---
+
+## G9 — The receipt (recibo 80 mm): what shipped
+
+**The bug.** `Imprimir` on the paid ticket called `window.print()` on the POS
+page. That sends the entire screen to the printer: the control rail, the product
+grid, the guest's whole table, laid out for an A4 browser window, with the
+`@media print` styles of the backoffice applied. An 80 mm thermal till has no
+A4 and no opinion about a product grid.
+
+**What it is now.** `printTicketReceipt` (`printReceipt.ts`) builds the receipt
+as its own document at `@page { size: 80mm auto }` and opens it in a separate
+window, so the printer gets a strip of paper with nothing else on it.
+
+**Three bugs found by printing a real one on dev, not by reading the code:**
+
+1. **The sale could not be closed at all** (#545, #546). The checkout dialog
+   seeds a CASH and a CARD row so a split is one tap away. The untouched CARD row
+   holds an empty string; `tenderedCentsOf("")` returns `-1`. Two independent
+   guards then rejected it: `valid` disabled `Cobrar y cerrar` permanently, and
+   once that was fixed `allocateTenders` threw `Importe no válido` for a row
+   nobody typed into. Measured at 1280x800, a 49,00 ticket with 49,00 entered on
+   the cash row still could not be closed — the only way through was to delete a
+   CARD row the waiter never asked for. A blank split line is *unused*, not
+   invalid.
+2. **The receipt printed "IVA 1000%"** (#547). `vatRate` is stored as a whole
+   percent (`10`, not `0.10`); the receipt multiplied by 100 to build its label
+   and then backed the tax out of the gross with the same wrong rate. A 49,00
+   bill of three 10% dishes printed `IVA 1000% 44,55 €` — the entire bill as
+   tax, at a rate that does not exist. Fixed by calling the existing
+   `vatBreakdown` from the comanda, so the two documents share one arithmetic.
+3. Also escaped: a product named `<script>` must not become markup on a guest's
+   receipt, and a blocked popup (the normal case on a tablet in kiosk mode) says
+   so instead of silently printing the till as a fallback.
+
+**Verified against dev** (measured):
+
+| case | result |
+|---|---|
+| checkout a 49,00 bill with an untouched CARD row | was unconfirmable, now closes ✅ |
+| request sent | `{"payments":[{"method":"CASH","amountCents":4900,...}],"closeVisit":true}` ✅ |
+| receipt window written | 1, `print()` called ✅ |
+| document width | `@page { size: 80mm auto }` ✅ |
+| POS chrome on the receipt | none ✅ |
+| mixed rates, 17,80 ticket (15,00 @10% + 2,80 @21%) | `IVA 21% 0,49` + `IVA 10% 1,36` ✅ |
+| bases + tax | 2,31 + 13,64 + 1,85 = **17,80**, the ticket total ✅ |
+| pack lines | one line, dishes indented beneath ✅ |
+| HTML escaping of every interpolated value | ✅ |
+
+**Still open in G9** (honest): the receipt is *factura simplificada* text only.
+No fiscal document, no numbering series, no QR — see G8.
