@@ -129,8 +129,13 @@ client, and the resolved member's name is written to the audit trail. It covers:
 The PIN is **optional on purpose** — forcing one on every waiter would train staff
 to type a PIN they do not have. Closing a cash day is protected by the
 `posShiftGate` *permission* rather than a PIN.
-Still open: no PIN over an amount threshold (classic POS asks for approval only
-above a configured amount), and no PIN on discounts.
+**Round 3 (backend #415/#417, backofficereact #560): policy is now configurable.**
+`pos_settings.pin_threshold_cents` (any void, comp, discount, refund or cash-out of
+at least that amount needs a manager PIN) and `pin_required_for_discount` (every
+discount and comp needs one). Enforced server-side by one rule (`posPINApproval`);
+the till reacts to `403 PIN_REQUIRED` by showing the PIN pad and retrying. Default
+off; it cannot be switched on while nobody has a PIN. Honest limit: any active
+member with a PIN can approve -- `restaurant_members` has no manager flag.
 **G12. No quantity recall on the last ticket** — re-adding the previous order
 requires re-tapping every tile.
 **G13. No offline queue.** Every action is an online call; a network blip blocks
@@ -551,3 +556,30 @@ G9 80 mm receipt, G10 packs, G11 staff PIN, G12 recall, G13 offline queue.
 
 Full story list and measured results: `docs/pos-qa-stories.md`.
 Round 1 write-up: `~/bg/pos-qa-result.txt`. Round 2: `~/bg/pos-qa2-result.txt`.
+
+
+## Round 3 (2026-10-07): what shipped, what is still not true
+
+Backend #414-#419, backofficereact #560, all on `dev`, verified on the dev site
+with cu (no tests were written, by instruction).
+
+- **Per-guest checks at LINE level.** The move endpoint already existed; it lost
+  data. A full move now re-points the line (modifiers, tags, comp, pack components
+  and kitchen history travel with it); a partial move copies them and splits menu
+  components. `pos_kitchen_line_transfers` carries the already-sent quantity, so a
+  dish moved to another comensal's check is neither VOIDed nor cooked twice.
+  Measured: re-sending both checks after the moves produced zero kitchen deltas.
+- **Guest history.** `pos_customers` + `pos_tickets.customer_id` (on the check, not
+  the visit). Visits, spend net of refunds, usual dishes and last checks are derived
+  from paid tickets at read time. GDPR erasure anonymises (paid tickets are fiscal
+  records). `analytics_customers` was left alone: it is a rebuildable projection.
+- **Change on the receipt.** `pos_payments.tendered_cents` records the cash handed
+  over (CASH only, never below what is applied). The receipt prints
+  Entregado/Cambio only from that record. Old payments have NULL and print none.
+- **Allergen backfill.** From `comida_items` (the Carta import's own key), only into
+  products with no allergens, only from non-empty lists: 23 products. 4 products
+  already carry allergens that DISAGREE with the carta; left for a human.
+- **NOT DONE / NOT TRUE:** nothing is sent to the AEAT. No VERI*FACTU records, no
+  QR, no declaracion responsable, no certified software. See
+  `~/bg/verifactu-guide.txt` for the legal path; until then the POS documents are
+  internal and the not-certified banner must stay.
