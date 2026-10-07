@@ -294,3 +294,50 @@ concatenation such as "14 plazas" for table 1 with 4 seats).
 is displayed; an SSR error must never blank the sell screen.
 - E14.5a *found bug*: `createPortal(..., document.getElementById("bo-portal"))`
   ran during render in the cash-day modals → "document is not defined".
+
+
+---
+
+## Results of the QA sweep (measured)
+
+Everything below was measured with Playwright against
+`https://backoffice-dev.menustudioai.com/app/pos` on 2026-10-07, after the
+fixes listed in `docs/pos-feature-gap.md`.
+
+### Viewports
+
+| viewport | device | page scroll (real wheel) | shell shift | controls < 44px | JS errors |
+|---|---|---|---|---|---|
+| 390x844 | iPhone (touch) | 0 | 0 | **0** | 0 |
+| 768x1024 | iPad portrait (touch) | 0 | 0 | **0** | 0 |
+| 1024x768 | iPad landscape (mouse) | 0 | 0 | 12* | 0 |
+| 1180x820 | landscape tablet (mouse) | 0 | 0 | 12* | 0 |
+| 1280x720 | laptop (mouse) | 0 | 0 | 13* | 0 |
+| 1920x1080 | desktop (mouse) | 0 | 0 | 5* | 0 |
+
+\* The mouse-driven sizes keep the dense 36px/34px shell controls on purpose:
+they are gated on `pointer: coarse`, not on width. A till is a tablet operated
+with a finger; a desktop operator uses a mouse and benefits from the density.
+Measured with a real touch context (`hasTouch` -> `pointer: coarse`), every
+touch size reports **0** controls under 44px.
+
+### Bugs found and fixed
+
+| # | bug | how it showed up | PR |
+|---|---|---|---|
+| 1 | SSR crash | `document is not defined` in the container log; `/app/pos` server-rendered no sell screen | #526 |
+| 2 | page-level scroll | real wheel scrolled the whole shell by 200px at 1280x720, losing the till header | #527 |
+| 3 | 40px touch targets | 48-54 controls measured < 44px on the floor sizes | #526, #530 |
+| 4 | broken accessible name | "Mesa 1" (4 plazas) announced as "14 plazas" | #526 |
+| 5 | modifier picker never opened | `usePOSRegister` fetches its own bootstrap and dropped `productModifiers` | #529 |
+
+### Honest notes
+
+- `documentElement.scrollHeight` still reports more than the viewport on some
+  sizes even though nothing escapes the shell and real input cannot scroll it
+  (measured `pageScrollTop` 0 with a real wheel at every size). This is a Chrome
+  reporting artefact with `html{overflow:clip}`, not a user-visible defect —
+  reported here so the next reader does not re-investigate it.
+- The category strip at 390px shows 8 chips in a 356px box. It is a
+  horizontal scroller with a fade mask, verified by setting `scrollLeft` to 999
+  and reading back 312. Not an overflow bug.

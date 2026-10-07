@@ -112,10 +112,58 @@ service instead of queuing.
 
 ## Priority decision (cheapest high value first)
 
-1. Fix G7 (SSR crash) — tiny, breaks the whole page.
+1. Fix G7 (SSR crash) — tiny, breaks the whole page. **DONE** (#526)
 2. Fix G4 + G5 + G6 (layout/touch/a11y) — small CSS/markup, big usability win
-   on the sizes actually used on the floor.
+   on the sizes actually used on the floor. **DONE** (#526, #527, #530)
 3. Add G1 modifiers — reuses existing tables, unlocks the core sell flow.
-4. Add G2 coursing — high value for kitchen, medium effort.
+   **DONE** (backofficereact #528/#529, herorestaurant-backend #388)
+4. Add G2 coursing — high value for kitchen, medium effort. **NEXT**
 5. G8 fiscal slice (Factura simplificada + series/QR) — compliance, larger.
 6. G3 allergens, G9 receipt, G10 packs, G11 PIN, G12 recall, G13 offline.
+
+---
+
+## G1 — Modifiers: what shipped
+
+Reuses the schema that was already in the database with zero rows
+(`pos_modifier_groups`, `pos_modifier_options`, `pos_product_modifier_groups`,
+`pos_ticket_line_modifiers`).
+
+**Backend** (herorestaurant-backend #388)
+- `resolvePOSModifiers` validates the picked options against the groups that
+  actually apply to the product and enforces each group's min/max select.
+  min/max count **distinct** options: "dos milanesas" is one option with
+  quantity 2, not two options, and a duplicated request entry folds into the
+  same option instead of tripping the max.
+- The delta is folded into the line unit price, so quantity/comp/tax maths is
+  unchanged; it is still added on top of an explicit price override, so an
+  override can never silently drop the chosen extras.
+- `GET /pos/bootstrap` ships `productModifiers`; `loadPOSTicket` returns each
+  line's snapshotted modifiers.
+- Admin CRUD behind `pos.catalog.manage`; unknown group ids rejected.
+
+**Frontend** (backofficereact #528, #529)
+- A product with groups opens a picker before it reaches the ticket, with the
+  running total next to Confirm.
+- 44px targets, +/- stepper capped at 20 units.
+- Merge-safe line identity: two identical dishes merge; a "grande + descafeinado"
+  never merges into a plain "grande".
+- Chosen modifiers render under the line name.
+
+**Verified against dev** (measured, not assumed):
+
+| case | result |
+|---|---|
+| valid pick, 2x extra (250 each) | unit 1350 → 1850 ✅ |
+| required group missing | 400 rejected ✅ |
+| 2 options from a max=1 group | 400 rejected ✅ |
+| unknown option id | 400 rejected ✅ |
+| option on a product with no modifiers | 400 rejected ✅ |
+| duplicated option entry | folds to quantity 2 ✅ |
+| line qty 2 x (950 + 2x250) | line total 2900 ✅ |
+| no modifiers at all (back-compat) | catalog price ✅ |
+| modifier qty 5000 (cap 1000) | 400 rejected ✅ |
+| UI: required group unmet | Confirm disabled ✅ |
+| UI: pick + step to qty 2 | total 13,50 → 18,50 € ✅ |
+| UI: target sizes | all 44px ✅ |
+
