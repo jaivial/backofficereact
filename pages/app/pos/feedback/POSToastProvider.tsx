@@ -46,6 +46,9 @@ export const POSToastContext = createContext<ToastApi | null>(null);
 export function POSToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<POSToast[]>([]);
   const timers = useRef(new Map<string, number>());
+  // document.body does not exist during SSR; portal only after mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const dismiss = useCallback((id: string) => {
     const handle = timers.current.get(id);
@@ -110,7 +113,7 @@ export function POSToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <POSToastContext.Provider value={api}>
       {children}
-      {createPortal(<POSToastStack toasts={toasts} onDismiss={dismiss} />, document.body)}
+      {mounted ? createPortal(<POSToastStack toasts={toasts} onDismiss={dismiss} />, document.body) : null}
     </POSToastContext.Provider>
   );
 }
