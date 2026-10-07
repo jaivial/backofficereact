@@ -621,6 +621,10 @@ export type GroupMenuV2 = {
   special_cta?: SpecialMenuCta | null;
   // Coordination id: special_menu_principales_v1 - "Anadir platos principales".
   special_principales_enabled?: boolean;
+  // Coordination id: special_menu_group_booking_v1 - the special menu can be
+  // offered as a group menu and its principals become mandatory when booking.
+  special_group_menu_enabled?: boolean;
+  special_principales_required?: boolean;
   // Coordination id: special_menu_visibility_v1 - same dropdown the food-type
   // settings already use (inside_menus | independent_section) plus an on/off
   // toggle scoped per menu.

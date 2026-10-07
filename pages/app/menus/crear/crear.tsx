@@ -41,6 +41,7 @@ import { MenuImageSectionCard } from "../../../../ui/widgets/menus/MenuImageSect
 import { MenuVisibilityPanel } from "../../../../ui/widgets/menus/MenuVisibilityPanel";
 import { SpecialMenuCtaSettings } from "../../../../ui/widgets/menus/SpecialMenuCtaSettings";
 import { FadeSeparator } from "../../../../ui/layout/FadeSeparator";
+import { SpecialMenuGroupBookingSettings } from "../../../../ui/widgets/menus/SpecialMenuGroupBookingSettings";
 import { SpecialMenuPrincipalesSettings } from "../../../../ui/widgets/menus/SpecialMenuPrincipalesSettings";
 import { FoodItemModal } from "../../comida/_components/FoodItemModal";
 import { normalizeWebPlacement } from "../../../../ui/widgets/menus/webPlacement";
@@ -268,6 +269,8 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
     // Coordination id: special_menu_principales_v1
     specialPrincipalesEnabled, specialPrincipalesBusy, specialPrincipalesSearchTerms, specialPrincipalesSearchResults,
     setSpecialPrincipalesEnabled, searchSpecialPrincipal, addSpecialPrincipal, removeSpecialPrincipal,
+    // Coordination id: special_menu_group_booking_v1
+    specialGroupMenuEnabled, specialPrincipalesRequired, specialGroupBookingBusy, setSpecialGroupBooking,
     addSpecialMenuSection, updateSpecialMenuSectionTitle, deleteSpecialMenuSection,
     reorderSpecialMenuSections, uploadSpecialMenuSectionImage, clearSpecialMenuSectionImage,
     // Coordination id: special_menu_price_date_v1
@@ -885,6 +888,17 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       onPick={(sectionId, item) => void addSpecialPrincipal(sectionId, item.id)}
                       onRemove={(sectionId, dishId) => void removeSpecialPrincipal(sectionId, dishId)}
                       onCreateDish={setPrincipalCreateSectionId}
+                    />
+                  ) : null}
+                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-group-booking" /> : null}
+                  {isSpecial ? (
+                    <SpecialMenuGroupBookingSettings
+                      groupMenuEnabled={specialGroupMenuEnabled}
+                      principalesRequired={specialPrincipalesRequired}
+                      principalesAvailable={specialPrincipalesEnabled}
+                      busy={specialGroupBookingBusy || !menuId}
+                      onChangeGroupMenuEnabled={(enabled) => void setSpecialGroupBooking({ groupMenuEnabled: enabled, principalesRequired: enabled ? specialPrincipalesRequired : false })}
+                      onChangePrincipalesRequired={(required) => void setSpecialGroupBooking({ groupMenuEnabled: specialGroupMenuEnabled, principalesRequired: required })}
                     />
                   ) : null}
                   {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-cta-active" /> : null}
