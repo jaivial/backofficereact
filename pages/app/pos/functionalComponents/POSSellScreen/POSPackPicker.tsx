@@ -47,7 +47,11 @@ export function POSPackPicker({ pack, busy = false, error, onClose, onConfirm }:
     for (const component of pack.components) {
       if (!component.slotGroup || out[component.slotGroup] != null) continue;
       const options = pack.components.filter((c) => c.slotGroup === component.slotGroup);
-      if (options.length === 1 || options.every((o) => o.isDefault)) out[component.slotGroup] = component.productId;
+      // A slot with a single option is not a decision, so it is pre-selected and
+      // never blocks Confirm. A slot with several options always asks, even if
+      // the catalogue marks them all default: showing two selected radios would
+      // be a lie, and the guest would get the first one without choosing.
+      if (options.length === 1) out[component.slotGroup] = component.productId;
     }
     return out;
   }, [pack]);
