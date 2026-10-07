@@ -493,3 +493,26 @@ has no allergens), so a backfill would silently attach the wrong dishes'
 allergens to the wrong products. Someone has to declare them per product, which
 is what the editor is for. A correct backfill needs a real mapping between the
 two catalogues and is listed below.
+
+
+---
+
+## Status at the end of this round
+
+**Shipped and verified on dev:** G1 modifiers, G2 coursing, G3 allergens,
+G9 80 mm receipt, G10 packs, G11 staff PIN, G12 recall.
+
+**Still open, in the order I would take them:**
+
+| gap | why it is not done | size |
+|---|---|---|
+| G8 fiscal / VERI*FACTU | needs a real factura simplificada series, hashing and an external filing channel | compliance project, not a UI task |
+| G13 offline queue | needs a local queue plus an idempotent replay; the POS already has idempotency keys on most writes, which is the foundation | large |
+| allergens backfill | `pos_products.source_id` does not resolve reliably against `menu_dishes_catalog`; a join would attach the wrong dishes' allergens | needs a real mapping |
+
+Smaller known gaps: split is payment-split rather than one check per guest, no
+loyalty or ticket history from the POS, cash drawer has no counted-by override,
+and no separate expo screen for bar routing.
+
+Full story list and measured results: `docs/pos-qa-stories.md`.
+Session result write-up: `~/bg/pos-qa-result.txt`.
