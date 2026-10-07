@@ -123,7 +123,8 @@ service instead of queuing.
 7. G12 recall. **DONE** (backend #392, backofficereact #534)
 8. G11 staff PIN. **DONE** (backend #393/#400, backofficereact #537/#539)
 9. G2 coursing. **DONE** (backend #401/#402/#403, backofficereact #541)
-10. G3 allergens, G9 receipt, G13 offline.
+10. G3 allergens. **DONE** (backend #406, backofficereact #549, #550)
+11. G13 offline.
 
 ---
 
@@ -434,3 +435,61 @@ window, so the printer gets a strip of paper with nothing else on it.
 
 **Still open in G9** (honest): the receipt is *factura simplificada* text only.
 No fiscal document, no numbering series, no QR — see G8.
+
+
+---
+
+## G3 — Allergens (alérgenos): what shipped
+
+The guest asks whether the dish has nuts. The waiter either remembers or
+guesses. The catalogue had known allergens all along — `menu_dishes_catalog`,
+`stock_items` and `stock_recipes` all carry them, in Spanish — but nothing ever
+reached the till.
+
+**Backend** (herorestaurant-backend #406)
+- `pos_products` gains `allergens_json`, the same shape the rest of the
+  catalogue uses, so an import does not have to translate.
+- Writes are **validated** against the 14 EU allergens plus sulfitos and
+  altramuz. The list is folded for accents and case (`Lácteos` = `lacteos`) and
+  rejected otherwise: the till renders it to the guest, and an entry nobody
+  recognises would go out as a declaration that cannot be defended. Output uses
+  the regulatory spelling and that order, so a product does not end up with two
+  spellings depending on who edited it.
+- A product saved before the column existed reads as *no allergens recorded*
+  rather than taking the whole product list down.
+
+**Frontend** (backofficereact #549, #550)
+- Product grid: a warning mark and the list under the name, one line so the grid
+  keeps its alignment; the full list stays in the `title`, so a row truncated by
+  a long dish name still names everything on hover, and the open button's
+  `aria-label` repeats it for a screen reader.
+- Product editor: a chip per declarable allergen with a running summary.
+
+**Verified against dev** (measured):
+
+| case | result |
+|---|---|
+| `PATCH ["Lácteos","gluten"]` | 200, stored `["Gluten","Lácteos"]` — accents and case folded ✅ |
+| `PATCH ["Cilantro"]` | 400 *Alérgeno no reconocido* ✅ |
+| `PATCH ["soja","GLUTEN","soja"]` | 200, stored `["Gluten","Soja"]` — deduped, regulatory order ✅ |
+| `PATCH []` | 200, cleared ✅ |
+| migration run twice | column created once ✅ |
+| grid badge | `⚠ Pescado · Moluscos`, `title="Alérgenos: Pescado, Moluscos"` ✅ |
+| editor chips | 15 offered, 36px tall, existing allergens pre-selected ✅ |
+| editor toggle | summary updates live ✅ |
+| grid overflow at 390/768/1024 | none ✅ |
+| controls under 44px at 390x844 and 768x1024 | 0 POS-owned ✅ |
+
+**One bug found by review, not by clicking:** `saveProduct` PATCHed the fields
+the dialog was built around and `allergens` was not among them, so opening
+**Editar**, changing only the price and saving wiped the allergen list. Exactly
+the data that gets destroyed by a save from someone who was only there to fix
+something else. Fixed in #550 before it reached a till.
+
+**Honest limitation:** the migration adds the column but does not backfill it
+from `menu_dishes_catalog`. The join is not reliable — `pos_products.source_id`
+points at ids the catalogue does not resolve (product 137 -> catalog 348, which
+has no allergens), so a backfill would silently attach the wrong dishes'
+allergens to the wrong products. Someone has to declare them per product, which
+is what the editor is for. A correct backfill needs a real mapping between the
+two catalogues and is listed below.
