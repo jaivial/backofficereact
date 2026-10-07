@@ -67,6 +67,11 @@ export function allocateTenders(input: { saleTotalCents: number; tipCents: numbe
   const { saleTotalCents, tipCents } = input;
   const perMethod = new Map<POSPaymentMethod, number>();
   for (const entry of input.entries) {
+    // A blank line is an unused method, not a malformed one: the dialog opens
+    // with spare rows and only counts the ones that were filled in. Rejecting
+    // them here threw "Importe no válido" for a row nobody typed into, which is
+    // the same dead end as the disabled button, one layer down.
+    if (!isTenderUsed(entry)) continue;
     const cents = tenderedCentsOf(entry.amount);
     if (cents < 0) throw new Error("Importe no válido.");
     perMethod.set(entry.method, (perMethod.get(entry.method) ?? 0) + cents);
