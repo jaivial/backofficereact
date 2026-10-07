@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { request } from "./usePOSRegister";
-import type { POSFiscalChain, POSFiscalDocument, POSFiscalSeries } from "../types/fiscal";
+import type { POSFiscalChain, POSFiscalDocument, POSFiscalSeries, POSPaidTicketSummary } from "../types/fiscal";
 
 /**
  * Issuing the fiscal documents of a ticket, and reading the numbering series.
@@ -70,4 +70,43 @@ export function usePOSFiscal(ticketId: number | null) {
   const reset = useCallback(() => { setDocument(null); setChain(null); setError(""); setNotice(""); }, []);
 
   return { series, document, chain, busy, error, notice, issue, verifyChain, loadSeries, reset, setError };
+}
+
+/**
+ * The recent paid tickets, so an invoice can be issued for a sale that has
+ * already left the till.
+ *
+ * Why this exists: closing the checkout clears the open ticket from the
+ * register, so the moment a waiter rings a table up the fiscal panel has
+ * nothing to point at. In Spain the simplified invoice is issued for the sale
+ * as it is paid, which is exactly the moment the till forgets about it. Without
+ * this list the owner can only invoice a ticket that is still on the screen,
+ * which is not a workflow a restaurant can use.
+ *
+ * Read-only: it never issues anything, it only offers the ticket to invoice.
+ */
+export function usePOSPaidTickets(enabled: boolean) {
+  const [tickets, setTickets] = useState<POSPaidTicketSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await request<{ items?: POSPaidTicketSummary[] }>("/tickets?status=PAID");
+      setTickets(data.items || []);
+      setError("");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "No se pudieron leer las cuentas cobradas");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
+    void load();
+  }, [enabled, load]);
+
+  return { tickets, loading, error, load };
 }

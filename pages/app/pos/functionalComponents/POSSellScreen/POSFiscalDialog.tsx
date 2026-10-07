@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { POSDialog } from "./POSDialog";
 import { POSOfflineBar } from "./POSOfflineBar";
 import { money } from "../../utils/money";
-import { usePOSFiscal } from "../../hooks/usePOSFiscal";
+import { usePOSFiscal, usePOSPaidTickets } from "../../hooks/usePOSFiscal";
 import type { Ticket, Visit } from "../../types/register";
+import type { POSPaidTicketSummary } from "../../types/fiscal";
 
 /**
  * The fiscal panel of a ticket: what the numbering series looks like, and the
@@ -24,21 +25,44 @@ import type { Ticket, Visit } from "../../types/register";
  * compliant invoice would be worse than no panel.
  */
 export function POSFiscalDialog({ ticket, visit, online, onClose }: { ticket: Ticket | null; visit: Visit | null; online: boolean; onClose: () => void }) {
-  const { series, document, chain, busy, error, notice, issue, verifyChain, loadSeries, reset } = usePOSFiscal(ticket?.id ?? null);
   const [reason, setReason] = useState("");
   const [terminal, setTerminal] = useState("");
+  // When the till has no open ticket (the usual case right after ringing a
+  // table up) the owner still has to be able to invoice that sale, so the
+  // panel offers the day's paid checks and lets one be picked.
+  const [picked, setPicked] = useState<POSPaidTicketSummary | null>(null);
+  const paidTickets = usePOSPaidTickets(!ticket);
 
-  const paid = Boolean(ticket && ticket.status && ticket.status !== "OPEN" && ticket.status !== "VOIDED");
+  // Defined before the fiscal hook below uses it.
+  const activeId = ticket?.id ?? picked?.id ?? null;
+  // The list is requested with status=PAID, so anything picked from it is a
+  // paid ticket by construction; the open ticket still has to be checked.
+  const paid = picked ? true : Boolean(ticket?.status && ticket.status !== "OPEN" && ticket.status !== "VOIDED");
+  const { series, document, chain, busy, error, notice, issue, verifyChain, loadSeries, reset } = usePOSFiscal(activeId);
+
   const simplificadaSeries = series.find((entry) => entry.documentType === "SIMPLIFICADA");
   const rectificativaSeries = series.find((entry) => entry.documentType === "RECTIFICATIVA");
   const selectedTerminal = terminal || simplificadaSeries?.terminalKey || "main";
 
-  const close = () => { reset(); setReason(""); setTerminal(""); onClose(); };
+  // The picked summary carries no tax breakdown, so the base shown before a
+  // document exists is derived the same way the till derives it: total minus
+  // the tax already on the ticket. Once a document is issued its own figures
+  // win, so this is only ever the pre-issue estimate.
+  const pickedTotal = () => {
+    const total = picked?.totalGrossCents ?? 0;
+    // The summary list carries no VAT breakdown, so this is an ESTIMATE at the
+    // 10% restaurant rate, and it is labelled as one. Once the document is
+    // issued the server's own figures replace it, so the estimate is never the
+    // number that ends up on an invoice.
+    return Math.max(0, total - Math.round((total * 10) / 110));
+  };
+
+  const close = () => { reset(); setReason(""); setTerminal(""); setPicked(null); onClose(); };
 
   return (
     <POSDialog
       testId="pos-fiscal"
-      title={`Factura · ${ticket?.ticketNumber ?? "sin cuenta"}`}
+      title={`Factura · ${ticket?.ticketNumber ?? picked?.ticketNumber ?? "sin cuenta"}`}
       busy={busy}
       error={error || undefined}
       onClose={close}
@@ -53,12 +77,47 @@ export function POSFiscalDialog({ ticket, visit, online, onClose }: { ticket: Ti
 
         <POSOfflineBar online={online} entries={[]} notice="" onSync={() => void loadSeries()} />
 
+        {/* No open ticket: the sale has already been rung up, so offer the day's
+            paid checks. Invoicing a completed sale is the normal case in Spain,
+            not an exception. */}
+        {!ticket ? (
+          <section className="pos-fiscal__picker" data-testid="pos-fiscal-picker">
+            <h3 className="pos-fiscal__sectionTitle">Cuentas cobradas</h3>
+            {paidTickets.loading ? <p className="pos-fiscal__meta">Cargando cuentas cobradas...</p> : null}
+            {paidTickets.error ? <p className="pos-fiscal__meta pos-fiscal__metaError">{paidTickets.error}</p> : null}
+            {!paidTickets.loading && !paidTickets.tickets.length ? (
+              <p className="pos-fiscal__meta">Todavia no hay cuentas cobradas hoy.</p>
+            ) : null}
+            <ul className="pos-fiscal__pickerList">
+              {paidTickets.tickets.slice(0, 12).map((entry) => (
+                <li key={entry.id}>
+                  <button
+                    type="button"
+                    className={`pos-fiscal__pickerItem${picked?.id === entry.id ? " is-active" : ""}`}
+                    aria-pressed={picked?.id === entry.id}
+                    onClick={() => setPicked(entry)}
+                    disabled={busy}
+                    data-testid={`pos-fiscal-pick-${entry.id}`}
+                  >
+                    <strong>{entry.ticketNumber}</strong>
+                    <span>
+                      {entry.tableName ? `Mesa ${entry.tableName}` : "Sin mesa"}
+                      {entry.covers ? ` · ${entry.covers} comensales` : ""} · {money(entry.totalGrossCents)}
+                    </span>
+                    {entry.refundedCents ? <span className="pos-fiscal__pickerNote">Devuelto {money(entry.refundedCents)}</span> : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <dl className="pos-fiscal__grid" data-testid="pos-fiscal-summary">
-          <div><dt>Cuenta</dt><dd data-testid="pos-fiscal-ticket">{ticket?.ticketNumber ?? "—"}</dd></div>
+          <div><dt>Cuenta</dt><dd data-testid="pos-fiscal-ticket">{ticket?.ticketNumber ?? picked?.ticketNumber ?? "—"}</dd></div>
           <div><dt>Estado</dt><dd data-testid="pos-fiscal-status">{paid ? "Cobrada" : "Abierta (no se puede facturar)"}</dd></div>
-          <div><dt>Base imponible</dt><dd data-testid="pos-fiscal-base">{money(document?.baseCents ?? (ticket ? Math.max(0, ticket.totalGrossCents - (ticket.taxCents ?? 0)) : 0))}</dd></div>
-          <div><dt>IVA</dt><dd data-testid="pos-fiscal-tax">{money(document?.taxCents ?? ticket?.taxCents ?? 0)}</dd></div>
-          <div><dt>Total</dt><dd data-testid="pos-fiscal-total">{money(document?.totalCents ?? ticket?.totalGrossCents ?? 0)}</dd></div>
+          <div><dt>Base imponible{picked ? " (estimada)" : ""}</dt><dd data-testid="pos-fiscal-base">{money(document?.baseCents ?? pickedTotal())}</dd></div>
+          <div><dt>IVA</dt><dd data-testid="pos-fiscal-tax">{money(document?.taxCents ?? (ticket?.taxCents ?? 0))}</dd></div>
+          <div><dt>Total</dt><dd data-testid="pos-fiscal-total">{money(document?.totalCents ?? (ticket?.totalGrossCents ?? picked?.totalGrossCents ?? 0))}</dd></div>
           <div><dt>Comprador</dt><dd data-testid="pos-fiscal-customer">{document?.customerName || visit?.customerName || "Consumidor final"}{document?.customerTaxId ? ` · ${document.customerTaxId}` : ""}</dd></div>
         </dl>
 

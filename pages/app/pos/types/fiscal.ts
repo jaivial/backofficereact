@@ -84,3 +84,19 @@ export type POSFiscalChain = {
   whatThisIs: string;
   whatThisIsNot: string;
 };
+
+/**
+ * One row of the "cobradas de hoy" list the fiscal panel offers when the till
+ * has no open ticket. Deliberately small: enough to recognise the sale
+ * (number, table, covers, total, when) and to fetch it by id.
+ */
+export interface POSPaidTicketSummary {
+  id: number;
+  ticketNumber: string;
+  status: string;
+  totalGrossCents: number;
+  refundedCents?: number;
+  tableName?: string;
+  covers?: number;
+  paidAt?: string;
+}
