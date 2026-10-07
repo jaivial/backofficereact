@@ -1,5 +1,19 @@
 export type Settings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit?: boolean; requireOpenShift?: boolean; receiptPrefix?: string };
-export type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean };
+export type ModifierOption = { id: number; name: string; priceDeltaCents: number; sortOrder?: number; isActive?: boolean };
+/** A group of choices the guest picks for a product ("Talla", "Extras"). */
+export type ModifierGroup = {
+  id: number;
+  name: string;
+  /** OPTION = pick up to maxSelect; SUPPLEMENT = extras; COMBO = unlimited picks. */
+  kind: "OPTION" | "SUPPLEMENT" | "COMBO";
+  minSelect: number;
+  /** 0 means unlimited (COMBO-style group). */
+  maxSelect: number;
+  sortOrder?: number;
+  isActive?: boolean;
+  options: ModifierOption[];
+};
+export type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean; modifierGroups?: ModifierGroup[] };
 export type Table = { id: number; name: string; capacity: number; occupied: boolean; areaId?: number; areaName?: string };
 export type TicketLine = {
   id: number;
@@ -14,6 +28,8 @@ export type TicketLine = {
   comped?: boolean;
   compReason?: string;
   tagIds?: number[];
+  /** Chosen modifiers, snapshotted when the line was created. */
+  modifiers?: { modifierOptionId?: number | null; name: string; priceDeltaCents: number; quantity: number }[];
   /**
    * Last change to the line (quantity edit, comp/uncomp, note). The sell screen
    * orders lines by this so the most recently touched line comes first. Absent
@@ -30,5 +46,7 @@ export type Operator = { id: number; displayName: string; isActive?: boolean };
 export type ShiftSummary = { id: number; status: string; openedAt?: string; closedAt?: string | null };
 export type RestaurantProfile = { name: string; taxId?: string; address?: string; phone?: string; email?: string; logoUrl?: string };
 export type StockStatus = "ok" | "low" | "out";
-export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null; productStock?: Record<string, StockStatus> };
+/** Modifier groups keyed by product id (the API sends JSON object string keys). */
+export type ProductModifiers = Record<string, ModifierGroup[]>;
+export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; productModifiers?: ProductModifiers; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null; productStock?: Record<string, StockStatus> };
 export type Reservation = { id: number; customerName: string; reservationDate: string; reservationTime: string; partySize: number; status: string; visitId?: number | null; visitStatus?: string | null };

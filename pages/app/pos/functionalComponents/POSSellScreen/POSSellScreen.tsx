@@ -16,6 +16,7 @@ import { POSDialog } from "./POSDialog";
 import { useCheckoutTenders } from "../../hooks/useCheckoutTenders";
 import { POS_PAYMENT_METHODS, POS_PAYMENT_METHOD_LABELS, formatTenderInput, tenderedCentsOf, type POSPaymentMethod } from "../../utils/paymentMethods";
 import { POSMoveLineDialog } from "./POSMoveLineDialog";
+import { POSModifierPicker } from "./POSModifierPicker";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
@@ -55,6 +56,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [checkoutKeypad, setCheckoutKeypad] = useState(false);
   const [lineToVoid, setLineToVoid] = useState<TicketLine | null>(null);
   const [lineToMove, setLineToMove] = useState<TicketLine | null>(null);
+  /** A product with modifier groups awaiting the guest's choice. */
+  const [productToModify, setProductToModify] = useState<Parameters<typeof register.addProduct>[0] | null>(null);
   const [voidOrderOpen, setVoidOrderOpen] = useState(false);
   const [voidOrderReason, setVoidOrderReason] = useState("");
   const [discountOpen, setDiscountOpen] = useState(false);
@@ -399,6 +402,12 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       register.setError(`Sin stock: ${product.name} no disponible.`);
       return;
     }
+    // A product with modifier groups needs the guest's choice first: the price
+    // of the line is not final until the extras are picked.
+    if (product.modifierGroups?.length) {
+      setProductToModify(product);
+      return;
+    }
     const priceValue = Number(keypadValue.replace(",", ".")) || 0;
     const hasMultiplier = keypadMultiplierQty != null && keypadMultiplierQty > 0;
     const hasPrice = priceValue > 0;
@@ -422,6 +431,19 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     setKeypadValue("");
     setKeypadMultiplierQty(null);
   }, [keypadMultiplierQty, keypadValue, register]);
+
+  const handleConfirmModifiers = useCallback((modifiers: { modifierOptionId: number; quantity: number }[]) => {
+    if (!productToModify) return;
+    // The pending qty x price multiplier is honoured, but the pending price
+    // override is not: the picker already showed the price the guest is
+    // agreeing to, and a hidden override underneath it would be a surprise on
+    // the receipt. An override typed by mistake can be cleared with "C".
+    const quantity = keypadMultiplierQty && keypadMultiplierQty > 0 ? keypadMultiplierQty : undefined;
+    void register.addProduct(productToModify, { modifiers, ...(quantity ? { quantity } : {}) });
+    setProductToModify(null);
+    setKeypadValue("");
+    setKeypadMultiplierQty(null);
+  }, [keypadMultiplierQty, productToModify, register]);
 
   const handleKeypadMultiplier = useCallback((qty: number) => {
     setKeypadMultiplierQty(qty);
@@ -731,6 +753,14 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
           </div>
         </POSDialog>
       ) : null}
+
+      <POSModifierPicker
+        product={productToModify}
+        busy={register.busy}
+        error={register.error}
+        onClose={() => setProductToModify(null)}
+        onConfirm={handleConfirmModifiers}
+      />
 
       <POSMoveLineDialog
         line={lineToMove}

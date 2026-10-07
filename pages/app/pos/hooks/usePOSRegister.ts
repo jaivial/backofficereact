@@ -7,7 +7,7 @@ import { usePOSCommand } from "./usePOSCommand";
 import { POSToastContext } from "../feedback/POSToastProvider";
 import type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
-export type { Area, Bootstrap, Operator, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+export type { Area, Bootstrap, Operator, ModifierGroup, ModifierOption, Product, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 export { money, parseAmount } from "../utils/money";
 
 export const DEFAULT_SETTINGS: Settings = { isEnabled: false, stockMode: "OFF", coversMode: "MANUAL", timezone: "Europe/Madrid", businessDayCutoff: "05:00", autoCloseVisit: true, receiptPrefix: "TPV" };
@@ -360,20 +360,31 @@ export function usePOSRegister(date?: string | null) {
     catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron cargar etiquetas"); }
   }, []);
 
-  const addProduct = useCallback(async (product: Product, options?: { quantity?: number; unitPriceOverrideCents?: number }) => {
+  const addProduct = useCallback(async (product: Product, options?: { quantity?: number; unitPriceOverrideCents?: number; modifiers?: { modifierOptionId: number; quantity: number }[] }) => {
     if (!ticket) return;
     setBusy(true); setMessage(""); setPendingProductId(product.id);
     const qty = options?.quantity ?? 1;
     const priceOverride = options?.unitPriceOverrideCents;
-    // Merge into existing line only if the unit price matches:
-    // - If price override: find line with same product AND same overridden price
-    // - If no override: find line with same product AND catalog price
-    const targetPrice = priceOverride ?? product.priceGrossCents;
-    const existing = ticket.lines.find((line) => line.status !== "VOIDED" && (line.productId === product.id || (line.productId == null && line.productName === product.name)) && line.unitPriceGrossCents === targetPrice);
+    const modifiers = options?.modifiers ?? [];
+    // Merge into an existing line only when the whole price agrees: same
+    // product, same resulting unit price (catalog/override plus the modifier
+    // delta) AND the same picked modifiers. Two identical espressos merge, but
+    // a "grande + descafeinado" never merges into a plain "grande", or the
+    // receipt would quietly lose the second one.
+    const delta = modifiers.reduce((sum, m) => {
+      const option = product.modifierGroups?.flatMap((g) => g.options).find((o) => o.id === m.modifierOptionId);
+      return sum + (option ? option.priceDeltaCents * m.quantity : 0);
+    }, 0);
+    const targetPrice = (priceOverride ?? product.priceGrossCents) + delta;
+    const sameModifiers = (line: TicketLine) => {
+      if ((line.modifiers?.length ?? 0) !== modifiers.length) return false;
+      return modifiers.every((m) => line.modifiers?.some((l) => l.modifierOptionId === m.modifierOptionId && l.quantity === m.quantity));
+    };
+    const existing = ticket.lines.find((line) => line.status !== "VOIDED" && (line.productId === product.id || (line.productId == null && line.productName === product.name)) && line.unitPriceGrossCents === targetPrice && sameModifiers(line));
     try {
       const data = existing
         ? await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${existing.id}`, { method: "PATCH", body: JSON.stringify({ quantity: existing.quantity + qty, expectedVersion: ticket.version }) })
-        : await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), idempotencyKey: crypto.randomUUID() }) });
+        : await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), ...(modifiers.length > 0 && { modifiers }), idempotencyKey: crypto.randomUUID() }) });
       setTicket(data.ticket);
     }
     catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo añadir producto"); } finally { setBusy(false); setPendingProductId(null); }

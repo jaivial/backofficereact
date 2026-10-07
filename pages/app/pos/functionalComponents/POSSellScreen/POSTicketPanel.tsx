@@ -146,6 +146,16 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
                   ) : null}
                   {line.comped ? <StatusBadge variant="warning" size="sm" data-ui={`pos-line-comp-${line.id}`} data-testid={`pos-line-comp-${line.id}`}>Invitada{line.compReason ? ` · ${line.compReason}` : ""}</StatusBadge> : null}
                 </div>
+                {(line.modifiers || []).length ? (
+                  <ul className="pos-line__modifiers" data-testid={`pos-line-modifiers-${line.id}`}>
+                    {line.modifiers?.map((modifier) => (
+                      <li key={`${line.id}-${modifier.modifierOptionId ?? modifier.name}`} data-testid={`pos-line-modifier-${line.id}-${modifier.modifierOptionId ?? modifier.name}`}>
+                        {modifier.quantity > 1 ? `${modifier.quantity} × ` : ""}{modifier.name}
+                        {modifier.priceDeltaCents !== 0 ? <span className="pos-line__modifierPrice">{modifier.priceDeltaCents > 0 ? `+${money(modifier.priceDeltaCents)}` : money(modifier.priceDeltaCents)}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
                 {line.notes ? <p className="pos-line__note" data-testid={`pos-line-note-${line.id}`}>{line.notes}</p> : null}
                 {(line.tagIds || []).length ? <div className="pos-line__tags" data-testid={`pos-line-tags-${line.id}`}>{line.tagIds?.map((tagId) => <span key={tagId} data-ui={`pos-line-tag-${line.id}-${tagId}`}>{tags.find((tag) => tag.id === tagId)?.name || `#${tagId}`}</span>)}</div> : null}
                 <span className="pos-line__total" data-testid={`pos-line-total-${line.id}`}>{money(line.lineTotalGrossCents)}</span>

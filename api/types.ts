@@ -2564,10 +2564,23 @@ export type WidgetSettings = {
 
 export type POSSettings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit: boolean; requireOpenShift: boolean; receiptPrefix: string };
 export type POSProduct = { id: number; name: string; sku?: string; categoryName?: string; priceGrossCents: number; vatRate: number; isActive: boolean };
-export type POSTicketLine = { id: number; productId?: number | null; productName: string; quantity: number; unitPriceGrossCents: number; vatRate: number; discountCents: number; lineTotalGrossCents: number; notes?: string; status: "ACTIVE" | "VOIDED" };
+/** One picked modifier (size, extra, preparation). Snapshotted on the ticket. */
+export type POSTicketLineModifier = { modifierOptionId?: number | null; name: string; priceDeltaCents: number; quantity: number };
+export type POSTicketLine = { id: number; productId?: number | null; productName: string; quantity: number; unitPriceGrossCents: number; vatRate: number; discountCents: number; lineTotalGrossCents: number; notes?: string; status: "ACTIVE" | "VOIDED"; modifiers?: POSTicketLineModifier[] };
 export type POSTicket = { id: number; ticketNumber: string; status: "OPEN" | "PAID" | "VOIDED" | "PARTIALLY_REFUNDED" | "REFUNDED"; subtotalGrossCents: number; discountCents: number; taxCents: number; totalGrossCents: number; paidCents: number; refundedCents: number; version: number; lines: POSTicketLine[] };
 export type POSVisit = { id: number; channel: "DINE_IN" | "TAKEAWAY" | "DELIVERY"; tableId?: number | null; tableName?: string; covers: number; serviceDate: string; serviceType: "LUNCH" | "DINNER" | "OTHER"; status: "OPEN" | "CLOSED" | "CANCELLED"; version: number; tickets?: POSTicket[] };
-export type POSBootstrap = { success: true; settings: POSSettings; products: POSProduct[]; tables: Array<{ id: number; name: string; capacity: number; occupied: boolean }>; visits: POSVisit[] };
+/** A modifier option: the priced choice inside a group. */
+export type POSModifierOption = { id: number; name: string; priceDeltaCents: number; sortOrder: number; isActive: boolean };
+/**
+ * A modifier group ("Talla", "Extras"). `minSelect`/`maxSelect` bound the
+ * picks; `maxSelect: 0` means unlimited (a COMBO-style group).
+ * `kind`: OPTION (pick N of these), SUPPLEMENT (extras that add on),
+ * COMBO (unlimited picks).
+ */
+export type POSModifierGroup = { id: number; name: string; kind: "OPTION" | "SUPPLEMENT" | "COMBO"; minSelect: number; maxSelect: number; sortOrder: number; isActive: boolean; options: POSModifierOption[] };
+/** Modifier groups keyed by product id (the API sends JSON object string keys). */
+export type POSProductModifiers = Record<string, POSModifierGroup[]>;
+export type POSBootstrap = { success: true; settings: POSSettings; products: POSProduct[]; productModifiers?: POSProductModifiers; tables: Array<{ id: number; name: string; capacity: number; occupied: boolean }>; visits: POSVisit[] };
 
 export type LegalPageSlug = "aviso-legal" | "booking-policies" | "proteccion-datos" | "special-booking-politics";
 
