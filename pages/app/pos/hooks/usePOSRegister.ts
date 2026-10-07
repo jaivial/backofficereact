@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { allocatePayments } from "../utils/paymentAllocation";
 import type { POSPaymentTender } from "../utils/paymentMethods";
+import type { POSPayment } from "../types/register";
 import { parseAmount } from "../utils/money";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
 import { POSOfflineQueue, posBrowserOffline, type POSQueuedRequest } from "../utils/offlineQueue";
@@ -92,6 +93,10 @@ export function usePOSRegister(date?: string | null) {
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [visit, setVisit] = useState<Visit | null>(null);
   const [lastPaidTicket, setLastPaidTicket] = useState<Ticket | null>(null);
+  // Kept beside the ticket because the receipt needs BOTH: the ticket says what
+  // was bought and the payments say how it was settled. Printing only the total
+  // leaves the guest unable to check anything.
+  const [lastPaidPayments, setLastPaidPayments] = useState<POSPayment[]>([]);
   const [splitTickets, setSplitTickets] = useState<Ticket[]>([]);
   const [splitTargetId, setSplitTargetId] = useState(0);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
@@ -753,9 +758,10 @@ export function usePOSRegister(date?: string | null) {
     setBusy(true); setMessage("");
     try {
       const result = await run("checkout", async (checkoutKey) => {
-        const data = await request<{ ticket: Ticket; stockStatus?: string; visitClosed?: boolean; duplicate?: boolean }>(`/tickets/${ticket.id}/checkout`, { method: "POST", body: JSON.stringify({ idempotencyKey: checkoutKey, expectedVersion: ticket.version, payments, closeVisit: true }) });
+        const data = await request<{ ticket: Ticket; payments?: POSPayment[]; stockStatus?: string; visitClosed?: boolean; duplicate?: boolean }>(`/tickets/${ticket.id}/checkout`, { method: "POST", body: JSON.stringify({ idempotencyKey: checkoutKey, expectedVersion: ticket.version, payments, closeVisit: true }) });
         setMessage(checkoutMessage(data.stockStatus));
         setLastPaidTicket(data.ticket);
+        setLastPaidPayments(data.payments ?? []);
         const nextOpen = splitTickets.find((entry) => entry.id !== ticket.id && entry.status === "OPEN") || null;
         // A replayed checkout (lost response) is a success: the visit was already closed.
         if (data.visitClosed || data.duplicate) { setTicket(null); setVisit(null); setSplitTickets([]); setSentKitchenQuantities({}); }
@@ -770,7 +776,7 @@ export function usePOSRegister(date?: string | null) {
   }, [cardReference, cardTenderedCents, cashTenderedCents, clear, isInFlight, keyFor, load, run, splitTickets, ticket, ticketTotal, tipCents]);
 
   return {
-    settings, setSettings, products, tables, visits, ticket, visit, lastPaidTicket, productStock,
+    settings, setSettings, products, tables, visits, ticket, visit, lastPaidTicket, lastPaidPayments, productStock,
     splitTickets, splitTargetId, setSplitTargetId, selectedTable, setSelectedTable,
     covers, setCovers, reservations, reservationsLoading, reservationsLoaded, bookingId, query, setQuery,
     message, setMessage, error, setError, busy, commandBusy, pendingProductId,
