@@ -19,7 +19,7 @@ export function printTicketReceipt({ ticket, visit, restaurant, operatorName, pa
   ticket: Ticket;
   visit?: Visit | null;
   /** How the ticket was actually paid, from the backend `payments` list. */
-  payments?: Array<{ method: string; amountCents: number; cardLast4?: string }>;
+  payments?: Array<{ method: string; amountCents: number; cardLast4?: string; tenderedCents?: number | null; changeCents?: number | null }>;
   restaurant?: RestaurantProfile | null;
   operatorName?: string;
   generatedAt?: Date;
@@ -58,10 +58,12 @@ export function printTicketReceipt({ ticket, visit, restaurant, operatorName, pa
       return `<tr class="pay"><td>${escapeHtml(label)}</td><td>${money(row.amountCents)}</td></tr>`;
     })
     .join("");
-  // Change is only meaningful against a single cash tender; with a split the
-  // guest is given change per till and the POS does not model which.
-  const cashRows = payments.filter((row) => row.method === "CASH");
-  const changeCents = cashRows.length === 1 ? cashRows[0].amountCents - ticket.totalGrossCents : 0;
+  // Change comes ONLY from what the server recorded as handed over
+  // (pos_payments.tendered_cents). amountCents is what was applied to the bill,
+  // so deriving change from it would print a number nobody counted.
+  const tenderedRows = payments.filter((row) => row.method === "CASH" && typeof row.tenderedCents === "number" && typeof row.changeCents === "number");
+  const tenderedCents = tenderedRows.reduce((total, row) => total + (row.tenderedCents as number), 0);
+  const changeCents = tenderedRows.reduce((total, row) => total + (row.changeCents as number), 0);
 
   const stamp = generatedAt.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
   const address = [restaurant?.address, restaurant?.taxId].filter(Boolean).join(" · ");
@@ -124,7 +126,7 @@ ${rows.join("\n")}
     ${vatRows}
     ${ticket.tipCents ? `<tr><td colspan="2">Propina</td><td class="sum">${money(ticket.tipCents)}</td></tr>` : ""}
     ${paymentRows ? `<tr class="pay-head"><td colspan="2">Pago</td><td></td></tr>${paymentRows}` : ""}
-    ${changeCents > 0 ? `<tr><td colspan="2">Entregado</td><td class="sum">${money(cashRows[0].amountCents)}</td></tr><tr><td colspan="2">Cambio</td><td class="sum">${money(changeCents)}</td></tr>` : ""}
+    ${tenderedRows.length ? `<tr><td colspan="2">Entregado</td><td class="sum">${money(tenderedCents)}</td></tr><tr><td colspan="2">Cambio</td><td class="sum">${money(changeCents)}</td></tr>` : ""}
     <tr class="total"><td colspan="2">TOTAL</td><td class="sum">${money(ticket.totalGrossCents)}</td></tr>
   </tfoot>
 </table>

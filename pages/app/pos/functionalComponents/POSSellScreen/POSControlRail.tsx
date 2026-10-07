@@ -1,10 +1,10 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { Archive, Banknote, ChefHat, Combine, FileText, Gift, HandCoins, IdCard, LayoutGrid, Lock, Map as MapIcon, MessageSquare, Percent, Receipt, Scissors, ShoppingBag, Split, Tags, Trash2, TrendingUp, UserRound, Wine, ListChecks, CirclePause, ChartPie, KeyRound, ScrollText } from "lucide-react";
+import { Archive, Banknote, ChefHat, Combine, FileText, Gift, HandCoins, IdCard, LayoutGrid, Lock, Map as MapIcon, MessageSquare, Percent, Receipt, Scissors, ShoppingBag, Split, Tags, Trash2, TrendingUp, UserRound, Wine, ListChecks, CirclePause, ChartPie, KeyRound, ScrollText, History } from "lucide-react";
 
 export type RailFeatureKey =
   | "total" | "cerrar-mesas" | "comanda" | "aparcar" | "mesa" | "salon" | "juntar-mesas" | "borrar-comanda"
-  | "cliente" | "cocina" | "cajon" | "descuento" | "recargo"
+  | "cliente" | "comensal" | "cocina" | "cajon" | "descuento" | "recargo"
   | "invita" | "empleado" | "separar-comanda" | "tags" | "barra" | "llevar" | "comentario" | "mi-pin"
   | "dividir-comanda" | "propina" | "facturacion" | "factura" | "cierre-x" | "cierre-y" | "cerrar-dia";
 
@@ -23,7 +23,7 @@ const RAIL_ICONS: Record<RailFeatureKey, LucideIcon> = {
   total: Banknote, comanda: ChefHat, "separar-comanda": Split, "dividir-comanda": Scissors, "juntar-mesas": Combine,
   descuento: Percent, recargo: TrendingUp, invita: Gift, comentario: MessageSquare, tags: Tags, propina: HandCoins,
   "borrar-comanda": Trash2, mesa: LayoutGrid, salon: MapIcon, aparcar: CirclePause, barra: Wine, llevar: ShoppingBag,
-  cliente: IdCard, empleado: UserRound, cajon: Archive, cocina: ChefHat, "cerrar-mesas": ListChecks,
+  cliente: IdCard, comensal: History, empleado: UserRound, cajon: Archive, cocina: ChefHat, "cerrar-mesas": ListChecks,
   facturacion: ChartPie, factura: ScrollText, "mi-pin": KeyRound, "cierre-x": FileText, "cierre-y": Receipt, "cerrar-dia": Lock,
 };
 
@@ -47,6 +47,7 @@ export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: R
   { key: "barra", label: "Barra", group: "mesa" },
   { key: "llevar", label: "Para llevar", group: "mesa" },
   { key: "cliente", label: "Cliente", group: "mesa" },
+  { key: "comensal", label: "Historial", group: "mesa" },
   { key: "empleado", label: "Empleado", group: "mesa" },
   { key: "cajon", label: "Cajón", group: "ajustes" },
   { key: "mi-pin", label: "Mi PIN", group: "ajustes" },

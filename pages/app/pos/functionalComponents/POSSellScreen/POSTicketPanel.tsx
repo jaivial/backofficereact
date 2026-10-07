@@ -169,6 +169,12 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
               ) : null}
             </div>
           ) : null}
+          {ticket.customerId && ticket.customerName ? (
+            <p className="pos-ticketPanel__guest" role="note" data-testid="pos-ticket-guest">
+              <strong>{ticket.customerName}</strong>
+              {ticket.customerNotes ? <span data-testid="pos-ticket-guest-notes"> · {ticket.customerNotes}</span> : null}
+            </p>
+          ) : null}
           <div className="pos-ticketPanel__lines" data-testid="pos-ticket-lines">
             {topLevelLines.map((line) => (
               <div
