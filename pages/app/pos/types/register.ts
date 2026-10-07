@@ -108,3 +108,6 @@ export type StockStatus = "ok" | "low" | "out";
 export type ProductModifiers = Record<string, ModifierGroup[]>;
 export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; productModifiers?: ProductModifiers; packs?: Pack[]; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null; productStock?: Record<string, StockStatus> };
 export type Reservation = { id: number; customerName: string; reservationDate: string; reservationTime: string; partySize: number; status: string; visitId?: number | null; visitStatus?: string | null };
+
+/** One captured payment row of a ticket, as returned by the POS backend. */
+export type POSPayment = { id: number; method: string; amountCents: number; provider?: string; cardLast4?: string };

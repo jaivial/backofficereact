@@ -15,9 +15,11 @@ import type { RestaurantProfile, Visit } from "../../types/register";
  * simplificada has to say what it charged and how much of it was tax, and the
  * POS already snapshots the rate per line.
  */
-export function printTicketReceipt({ ticket, visit, restaurant, operatorName, generatedAt = new Date() }: {
+export function printTicketReceipt({ ticket, visit, restaurant, operatorName, payments = [], generatedAt = new Date() }: {
   ticket: Ticket;
   visit?: Visit | null;
+  /** How the ticket was actually paid, from the backend `payments` list. */
+  payments?: Array<{ method: string; amountCents: number; cardLast4?: string }>;
   restaurant?: RestaurantProfile | null;
   operatorName?: string;
   generatedAt?: Date;
@@ -39,8 +41,27 @@ export function printTicketReceipt({ ticket, visit, restaurant, operatorName, ge
   const vatRows = vatBreakdown(topLevel, ticket.totalGrossCents)
     .filter((row) => row.taxCents > 0)
     .reverse()
-    .map((row) => `<tr class="vat"><td>IVA ${row.rate}%</td><td>${money(row.taxCents)}</td></tr>`)
+    // The base is printed as well as the tax: a receipt that only says
+    // "IVA 10%  2,73" does not let the guest check anything, and the base is
+    // what a customer (or an inspector) reads the rate against.
+    .map((row) => `<tr class="vat"><td>Base IVA ${row.rate}%</td><td>${money(row.baseCents)}</td></tr><tr class="vat"><td>IVA ${row.rate}%</td><td>${money(row.taxCents)}</td></tr>`)
     .join("");
+
+  // How the guest paid. Without this the receipt says "TOTAL 30,00" and stops,
+  // which is not enough for a guest to check the bill and not enough for the
+  // till to reconcile it against pos_payments later.
+  const paymentLabel: Record<string, string> = { CASH: "Efectivo", CARD: "Tarjeta", BIZUM: "Bizum", BANK: "Banco", OTHER: "Otro" };
+  const paymentRows = payments
+    .map((row) => {
+      const base = paymentLabel[row.method] ?? row.method;
+      const label = row.cardLast4 ? `${base} ****${row.cardLast4}` : base;
+      return `<tr class="pay"><td>${escapeHtml(label)}</td><td>${money(row.amountCents)}</td></tr>`;
+    })
+    .join("");
+  // Change is only meaningful against a single cash tender; with a split the
+  // guest is given change per till and the POS does not model which.
+  const cashRows = payments.filter((row) => row.method === "CASH");
+  const changeCents = cashRows.length === 1 ? cashRows[0].amountCents - ticket.totalGrossCents : 0;
 
   const stamp = generatedAt.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
   const address = [restaurant?.address, restaurant?.taxId].filter(Boolean).join(" · ");
@@ -77,6 +98,8 @@ export function printTicketReceipt({ ticket, visit, restaurant, operatorName, ge
   tfoot td { font-weight: 700; }
   .total td { font-size: 15px; padding-top: 3px; }
   .vat td { font-size: 11px; font-weight: 400; }
+  .pay-head td { padding-top: 4px; font-size: 11px; }
+  .pay td { font-weight: 400; font-size: 12px; }
   footer { text-align: center; margin-top: 8px; font-size: 11px; }
   .thanks { font-weight: 700; margin-bottom: 3px; }
 </style></head><body>
@@ -100,6 +123,8 @@ ${rows.join("\n")}
     ${ticket.surchargeCents ? `<tr><td colspan="2">Recargo</td><td class="sum">${money(ticket.surchargeCents)}</td></tr>` : ""}
     ${vatRows}
     ${ticket.tipCents ? `<tr><td colspan="2">Propina</td><td class="sum">${money(ticket.tipCents)}</td></tr>` : ""}
+    ${paymentRows ? `<tr class="pay-head"><td colspan="2">Pago</td><td></td></tr>${paymentRows}` : ""}
+    ${changeCents > 0 ? `<tr><td colspan="2">Entregado</td><td class="sum">${money(cashRows[0].amountCents)}</td></tr><tr><td colspan="2">Cambio</td><td class="sum">${money(changeCents)}</td></tr>` : ""}
     <tr class="total"><td colspan="2">TOTAL</td><td class="sum">${money(ticket.totalGrossCents)}</td></tr>
   </tfoot>
 </table>

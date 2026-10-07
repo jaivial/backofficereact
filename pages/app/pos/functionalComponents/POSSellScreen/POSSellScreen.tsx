@@ -573,6 +573,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                   visit: register.visit,
                   restaurant: register.restaurant,
                   operatorName: register.operators.find((entry) => entry.id === register.lastPaidTicket?.operatorMemberId)?.displayName,
+                  payments: register.lastPaidPayments,
                 });
               } catch (reason) {
                 register.setError(reason instanceof Error ? reason.message : "No se pudo imprimir el recibo.");
