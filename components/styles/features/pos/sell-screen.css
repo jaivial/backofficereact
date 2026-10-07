@@ -1871,3 +1871,69 @@
   .pos-ticketPanel__recall span { display: none; }
   .pos-ticketPanel__recall { padding: 6px 8px; }
 }
+
+/* --- Staff PIN ---------------------------------------------------------------
+   A shared terminal needs a keypad that is legible from standing up and
+   impossible to read over a shoulder.
+
+   Coordination id: pos_pin_v1 */
+
+.pos-pinDialog__hint { margin: 0 0 10px; color: var(--bo-muted); font-size: var(--bo-text-sm); }
+
+.pos-pinDialog__steps {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  font-size: var(--bo-text-xs);
+}
+.pos-pinDialog__steps li {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: var(--bo-radius-sm, 6px);
+  background: var(--bo-surface-muted, rgba(127, 127, 127, 0.12));
+  color: var(--bo-muted);
+  text-align: center;
+}
+.pos-pinDialog__steps li.is-current { background: var(--bo-primary, currentColor); color: #fff; }
+.pos-pinDialog__steps li.is-done { color: var(--bo-text); }
+
+.pos-pinDialog__dots { display: flex; justify-content: center; gap: 10px; margin: 4px 0 14px; }
+.pos-pinDialog__dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--bo-border);
+  border-radius: 999px;
+}
+/* Filled dots show a digit was typed but never which one. */
+.pos-pinDialog__dot.is-filled { background: var(--bo-text); border-color: var(--bo-text); }
+
+.pos-pinDialog__keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 260px;
+  margin: 0 auto;
+}
+.pos-pinDialog__key {
+  min-height: 52px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: transparent;
+  color: inherit;
+  font-size: var(--bo-text-lg, 20px);
+  font-weight: 600;
+  cursor: pointer;
+}
+.pos-pinDialog__key:hover:not(:disabled) { border-color: var(--bo-primary, currentColor); }
+.pos-pinDialog__key:active:not(:disabled) { transform: scale(0.97); }
+.pos-pinDialog__key:disabled { opacity: 0.5; cursor: not-allowed; }
+.pos-pinDialog__key--ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--bo-text-xs);
+  font-weight: 500;
+  color: var(--bo-muted);
+}
