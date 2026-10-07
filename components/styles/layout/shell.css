@@ -268,6 +268,22 @@ html:has(.bo-app--page) { overflow: clip; }
   transition: transform 120ms ease, background 160ms ease;
 }
 
+/* Touch devices: the shell's icon buttons (theme, mascot, user menu) measure
+   36px, below the 44px minimum target. A till is a tablet operated with a
+   finger, so on coarse pointers they grow. `pointer: coarse` (not a width
+   media query) keeps a desktop with a small window -- or a touchscreen laptop
+   used with a mouse -- at its current density.
+   Coordination id: bo_shell_touch_targets_v1 */
+@media (pointer: coarse) {
+  .bo-topbar .bo-actionBtn,
+  .bo-sidebar .bo-actionBtn {
+    width: 44px;
+    height: 44px;
+  }
+  /* The restaurant switcher is a --sm select: 34px tall. */
+  .bo-topbar .bo-selectBtn--sm { height: 44px; }
+}
+
 .bo-actionBtn:hover {
   background: rgba(255, 255, 255, 0.04);
   transform: translateY(-1px);
