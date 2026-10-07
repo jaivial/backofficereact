@@ -32,6 +32,15 @@ export function tenderedCentsOf(value: string): number {
   return Math.round(parsed * 100);
 }
 
+/**
+ * Whether a split line holds anything. A blank or zero line is unused rather
+ * than invalid: the checkout dialog opens with a spare CASH and CARD row for
+ * the common split, and those rows are not an error until they are filled in.
+ */
+export function isTenderUsed(entry: TenderEntry): boolean {
+  return String(entry.amount).trim() !== "" && tenderedCentsOf(entry.amount) > 0;
+}
+
 export function formatTenderInput(cents: number): string {
   return (Math.max(cents, 0) / 100).toFixed(2);
 }
