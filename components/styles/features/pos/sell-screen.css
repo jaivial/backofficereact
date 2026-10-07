@@ -1792,3 +1792,82 @@
   font-variant-numeric: tabular-nums;
   min-height: 44px;
 }
+
+/* --- Recall ("traer una cuenta") ----------------------------------------------
+   The trigger lives in the ticket header so it is one tap from the rail, and the
+   picker lists closed tickets newest first.
+
+   Coordination id: pos_recall_v1 */
+
+.pos-ticketPanel__recall {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: transparent;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.pos-ticketPanel__recall:hover:not(:disabled) { color: var(--bo-text); border-color: var(--bo-primary, currentColor); }
+.pos-ticketPanel__recall:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pos-recallList {
+  display: grid;
+  gap: 6px;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+}
+
+.pos-recallItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "table total" "meta total";
+  gap: 2px 10px;
+  align-items: center;
+  min-height: 56px;
+  padding: 8px 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm, 6px);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pos-recallItem:hover:not(:disabled) { border-color: var(--bo-primary, currentColor); }
+.pos-recallItem.is-selected {
+  border-color: var(--bo-primary, currentColor);
+  background: var(--bo-surface-muted, rgba(127, 127, 127, 0.12));
+}
+.pos-recallItem:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pos-recallItem__table {
+  grid-area: table;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: var(--bo-text-sm);
+}
+.pos-recallItem__meta {
+  grid-area: meta;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  overflow-wrap: anywhere;
+}
+.pos-recallItem__total {
+  grid-area: total;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.pos-recallEmpty { margin: 0; color: var(--bo-muted); font-size: var(--bo-text-sm); }
+
+/* On a phone the label does not fit next to the icon; the title still names it. */
+@media (max-width: 420px) {
+  .pos-ticketPanel__recall span { display: none; }
+  .pos-ticketPanel__recall { padding: 6px 8px; }
+}

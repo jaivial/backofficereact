@@ -18,6 +18,7 @@ import { POS_PAYMENT_METHODS, POS_PAYMENT_METHOD_LABELS, formatTenderInput, tend
 import { POSMoveLineDialog } from "./POSMoveLineDialog";
 import { POSModifierPicker } from "./POSModifierPicker";
 import { POSPackPicker } from "./POSPackPicker";
+import { POSRecallDialog } from "./POSRecallDialog";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
@@ -60,6 +61,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   /** A product with modifier groups awaiting the guest's choice. */
   const [productToModify, setProductToModify] = useState<Parameters<typeof register.addProduct>[0] | null>(null);
   const [packToAdd, setPackToAdd] = useState<Parameters<typeof register.addPack>[0] | null>(null);
+  const [showRecall, setShowRecall] = useState(false);
   const [voidOrderOpen, setVoidOrderOpen] = useState(false);
   const [voidOrderReason, setVoidOrderReason] = useState("");
   const [discountOpen, setDiscountOpen] = useState(false);
@@ -522,7 +524,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       <div className="pos-sell__body" data-testid="pos-sell-body">
         <div className="pos-sell__work" data-testid="pos-sell-work">
           <div className={ticketExpanded ? "pos-sell__row pos-sell__row--register is-expanded" : "pos-sell__row pos-sell__row--register"} data-testid="pos-sell-row-register">
-            <POSTicketPanel onRequestTable={() => setShowTables(true)}
+            <POSTicketPanel onRequestTable={() => setShowTables(true)} onRequestRecall={() => { void register.loadRecallCandidates(); setShowRecall(true); }}
               expanded={ticketExpanded}
               onToggleExpand={toggleTicketExpanded}
               ticket={register.ticket}
@@ -777,6 +779,25 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
           </div>
         </POSDialog>
       ) : null}
+
+      {showRecall ? (
+
+        <POSRecallDialog
+
+          tickets={register.recallTickets}
+
+          busy={register.busy}
+
+          error={register.error || undefined}
+
+          onClose={() => setShowRecall(false)}
+
+          onPick={(sourceTicketId) => { void register.recallTicket(sourceTicketId); setShowRecall(false); }}
+
+        />
+
+      ) : null}
+
 
       <POSPackPicker
 
