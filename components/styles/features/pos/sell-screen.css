@@ -2054,3 +2054,62 @@
   color: var(--bo-warning-text, #8a5a00);
   font-weight: 600;
 }
+
+/* ===== Offline queue bar =====
+   Visible only while the terminal is disconnected or has writes waiting. The
+   colour carries the state (amber = offline, blue = sending, green = done) and
+   is never the only signal: the title says which one it is. */
+.pos-offline {
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-3);
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bo-surface) 96%, transparent), color-mix(in srgb, var(--bo-shell) 90%, transparent));
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--bo-bg) 18%, transparent);
+}
+
+.pos-offline__dot {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border-radius: 50%;
+  background: var(--bo-color-warning, #b45309);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--bo-color-warning, #b45309) 22%, transparent);
+}
+.pos-offline--offline { border-color: color-mix(in srgb, var(--bo-color-warning, #b45309) 45%, var(--bo-border)); }
+.pos-offline--syncing .pos-offline__dot { background: var(--bo-color-info, #1d4ed8); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bo-color-info, #1d4ed8) 22%, transparent); }
+.pos-offline--restored { border-color: color-mix(in srgb, var(--bo-color-success) 40%, var(--bo-border)); }
+.pos-offline--restored .pos-offline__dot { background: var(--bo-color-success); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bo-color-success) 22%, transparent); }
+
+.pos-offline__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }
+.pos-offline__title { font-size: var(--bo-text-sm); font-weight: var(--bo-weight-semibold); color: var(--bo-text); }
+.pos-offline__detail { font-size: var(--bo-text-xs); color: var(--bo-muted); overflow-wrap: anywhere; }
+.pos-offline__stuck {
+  font-size: var(--bo-text-xs);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text-danger);
+  border: 1px solid color-mix(in srgb, var(--bo-color-danger) 40%, var(--bo-border));
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.pos-offline__action {
+  min-height: 44px;
+  padding: 0 var(--bo-space-4);
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pos-offline__action:disabled { opacity: 0.6; cursor: progress; }
+
+/* Offline lines are on this tablet only; the panel marks them so the waiter can
+   see which part of the comanda the kitchen has not received yet. */
+.pos-line--pending { opacity: 0.82; border-style: dashed; }

@@ -23,6 +23,7 @@ import { POSPinDialog } from "./POSPinDialog";
 import { printTicketReceipt } from "./printReceipt";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
+import { POSOfflineBar } from "./POSOfflineBar";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
 import type { POSCashDay, POSCashDayTotals } from "../../../../../api/types";
@@ -78,6 +79,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [prompt, setPrompt] = useState<RailFeatureKey | null>(null);
   const [areaFilter, setAreaFilter] = useState(0);
   const [ticketExpanded, setTicketExpanded] = useState(false);
+  const [syncingOffline, setSyncingOffline] = useState(false);
   const [multiSelectIds, setMultiSelectIds] = useState<number[]>([]);
   const [comandaBusy, setComandaBusy] = useState(false);
   const comandaInFlight = useRef(false);
@@ -548,6 +550,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     <div className="pos-sell" data-ui="pos-sell-screen" data-testid="pos-sell-screen" data-readonly={readOnly ? "true" : undefined}>
       <div className="pos-sell__top" data-testid="pos-sell-top">
         {readOnly ? <div className="pos-sell__alert" role="status" data-ui="pos-readonly-notice" data-testid="pos-readonly-notice">Día cerrado: solo consulta.</div> : null}
+        <POSOfflineBar online={register.online} entries={register.offlineEntries} notice={register.offlineNotice} syncing={syncingOffline} onSync={() => { setSyncingOffline(true); void register.flushOffline().finally(() => setSyncingOffline(false)); }} />
         {/* Feedback now travels through the POS toast portal (see POSToastProvider);
             the inline banners used to sit here and pushed the order down. */}
         <span className="sr-only" role="status" aria-live="polite" data-ui="pos-message-sink" data-testid="pos-message">{register.message}</span>

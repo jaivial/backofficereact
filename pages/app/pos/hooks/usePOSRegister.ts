@@ -1,8 +1,11 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { allocatePayments } from "../utils/paymentAllocation";
 import type { POSPaymentTender } from "../utils/paymentMethods";
 import { parseAmount } from "../utils/money";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
+import { POSOfflineQueue, posBrowserOffline, type POSQueuedRequest } from "../utils/offlineQueue";
+import { offlineDecision, offlineRejectMessage } from "../utils/offlinePolicy";
+import { applyQueuedLine } from "../utils/offlineTicketPatch";
 import { usePOSCommand } from "./usePOSCommand";
 import { POSToastContext } from "../feedback/POSToastProvider";
 import type { Area, Bootstrap, Operator, Pack, Product, POSCourseSummary, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
@@ -19,6 +22,43 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const body = await response.json();
   if (!response.ok || !body.success) throw new Error(body.message || "Error de TPV");
   return body as T;
+}
+
+/** Thrown when the network is down and the write cannot be held for replay. */
+export class POSOfflineError extends Error {
+  constructor(message: string) { super(message); this.name = "POSOfflineError"; }
+}
+
+/** True for a failed fetch caused by no connectivity, as opposed to a server answer. */
+function isNetworkFailure(reason: unknown): boolean {
+  if (reason instanceof POSOfflineError) return false;
+  if (reason instanceof TypeError) return true; // fetch() rejects with TypeError when the socket never answers
+  return reason instanceof Error && /network|failed to fetch|load failed/i.test(reason.message);
+}
+
+/**
+ * A request that survives a dead network.
+ *
+ * A queueable write is stored and acknowledged locally, so the waiter keeps
+ * ringing instead of losing the order. Anything else (charging a guest,
+ * opening the drawer, closing the day) is refused with a message that says why,
+ * because promising a sale that never happened is worse than an error.
+ */
+export async function posRequest<T>(path: string, init?: RequestInit, queue?: POSOfflineQueue): Promise<T> {
+  const method = (init?.method || "GET").toUpperCase();
+  const body = typeof init?.body === "string" ? safeParse(init.body) : undefined;
+  try {
+    return await request<T>(path, init);
+  } catch (reason) {
+    if (!queue || !(isNetworkFailure(reason) || posBrowserOffline())) throw reason;
+    if (offlineDecision(path, method, body) !== "queue") throw new POSOfflineError(offlineRejectMessage(path));
+    queue.enqueue({ idempotencyKey: String(body?.idempotencyKey), path, method, body: (body ?? {}) as Record<string, unknown> });
+    return { queuedOffline: true } as T;
+  }
+}
+
+function safeParse(raw: string): Record<string, unknown> | undefined {
+  try { const parsed = JSON.parse(raw); return parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : undefined; } catch { return undefined; }
 }
 
 /** Operator-facing checkout confirmation; raw stock enums stay out of the till UI. */
@@ -86,6 +126,30 @@ export function usePOSRegister(date?: string | null) {
   const [pendingProductId, setPendingProductId] = useState<number | null>(null);
   const { isInFlight, keyFor, clear, run, busy: commandBusy } = usePOSCommand();
 
+  // One queue per terminal, persisted so a page reload or a closed lid does not
+  // lose what the waiter rang in the cellar.
+  const queueRef = useRef<POSOfflineQueue | null>(null);
+  if (queueRef.current === null) queueRef.current = new POSOfflineQueue();
+  const offlineQueue = queueRef.current;
+  const [offlineEntries, setOfflineEntries] = useState(() => offlineQueue.list());
+  /** Counter that keeps optimistic line ids unique and distinguishable from server ids. */
+  const offlineSeq = useRef(1);
+  const [offlineNotice, setOfflineNotice] = useState("");
+  const [online, setOnline] = useState(() => !posBrowserOffline());
+
+  // Replay whatever is waiting as soon as the connection is back. The reload
+  // afterwards is what reconciles the optimistic lines with the server's truth.
+  useEffect(() => {
+    const unsubscribe = offlineQueue.subscribe(setOfflineEntries);
+    const goOnline = () => setOnline(true);
+    const goOffline = () => setOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => { unsubscribe(); window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
+  }, [offlineQueue]);
+
+
+
   const load = useCallback(async () => {
     setError("");
     try {
@@ -96,7 +160,22 @@ export function usePOSRegister(date?: string | null) {
       setSettings(data.settings || DEFAULT_SETTINGS); setProducts((data.products || []).map((product) => modifierGroups[String(product.id)]?.length ? { ...product, modifierGroups: modifierGroups[String(product.id)] } : product)); setTables(data.tables || []); setAreas(data.areas || []); setRestaurant(data.restaurant || null); setVisits(data.visits || []); setOperators(data.operators || []); setCurrentShift(data.currentShift || null); setProductStock(data.productStock || {}); setPacks(data.packs || []);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
   }, [date]);
-  useEffect(() => { void load(); }, [load]);
+
+  const flushOffline = useCallback(async () => {
+    if (!offlineQueue.size) { await load(); return 0; }
+    const sent = await offlineQueue.flush(async (entry: POSQueuedRequest) => {
+      await request(`/api/admin/pos${entry.path}`, { method: entry.method, body: JSON.stringify(entry.body) });
+    });
+    await load();
+    if (sent > 0) setMessage(`${sent} ${sent === 1 ? "operación guardada" : "operaciones guardadas"} se enviaron al TPV.`);
+    return sent;
+  }, [load, offlineQueue, setMessage]);
+
+  useEffect(() => {
+    if (!online || offlineQueue.size === 0) return;
+    const timer = window.setTimeout(() => { void flushOffline(); }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [flushOffline, offlineEntries.length, offlineQueue, online]);  useEffect(() => { void load(); }, [load]);
 
   const filteredProducts = useMemo(() => products.filter((product) => product.isActive && product.name.toLowerCase().includes(query.trim().toLowerCase())), [products, query]);
   const ticketTotal = ticket?.totalGrossCents || 0;
@@ -388,12 +467,21 @@ export function usePOSRegister(date?: string | null) {
     const existing = ticket.lines.find((line) => line.status !== "VOIDED" && (line.productId === product.id || (line.productId == null && line.productName === product.name)) && line.unitPriceGrossCents === targetPrice && sameModifiers(line));
     try {
       const data = existing
-        ? await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${existing.id}`, { method: "PATCH", body: JSON.stringify({ quantity: existing.quantity + qty, expectedVersion: ticket.version }) })
-        : await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, course: activeCourse, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), ...(modifiers.length > 0 && { modifiers }), idempotencyKey: crypto.randomUUID() }) });
-      setTicket(data.ticket);
+        ? await request<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines/${existing.id}`, { method: "PATCH", body: JSON.stringify({ quantity: existing.quantity + qty, expectedVersion: ticket.version }) })
+        : await posRequest<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, course: activeCourse, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), ...(modifiers.length > 0 && { modifiers }), idempotencyKey: crypto.randomUUID() }) }, offlineQueue);
+      if (data.queuedOffline) {
+        // No server to reload from: draw the line here so the comanda and the
+        // total are already right when the network returns.
+        const intent = { productId: product.id, quantity: qty, course: activeCourse };
+        setTicket((current) => current ? applyQueuedLine(current, { path: "", body: intent }, product.name, targetPrice, product.vatRate, offlineSeq.current++) : current);
+        setOfflineNotice(`${product.name} guardado. Se enviará al volver la red.`);
+        setOfflineEntries(offlineQueue.list());
+      } else {
+        setTicket(data.ticket);
+      }
     }
     catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo añadir producto"); } finally { setBusy(false); setPendingProductId(null); }
-  }, [ticket]);
+  }, [offlineQueue, ticket]);
 
   /**
    * Rings up a pack: one line at the pack price with the chosen components sent
@@ -407,10 +495,16 @@ export function usePOSRegister(date?: string | null) {
     setBusy(true); setMessage("");
     const quantity = selection.quantity ?? 1;
     try {
-      const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ packId: pack.id, quantity, course: activeCourse, packSelection: { quantity, choices: selection.choices }, idempotencyKey: crypto.randomUUID() }) });
-      setTicket(data.ticket);
+      const data = await posRequest<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ packId: pack.id, quantity, course: activeCourse, packSelection: { quantity, choices: selection.choices }, idempotencyKey: crypto.randomUUID() }) }, offlineQueue);
+      if (data.queuedOffline) {
+        setTicket((current) => current ? applyQueuedLine(current, { path: "", body: { quantity } }, pack.name, pack.priceGrossCents, pack.vatRate, offlineSeq.current++) : current);
+        setOfflineNotice(`${pack.name} guardado. Se enviará al volver la red.`);
+        setOfflineEntries(offlineQueue.list());
+      } else {
+        setTicket(data.ticket);
+      }
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo anadir el menu"); } finally { setBusy(false); }
-  }, [ticket]);
+  }, [offlineQueue, ticket]);
 
   /**
    * Copies a finished ticket's lines onto the open one. The server revalidates
@@ -601,6 +695,7 @@ export function usePOSRegister(date?: string | null) {
     splitTickets, splitTargetId, setSplitTargetId, selectedTable, setSelectedTable,
     covers, setCovers, reservations, reservationsLoading, reservationsLoaded, bookingId, query, setQuery,
     message, setMessage, error, setError, busy, commandBusy, pendingProductId,
+    online, offlineEntries, offlineNotice, setOfflineNotice, flushOffline,
     cash, setCash, card, setCard, cardReference, setCardReference, discount, setDiscount,
     filteredProducts, ticketTotal, activeTicketLines, openSplitTickets, otherOpenSplitTickets, paymentTotal,
     pendingKitchenLines, hasPendingKitchenLines, sentKitchenQuantities,

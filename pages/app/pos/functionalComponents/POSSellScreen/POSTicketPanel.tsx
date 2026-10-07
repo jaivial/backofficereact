@@ -158,7 +158,7 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
           <div className="pos-ticketPanel__lines" data-testid="pos-ticket-lines">
             {topLevelLines.map((line) => (
               <div
-                className={line.id === selectedLineId ? "pos-line pos-line--selected" : "pos-line"}
+                className={cn(line.id === selectedLineId && "pos-line--selected", line.id < 0 && "pos-line--pending", "pos-line")}
                 key={line.id}
                 onClick={() => onSelectLine(line)}
                 onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelectLine(line); } }}
@@ -178,6 +178,7 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
                     <StatusBadge variant="neutral" size="sm" data-ui="pos-line-sent" data-testid={`pos-line-sent-${line.id}`}>Cocina</StatusBadge>
                   ) : null}
                   {line.comped ? <StatusBadge variant="warning" size="sm" data-ui={`pos-line-comp-${line.id}`} data-testid={`pos-line-comp-${line.id}`}>Invitada{line.compReason ? ` · ${line.compReason}` : ""}</StatusBadge> : null}
+                  {line.id < 0 ? <StatusBadge variant="warning" size="sm" data-ui={`pos-line-offline-${line.id}`} data-testid={`pos-line-offline-${line.id}`}>Sin enviar</StatusBadge> : null}
                 </div>
                 {(line.modifiers || []).length ? (
                   <ul className="pos-line__modifiers" data-testid={`pos-line-modifiers-${line.id}`}>
