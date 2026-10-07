@@ -105,7 +105,7 @@ export function POSGuestHistoryDialog({ ticket, canErase, onClose, onLinked }: {
               ))}
             </ul>
             {!customers.results.length && query.trim() ? <p className="pos-modal__empty">Sin resultados.</p> : null}
-            <button className="pos-modal__secondary" type="button" onClick={() => { setDraft({ ...EMPTY, displayName: /\d/.test(query) ? "" : query.trim(), phone: /\d/.test(query) ? query.trim() : "" }); setEditingId(undefined); setMode("edit"); }} data-testid="pos-guest-history-new">Nuevo cliente</button>
+            <button className="pos-modal__secondary" type="button" onClick={() => { const looksLikePhone = /^[+\d\s().-]{6,}$/.test(query.trim()); setDraft({ ...EMPTY, displayName: looksLikePhone ? "" : query.trim(), phone: looksLikePhone ? query.trim() : "" }); setEditingId(undefined); setMode("edit"); }} data-testid="pos-guest-history-new">Nuevo cliente</button>
           </>
         ) : null}
 

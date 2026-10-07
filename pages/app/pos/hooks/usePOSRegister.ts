@@ -282,8 +282,11 @@ export function usePOSRegister(date?: string | null) {
       const next = { ...current };
       for (const line of fromServer) {
         const sent = line.kitchenSentQuantity as number;
+        // Only positive values are adopted. A line routed to no station (a
+        // menu parent, a coffee with no route) is reported as 0 forever;
+        // deleting the local entry for it would re-light the Comanda button
+        // after every edit for dishes the kitchen never receives.
         if (sent > 0 && next[line.id] !== sent) { next[line.id] = sent; changed = true; }
-        if (sent === 0 && line.id in next && next[line.id] !== 0) { delete next[line.id]; changed = true; }
       }
       return changed ? next : current;
     });
