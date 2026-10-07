@@ -1937,3 +1937,87 @@
   font-weight: 500;
   color: var(--bo-muted);
 }
+
+/* --- Coursing -----------------------------------------------------------------
+   The course strip sits under the ticket header: which course new dishes join,
+   and a fire button on the ones the kitchen has not got yet.
+
+   Coordination id: pos_courses_v1 */
+
+.pos-courses {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--bo-border);
+}
+.pos-courses__label {
+  font-size: var(--bo-text-xs);
+  font-weight: 600;
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pos-courses__list { display: flex; flex-wrap: wrap; gap: 6px; }
+.pos-courses__item { display: inline-flex; align-items: stretch; }
+
+/* Two targets side by side rather than one small one: on a busy floor a
+   mis-tap here sends food to the pass. */
+.pos-courses__button,
+.pos-courses__fire {
+  min-height: 44px;
+  min-width: 44px;
+  border: 1px solid var(--bo-border);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.pos-courses__button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: var(--bo-radius-sm, 6px) 0 0 var(--bo-radius-sm, 6px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pos-courses__button.is-selected {
+  border-color: var(--bo-primary, currentColor);
+  background: var(--bo-primary, currentColor);
+  color: #fff;
+}
+.pos-courses__button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.pos-courses__pending {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--bo-danger, #c0392b);
+  color: #fff;
+  font-size: 10px;
+  line-height: 17px;
+  text-align: center;
+}
+
+.pos-courses__fire {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -1px;
+  border-radius: 0 var(--bo-radius-sm, 6px) var(--bo-radius-sm, 6px) 0;
+  color: var(--bo-muted);
+}
+.pos-courses__fire:hover:not(:disabled) { color: var(--bo-danger, #c0392b); border-color: var(--bo-danger, #c0392b); }
+.pos-courses__fire:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* On a phone the label is the first thing to go; the numbers carry the meaning. */
+@media (max-width: 420px) {
+  .pos-courses { padding: 6px 8px; gap: 6px; }
+  .pos-courses__label { display: none; }
+  .pos-courses__button { padding: 0 10px; }
+}

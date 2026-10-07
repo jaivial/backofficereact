@@ -206,6 +206,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   // Knowing whether this user has a PIN decides if a void asks for a manager, so it is
   // fetched once when the till opens rather than on the first void.
   useEffect(() => { void register.loadPinStatus(); }, [register.loadPinStatus]);
+  // The strip shows what the kitchen has not got, so it follows the open ticket.
+  useEffect(() => { void register.loadCourses(); }, [register.loadCourses, register.ticket?.id]);
 
   const visibleTables = useMemo(
     () => register.tables.filter((table) => !areaFilter || table.areaId === areaFilter),
@@ -559,7 +561,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       <div className="pos-sell__body" data-testid="pos-sell-body">
         <div className="pos-sell__work" data-testid="pos-sell-work">
           <div className={ticketExpanded ? "pos-sell__row pos-sell__row--register is-expanded" : "pos-sell__row pos-sell__row--register"} data-testid="pos-sell-row-register">
-            <POSTicketPanel onRequestTable={() => setShowTables(true)} onRequestRecall={() => { void register.loadRecallCandidates(); setShowRecall(true); }}
+            <POSTicketPanel courses={register.courses} activeCourse={register.activeCourse} onSelectCourse={register.setActiveCourse} onFireCourse={(course) => void register.fireCourse(course)} onRequestTable={() => setShowTables(true)} onRequestRecall={() => { void register.loadRecallCandidates(); setShowRecall(true); }}
               expanded={ticketExpanded}
               onToggleExpand={toggleTicketExpanded}
               ticket={register.ticket}
