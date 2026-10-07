@@ -18,6 +18,10 @@ import type { Ticket, TicketLine } from "../types/register";
 export type POSQueuedLineIntent = {
   path: string;
   body: Record<string, unknown>;
+  /** Modifiers as the server will snapshot them, so the offline line matches. */
+  modifiers?: TicketLine["modifiers"];
+  /** The pack this line came from, so the panel can show it as a pack. */
+  packId?: number;
 };
 
 /** Negative local ids so an optimistic line can never collide with a real one. */
@@ -29,6 +33,11 @@ export function optimisticLineId(ticketId: number, seq: number): number {
  * Applies a queued "add line" to the ticket locally. Returns the ticket with the
  * line appended and the totals recomputed, or the ticket unchanged when the
  * entry is not a line add (the caller then just reloads).
+ *
+ * The line is drawn with everything the queued request carries (modifiers,
+ * pack) because the waiter is reading this comanda to decide what to tell the
+ * guest. A line that showed "2 x cafe" with no "sin azúcar" would be re-ringed
+ * out of fear, and the guest would be charged twice.
  */
 export function applyQueuedLine(ticket: Ticket, intent: POSQueuedLineIntent, productName: string, priceGrossCents: number, vatRate: number, seq: number): Ticket {
   const quantity = typeof intent.body.quantity === "number" ? intent.body.quantity : 1;
@@ -45,6 +54,8 @@ export function applyQueuedLine(ticket: Ticket, intent: POSQueuedLineIntent, pro
     status: "ACTIVE",
     /** Marks the line as not yet on the server, so the UI can label it. */
     notes: intent.body.notes ? String(intent.body.notes) : undefined,
+    modifiers: intent.modifiers?.length ? intent.modifiers : undefined,
+    packId: intent.packId ?? null,
   };
   const lines = [...ticket.lines, line];
   return recompute(ticket, lines);

@@ -148,6 +148,15 @@ export function usePOSRegister(date?: string | null) {
     return () => { unsubscribe(); window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
   }, [offlineQueue]);
 
+  // The "guardado, se enviará al volver la red" confirmation only means something
+  // for a few seconds. Left up it becomes a permanent banner that hides the real
+  // state of the strip (offline vs sending) behind a stale sentence.
+  useEffect(() => {
+    if (!offlineNotice) return;
+    const timer = window.setTimeout(() => setOfflineNotice(""), 6000);
+    return () => window.clearTimeout(timer);
+  }, [offlineNotice]);
+
 
 
   const load = useCallback(async () => {
@@ -205,7 +214,7 @@ export function usePOSRegister(date?: string | null) {
     // ids and the "Sin enviar" badge). Reload the ticket so the server's
     // numbers replace the local guess.
     await reloadCurrentTicket();
-    if (sent > 0) setMessage(`${sent} ${sent === 1 ? "operación guardada" : "operaciones guardadas"} se enviaron al TPV.`);
+    if (sent > 0) { setMessage(`${sent} ${sent === 1 ? "operación guardada" : "operaciones guardadas"} se enviaron al TPV.`); setOfflineNotice(""); }
     return sent;
   }, [load, offlineQueue, reloadCurrentTicket, setMessage]);
 
@@ -507,20 +516,34 @@ export function usePOSRegister(date?: string | null) {
     const existing = ticket.lines.find((line) => line.status !== "VOIDED" && (line.productId === product.id || (line.productId == null && line.productName === product.name)) && line.unitPriceGrossCents === targetPrice && sameModifiers(line));
     try {
       const data = existing
+        // Raising the quantity of a line already on the server is a PATCH, and a
+        // PATCH carries no idempotency key: replaying it after a reconnect would
+        // add the quantity a second time. So it is refused offline with the
+        // reason, instead of failing with a bare network error the waiter cannot
+        // act on.
         ? await request<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines/${existing.id}`, { method: "PATCH", body: JSON.stringify({ quantity: existing.quantity + qty, expectedVersion: ticket.version }) })
         : await posRequest<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, course: activeCourse, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), ...(modifiers.length > 0 && { modifiers }), idempotencyKey: crypto.randomUUID() }) }, offlineQueue);
       if (data.queuedOffline) {
         // No server to reload from: draw the line here so the comanda and the
-        // total are already right when the network returns.
-        const intent = { productId: product.id, quantity: qty, course: activeCourse };
-        setTicket((current) => current ? applyQueuedLine(current, { path: "", body: intent }, product.name, targetPrice, product.vatRate, offlineSeq.current++) : current);
+        // total are already right when the network returns. The modifiers come
+        // along because the guest is reading this comanda: a "2 x cafe" without
+        // the "sin azúcar" would be rung a second time out of fear.
+        const lineModifiers = modifiers.map((modifier) => {
+          const option = product.modifierGroups?.flatMap((group) => group.options).find((candidate) => candidate.id === modifier.modifierOptionId);
+          return { modifierOptionId: modifier.modifierOptionId, name: option?.name ?? "Opción", priceDeltaCents: option?.priceDeltaCents ?? 0, quantity: modifier.quantity };
+        });
+        setTicket((current) => current ? applyQueuedLine(current, { path: "", body: { productId: product.id, quantity: qty, course: activeCourse }, modifiers: lineModifiers }, product.name, targetPrice, product.vatRate, offlineSeq.current++) : current);
         setOfflineNotice(`${product.name} guardado. Se enviará al volver la red.`);
         setOfflineEntries(offlineQueue.list());
       } else {
         setTicket(data.ticket);
       }
     }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo añadir producto"); } finally { setBusy(false); setPendingProductId(null); }
+    catch (reason) {
+      // A merge that dies on a dead socket is not a bug the waiter can fix, and
+      // "Failed to fetch" tells them nothing about what to do. Say it plainly.
+      setError(existing && isNetworkFailure(reason) ? "Sin conexión: esa línea ya está en el TPV y no se puede sumar otra unidad sin conexión. Añade la unidad cuando vuelva la red." : reason instanceof Error ? reason.message : "No se pudo añadir producto");
+    } finally { setBusy(false); setPendingProductId(null); }
   }, [offlineQueue, ticket]);
 
   /**
@@ -537,7 +560,7 @@ export function usePOSRegister(date?: string | null) {
     try {
       const data = await posRequest<{ ticket: Ticket; queuedOffline?: boolean }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ packId: pack.id, quantity, course: activeCourse, packSelection: { quantity, choices: selection.choices }, idempotencyKey: crypto.randomUUID() }) }, offlineQueue);
       if (data.queuedOffline) {
-        setTicket((current) => current ? applyQueuedLine(current, { path: "", body: { quantity } }, pack.name, pack.priceGrossCents, pack.vatRate, offlineSeq.current++) : current);
+        setTicket((current) => current ? applyQueuedLine(current, { path: "", body: { quantity }, packId: pack.id }, pack.name, pack.priceGrossCents, pack.vatRate, offlineSeq.current++) : current);
         setOfflineNotice(`${pack.name} guardado. Se enviará al volver la red.`);
         setOfflineEntries(offlineQueue.list());
       } else {
