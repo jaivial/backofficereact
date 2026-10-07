@@ -13,7 +13,18 @@ export type ModifierGroup = {
   isActive?: boolean;
   options: ModifierOption[];
 };
-export type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean; modifierGroups?: ModifierGroup[] };
+export type Product = { id: number; name: string; priceGrossCents: number; vatRate: number; categoryName?: string; isActive: boolean; modifierGroups?: ModifierGroup[]; allergens?: string[] };
+/**
+ * The allergens a product may declare, in the order the EU lists them. The
+ * backend rejects anything outside this set, so the picker offers exactly these:
+ * the declaration is rendered to the guest and has to be one that can be
+ * defended.
+ */
+export const POS_ALLERGENS = [
+  "Gluten", "Crustáceos", "Huevos", "Pescado", "Cacahuetes", "Soja", "Lácteos",
+  "Frutos secos", "Apio", "Mostaza", "Sésamo", "Sulfitos", "Altramuz", "Moluscos",
+  "Moluscos blasteados",
+] as const;
 /**
  * One component of a pack. Components sharing a slotGroup are alternatives the
  * operator chooses between; an empty slotGroup is a fixed part of the menu.
