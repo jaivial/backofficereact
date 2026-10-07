@@ -1719,3 +1719,12 @@
 }
 .pos-line__modifiers li { overflow-wrap: anywhere; }
 .pos-line__modifierPrice { margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* Coarse pointers (the till is a tablet operated with a finger): the section
+   menu and the category chips measured 40px/41px, just under the 44px minimum.
+   `pointer: coarse` keeps a mouse-driven desktop window unchanged.
+   Coordination id: pos_touch_targets_v1 */
+@media (pointer: coarse) {
+  .pos-sectionMenuBtn { min-width: 44px; min-height: 44px; }
+  .pos-categories .pos-categoryTile .bo-foodMemberBody { min-height: 44px; padding: 6px 4px; }
+}
