@@ -499,3 +499,55 @@ describe("usePOSRegister", () => {
     });
   });
 });
+
+describe("usePOSRegister offline queue", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("replays a queued line to the POS API path, not to a doubled prefix", async () => {
+    // The queue stores paths exactly as the sell screen addressed them
+    // (relative to /api/admin/pos). A flush that re-prefixes produces
+    // /api/admin/pos/api/admin/pos/... which the router 404s, so the entry would
+    // stay stuck forever and the guest's dish would silently never arrive.
+    const bootstrap = {
+      success: true,
+      settings: { isEnabled: true, stockMode: "SHADOW", coversMode: "SHADOW", timezone: "Europe/Madrid", businessDayCutoff: "05:00" },
+      products: [{ id: 3, name: "Agua", priceGrossCents: 250, vatRate: 10, categoryName: "Bebidas", isActive: true }],
+      visits: [], tables: [{ id: 7, name: "Mesa 1", capacity: 4, occupied: false }], areas: [], operators: [], currentShift: null, restaurant: { name: "V", taxId: "B1", address: "a", phone: "p", email: "e" },
+    };
+    const ticket = { id: 11, version: 1, status: "OPEN", lines: [], totalGrossCents: 0 };
+    const urls: string[] = [];
+    vi.stubGlobal("crypto", { randomUUID: () => "offline-key-1" });
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      urls.push(url);
+      if (url === "/api/admin/pos/bootstrap") return new Response(JSON.stringify(bootstrap));
+      if (url === "/api/admin/pos/visits" && init?.method === "POST") return new Response(JSON.stringify({ success: true, visit: { id: 10, covers: 2, tableId: 7 }, ticket }), { status: 201 });
+      if (url === "/api/admin/pos/tickets/11/lines" && init?.method === "POST") return new Response(JSON.stringify({ success: true, ticket: { ...ticket, version: 2, lines: [{ id: 12, productId: 3, productName: "Agua", quantity: 1, unitPriceGrossCents: 250, lineTotalGrossCents: 250, status: "ACTIVE" }], totalGrossCents: 250 } }), { status: 201 });
+      return new Response(JSON.stringify({ success: true }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(() => usePOSRegister());
+    await waitFor(() => expect(result.current.tables.length).toBe(1));
+    act(() => result.current.setSelectedTable(result.current.tables[0]));
+    await act(async () => { await result.current.openVisit(); });
+
+    // Network dies: the fetch rejects the way a dropped socket does.
+    fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    await act(async () => { await result.current.addProduct(result.current.products[0]); });
+
+    expect(result.current.offlineEntries).toHaveLength(1);
+    expect(result.current.offlineEntries[0].path).toBe("/tickets/11/lines");
+    expect(result.current.ticket?.lines).toHaveLength(1);
+    expect(result.current.ticket?.totalGrossCents).toBe(250);
+
+    urls.length = 0;
+    await act(async () => { await result.current.flushOffline(); });
+
+    const linePosts = urls.filter((u) => u.endsWith("/tickets/11/lines") && u !== "/api/admin/pos/bootstrap");
+    expect(linePosts).toEqual(["/api/admin/pos/tickets/11/lines"]);
+    expect(result.current.offlineEntries).toHaveLength(0);
+  });
+});

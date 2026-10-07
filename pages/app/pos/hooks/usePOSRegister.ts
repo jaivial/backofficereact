@@ -161,21 +161,61 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
   }, [date]);
 
+  /**
+   * Re-reads the open ticket (and its split siblings) from the server. This is
+   * what reconciles anything the offline queue drew optimistically: the local
+   * lines carried temporary negative ids, and the server answers with the real
+   * ones and the real totals.
+   */
+  const reloadCurrentTicket = useCallback(async () => {
+    const visitId = visit?.id;
+    const ticketId = ticket?.id;
+    try {
+      if (visitId) {
+        const data = await request<{ visit: Visit & { tickets: Ticket[] } }>(`/visits/${visitId}`);
+        const tickets = data.visit.tickets || [];
+        setVisit(data.visit);
+        setSplitTickets(tickets);
+        setTicket(tickets.find((entry) => entry.status === "OPEN") || tickets[0] || null);
+        return;
+      }
+      if (ticketId) {
+        const data = await request<{ ticket: Ticket }>(`/tickets/${ticketId}`);
+        setTicket(data.ticket);
+        setSplitTickets((current) => current.map((entry) => (entry.id === data.ticket.id ? data.ticket : entry)));
+      }
+    } catch {
+      // A reload failure must not eat the replay: the queue is already empty
+      // and the next load/touch reconciles. Staying on the optimistic view is
+      // better than blanking the comanda in front of a guest.
+    }
+  }, [ticket?.id, visit?.id]);
+
   const flushOffline = useCallback(async () => {
     if (!offlineQueue.size) { await load(); return 0; }
     const sent = await offlineQueue.flush(async (entry: POSQueuedRequest) => {
-      await request(`/api/admin/pos${entry.path}`, { method: entry.method, body: JSON.stringify(entry.body) });
+      // entry.path is already relative to /api/admin/pos (that is how the
+      // sell screen addressed it), so it goes straight to request(), which
+      // adds the prefix. Re-prefixing here produced a doubled path that 404ed.
+      await request(entry.path, { method: entry.method, body: JSON.stringify(entry.body) });
     });
     await load();
+    // Bootstrap does not carry the open ticket, so the optimistic lines the
+    // waiter saw offline would stay on the comanda forever (with their negative
+    // ids and the "Sin enviar" badge). Reload the ticket so the server's
+    // numbers replace the local guess.
+    await reloadCurrentTicket();
     if (sent > 0) setMessage(`${sent} ${sent === 1 ? "operación guardada" : "operaciones guardadas"} se enviaron al TPV.`);
     return sent;
-  }, [load, offlineQueue, setMessage]);
+  }, [load, offlineQueue, reloadCurrentTicket, setMessage]);
 
   useEffect(() => {
     if (!online || offlineQueue.size === 0) return;
     const timer = window.setTimeout(() => { void flushOffline(); }, 1200);
     return () => window.clearTimeout(timer);
-  }, [flushOffline, offlineEntries.length, offlineQueue, online]);  useEffect(() => { void load(); }, [load]);
+  }, [flushOffline, offlineEntries.length, offlineQueue, online]);
+
+  useEffect(() => { void load(); }, [load]);
 
   const filteredProducts = useMemo(() => products.filter((product) => product.isActive && product.name.toLowerCase().includes(query.trim().toLowerCase())), [products, query]);
   const ticketTotal = ticket?.totalGrossCents || 0;
