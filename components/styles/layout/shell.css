@@ -35,6 +35,13 @@
   height: 100vh;
   height: 100dvh;
   min-height: 0;
+  /* The implicit grid row is `auto`, so a tall child (e.g. the POS sell screen
+     with its catalogue) grows the grid past the 100dvh shell and the whole
+     document starts scrolling instead of the pane. `minmax(0, 1fr)` pins the
+     single row to the shell height; `.bo-main` already owns `overflow: auto`,
+     so long pages keep scrolling inside the pane. Coordination id:
+     bo_app_page_fixed_row_v1 */
+  grid-template-rows: minmax(0, 1fr);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.10)),
     var(--bo-shell);

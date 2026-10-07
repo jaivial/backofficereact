@@ -2,6 +2,8 @@ import { createPortal } from "react-dom";
 import { AlertTriangle } from "lucide-react";
 import React from "react";
 
+import { posPortalRoot } from "../../utils/portal";
+
 export type POSForceOpenConfirmModalProps = {
   count: number;
   busy?: boolean;
@@ -17,6 +19,9 @@ export type POSForceOpenConfirmModalProps = {
  */
 export function POSForceOpenConfirmModal({ count, busy, onCancel, onConfirm }: POSForceOpenConfirmModalProps) {
   const singular = count <= 1;
+  // No DOM during SSR: render nothing there instead of crashing the page.
+  const root = posPortalRoot();
+  if (!root) return null;
   return createPortal(
     <div className="pos-forceConfirm__overlay" data-testid="pos-force-confirm-overlay">
       <div className="pos-forceConfirm" role="alertdialog" aria-labelledby="pos-force-confirm-title" aria-describedby="pos-force-confirm-desc" data-testid="pos-force-confirm">
@@ -39,6 +44,6 @@ export function POSForceOpenConfirmModal({ count, busy, onCancel, onConfirm }: P
         </div>
       </div>
     </div>,
-    document.getElementById("bo-portal") || document.body,
+    root,
   );
 }
