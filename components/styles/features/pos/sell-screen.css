@@ -2348,3 +2348,21 @@
   .pos-guest__actions { flex-direction: column-reverse; }
   .pos-guest__actions button { width: 100%; }
 }
+
+/* Choosing a paid check to invoice when the till has no open ticket. */
+.pos-fiscal__picker { display: grid; gap: var(--bo-space-2); margin-bottom: var(--bo-space-3); }
+.pos-fiscal__pickerList { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--bo-space-2); grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
+.pos-fiscal__pickerItem {
+  display: grid; gap: 2px; width: 100%; min-height: 56px; padding: var(--bo-space-2) var(--bo-space-3);
+  text-align: left; border: 1px solid var(--bo-border); border-radius: var(--bo-radius-sm);
+  background: var(--bo-surface); color: var(--bo-text); cursor: pointer;
+}
+.pos-fiscal__pickerItem:hover { border-color: color-mix(in srgb, var(--bo-accent) 45%, var(--bo-border)); }
+.pos-fiscal__pickerItem.is-active { border-color: var(--bo-accent); background: color-mix(in srgb, var(--bo-accent) 12%, var(--bo-surface)); }
+.pos-fiscal__pickerItem strong { font-size: var(--bo-text-sm); }
+.pos-fiscal__pickerItem span { font-size: var(--bo-text-xs); color: var(--bo-muted); }
+.pos-fiscal__pickerNote { color: var(--bo-text-warning, var(--bo-text-danger)); }
+.pos-fiscal__metaError { color: var(--bo-text-danger); }
+@media (max-width: 560px) {
+  .pos-fiscal__pickerList { grid-template-columns: minmax(0, 1fr); }
+}
