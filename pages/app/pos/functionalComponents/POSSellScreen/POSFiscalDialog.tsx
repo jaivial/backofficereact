@@ -24,7 +24,7 @@ import type { Ticket, Visit } from "../../types/register";
  * compliant invoice would be worse than no panel.
  */
 export function POSFiscalDialog({ ticket, visit, online, onClose }: { ticket: Ticket | null; visit: Visit | null; online: boolean; onClose: () => void }) {
-  const { series, document, chain, busy, error, notice, issue, verifyChain, reset } = usePOSFiscal(ticket?.id ?? null);
+  const { series, document, chain, busy, error, notice, issue, verifyChain, loadSeries, reset } = usePOSFiscal(ticket?.id ?? null);
   const [reason, setReason] = useState("");
   const [terminal, setTerminal] = useState("");
 
@@ -51,7 +51,7 @@ export function POSFiscalDialog({ ticket, visit, online, onClose }: { ticket: Ti
           VERI*FACTU (RD 1007/2023). Numeración y encadenado por hash preparados; el sellado certificado no existe todavía.
         </p>
 
-        <POSOfflineBar online={online} entries={[]} notice="" />
+        <POSOfflineBar online={online} entries={[]} notice="" onSync={() => void loadSeries()} />
 
         <dl className="pos-fiscal__grid" data-testid="pos-fiscal-summary">
           <div><dt>Cuenta</dt><dd data-testid="pos-fiscal-ticket">{ticket?.ticketNumber ?? "—"}</dd></div>
