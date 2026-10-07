@@ -5,9 +5,9 @@ import { parseAmount } from "../utils/money";
 import { isValidCustomerTaxId, normalizeCustomerTaxId } from "../utils/customerTaxId";
 import { usePOSCommand } from "./usePOSCommand";
 import { POSToastContext } from "../feedback/POSToastProvider";
-import type { Area, Bootstrap, Operator, Pack, Product, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+import type { Area, Bootstrap, Operator, Pack, Product, POSCourseSummary, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 
-export type { Area, Bootstrap, Operator, ModifierGroup, ModifierOption, Pack, PackComponent, Product, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
+export type { Area, Bootstrap, Operator, ModifierGroup, ModifierOption, Pack, PackComponent, Product, POSCourseSummary, TicketSummary, Reservation, RestaurantProfile, Settings, ShiftSummary, StockStatus, Table, Tag, Ticket, TicketLine, Visit } from "../types/register";
 export { money, parseAmount } from "../utils/money";
 
 export const DEFAULT_SETTINGS: Settings = { isEnabled: false, stockMode: "OFF", coversMode: "MANUAL", timezone: "Europe/Madrid", businessDayCutoff: "05:00", autoCloseVisit: true, receiptPrefix: "TPV" };
@@ -389,7 +389,7 @@ export function usePOSRegister(date?: string | null) {
     try {
       const data = existing
         ? await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${existing.id}`, { method: "PATCH", body: JSON.stringify({ quantity: existing.quantity + qty, expectedVersion: ticket.version }) })
-        : await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), ...(modifiers.length > 0 && { modifiers }), idempotencyKey: crypto.randomUUID() }) });
+        : await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ productId: product.id, quantity: qty, course: activeCourse, ...(priceOverride != null && { unitPriceOverrideCents: priceOverride }), ...(modifiers.length > 0 && { modifiers }), idempotencyKey: crypto.randomUUID() }) });
       setTicket(data.ticket);
     }
     catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo añadir producto"); } finally { setBusy(false); setPendingProductId(null); }
@@ -407,7 +407,7 @@ export function usePOSRegister(date?: string | null) {
     setBusy(true); setMessage("");
     const quantity = selection.quantity ?? 1;
     try {
-      const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ packId: pack.id, quantity, packSelection: { quantity, choices: selection.choices }, idempotencyKey: crypto.randomUUID() }) });
+      const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines`, { method: "POST", body: JSON.stringify({ packId: pack.id, quantity, course: activeCourse, packSelection: { quantity, choices: selection.choices }, idempotencyKey: crypto.randomUUID() }) });
       setTicket(data.ticket);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo anadir el menu"); } finally { setBusy(false); }
   }, [ticket]);
@@ -533,6 +533,35 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo enviar a cocina"); }
   }, [activeTicketLines, hasPendingKitchenLines, pendingKitchenLines, pendingKitchenVoids, ticket]);
 
+  /**
+   * The course new dishes join. A waiter picks "2" once the starters are away and
+   * everything rung afterwards waits for that course to be fired, instead of
+   * reaching the kitchen the moment it is rung.
+   */
+  const [activeCourse, setActiveCourse] = useState("1");
+
+  const [courses, setCourses] = useState<POSCourseSummary[]>([]);
+
+  const loadCourses = useCallback(async () => {
+    if (!ticket) return;
+    try {
+      const data = await request<{ courses: POSCourseSummary[] }>(`/tickets/${ticket.id}/courses`);
+      setCourses(data.courses || []);
+    } catch { /* the course strip is an aid, never a blocker */ }
+  }, [ticket]);
+
+  /** Fires one course to the kitchen. Firing twice sends nothing the second time. */
+  const fireCourse = useCallback(async (course: string) => {
+    if (!ticket) return;
+    setBusy(true); setError("");
+    try {
+      await request(`/tickets/${ticket.id}/courses/fire`, { method: "POST", body: JSON.stringify({ course }) });
+      setMessage(`Curso ${course} enviado a cocina.`);
+      await load();
+      await loadCourses();
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo enviar el curso"); } finally { setBusy(false); }
+  }, [ticket, load, loadCourses]);
+
   const checkout = useCallback(async (requestedTipCents = tipCents, tenders?: POSPaymentTender[]) => {
     const checkoutDue = ticketTotal + requestedTipCents;
     if (!ticket || ticketTotal < 0) { setError("El pago no cubre el total."); return false; }
@@ -581,6 +610,6 @@ export function usePOSRegister(date?: string | null) {
     parkVisit, openBar, mergeVisits, applyAdjustment, compLine, setLineNote, openDrawer,
     setVisitCustomer, setTicketOperator, toggleLineTag, loadTags,
     switchTicket, voidEmptyTicket, createSplitTicket, moveLine, mergeSplitTickets, addProduct, addPack, packs, hasPin, loadPinStatus, setPin, verifyPin, recallTicket, recallTickets, loadRecallCandidates,
-    setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, checkout,
+    setLineQuantity, voidLine, voidOrder, applyDiscount, sendKitchen, activeCourse, setActiveCourse, courses, loadCourses, fireCourse, checkout,
   };
 }

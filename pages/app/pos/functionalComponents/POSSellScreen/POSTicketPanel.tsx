@@ -2,9 +2,11 @@ import React, { useMemo } from "react";
 import { ArrowRightLeft, History, Merge, Minus, Plus, Receipt, Trash2, Users, X } from "lucide-react";
 import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { cn } from "../../../../../ui/shadcn/utils";
+import { POSCourseStrip } from "./POSCourseStrip";
+import type { POSCourseSummary } from "../../types/register";
 import { money, type Tag, type Ticket, type TicketLine, type Visit } from "../../hooks/usePOSRegister";
 
-export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, onRequestRecall, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
+export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, onRequestRecall, courses = [], activeCourse = "1", onSelectCourse, onFireCourse, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
   ticket: Ticket | null;
   visit: Visit | null;
   tags?: Tag[];
@@ -18,6 +20,11 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
   onToggleExpand?: () => void;
   /** Opens the "traer una cuenta" picker; hidden when the ticket is not open. */
   onRequestRecall?: () => void;
+  /** Coursing: which course new dishes join, and what the kitchen still has not got. */
+  courses?: POSCourseSummary[];
+  activeCourse?: string;
+  onSelectCourse?: (course: string) => void;
+  onFireCourse?: (course: string) => void;
   splitTickets?: Ticket[];
   sentKitchenQuantities?: Record<number, number>;
   onSelectTicket?: (next: Ticket) => void;
@@ -83,6 +90,9 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
     >
       <header className="pos-ticketPanel__header" data-testid="pos-ticket-header">
         <h2 className="pos-ticketPanel__title" data-testid="pos-ticket-title"><Receipt className="mr-2 inline h-4 w-4" aria-hidden="true" data-testid="pos-ticket-title-icon" />Cuenta{ticket?.ticketNumber ? ` · ${ticket.ticketNumber}` : ""}</h2>
+        {onSelectCourse && onFireCourse && ticket?.status === "OPEN" ? (
+          <POSCourseStrip courses={courses} activeCourse={activeCourse} onSelect={onSelectCourse} onFire={onFireCourse} busy={busy} readOnly={readOnly} />
+        ) : null}
         {onRequestRecall && ticket?.status !== "PAID" && !readOnly ? (
           <button className="pos-ticketPanel__recall" type="button" onClick={onRequestRecall} title="Traer una cuenta ya cerrada" data-testid="pos-recall-open" disabled={busy}>
             <History className="h-4 w-4" aria-hidden="true" />

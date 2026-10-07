@@ -63,6 +63,14 @@ export type TicketLine = {
    */
   updatedAt?: string;
 };
+/** One course on a ticket, with how much of it the kitchen still has not seen. */
+export type POSCourseSummary = {
+  course: string;
+  lines: number;
+  firedLines: number;
+  pendingLines: number;
+};
+
 /** One row of GET /pos/tickets, used by the recall picker. */
 export type TicketSummary = {
   id: number;
