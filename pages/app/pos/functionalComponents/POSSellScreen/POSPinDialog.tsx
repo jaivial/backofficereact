@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Delete } from "lucide-react";
 
 import { POSDialog } from "./POSDialog";
@@ -28,9 +28,12 @@ export function POSPinDialog({ title, description, confirmLabel = "Confirmar", b
     setPin(""); setCurrent("");
   }, []);
 
-  const typing = requireExisting && !current ? "current" : "new";
+  const typing = requireExisting && current.length < minLength ? "current" : "new";
   const value = typing === "current" ? current : pin;
-  const lengthOk = requireExisting ? current.length >= minLength : pin.length >= minLength;
+  // When changing a PIN both halves must be typed; otherwise only the new one.
+  const lengthOk = requireExisting
+    ? current.length >= minLength && pin.length >= minLength
+    : pin.length >= minLength;
 
   const press = (digit: string) => {
     if (busy) return;
@@ -45,10 +48,19 @@ export function POSPinDialog({ title, description, confirmLabel = "Confirmar", b
 
   // Enter submits, because on a keypad keyboard Enter is the natural confirmation
   // and a waiter holding the tablet should not have to reach for the screen.
-  const submit = () => {
+  const submit = useCallback(() => {
     if (!lengthOk || busy) return;
     onSubmit(requireExisting ? { currentPin: current, pin } : { pin });
-  };
+  }, [busy, lengthOk, current, pin, requireExisting, onSubmit]);
+
+  // Enter confirms on a keypad the way it does everywhere else.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Enter") { event.preventDefault(); submit(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [submit]);
 
   return (
     <POSDialog testId="pos-pin" title={title} busy={busy} error={error} onClose={onClose}>
