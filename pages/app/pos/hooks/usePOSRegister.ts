@@ -214,7 +214,11 @@ export function usePOSRegister(date?: string | null) {
     // ids and the "Sin enviar" badge). Reload the ticket so the server's
     // numbers replace the local guess.
     await reloadCurrentTicket();
-    if (sent > 0) { setMessage(`${sent} ${sent === 1 ? "operación guardada" : "operaciones guardadas"} se enviaron al TPV.`); setOfflineNotice(""); }
+    // "1 operación guardada se envió" reads as a grammar mistake to the waiter, so the
+    // whole sentence is singular/plural together.
+    if (sent === 1) setMessage("1 operación guardada se envió al TPV.");
+    else if (sent > 1) setMessage(`${sent} operaciones guardadas se enviaron al TPV.`);
+    if (sent > 0) setOfflineNotice("");
     return sent;
   }, [load, offlineQueue, reloadCurrentTicket, setMessage]);
 
