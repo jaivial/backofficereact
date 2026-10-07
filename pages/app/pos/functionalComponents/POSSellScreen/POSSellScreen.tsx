@@ -20,6 +20,7 @@ import { POSModifierPicker } from "./POSModifierPicker";
 import { POSPackPicker } from "./POSPackPicker";
 import { POSRecallDialog } from "./POSRecallDialog";
 import { POSPinDialog } from "./POSPinDialog";
+import { printTicketReceipt } from "./printReceipt";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
@@ -554,7 +555,19 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
         {register.lastPaidTicket ? (
           <div className="pos-sell__status" data-ui="pos-last-receipt" data-testid="pos-last-receipt">
             Recibo no fiscal · {register.lastPaidTicket.ticketNumber} · {money(register.lastPaidTicket.totalGrossCents)}
-            <button className="pos-modal__secondary" type="button" onClick={() => window.print()} data-ui="pos-last-receipt-print" data-testid="pos-last-receipt-print" style={{ marginLeft: "0.5rem" }}>Imprimir</button>
+            <button className="pos-modal__secondary" type="button" onClick={() => {
+              if (!register.lastPaidTicket) return;
+              try {
+                printTicketReceipt({
+                  ticket: register.lastPaidTicket,
+                  visit: register.visit,
+                  restaurant: register.restaurant,
+                  operatorName: register.operators.find((entry) => entry.id === register.lastPaidTicket?.operatorMemberId)?.displayName,
+                });
+              } catch (reason) {
+                register.setError(reason instanceof Error ? reason.message : "No se pudo imprimir el recibo.");
+              }
+            }} data-ui="pos-last-receipt-print" data-testid="pos-last-receipt-print" style={{ marginLeft: "0.5rem" }}>Imprimir</button>
           </div>
         ) : null}
       </div>
