@@ -2113,3 +2113,180 @@
 /* Offline lines are on this tablet only; the panel marks them so the waiter can
    see which part of the comanda the kitchen has not received yet. */
 .pos-line--pending { opacity: 0.82; border-style: dashed; }
+
+/* ===== Fiscal panel =====
+   The disclaimer is the loudest thing in the panel on purpose: this is not a
+   certified fiscal document and the panel must never read as one. The colours
+   are the existing POS tokens so it looks like part of the till, not a bolted-on
+   admin screen. */
+.pos-fiscal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-space-3);
+  padding: var(--bo-space-4);
+}
+
+.pos-fiscal__disclaimer {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid color-mix(in srgb, var(--bo-color-warning, #b45309) 45%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-color-warning, #b45309) 10%, var(--bo-surface));
+  color: var(--bo-text);
+  font-size: var(--bo-text-sm);
+  line-height: 1.45;
+}
+.pos-fiscal__disclaimer strong { font-weight: var(--bo-weight-semibold); }
+
+.pos-fiscal__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--bo-space-3);
+  margin: 0;
+}
+.pos-fiscal__grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-sm);
+  background: var(--bo-surface);
+  min-width: 0;
+}
+.pos-fiscal__grid dt {
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pos-fiscal__grid dd {
+  margin: 0;
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+  overflow-wrap: anywhere;
+}
+
+.pos-fiscal__sectionTitle {
+  margin: 0;
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  color: var(--bo-text);
+}
+
+.pos-fiscal__series ul,
+.pos-fiscal__vat {
+  list-style: none;
+  margin: var(--bo-space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pos-fiscal__series li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bo-space-2) var(--bo-space-3);
+  font-size: var(--bo-text-sm);
+  color: var(--bo-muted);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--bo-border-subtle, var(--bo-border));
+}
+.pos-fiscal__series li:last-child { border-bottom: 0; }
+.pos-fiscal__seriesName { font-weight: var(--bo-weight-semibold); color: var(--bo-text); }
+.pos-fiscal__series strong { color: var(--bo-text); font-variant-numeric: tabular-nums; }
+
+.pos-fiscal__document {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--bo-space-3);
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: color-mix(in srgb, var(--bo-surface) 92%, var(--bo-shell));
+}
+.pos-fiscal__number {
+  margin: 0;
+  font-size: var(--bo-text-lg, 1.25rem);
+  font-weight: var(--bo-weight-bold, 700);
+  font-variant-numeric: tabular-nums;
+  color: var(--bo-text);
+}
+.pos-fiscal__meta, .pos-fiscal__hash, .pos-fiscal__notice {
+  margin: 0;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+  overflow-wrap: anywhere;
+}
+.pos-fiscal__notice { color: var(--bo-text-danger, #b91c1c); font-weight: var(--bo-weight-medium, 500); }
+.pos-fiscal__vat li { display: flex; justify-content: space-between; font-size: var(--bo-text-sm); color: var(--bo-muted); }
+.pos-fiscal__vat strong { color: var(--bo-text); font-variant-numeric: tabular-nums; }
+
+.pos-fiscal__chain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--bo-space-3);
+  border-radius: var(--bo-radius-md);
+  border: 1px solid var(--bo-border);
+}
+.pos-fiscal__chain--ok { border-color: color-mix(in srgb, var(--bo-color-success) 45%, var(--bo-border)); background: color-mix(in srgb, var(--bo-color-success) 8%, var(--bo-surface)); }
+.pos-fiscal__chain--bad { border-color: color-mix(in srgb, var(--bo-color-danger) 45%, var(--bo-border)); background: color-mix(in srgb, var(--bo-color-danger) 8%, var(--bo-surface)); }
+.pos-fiscal__chain p { margin: 0; font-size: var(--bo-text-sm); color: var(--bo-text); }
+
+.pos-fiscal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--bo-space-3);
+  padding-top: var(--bo-space-2);
+  border-top: 1px solid var(--bo-border);
+}
+.pos-fiscal__actions button {
+  min-height: 44px;
+  padding: 0 var(--bo-space-4);
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-size: var(--bo-text-sm);
+  font-weight: var(--bo-weight-semibold);
+  cursor: pointer;
+}
+.pos-fiscal__actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+.pos-fiscal__actions .pos-fiscal__primary { background: var(--bo-primary, var(--bo-color-primary)); border-color: transparent; color: var(--bo-primary-contrast, #fff); }
+.pos-fiscal__label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--bo-text-xs);
+  color: var(--bo-muted);
+}
+.pos-fiscal__label select,
+.pos-fiscal__label input {
+  min-height: 44px;
+  padding: 0 var(--bo-space-3);
+  border-radius: var(--bo-radius-sm);
+  border: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-size: var(--bo-text-sm);
+}
+.pos-fiscal__link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--bo-primary, var(--bo-color-primary));
+  font-size: var(--bo-text-xs);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.pos-fiscal__ok { margin: 0; font-size: var(--bo-text-sm); color: var(--bo-color-success); font-weight: var(--bo-weight-semibold); }
+
+@media (max-width: 720px) {
+  .pos-fiscal__grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .pos-fiscal__actions { flex-direction: column; align-items: stretch; }
+  .pos-fiscal__actions button { width: 100%; }
+}
