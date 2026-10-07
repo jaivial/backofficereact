@@ -35,7 +35,11 @@ export function POSProductGrid({ products, packs = [], disabled = false, readOnl
             inactive={!product.isActive}
             priceLabel={money(product.priceGrossCents)}
             stockBadge={status === "out" ? { tone: "danger", label: "Sin stock" } : status === "low" ? { tone: "yellow", label: "Stock bajo" } : pending ? { tone: "yellow", label: "Añadiendo…" } : undefined}
-            openAriaLabel={`Añadir ${product.name}`}
+            // The waiter has to answer "does this contain nuts?" while ringing,
+            // not after the plate is up. The full list stays in the title so a
+            // truncated row still names every allergen on hover.
+            secondaryMeta={product.allergens?.length ? <span className="pos-allergens" title={`Alérgenos: ${product.allergens.join(", ")}`} data-testid={`pos-product-allergens-${product.id}`}><span aria-hidden="true" className="pos-allergens__mark">⚠</span>{product.allergens.join(" · ")}</span> : undefined}
+            openAriaLabel={product.allergens?.length ? `Añadir ${product.name}. Alérgenos: ${product.allergens.join(", ")}` : `Añadir ${product.name}`}
             onOpen={disabled || readOnly || pending ? undefined : () => onAdd(product)}
           />
         );

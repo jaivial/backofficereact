@@ -11,7 +11,7 @@ type FoodDishCardProps = {
   inactive?: boolean;
   stockBadge?: { tone: "danger" | "yellow"; label: string };
   primaryMeta?: string;
-  secondaryMeta?: string;
+  secondaryMeta?: React.ReactNode;
   priceLabel?: string;
   onOpen?: () => void;
   openAriaLabel?: string;
