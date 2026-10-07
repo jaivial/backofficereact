@@ -1,4 +1,6 @@
-import { money, type Ticket, type TicketLine } from "../../hooks/usePOSRegister";
+import { money } from "../../hooks/usePOSRegister";
+import { vatBreakdown } from "../../utils/comandaPdf";
+import type { Ticket, TicketLine } from "../../types/register";
 import type { RestaurantProfile, Visit } from "../../types/register";
 
 /**
@@ -31,17 +33,14 @@ export function printTicketReceipt({ ticket, visit, restaurant, operatorName, ge
 
   // IVA is grouped by rate: two lines at 10% are one "10% x 2" line on the
   // receipt, the way a real till prints it.
-  // The POS does not store a per-line tax amount, only the rate, and the line
-  // prices are gross. The tax is therefore backed out of the gross at the
-  // snapshotted rate — the rate is a snapshot, so a later tax change cannot
-  // rewrite what this ticket actually charged.
-  const vatByRate = new Map<number, number>();
-  for (const line of topLevel) {
-    const rate = Math.round((line.vatRate ?? 0) * 100);
-    const gross = line.lineTotalGrossCents ?? 0;
-    const tax = Math.round((gross * (rate / 100)) / (1 + rate / 100));
-    vatByRate.set(rate, (vatByRate.get(rate) ?? 0) + tax);
-  }
+  // `vatBreakdown` already knows how the POS stores rates (a whole percent, not
+  // a fraction) and keeps the last bucket whole so the parts add back up to the
+  // ticket total. Reusing it keeps the receipt and the comanda from drifting.
+  const vatRows = vatBreakdown(topLevel, ticket.totalGrossCents)
+    .filter((row) => row.taxCents > 0)
+    .reverse()
+    .map((row) => `<tr class="vat"><td>IVA ${row.rate}%</td><td>${money(row.taxCents)}</td></tr>`)
+    .join("");
 
   const stamp = generatedAt.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
   const address = [restaurant?.address, restaurant?.taxId].filter(Boolean).join(" · ");
@@ -58,11 +57,6 @@ export function printTicketReceipt({ ticket, visit, restaurant, operatorName, ge
         : ""
     }`;
   });
-
-  const vatRows = Array.from(vatByRate.entries())
-    .sort((a, b) => b[0] - a[0])
-    .map(([rate, tax]) => `<tr class="vat"><td>IVA ${rate}%</td><td>${money(tax)}</td></tr>`)
-    .join("");
 
   const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Recibo ${escapeHtml(ticket.ticketNumber ?? "")}</title>
 <style>
