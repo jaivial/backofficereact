@@ -30,6 +30,15 @@
   min-height: 0;
 }
 
+/* The app shell is a fixed-viewport layout (`.bo-app--page` is 100dvh and
+   clips). Its `body` is also set to `overflow: hidden` in +Layout, but the
+   document scroller is `html`, so a tall pane could still nudge the whole shell
+   and scroll the header/topbar away on a till. Mark the document as a clip
+   container whenever the app shell is mounted. `overflow: clip` (not `hidden`)
+   avoids turning the root into a scroll container of its own.
+   Coordination id: bo_app_page_root_clip_v1 */
+html:has(.bo-app--page) { overflow: clip; }
+
 .bo-app--page {
   width: 100%;
   height: 100vh;
