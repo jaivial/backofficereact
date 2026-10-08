@@ -2203,10 +2203,11 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
   // replace that section's principales with the server's answer.
   const setSpecialPrincipalesEnabled = useCallback(async (enabled: boolean) => {
     setSpecialPrincipalesEnabledState(enabled);
-    // Coordination id: special_menu_group_booking_v1 - neither dropdown means
-    // anything without the principales, so both fall back to "No" with them.
+    // Coordination id: special_menu_group_booking_v1 - being a group menu
+    // does not need principals, so the group-menu toggle stays as it is.
+    // Only the mandatory main course cannot survive without them: guests
+    // would be forced to pick from an empty list.
     if (!enabled) {
-      setSpecialGroupMenuEnabledState(false);
       setSpecialPrincipalesRequiredState(false);
     }
     if (!menuId) return;
