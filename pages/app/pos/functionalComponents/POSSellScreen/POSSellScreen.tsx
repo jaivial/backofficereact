@@ -27,9 +27,8 @@ import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { POSFiscalDialog } from "./POSFiscalDialog";
 import { POSGuestDialog } from "./POSGuestDialog";
 import { POSOfflineBar } from "./POSOfflineBar";
-import { SalonMap } from "../../../reservas/tables/functionalComponents/SalonMap/SalonMap";
+import { POSSalonDialog, type POSSalonActions } from "./POSSalonDialog";
 import { todayISO } from "../../../reservas/tables/helpers/tables";
-import type { TableMapItem } from "../../../../../api/types";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
 import type { POSCashDay, POSCashDayTotals } from "../../../../../api/types";
@@ -252,19 +251,17 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
   const closeTables = useCallback(() => { setShowTables(false); setAreaFilter(0); }, []);
   const closeSalon = useCallback(() => setShowSalon(false), []);
-  const salonTableStatus = useCallback(
-    (table: TableMapItem) => (register.tables.find((entry) => entry.id === table.id)?.occupied ? "occupied" : "available") as TableMapItem["status"],
-    [register.tables],
-  );
-  // Tapping a table on the salon map runs the same flow as the tables grid; a
-  // free table still needs the covers/booking confirmation of the tables modal.
-  const selectSalonTable = useCallback((tableId: number) => {
-    const table = register.tables.find((entry) => entry.id === tableId);
-    if (!table) return;
-    setShowSalon(false);
-    selectTable(table);
-    if (!register.visit && !table.occupied) setShowTables(true);
-  }, [register.tables, register.visit, selectTable]);
+  // The salon popover reuses the tables-grid flows (restore / move) and opens
+  // free tables with its own covers/booking instead of the tables modal.
+  const salonActions = useMemo<POSSalonActions>(() => ({
+    currentVisit: register.visit,
+    visits: register.visits,
+    tables: register.tables,
+    busy: register.busy,
+    readOnly,
+    onSelectTable: selectTable,
+    onOpenTable: (table, covers, bookingId) => register.openVisit({ table, covers, bookingId }),
+  }), [readOnly, register.busy, register.openVisit, register.tables, register.visit, register.visits, selectTable]);
 
   const openPrompt = useCallback((key: RailFeatureKey) => {
     register.setError("");
@@ -688,11 +685,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
         onConfirm={confirmVoidLine}
       />
 
-      {showSalon ? (
-        <POSDialog testId="pos-salon" title="Salón" fullPage onClose={closeSalon}>
-          <SalonMap date={date || todayISO()} testId="pos-salon-map" getStatus={salonTableStatus} onTableClick={readOnly ? undefined : selectSalonTable} />
-        </POSDialog>
-      ) : null}
+      {showSalon ? <POSSalonDialog date={date || todayISO()} actions={salonActions} onClose={closeSalon} /> : null}
 
       {showTables ? (
         <POSDialog testId="pos-tables" title={register.visit ? "Cambiar mesa" : "Mesas"} busy={register.busy} error={register.error} onClose={closeTables} headerTestId="pos-tables-modal-header" titleTestId="pos-tables-modal-title">
