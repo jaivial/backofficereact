@@ -56,14 +56,16 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
     }
   }, [bookingId, list]);
 
+  // The socket connects asynchronously after the modal opens; listing before it
+  // is open would fail with "Sin conexión", so wait for `connected`.
   useEffect(() => {
     if (!bookingId) {
       setDocuments([]);
       setOpenDoc(null);
       return;
     }
-    void reload();
-  }, [bookingId, reload]);
+    if (connected) void reload();
+  }, [bookingId, connected, reload]);
 
   // Closing the modal resets every step so the next open starts on the list.
   const close = useCallback(() => {
