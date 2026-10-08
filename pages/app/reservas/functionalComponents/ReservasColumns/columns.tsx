@@ -284,11 +284,15 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
     // Coordination id: booking_documents_v1 - documents attached to the
     // booking (menu dossier, event paperwork...). Same affordance as the
     // special-date QR column, available on ordinary days too.
+    //
+    // NO hideBelowWidth on purpose: this cell is the ONLY entry point to the
+    // documents modal for an existing booking (the editor section only runs on
+    // /reservas/anadir and the card grid has no such action), so hiding it
+    // would make the whole feature unreachable on any narrower screen.
     id: "documentos",
     label: "Documentos",
     thClass: "col-documentos",
     cellClass: "col-documentos",
-    hideBelowWidth: 1480,
     stopPropagation: true,
     render: (_b, c) => (
       <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={c.onOpenDocuments} data-testid="reservas-documents-open-btn">
@@ -359,7 +363,15 @@ export function parseVisibleColumnsPreference(raw: string | null | undefined, sc
   const value = String(raw ?? "").trim();
   if (!value) return null;
   const parsed = normalizeVisibleColumns(value.split(","), scope);
-  return parsed.length > 0 ? parsed : null;
+  if (parsed.length === 0) return null;
+  // Coordination id: booking_documents_v1 - a preference stored before this
+  // column existed can never contain it, and this cell is the ONLY entry point
+  // to the documents modal of an existing booking. So it is re-added here
+  // instead of silently leaving the feature unreachable for those users.
+  // normalizeVisibleColumns puts it back in canonical order (it is not last in
+  // the special scope, where qrPdf follows it).
+  if (parsed.includes("documentos")) return parsed;
+  return normalizeVisibleColumns([...parsed, "documentos"], scope);
 }
 
 /**

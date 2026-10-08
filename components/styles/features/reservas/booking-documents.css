@@ -359,3 +359,13 @@
   background: var(--bo-surface-2);
   font-weight: 600;
 }
+
+/* Reservas table: the "Documentos" column. The table scrolls horizontally
+   (.bo-tableScroll), so the column needs no hide-below breakpoint -- this cell
+   is the only entry point to the documents modal of an existing booking. */
+.bo-table--reservas th.col-documentos,
+.bo-table--reservas td.col-documentos {
+  width: 150px;
+  min-width: 150px;
+  white-space: nowrap;
+}
