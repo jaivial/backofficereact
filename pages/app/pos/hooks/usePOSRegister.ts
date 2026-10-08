@@ -316,12 +316,16 @@ export function usePOSRegister(date?: string | null) {
   }, []);
   const selectReservation = useCallback((id: number) => { setBookingId(id); const reservation = reservations.find((item) => item.id === id); if (reservation) setCovers(String(reservation.partySize)); }, [reservations]);
 
-  const openVisit = useCallback(async () => {
-    if (!selectedTable || Number(covers) <= 0) { setError("Introduce los comensales."); return false; }
+  /** Opens the selected table; the salon map popover passes its own table/booking/covers instead. */
+  const openVisit = useCallback(async (override?: { table: Table; bookingId?: number; covers: string }) => {
+    const table = override ? override.table : selectedTable;
+    const guests = override ? override.covers : covers;
+    const booking = override ? override.bookingId || 0 : bookingId;
+    if (!table || Number(guests) <= 0) { setError("Introduce los comensales."); return false; }
     setBusy(true); setError("");
     try {
-      const data = await request<{ visit: Visit; ticket: Ticket }>("/visits", { method: "POST", body: JSON.stringify({ channel: "DINE_IN", tableId: selectedTable.id, bookingId: bookingId || undefined, covers: Number(covers), idempotencyKey: crypto.randomUUID() }) });
-      setVisit(data.visit); setTicket(data.ticket); setSplitTickets([data.ticket]); setSentKitchenQuantities({}); setSelectedTable(null); setBookingId(0); setReservations([]); setMessage(`Mesa abierta con ${covers} comensales.`); await load(); return true;
+      const data = await request<{ visit: Visit; ticket: Ticket }>("/visits", { method: "POST", body: JSON.stringify({ channel: "DINE_IN", tableId: table.id, bookingId: booking || undefined, covers: Number(guests), idempotencyKey: crypto.randomUUID() }) });
+      setVisit(data.visit); setTicket(data.ticket); setSplitTickets([data.ticket]); setSentKitchenQuantities({}); setSelectedTable(null); setBookingId(0); setReservations([]); setMessage(`Mesa abierta con ${guests} comensales.`); await load(); return true;
     } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo abrir la mesa"); return false; } finally { setBusy(false); }
   }, [bookingId, covers, load, selectedTable]);
 

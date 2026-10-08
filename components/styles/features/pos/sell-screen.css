@@ -2385,3 +2385,31 @@
   background: var(--bo-surface-2);
 }
 .bo-salonMapCanvas .bo-tableMapNode { cursor: pointer; }
+
+/* ===== Salon map table popover ===== */
+.bo-salonMapPopover {
+  position: absolute; z-index: 30; width: min(340px, calc(100% - 20px));
+  max-height: calc(100% - 20px); overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: var(--bo-space-2);
+  padding: var(--bo-space-3); border: 1px solid var(--bo-border); border-radius: var(--bo-radius-md);
+  background: var(--bo-surface); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+.bo-salonMapPopover.is-docked { left: 10px; right: 10px; bottom: 10px; width: auto; max-height: 60%; }
+.pos-salonPop__head { display: flex; align-items: center; justify-content: space-between; gap: var(--bo-space-2); }
+.pos-salonPop__head h3 { margin: 0; font-size: 1.05rem; }
+.pos-salonPop__badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--bo-border); }
+.pos-salonPop__badge.is-occupied { border-color: var(--bo-danger, #d9534f); color: var(--bo-danger, #d9534f); }
+.pos-salonPop__badge.is-reserved { border-color: var(--bo-warning, #e0a100); color: var(--bo-warning, #e0a100); }
+.pos-salonPop__meta { margin: 0; font-size: 0.85rem; color: var(--bo-text-muted, inherit); }
+.pos-salonPop__section { display: flex; flex-direction: column; gap: 6px; }
+.pos-salonPop__section h4 { margin: 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--bo-text-muted, inherit); }
+.pos-salonPop__lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow-y: auto; }
+.pos-salonPop__line { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: baseline; font-size: 0.9rem; }
+.pos-salonPop__line.is-pending .pos-salonPop__lineState { color: var(--bo-warning, #e0a100); }
+.pos-salonPop__lineState { display: block; font-size: 0.72rem; color: var(--bo-text-muted, inherit); }
+.pos-salonPop__total { display: flex; justify-content: space-between; font-weight: 600; border-top: 1px solid var(--bo-border); padding-top: 6px; }
+.pos-salonPop__booking { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid var(--bo-border); border-radius: var(--bo-radius-sm, 8px); }
+.pos-salonPop__booking strong { font-size: 0.95rem; }
+.pos-salonPop__actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.pos-salonPop__actions > * { flex: 1 1 auto; }
+.pos-salonPop .pos-modal__covers { margin: 0; }
