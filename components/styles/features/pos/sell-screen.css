@@ -2368,3 +2368,20 @@
 @media (max-width: 560px) {
   .pos-fiscal__pickerList { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ===== Full-page modal (salon map) ===== */
+.pos-modalBackdrop--full { padding: 0; place-items: stretch; }
+.pos-modal.pos-modal--full {
+  max-width: none; max-height: none; height: 100dvh; border-radius: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+  padding: var(--bo-space-3) var(--bo-space-4) max(var(--bo-space-3), env(safe-area-inset-bottom, 0px));
+}
+.bo-salonMap { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--bo-space-2); }
+.bo-salonMapFloors { display: flex; flex-wrap: wrap; gap: var(--bo-space-2); }
+.bo-salonMapFloors [aria-selected="true"] { border-color: var(--bo-accent); color: var(--bo-accent); }
+.bo-salonMapCanvas {
+  position: relative; flex: 1; min-height: 0;
+  border: 1px solid var(--bo-border); border-radius: var(--bo-radius-md); overflow: hidden;
+  background: var(--bo-surface-2);
+}
+.bo-salonMapCanvas .bo-tableMapNode { cursor: pointer; }

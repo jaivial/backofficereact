@@ -7,7 +7,7 @@ import { X } from "lucide-react";
  * optional footer. Every POS modal renders through it so `data-testid` and
  * accessibility stay consistent across the sell screen.
  */
-export function POSDialog({ testId, title, ariaLabel, busy = false, error, onClose, children, footer, headerTestId, titleTestId }: {
+export function POSDialog({ testId, title, ariaLabel, busy = false, error, onClose, children, footer, headerTestId, titleTestId, fullPage = false }: {
   testId: string;
   title: string;
   /** Stable accessible name when the visible title is dynamic (e.g. amount). */
@@ -20,6 +20,8 @@ export function POSDialog({ testId, title, ariaLabel, busy = false, error, onClo
   /** Overrides for modals whose historical test ids predate the ${testId}-* convention. */
   headerTestId?: string;
   titleTestId?: string;
+  /** Fills the whole viewport (e.g. the salon map). */
+  fullPage?: boolean;
 }) {
   useEffect(() => {
     if (busy) return;
@@ -35,8 +37,8 @@ export function POSDialog({ testId, title, ariaLabel, busy = false, error, onClo
   }, [busy, onClose]);
 
   return (
-    <div className="pos-modalBackdrop" role="presentation" onClick={busy ? undefined : onClose} data-testid={`${testId}-backdrop`}>
-      <div className="pos-modal" role="dialog" aria-modal="true" aria-label={ariaLabel ?? title} onClick={(event) => event.stopPropagation()} data-testid={`${testId}-modal`}>
+    <div className={fullPage ? "pos-modalBackdrop pos-modalBackdrop--full" : "pos-modalBackdrop"} role="presentation" onClick={busy ? undefined : onClose} data-testid={`${testId}-backdrop`}>
+      <div className={fullPage ? "pos-modal pos-modal--full" : "pos-modal"} role="dialog" aria-modal="true" aria-label={ariaLabel ?? title} onClick={(event) => event.stopPropagation()} data-testid={`${testId}-modal`}>
         <header className="pos-modal__header" data-testid={headerTestId ?? `${testId}-header`}>
           <h2 data-testid={titleTestId ?? `${testId}-title`}>{title}</h2>
           <button className="pos-modal__close" type="button" aria-label="Cerrar" disabled={busy} onClick={onClose} data-testid={`${testId}-close`}>
