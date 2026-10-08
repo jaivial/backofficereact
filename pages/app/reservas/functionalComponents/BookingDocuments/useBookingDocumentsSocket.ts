@@ -175,9 +175,10 @@ export function useBookingDocumentsSocket(options: { enabled?: boolean } = {}): 
 
   const upload = useCallback(
     async (file: File, title: string, bookingId?: number | null): Promise<BookingDocument> => {
-      const message: BookingDocumentUploadMessage = {
+      // requestId is assigned by `send` (it is the correlation key of the
+      // pending promise), so the frame is built without one.
+      const message: Omit<BookingDocumentUploadMessage, "requestId"> = {
         type: "bookingDocumentUpload",
-        requestId: nextRequestId(),
         filename: file.name,
         mimeType: file.type || "application/octet-stream",
         title,
@@ -186,15 +187,21 @@ export function useBookingDocumentsSocket(options: { enabled?: boolean } = {}): 
         dataBase64: await fileToBase64(file),
       };
       const reply = await send((requestId) => ({ ...message, requestId }));
-      const document = messageOf(reply).document;
-      return (document || null) as BookingDocument;
+      const document = messageOf(reply).document as BookingDocument | undefined;
+      // A well-formed bookingDocumentUploadOk always carries `document`. If it
+      // ever does not, fail here rather than hand the caller a null that would
+      // blow up later as "cannot read id of null", far from the real cause.
+      if (!document || typeof document !== "object" || !Number(document.id)) {
+        throw new Error("El servidor no devolvi\u00f3 el documento subido");
+      }
+      return document;
     },
     [send],
   );
 
   const list = useCallback(
     async (bookingId: number): Promise<BookingDocumentListOk> => {
-      const message: BookingDocumentListMessage = { type: "bookingDocumentList", requestId: nextRequestId(), bookingId };
+      const message: Omit<BookingDocumentListMessage, "requestId"> = { type: "bookingDocumentList", bookingId };
       const reply = await send((requestId) => ({ ...message, requestId }));
       const replyMessage = messageOf(reply);
       return {
@@ -207,9 +214,8 @@ export function useBookingDocumentsSocket(options: { enabled?: boolean } = {}): 
 
   const remove = useCallback(
     async (documentId: number): Promise<number> => {
-      const message: BookingDocumentDeleteMessage = {
+      const message: Omit<BookingDocumentDeleteMessage, "requestId"> = {
         type: "bookingDocumentDelete",
-        requestId: nextRequestId(),
         id: documentId,
         // Only ever sent after the confirmation dialog was accepted.
         confirmed: true,
