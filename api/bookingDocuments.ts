@@ -82,11 +82,20 @@ export const BOOKING_SEND_DOCUMENTS_FIELD = "send_documents_to_client";
 export const BOOKING_DOCUMENT_MAX_BYTES = 25 * 1024 * 1024;
 
 /**
- * Images are re-encoded server-side down to `bookingDocumentMaxImageBytes`
- * (2 MB stored). There is no separate INPUT cap for images: the 25 MB upload
- * cap above is the only one, so nothing extra is enforced client-side.
+ * Documents per booking / per editor draft (`bookingDocumentMaxDocuments`).
+ * The server rejects the upload with `too_many` past this; it is exported so
+ * the UI can say so before the round trip.
  */
 export const BOOKING_DOCUMENT_MAX_DOCUMENTS = 50;
+
+/**
+ * INPUT cap of an IMAGE, mirroring `specialmenuimage.MaxInputBytes` (10 MB) in
+ * the backend: the webp encoder refuses anything larger, so an image above
+ * this is rejected with an explicit message even though a NON-image file may be
+ * up to the full 25 MB above. Stored images are re-encoded to webp and capped
+ * at 2 MB (`bookingDocumentMaxImageBytes`).
+ */
+export const BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES = 10 * 1024 * 1024;
 
 /** Streaming URL of a stored document. Prefer the server-provided `url`. */
 export function bookingDocumentFileUrl(docId: number): string {

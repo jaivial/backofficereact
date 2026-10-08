@@ -4,6 +4,8 @@ import { ChevronLeft, Download, ExternalLink, Share2, Trash2, Upload } from "luc
 
 import {
   BOOKING_DOCUMENT_MAX_BYTES,
+  BOOKING_DOCUMENT_MAX_DOCUMENTS,
+  BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES,
   bookingDocumentAbsoluteUrl,
   bookingDocumentDownloadName,
   type BookingDocument,
@@ -78,9 +80,19 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
     setUploading(true);
     setError(null);
     try {
-      // Same cap the server enforces (bookingDocumentMaxUploadBytes).
+      // Same caps the server enforces: bookingDocumentMaxUploadBytes for any
+      // file, bookingDocumentMaxDocuments for the count, and a 10 MB INPUT cap
+      // for images because the backend webp encoder refuses anything larger.
       if (uploadFile.size > BOOKING_DOCUMENT_MAX_BYTES) {
         throw new Error(`"${uploadFile.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_BYTES / (1024 * 1024))} MB`);
+      }
+      if (uploadFile.type.startsWith("image/") && uploadFile.size > BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES) {
+        throw new Error(
+          `"${uploadFile.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES / (1024 * 1024))} MB para imágenes; comprímela antes de subirla`,
+        );
+      }
+      if (documents.length >= BOOKING_DOCUMENT_MAX_DOCUMENTS) {
+        throw new Error(`Esta reserva ya tiene el máximo de ${BOOKING_DOCUMENT_MAX_DOCUMENTS} documentos`);
       }
       const created = await upload(uploadFile, uploadTitle || uploadFile.name, bookingId);
       // Success is shown from the socket reply, not from the click.
@@ -94,7 +106,7 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
     } finally {
       setUploading(false);
     }
-  }, [bookingId, reload, upload, uploadFile, uploadTitle]);
+  }, [bookingId, documents.length, reload, upload, uploadFile, uploadTitle]);
 
   const doDelete = useCallback(async () => {
     if (!bookingId || !deleteTarget) return;

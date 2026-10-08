@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Minus, Plus, Trash2, PartyPopper } from "lucide-react";
 import { useMobilityDay } from "../../../../../ui/hooks/useMobilityDay";
@@ -30,7 +30,12 @@ import { ScrollArea } from "../../../../../ui/layout/ScrollArea";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { OptionsSwitchList, OptionsToggleModal } from "../../../../../ui/widgets/OptionsToggle/OptionsToggle";
 import { Switch } from "../../../../../ui/shadcn/Switch";
-import { BOOKING_DOCUMENT_MAX_BYTES, BOOKING_DOCUMENTS_FIELD, BOOKING_SEND_DOCUMENTS_FIELD } from "../../../../../api/bookingDocuments";
+import {
+  BOOKING_DOCUMENT_MAX_BYTES,
+  BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES,
+  BOOKING_DOCUMENTS_FIELD,
+  BOOKING_SEND_DOCUMENTS_FIELD,
+} from "../../../../../api/bookingDocuments";
 import { BookingDocumentsSection, type BookingDocumentDraft } from "./BookingDocumentsSection";
 import { useBookingDocumentsSocket } from "../BookingDocuments/useBookingDocumentsSocket";
 
@@ -205,6 +210,10 @@ export function BookingEditor({
   });
   const [sendToClient, setSendToClient] = useState(Boolean(initial.send_documents_to_client));
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  // Ref mirror of `uploadingIndex` so `submit` can bail out synchronously: a
+  // second click during the same tick would still read the old state value and
+  // start a second full upload (duplicate drafts + duplicate reservation).
+  const uploadingRef = useRef(false);
   const { upload: uploadDocument, connected: documentsSocketConnected } = useBookingDocumentsSocket({ enabled: showDocumentsSection });
 
   // Reload state if initial changes (booking switch).
@@ -669,15 +678,24 @@ export function BookingEditor({
     for (let index = 0; index < documentRows.length; index += 1) {
       const row = documentRows[index];
       if (!row.file) continue;
-      // Same cap the server enforces; refuse before buffering the frame.
+      // Same caps the server enforces; refuse before buffering the frame.
       if (row.file.size > BOOKING_DOCUMENT_MAX_BYTES) {
         throw new Error(`"${row.file.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_BYTES / (1024 * 1024))} MB`);
       }
+      // An image has a LOWER input cap: the backend webp encoder refuses
+      // anything over specialmenuimage.MaxInputBytes (10 MB).
+      if (row.file.type.startsWith("image/") && row.file.size > BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES) {
+        throw new Error(
+          `"${row.file.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES / (1024 * 1024))} MB para imágenes; comprímela antes de subirla`,
+        );
+      }
       setUploadingIndex(index);
+      uploadingRef.current = true;
       try {
         const created = await uploadDocument(row.file, row.title || row.file.name);
         ids.push(created.id);
       } finally {
+        uploadingRef.current = false;
         setUploadingIndex(null);
       }
     }
@@ -685,6 +703,9 @@ export function BookingEditor({
   }, [documentRows, uploadDocument]);
 
   const submit = useCallback(async () => {
+    // A click while the previous submit is still uploading would upload the
+    // whole set twice; only one of the two runs could claim the drafts.
+    if (uploadingRef.current) return;
     setFormError(null);
 
     const date = String(draft.reservation_date || "").trim();
@@ -719,21 +740,6 @@ export function BookingEditor({
       preferred_floor_number: draft.preferred_floor_number,
       special_menu: Boolean(draft.special_menu),
     };
-
-    // Coordination id: booking_documents_v1 - the documents travel with the
-    // booking-create call as draft ids; the flag decides whether the customer
-    // receives a copy with the confirmation.
-    if (showDocumentsSection && documentsEnabled) {
-      // An upload can fail (over the cap, server error). Nothing is created
-      // until every document is stored, so abort here and show the reason.
-      try {
-        payload[BOOKING_DOCUMENTS_FIELD] = await uploadDocuments();
-      } catch (e) {
-        setUploadingIndex(null);
-        return setFormError(e instanceof Error ? e.message : "No se pudieron subir los documentos");
-      }
-      payload[BOOKING_SEND_DOCUMENTS_FIELD] = Boolean(sendToClient);
-    }
 
     // Coordination id: booking_is_event_v1 — only sent from the page that shows it.
     if (showEventToggle) payload.is_event = Boolean(draft.is_event);
@@ -818,11 +824,32 @@ export function BookingEditor({
       }
     }
 
+    // Coordination id: booking_documents_v1 - the documents travel with the
+    // booking-create call as draft ids; the flag decides whether the customer
+    // receives a copy with the confirmation.
+    //
+    // THIS RUNS LAST, AFTER EVERY VALIDATION ABOVE. An upload is irreversible:
+    // each draft is a real object in storage plus a row with booking_id NULL.
+    // Uploading before the group-menu / special-date / arroz checks would leak
+    // one orphan set per retry, and the 50-draft cap would eventually lock the
+    // user out of uploading entirely.
+    if (showDocumentsSection && documentsEnabled) {
+      // An upload can fail (over the cap, server error). Nothing is created
+      // until every document is stored, so abort here and show the reason.
+      try {
+        payload[BOOKING_DOCUMENTS_FIELD] = await uploadDocuments();
+      } catch (e) {
+        setFormError(e instanceof Error ? e.message : "No se pudieron subir los documentos");
+        return;
+      }
+      payload[BOOKING_SEND_DOCUMENTS_FIELD] = Boolean(sendToClient);
+    }
+
     await onSubmit(payload);
   }, [documentRows, documentsEnabled, documentsSocketConnected, draft, onSubmit, sendToClient, showDocumentsSection, specialDate, uploadDocuments]);
 
   const isCreate = submitLabel === "Crear";
-  const submitDisabled = busy || (isCreate && (!requiredFieldsComplete || !documentsComplete));
+  const submitDisabled = busy || uploadingIndex != null || (isCreate && (!requiredFieldsComplete || !documentsComplete));
 
   const footerNode = (
     <div
