@@ -20,9 +20,12 @@ import { POSModifierPicker } from "./POSModifierPicker";
 import { POSPackPicker } from "./POSPackPicker";
 import { POSRecallDialog } from "./POSRecallDialog";
 import { POSPinDialog } from "./POSPinDialog";
+import { POSGuestHistoryDialog } from "./POSGuestHistoryDialog";
 import { printTicketReceipt } from "./printReceipt";
 import { POSTableTile } from "./POSTableTile";
 import { POSDayBillingDialog } from "./POSDayBillingDialog";
+import { POSFiscalDialog } from "./POSFiscalDialog";
+import { POSGuestDialog } from "./POSGuestDialog";
 import { POSOfflineBar } from "./POSOfflineBar";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
@@ -77,6 +80,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [divideOpen, setDivideOpen] = useState(false);
   const [divideGuests, setDivideGuests] = useState("2");
   const [prompt, setPrompt] = useState<RailFeatureKey | null>(null);
+  // "create" names a check that does not exist yet; "rename" names the current one.
+  const [guestDialog, setGuestDialog] = useState<"create" | "rename" | null>(null);
   const [areaFilter, setAreaFilter] = useState(0);
   const [ticketExpanded, setTicketExpanded] = useState(false);
   const [syncingOffline, setSyncingOffline] = useState(false);
@@ -384,7 +389,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     if (!register.activeTicketLines.length) reasons.comanda = "No hay líneas en la cuenta.";
     else if (comandaBusy) reasons.comanda = "Generando comanda…";
     if (!register.ticket) {
-      const ticketKeys: RailFeatureKey[] = ["total", "borrar-comanda", "descuento", "separar-comanda", "dividir-comanda", "recargo", "invita", "comentario", "aparcar", "juntar-mesas", "cliente", "empleado", "tags", "propina"];
+      const ticketKeys: RailFeatureKey[] = ["total", "borrar-comanda", "descuento", "separar-comanda", "dividir-comanda", "recargo", "invita", "comentario", "aparcar", "juntar-mesas", "cliente", "comensal", "empleado", "tags", "propina"];
       for (const key of ticketKeys) reasons[key] = "Abre una cuenta para usar esta acción.";
     }
     if (!selectedLine || (selectedLine.status && selectedLine.status !== "ACTIVE")) {
@@ -526,7 +531,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       case "comanda": void printComanda(); break;
       case "cocina": void register.sendKitchen(); break;
       case "descuento": if (register.ticket) { register.setError(""); setKeypadContext({ kind: "discount" }); setDiscountOpen(true); } break;
-      case "separar-comanda": void register.createSplitTicket(); break;
+      case "separar-comanda": if (register.visit) { register.setError(""); setGuestDialog("create"); } break;
       case "borrar-comanda": if (register.ticket) { register.setError(""); setVoidOrderOpen(true); } break;
       case "dividir-comanda": if (register.ticket) { register.setError(""); setDivideOpen(true); } break;
       case "salon": setAreaFilter(0); setShowTables(true); break;
@@ -535,6 +540,10 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       case "facturacion": if (date) setBillingOpen(true); break;
       case "cierre-x": runCierre("X"); break;
       case "cierre-y": runCierre("Y"); break;
+      // Fiscal documents live on their own rail action: they are a document the
+      // guest may ask for, not an edit of the comanda.
+      case "factura": register.setError(""); setPrompt("factura"); break;
+      case "comensal": register.setError(""); setPrompt("comensal"); break;
       case "cerrar-mesas": register.setError(""); setPrompt("cerrar-mesas"); break;
       case "cerrar-dia": if (onCloseDay && cashDay?.status === "OPEN") { register.setError(""); setCloseDayError(""); setPrompt("cerrar-dia"); } break;
       case "aparcar": case "recargo": case "invita": case "comentario": case "cajon":
@@ -566,6 +575,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                   visit: register.visit,
                   restaurant: register.restaurant,
                   operatorName: register.operators.find((entry) => entry.id === register.lastPaidTicket?.operatorMemberId)?.displayName,
+                  payments: register.lastPaidPayments,
                 });
               } catch (reason) {
                 register.setError(reason instanceof Error ? reason.message : "No se pudo imprimir el recibo.");
@@ -595,6 +605,13 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               canMoveLine={register.otherOpenSplitTickets.length > 0}
               onMergeSplitTickets={() => void register.mergeSplitTickets()}
               onDeleteEmptyTicket={(t) => void register.voidEmptyTicket(t)}
+              onRenameTicket={(target) => {
+                // Rename the check whose pencil was pressed, not whichever one
+                // happens to be active: the panel shows every split tab at once.
+                register.switchTicket(target);
+                register.setError("");
+                setGuestDialog("rename");
+              }}
               busy={register.busy}
               readOnly={readOnly}
             />
@@ -615,6 +632,31 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       </div>
 
       {billingOpen && date ? <POSDayBillingDialog date={date} onClose={() => setBillingOpen(false)} /> : null}
+
+      {prompt === "comensal" && register.ticket ? (
+        <POSGuestHistoryDialog
+          ticket={register.ticket}
+          canErase
+          onClose={closePrompt}
+          onLinked={(next) => register.adoptTicket(next)}
+        />
+      ) : null}
+
+      {prompt === "factura" ? <POSFiscalDialog ticket={register.ticket} visit={register.visit} online={register.online} onClose={closePrompt} /> : null}
+
+      {guestDialog ? (
+        <POSGuestDialog
+          ticket={guestDialog === "rename" ? register.ticket : null}
+          title={guestDialog === "rename" ? "Nombre del comensal" : "Separar comanda"}
+          confirmText={guestDialog === "rename" ? "Guardar" : "Separar"}
+          onClose={() => setGuestDialog(null)}
+          onSave={async (label) => {
+            if (guestDialog === "rename") return register.setTicketGuestLabel(label);
+            await register.createSplitTicket(label);
+            return true;
+          }}
+        />
+      ) : null}
 
       <ConfirmDialog
         open={Boolean(lineToVoid)}
@@ -863,7 +905,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
           title="Anular línea"
 
-          description={`Pide el PIN de un jefe para anular "{lineToVoid.name}".`}
+          description={`Pide el PIN de un jefe para anular "${lineToVoid.productName}".`}
 
           confirmLabel="Anular con PIN"
 
@@ -877,6 +919,29 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
       ) : null}
 
+
+      {register.pinChallenge ? (
+        <POSPinDialog
+          title={register.pinChallenge.title}
+          description={register.pinChallenge.message}
+          confirmLabel="Aprobar con PIN"
+          busy={register.busy}
+          error={pinError || undefined}
+          onClose={() => { setPinError(""); register.setPinChallenge(null); }}
+          onSubmit={async (payload) => {
+            const challenge = register.pinChallenge;
+            if (!challenge) return;
+            // Checked with /pin/verify first so a wrong PIN stays in this dialog
+            // instead of becoming a till error; the action itself verifies again
+            // on the server, which is the only check that counts.
+            try { await register.verifyPin(payload.pin); setPinError(""); }
+            catch (failure) { setPinError(failure instanceof Error ? failure.message : "PIN incorrecto"); return; }
+            register.setPinChallenge(null);
+            const done = await challenge.retry(payload.pin);
+            if (done) { setDiscountOpen(false); setLineToVoid(null); }
+          }}
+        />
+      ) : null}
 
       {showRecall ? (
 

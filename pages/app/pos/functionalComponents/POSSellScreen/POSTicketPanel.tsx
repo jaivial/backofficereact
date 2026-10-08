@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
-import { ArrowRightLeft, History, Merge, Minus, Plus, Receipt, Trash2, Users, X } from "lucide-react";
+import { ArrowRightLeft, History, Merge, Minus, Pencil, Plus, Receipt, Trash2, Users, X } from "lucide-react";
 import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { cn } from "../../../../../ui/shadcn/utils";
 import { POSCourseStrip } from "./POSCourseStrip";
 import type { POSCourseSummary } from "../../types/register";
 import { money, type Tag, type Ticket, type TicketLine, type Visit } from "../../hooks/usePOSRegister";
 
-export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, onRequestRecall, courses = [], activeCourse = "1", onSelectCourse, onFireCourse, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, busy = false, readOnly = false }: {
+export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, onRequestRecall, courses = [], activeCourse = "1", onSelectCourse, onFireCourse, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, onRenameTicket, busy = false, readOnly = false }: {
   ticket: Ticket | null;
   visit: Visit | null;
   tags?: Tag[];
@@ -33,6 +33,7 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
   canMoveLine?: boolean;
   onMergeSplitTickets?: () => void;
   onDeleteEmptyTicket?: (ticket: Ticket) => void;
+  onRenameTicket?: (ticket: Ticket) => void;
   busy?: boolean;
   /** Sealed day: the ticket is query-only, so every line action stays disabled. */
   readOnly?: boolean;
@@ -122,7 +123,20 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
                     onClick={() => onSelectTicket?.(entry)}
                     data-testid={`pos-split-tab-${entry.id}`}
                   >
-                    {`Cuenta ${index + 1}`} · {money(entry.totalGrossCents)}
+                    {entry.guestLabel || `Cuenta ${index + 1}`} · {money(entry.totalGrossCents)}
+                    {entry.guestLabel && onRenameTicket && !readOnly ? (
+                      <span
+                        className="pos-ticketPanel__tabRename"
+                        role="button"
+                        tabIndex={0}
+                        title={`Cambiar el nombre de ${entry.guestLabel}`}
+                        onClick={(event) => { event.stopPropagation(); onRenameTicket(entry); }}
+                        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.stopPropagation(); event.preventDefault(); onRenameTicket(entry); } }}
+                        data-testid={`pos-split-rename-${entry.id}`}
+                      >
+                        <Pencil className="h-3 w-3" aria-hidden="true" />
+                      </span>
+                    ) : null}
                     {isEmpty && entry.id === ticket.id && onDeleteEmptyTicket ? (
                       <span
                         className="pos-ticketPanel__tabDelete"
@@ -154,6 +168,12 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
                 </button>
               ) : null}
             </div>
+          ) : null}
+          {ticket.customerId && ticket.customerName ? (
+            <p className="pos-ticketPanel__guest" role="note" data-testid="pos-ticket-guest">
+              <strong>{ticket.customerName}</strong>
+              {ticket.customerNotes ? <span data-testid="pos-ticket-guest-notes"> · {ticket.customerNotes}</span> : null}
+            </p>
           ) : null}
           <div className="pos-ticketPanel__lines" data-testid="pos-ticket-lines">
             {topLevelLines.map((line) => (

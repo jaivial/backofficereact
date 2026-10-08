@@ -29,6 +29,9 @@ const NEVER_QUEUE_PATHS = [
   "/recall",
   "/kitchen-dispatches",
   "/courses/fire",
+  // Naming a check is presentational and cheap to retype; queuing it would
+  // mean a guest name silently appearing minutes later on the wrong check.
+  "/guest-label",
 ];
 
 function normalizePath(path: string): string {

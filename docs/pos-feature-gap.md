@@ -84,14 +84,32 @@ SSR payload. Same bug class as the toast portal fixed in #525.
 
 ### P2 — Spanish fiscal / compliance
 
-**G8. No Verifactu / BAI integration and no fiscal document types.**
-Tickets are numbered `TPV-YYYYMMDD-NNNN` through `pos_daily_sequences`, and the
-UI honestly labels them "Recibo no fiscal". There is no simplified invoice
-(`Factura simplificada`) with `NIF`, no series/block counter, no QR, no
-VeriFactu chained record and no export to the AEAT format. For a Spanish
-restaurant selling to consumers this is a compliance gap, not a nice-to-have.
-*Effort:* high; the cheapest useful slice is a "Factura simplificada" document
-with series + number + NIF + QR and a daily sales ledger CSV.
+**G8. PARTIALLY DONE. Factura simplificada groundwork exists; it is NOT
+certified software and NOTHING is filed with the AEAT.**
+
+What is implemented and verified on dev:
+- `Factura simplificada` and `Factura rectificativa` documents in their own
+  numbering series per terminal (`pos_fiscal_series`), plus "duplicado" copies
+  that keep the same number and content as the original (`copy_number`).
+- A hash-chained record: each document stores `content_hash` and
+  `previous_hash` linking it to its predecessor, so tampering with any stored
+  amount is detectable. **Proven, not asserted:** tampering with an original's
+  `total_cents` and with a copy's `tax_cents` each made `GET /fiscal/verify`
+  return `chainIntact=false` naming the offending row; both were then restored.
+- NIF validation and the Spanish cash-payment limit (importe límite) block.
+- A rectificativa references the document it corrects (`corrects_number`).
+
+**What this is NOT, and must never be presented as compliant:**
+- No certified ("homologado") software: there is no AEAT certification.
+- **Nothing is filed or transmitted anywhere.** No VeriFactu submission, no BAI
+  (Diputación Foral de Bizkaia) connection, no AEAT webhook, no daily sales
+  ledger sent anywhere. The chain exists in our own database only.
+- No remisión (`Remisión`/`Justificante de entrega`) generation.
+- Therefore this does not by itself satisfy VeriFactu, and a user must not treat
+  these documents as tax-compliant invoices. Honest wording in the UI must stay
+  in place; do not label any of this "VeriFactu compliant".
+- Remaining for real compliance: an external filing channel and a certified
+  component, which is a project of its own, not a UI task.
 
 **G9. Receipt printing is `window.print()` of the page.**
 The last-receipt banner prints whatever the browser renders, not a proper 80 mm
@@ -102,9 +120,22 @@ receipt with the required fields and a stable layout.
 **G10. No "packs / combinados"** — tables exist (`pos_packs`,
 `pos_pack_components`) but nothing uses them; a waiter cannot ring a fixed
 menu as one button.
-**G11. No staff PIN / manager approval** — voids and discounts rely on the
-logged-in session permissions, so a waiter who can void can void any amount;
-classic POS uses a manager PIN for voids over a threshold.
+**G11. PARTIALLY DONE. Manager PIN now exists and is verified server-side.**
+A PIN (`verifyPOSApprovalPIN`) is verified by the server, never trusted from the
+client, and the resolved member's name is written to the audit trail. It covers:
+- line voids (`approvedBy`);
+- cash movements, Entrada/Salida (new `pos_cash_movements.approved_by`, PR #412),
+  shown in the UI as an "Aprobado por <name>" badge.
+The PIN is **optional on purpose** — forcing one on every waiter would train staff
+to type a PIN they do not have. Closing a cash day is protected by the
+`posShiftGate` *permission* rather than a PIN.
+**Round 3 (backend #415/#417, backofficereact #560): policy is now configurable.**
+`pos_settings.pin_threshold_cents` (any void, comp, discount, refund or cash-out of
+at least that amount needs a manager PIN) and `pin_required_for_discount` (every
+discount and comp needs one). Enforced server-side by one rule (`posPINApproval`);
+the till reacts to `403 PIN_REQUIRED` by showing the PIN pad and retrying. Default
+off; it cannot be switched on while nobody has a PIN. Honest limit: any active
+member with a PIN can approve -- `restaurant_members` has no manager flag.
 **G12. No quantity recall on the last ticket** — re-adding the previous order
 requires re-tapping every tile.
 **G13. No offline queue.** Every action is an online call; a network blip blocks
@@ -500,19 +531,55 @@ two catalogues and is listed below.
 ## Status at the end of this round
 
 **Shipped and verified on dev:** G1 modifiers, G2 coursing, G3 allergens,
-G9 80 mm receipt, G10 packs, G11 staff PIN, G12 recall.
+G9 80 mm receipt, G10 packs, G11 staff PIN, G12 recall, G13 offline queue.
+
+**Round 2 (see `~/bg/pos-qa2-result.txt`):**
+
+| gap | state |
+|---|---|
+| G8 fiscal / VERI*FACTU | **PARTIAL.** Series per terminal, duplicados, rectificativa, NIF + cash-limit block, and a hash-chained record are implemented and tamper-tested. It is NOT certified software and NOTHING is filed with the AEAT: no VeriFactu submission, no BAI, no ledger dispatch, no remisión. See G8 above for the full "what this is not" list, which must not be softened. |
+| G11 manager PIN | **PARTIAL.** Server-verified PIN on voids and on cash movements, with the approver recorded and shown. Still no amount-threshold PIN and none on discounts. |
+| one check per guest | Split is payment-split only; a guest still cannot be given their own separate check. |
+| customer history / loyalty | Nothing. `analytics_customers` exists (phone, tax_id, first/last seen) but is populated from reservations and is NOT linked to POS tickets, so the POS cannot show history. Needs a real data model, not a screen. |
+| allergens | Declared per product and shown on the sell tiles with the full list on hover and in the accessible name. The backfill of existing products is still unmapped (see below). |
+| kitchen/bar expo | **Already working**, verified not assumed: stations + per-category/per-product routes exist and the KDS at `/app/pos?section=kitchen` shows real routed tickets. (`/app/pos/kitchen` is a 404.) |
+| till open/close + count | **Already working**, verified: Entrada/Registrar, Cierre X/Y/Z, PDFs, and "Cerrar dia" is refused while visits are open. |
 
 **Still open, in the order I would take them:**
 
 | gap | why it is not done | size |
 |---|---|---|
-| G8 fiscal / VERI*FACTU | needs a real factura simplificada series, hashing and an external filing channel | compliance project, not a UI task |
-| G13 offline queue | needs a local queue plus an idempotent replay; the POS already has idempotency keys on most writes, which is the foundation | large |
+| G8 real compliance | needs an external filing channel and certified software; cannot honestly be done in this repo | compliance project |
+| guest loyalty model | `analytics_customers` is not linked to `pos_tickets`; a real model + migration first | medium |
+| one check per guest | needs check splitting at the line level, not at the tender level | large |
 | allergens backfill | `pos_products.source_id` does not resolve reliably against `menu_dishes_catalog`; a join would attach the wrong dishes' allergens | needs a real mapping |
 
-Smaller known gaps: split is payment-split rather than one check per guest, no
-loyalty or ticket history from the POS, cash drawer has no counted-by override,
-and no separate expo screen for bar routing.
-
 Full story list and measured results: `docs/pos-qa-stories.md`.
-Session result write-up: `~/bg/pos-qa-result.txt`.
+Round 1 write-up: `~/bg/pos-qa-result.txt`. Round 2: `~/bg/pos-qa2-result.txt`.
+
+
+## Round 3 (2026-10-07): what shipped, what is still not true
+
+Backend #414-#419, backofficereact #560, all on `dev`, verified on the dev site
+with cu (no tests were written, by instruction).
+
+- **Per-guest checks at LINE level.** The move endpoint already existed; it lost
+  data. A full move now re-points the line (modifiers, tags, comp, pack components
+  and kitchen history travel with it); a partial move copies them and splits menu
+  components. `pos_kitchen_line_transfers` carries the already-sent quantity, so a
+  dish moved to another comensal's check is neither VOIDed nor cooked twice.
+  Measured: re-sending both checks after the moves produced zero kitchen deltas.
+- **Guest history.** `pos_customers` + `pos_tickets.customer_id` (on the check, not
+  the visit). Visits, spend net of refunds, usual dishes and last checks are derived
+  from paid tickets at read time. GDPR erasure anonymises (paid tickets are fiscal
+  records). `analytics_customers` was left alone: it is a rebuildable projection.
+- **Change on the receipt.** `pos_payments.tendered_cents` records the cash handed
+  over (CASH only, never below what is applied). The receipt prints
+  Entregado/Cambio only from that record. Old payments have NULL and print none.
+- **Allergen backfill.** From `comida_items` (the Carta import's own key), only into
+  products with no allergens, only from non-empty lists: 23 products. 4 products
+  already carry allergens that DISAGREE with the carta; left for a human.
+- **NOT DONE / NOT TRUE:** nothing is sent to the AEAT. No VERI*FACTU records, no
+  QR, no declaracion responsable, no certified software. See
+  `~/bg/verifactu-guide.txt` for the legal path; until then the POS documents are
+  internal and the not-certified banner must stay.

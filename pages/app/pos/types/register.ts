@@ -1,4 +1,4 @@
-export type Settings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit?: boolean; requireOpenShift?: boolean; receiptPrefix?: string };
+export type Settings = { isEnabled: boolean; stockMode: "OFF" | "SHADOW" | "LIVE"; coversMode: "MANUAL" | "SHADOW" | "LIVE"; timezone: string; businessDayCutoff: string; autoCloseVisit?: boolean; requireOpenShift?: boolean; receiptPrefix?: string; /** A money-reducing action at or above this needs a manager PIN; null = no amount rule. */ pinThresholdCents?: number | null; /** Every discount and invitation needs a manager PIN. */ pinRequiredForDiscount?: boolean };
 export type ModifierOption = { id: number; name: string; priceDeltaCents: number; sortOrder?: number; isActive?: boolean };
 /** A group of choices the guest picks for a product ("Talla", "Extras"). */
 export type ModifierGroup = {
@@ -73,6 +73,12 @@ export type TicketLine = {
    * on responses that do not carry it, in which case the id order is kept.
    */
   updatedAt?: string;
+  /**
+   * How much of this line the kitchen already knows about, from the server's
+   * dispatch history. Follows the line when it moves to another check, so a
+   * reload, a second terminal or a split never makes a cooked dish look unsent.
+   */
+  kitchenSentQuantity?: number;
 };
 /** One course on a ticket, with how much of it the kitchen still has not seen. */
 export type POSCourseSummary = {
@@ -95,7 +101,7 @@ export type TicketSummary = {
   paidAt?: string | null;
   refundedCents?: number;
 };
-export type Ticket = { id: number; ticketNumber?: string; version: number; status?: string; lines: TicketLine[]; subtotalGrossCents?: number; discountCents?: number; surchargeCents?: number; tipCents?: number; taxCents?: number; totalGrossCents: number; operatorMemberId?: number | null; note?: string };
+export type Ticket = { id: number; ticketNumber?: string; guestLabel?: string; customerId?: number | null; customerName?: string; customerNotes?: string; version: number; status?: string; lines: TicketLine[]; subtotalGrossCents?: number; discountCents?: number; surchargeCents?: number; tipCents?: number; taxCents?: number; totalGrossCents: number; operatorMemberId?: number | null; note?: string };
 export type Visit = { id: number; channel?: string; tableId?: number | null; tableName?: string; covers: number; status?: string; totalGrossCents?: number; parked?: boolean; parkedNote?: string; openedAt?: string; customerName?: string; customerTaxId?: string; ticket?: Ticket; tickets?: Ticket[] };
 export type VisitSummary = Pick<Visit, "id" | "channel" | "tableId" | "tableName" | "covers" | "status" | "totalGrossCents" | "parked" | "parkedNote"> & { openedAt?: string; lineCount?: number };
 export type Tag = { id: number; name: string; color?: string; scope?: string; isActive?: boolean };
@@ -108,3 +114,6 @@ export type StockStatus = "ok" | "low" | "out";
 export type ProductModifiers = Record<string, ModifierGroup[]>;
 export type Bootstrap = { settings: Settings; restaurant?: RestaurantProfile; products: Product[]; productModifiers?: ProductModifiers; packs?: Pack[]; tables: Table[]; areas?: Area[]; visits: Visit[]; operators?: Operator[]; currentShift?: ShiftSummary | null; productStock?: Record<string, StockStatus> };
 export type Reservation = { id: number; customerName: string; reservationDate: string; reservationTime: string; partySize: number; status: string; visitId?: number | null; visitStatus?: string | null };
+
+/** One captured payment row of a ticket, as returned by the POS backend. */
+export type POSPayment = { id: number; method: string; amountCents: number; tipCents?: number; provider?: string; cardLast4?: string; /** Cash handed over, when the cashier typed it; null otherwise. */ tenderedCents?: number | null; /** tendered - amount - tip; null when nothing was recorded. */ changeCents?: number | null };
