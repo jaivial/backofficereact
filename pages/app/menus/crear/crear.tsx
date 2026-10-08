@@ -877,6 +877,17 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       onChange={updateSpecialCta}
                     />
                   ) : null}
+                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-group-booking" /> : null}
+                  {isSpecial ? (
+                    <SpecialMenuGroupBookingSettings
+                      groupMenuEnabled={specialGroupMenuEnabled}
+                      principalesRequired={specialPrincipalesRequired}
+                      principalesAvailable={specialPrincipalesEnabled && specialMenuSections.some((sec) => (sec.principales ?? []).length > 0)}
+                      busy={specialGroupBookingBusy || !menuId}
+                      onChangeGroupMenuEnabled={(enabled) => void setSpecialGroupBooking({ groupMenuEnabled: enabled, principalesRequired: enabled ? specialPrincipalesRequired : false })}
+                      onChangePrincipalesRequired={(required) => void setSpecialGroupBooking({ groupMenuEnabled: specialGroupMenuEnabled, principalesRequired: required })}
+                    />
+                  ) : null}
                   {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-cta-principales" /> : null}
                   {isSpecial ? (
                     <SpecialMenuPrincipalesSettings
@@ -890,17 +901,6 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       onPick={(sectionId, item) => void addSpecialPrincipal(sectionId, item.id)}
                       onRemove={(sectionId, dishId) => void removeSpecialPrincipal(sectionId, dishId)}
                       onCreateDish={setPrincipalCreateSectionId}
-                    />
-                  ) : null}
-                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-group-booking" /> : null}
-                  {isSpecial ? (
-                    <SpecialMenuGroupBookingSettings
-                      groupMenuEnabled={specialGroupMenuEnabled}
-                      principalesRequired={specialPrincipalesRequired}
-                      principalesAvailable={specialPrincipalesEnabled}
-                      busy={specialGroupBookingBusy || !menuId}
-                      onChangeGroupMenuEnabled={(enabled) => void setSpecialGroupBooking({ groupMenuEnabled: enabled, principalesRequired: enabled ? specialPrincipalesRequired : false })}
-                      onChangePrincipalesRequired={(required) => void setSpecialGroupBooking({ groupMenuEnabled: specialGroupMenuEnabled, principalesRequired: required })}
                     />
                   ) : null}
                   {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-cta-active" /> : null}
