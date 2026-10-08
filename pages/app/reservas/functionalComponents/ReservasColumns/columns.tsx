@@ -51,6 +51,7 @@ export type ReservasColumnId =
   | "movilidad"
   | "movilidadPax"
   | "pendiente"
+  | "documentos"
   | "qrPdf";
 
 export type ReservasColumnCtx = {
@@ -62,6 +63,8 @@ export type ReservasColumnCtx = {
   mesaDisabled: boolean;
   /** Opens the QR / receipt modal. Coordination id: special_booking_qr_v1 */
   onOpenQr: () => void;
+  /** Opens the documents modal. Coordination id: booking_documents_v1 */
+  onOpenDocuments: () => void;
 };
 
 export type ReservasColumnDef = {
@@ -278,6 +281,22 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
     render: (b) => (isSpecial(b) ? formatEUR(b.special.amount_left) : DASH),
   },
   {
+    // Coordination id: booking_documents_v1 - documents attached to the
+    // booking (menu dossier, event paperwork...). Same affordance as the
+    // special-date QR column, available on ordinary days too.
+    id: "documentos",
+    label: "Documentos",
+    thClass: "col-documentos",
+    cellClass: "col-documentos",
+    hideBelowWidth: 1480,
+    stopPropagation: true,
+    render: (_b, c) => (
+      <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={c.onOpenDocuments} data-testid="reservas-documents-open-btn">
+        Ver documentos
+      </button>
+    ),
+  },
+  {
     // Coordination id: special_booking_qr_v1 - QR + Stripe receipt of a
     // special-date booking, opened in a modal (image / PDF preview).
     id: "qrPdf",
@@ -306,6 +325,7 @@ export type ReservasColumnsScope = "normal" | "special";
 const RESERVAS_NORMAL_COLUMN_IDS: ReservasColumnId[] = [
   "added", "mesa", "time", "client", "status", "floor", "salon", "pax", "children",
   "highChairs", "strollers", "phone", "rice", "comment", "movilidad", "movilidadPax",
+  "documentos",
 ];
 
 /** User preference key storing the visible columns of each scope. */

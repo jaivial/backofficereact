@@ -30,6 +30,9 @@ import { ScrollArea } from "../../../../../ui/layout/ScrollArea";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { OptionsSwitchList, OptionsToggleModal } from "../../../../../ui/widgets/OptionsToggle/OptionsToggle";
 import { Switch } from "../../../../../ui/shadcn/Switch";
+import { BOOKING_DOCUMENTS_FIELD, BOOKING_SEND_DOCUMENTS_FIELD } from "../../../../../api/bookingDocuments";
+import { BookingDocumentsSection, type BookingDocumentDraft } from "./BookingDocumentsSection";
+import { useBookingDocumentsSocket } from "../BookingDocuments/useBookingDocumentsSocket";
 
 import { principalesItemsFromMenu, specialMenusFromBooking, type PrincipalesRow, type RiceRow } from "./bookingDraft";
 import {
@@ -144,6 +147,15 @@ export type BookingEditorDraft = {
    * and always hands over to management. Coordination id: booking_is_event_v1
    */
   is_event?: boolean;
+
+  /**
+   * "Adjuntar documento" section (booking_documents_v1). Files are uploaded
+   * over the socket when the booking is submitted, and the returned draft ids
+   * are bound to the new booking by the create call.
+   */
+  documents_enabled?: boolean;
+  documents?: BookingDocumentDraft[];
+  send_documents_to_client?: boolean;
 };
 
 export function BookingEditor({
@@ -158,6 +170,7 @@ export function BookingEditor({
   bodyClassName,
   footerContainerRef,
   showEventToggle = false,
+  showDocumentsSection = false,
 }: {
   api: API;
   initial: BookingEditorDraft;
@@ -175,6 +188,8 @@ export function BookingEditor({
   footerContainerRef?: React.RefObject<HTMLDivElement | null>;
   /** Shows the "Reserva de evento" switch (only /app/reservas/anadir). booking_is_event_v1 */
   showEventToggle?: boolean;
+  /** Shows the "Adjuntar documento" section (only /app/reservas/anadir). booking_documents_v1 */
+  showDocumentsSection?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const [draft, setDraft] = useState<BookingEditorDraft>(() => ({ extras: [], ...initial }));
@@ -182,9 +197,24 @@ export function BookingEditor({
   const [extrasCatalog, setExtrasCatalog] = useState<BookingExtra[]>([]);
   const [extrasModalOpen, setExtrasModalOpen] = useState(false);
   const [extrasDeleteTarget, setExtrasDeleteTarget] = useState<BookingExtra | null>(null);
+  // Coordination id: booking_documents_v1 - picked files + send-to-client flag.
+  const [documentsEnabled, setDocumentsEnabled] = useState(Boolean(initial.documents_enabled));
+  const [documentRows, setDocumentRows] = useState<BookingDocumentDraft[]>(() => {
+    const seeded = initial.documents;
+    return seeded && seeded.length ? seeded : [{ title: "", file: null }];
+  });
+  const [sendToClient, setSendToClient] = useState(Boolean(initial.send_documents_to_client));
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const { upload: uploadDocument, connected: documentsSocketConnected } = useBookingDocumentsSocket({ enabled: showDocumentsSection });
 
   // Reload state if initial changes (booking switch).
   useEffect(() => setDraft({ extras: [], ...initial }), [initial]);
+
+  useEffect(() => {
+    setDocumentsEnabled(Boolean(initial.documents_enabled));
+    setSendToClient(Boolean(initial.send_documents_to_client));
+    setDocumentRows(initial.documents && initial.documents.length ? initial.documents : [{ title: "", file: null }]);
+  }, [initial]);
 
   // Coordination id: booking_extras_v1 - restaurant-scoped extras catalog.
   useEffect(() => {
@@ -614,6 +644,42 @@ export function BookingEditor({
     }));
   }, []);
 
+  const updateDocumentRow = useCallback((index: number, patch: Partial<BookingDocumentDraft>) => {
+    setDocumentRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  }, []);
+
+  const addDocumentRow = useCallback(() => {
+    setDocumentRows((prev) => [...prev, { title: "", file: null }]);
+  }, []);
+
+  const removeDocumentRow = useCallback((index: number) => {
+    setDocumentRows((prev) => (prev.length <= 1 ? [{ title: "", file: null }] : prev.filter((_, i) => i !== index)));
+  }, []);
+
+  // Coordination id: booking_documents_v1 - every revealed row must hold a
+  // file, otherwise the booking cannot be completed.
+  const documentsComplete = useMemo(
+    () => !documentsEnabled || documentRows.every((row) => Boolean(row.file)),
+    [documentRows, documentsEnabled],
+  );
+
+  /** Uploads every picked file and returns the draft ids to bind to the booking. */
+  const uploadDocuments = useCallback(async (): Promise<number[]> => {
+    const ids: number[] = [];
+    for (let index = 0; index < documentRows.length; index += 1) {
+      const row = documentRows[index];
+      if (!row.file) continue;
+      setUploadingIndex(index);
+      try {
+        const created = await uploadDocument(row.file, row.title || row.file.name);
+        ids.push(created.id);
+      } finally {
+        setUploadingIndex(null);
+      }
+    }
+    return ids;
+  }, [documentRows, uploadDocument]);
+
   const submit = useCallback(async () => {
     setFormError(null);
 
@@ -627,6 +693,13 @@ export function BookingEditor({
     if (!time) return setFormError("Hora inválida");
     if (!name) return setFormError("Nombre inválido");
     if (!phoneNorm) return setFormError("Teléfono inválido");
+
+    // Coordination id: booking_documents_v1 - no row may be left without a file.
+    if (showDocumentsSection && documentsEnabled) {
+      const missing = documentRows.findIndex((row) => !row.file);
+      if (missing >= 0) return setFormError(`Adjunta un archivo al documento ${missing + 1}`);
+      if (!documentsSocketConnected) return setFormError("Sin conexión para subir los documentos. Inténtalo de nuevo.");
+    }
 
     const payload: any = {
       reservation_date: date,
@@ -642,6 +715,14 @@ export function BookingEditor({
       preferred_floor_number: draft.preferred_floor_number,
       special_menu: Boolean(draft.special_menu),
     };
+
+    // Coordination id: booking_documents_v1 - the documents travel with the
+    // booking-create call as draft ids; the flag decides whether the customer
+    // receives a copy with the confirmation.
+    if (showDocumentsSection && documentsEnabled) {
+      payload[BOOKING_SEND_DOCUMENTS_FIELD] = Boolean(sendToClient);
+      payload[BOOKING_DOCUMENTS_FIELD] = await uploadDocuments();
+    }
 
     // Coordination id: booking_is_event_v1 — only sent from the page that shows it.
     if (showEventToggle) payload.is_event = Boolean(draft.is_event);
@@ -727,10 +808,10 @@ export function BookingEditor({
     }
 
     await onSubmit(payload);
-  }, [draft, onSubmit, specialDate]);
+  }, [documentRows, documentsEnabled, documentsSocketConnected, draft, onSubmit, sendToClient, showDocumentsSection, specialDate, uploadDocuments]);
 
   const isCreate = submitLabel === "Crear";
-  const submitDisabled = busy || (isCreate && !requiredFieldsComplete);
+  const submitDisabled = busy || (isCreate && (!requiredFieldsComplete || !documentsComplete));
 
   const footerNode = (
     <div
@@ -901,6 +982,25 @@ export function BookingEditor({
           busy={busy}
           checked={Boolean(draft.is_event)}
           onChange={(v) => setDraft((p) => ({ ...p, is_event: v }))}
+        />
+      ) : null}
+
+      {showDocumentsSection ? (
+        <BookingDocumentsSection
+          enabled={documentsEnabled}
+          rows={documentRows}
+          sendToClient={sendToClient}
+          busy={busy}
+          uploadingIndex={uploadingIndex}
+          reduceMotion={reduceMotion === true}
+          onToggleEnabled={(next) => {
+            setDocumentsEnabled(next);
+            if (next) setDocumentRows((prev) => (prev.length ? prev : [{ title: "", file: null }]));
+          }}
+          onToggleSendToClient={setSendToClient}
+          onRowChange={updateDocumentRow}
+          onAddRow={addDocumentRow}
+          onRemoveRow={removeDocumentRow}
         />
       ) : null}
 

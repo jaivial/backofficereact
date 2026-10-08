@@ -1,0 +1,361 @@
+/* ── Booking documents (booking_documents_v1) ─────────────────────────────────
+   shadcn Attachment primitives restyled with bo-* tokens, the documents modal
+   (list / preview steps) and the previews of each supported file type. */
+
+/* Attachment surface. Mirrors the registry component structure:
+   a bordered, dashed-when-idle card with media + content + actions. */
+.bo-attachment {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-lg);
+  background: var(--bo-surface-3);
+  color: var(--bo-text);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.bo-attachment:hover {
+  background: var(--bo-bg-hover);
+}
+
+.bo-attachment:focus-visible {
+  outline: 2px solid var(--bo-accent);
+  outline-offset: 2px;
+}
+
+.bo-attachment[data-state="idle"] {
+  border-style: dashed;
+}
+
+.bo-attachment[data-state="uploading"] {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.bo-attachment[data-state="error"] {
+  border-color: var(--bo-text-danger);
+}
+
+.bo-attachment.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bo-attachment.is-dragging {
+  border-color: var(--bo-accent);
+  background: var(--bo-bg-primary);
+}
+
+.bo-attachment--sm {
+  gap: 10px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.bo-attachmentMedia {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--bo-radius-sm);
+  background: var(--bo-bg-muted);
+  color: var(--bo-muted);
+}
+
+.bo-attachmentMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bo-attachmentContent {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bo-attachmentTitle {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.bo-attachmentDescription {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-attachment[data-state="error"] .bo-attachmentDescription {
+  color: var(--bo-text-danger);
+}
+
+.bo-attachmentActions {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+}
+
+.bo-attachmentAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--bo-radius-sm);
+  background: transparent;
+  color: var(--bo-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bo-attachmentAction:hover:not(:disabled) {
+  background: var(--bo-bg-hover);
+  color: var(--bo-text);
+}
+
+.bo-attachmentAction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bo-attachmentGroup {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  padding: 4px 0;
+  overflow-x: auto;
+}
+
+/* Booking editor section: the send-to-client toggle above the rows column. */
+.bo-bookingDocumentsSendToggle {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface-3);
+  cursor: pointer;
+}
+
+.bo-bookingDocumentsSendCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bo-bookingDocumentsSendTitle {
+  font-weight: 500;
+}
+
+.bo-bookingDocumentsSendText {
+  font-size: 12px;
+  color: var(--bo-muted);
+}
+
+.bo-bookingDocumentsRows {
+  display: grid;
+  gap: 14px;
+}
+
+/* Documents modal (list step / preview step). */
+.bo-bookingDocumentsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  margin-top: 10px;
+}
+
+.bo-bookingDocumentsList {
+  display: grid;
+  gap: 8px;
+}
+
+.bo-bookingDocumentsItem {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.bo-bookingDocumentsOpen {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface-3);
+  color: var(--bo-text);
+  font: inherit;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.bo-bookingDocumentsOpen:hover {
+  border-color: var(--bo-accent);
+  background: var(--bo-bg-hover);
+}
+
+.bo-bookingDocumentsUploadBtn {
+  align-self: center;
+}
+
+.bo-bookingDocumentsToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bo-bookingDocumentsPreviewActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.bo-bookingDocumentsPreviewTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Previews. */
+.bo-documentPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  align-items: center;
+}
+
+.bo-documentPreview--image img {
+  max-width: 100%;
+  max-height: 60vh;
+  border-radius: var(--bo-radius-md);
+  object-fit: contain;
+}
+
+.bo-documentPreview--unsupported {
+  align-items: center;
+  padding: 22px 0;
+  color: var(--bo-muted);
+  text-align: center;
+}
+
+.bo-documentText {
+  width: 100%;
+  max-height: 55vh;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface-3);
+  font-family: var(--bo-font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bo-documentMarkdown,
+.bo-documentRichText {
+  width: 100%;
+  max-height: 55vh;
+  padding: 14px;
+  overflow: auto;
+  border: 1px solid var(--bo-border);
+  border-radius: var(--bo-radius-md);
+  background: var(--bo-surface-3);
+}
+
+.bo-documentMarkdown h1,
+.bo-documentMarkdown h2,
+.bo-documentMarkdown h3 {
+  margin: 12px 0 6px;
+  line-height: 1.25;
+}
+
+.bo-documentMarkdown p,
+.bo-documentRichText p {
+  margin: 0 0 8px;
+}
+
+.bo-documentMarkdown table,
+.bo-documentRichText table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.bo-documentMarkdown th,
+.bo-documentMarkdown td,
+.bo-documentRichText th,
+.bo-documentRichText td {
+  padding: 5px 8px;
+  border: 1px solid var(--bo-border);
+  text-align: left;
+}
+
+.bo-documentSheetScroll {
+  width: 100%;
+  max-height: 55vh;
+  overflow: auto;
+}
+
+.bo-documentSheet {
+  width: 100%;
+  font-size: 12px;
+}
+
+.bo-documentSheet th,
+.bo-documentSheet td {
+  padding: 5px 8px;
+  border: 1px solid var(--bo-border);
+  white-space: nowrap;
+}
+
+.bo-documentSheet thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bo-surface-2);
+  font-weight: 600;
+}
