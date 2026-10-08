@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronLeft, Download, ExternalLink, Share2, Trash2, Upload } from "lucide-react";
 
 import {
+  BOOKING_DOCUMENT_MAX_BYTES,
   bookingDocumentAbsoluteUrl,
   bookingDocumentDownloadName,
   type BookingDocument,
@@ -44,7 +45,8 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
     setLoading(true);
     setError(null);
     try {
-      setDocuments(await list(bookingId));
+      const reply = await list(bookingId);
+      setDocuments(reply.documents);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudieron cargar los documentos");
     } finally {
@@ -76,6 +78,10 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
     setUploading(true);
     setError(null);
     try {
+      // Same cap the server enforces (bookingDocumentMaxUploadBytes).
+      if (uploadFile.size > BOOKING_DOCUMENT_MAX_BYTES) {
+        throw new Error(`"${uploadFile.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_BYTES / (1024 * 1024))} MB`);
+      }
       const created = await upload(uploadFile, uploadTitle || uploadFile.name, bookingId);
       // Success is shown from the socket reply, not from the click.
       setNotice(`"${created.title || created.original_filename}" subido correctamente`);
@@ -95,7 +101,7 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
     setDeleting(true);
     setError(null);
     try {
-      await remove(bookingId, deleteTarget.id);
+      await remove(deleteTarget.id);
       setDeleteTarget(null);
       await reload();
     } catch (e) {
@@ -106,7 +112,7 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
   }, [bookingId, deleteTarget, reload, remove]);
 
   const share = useCallback(async (doc: BookingDocument) => {
-    const url = bookingDocumentAbsoluteUrl(doc.id);
+    const url = bookingDocumentAbsoluteUrl(doc);
     const payload = { title: doc.title || doc.original_filename, url };
     try {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {

@@ -30,7 +30,7 @@ import { ScrollArea } from "../../../../../ui/layout/ScrollArea";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { OptionsSwitchList, OptionsToggleModal } from "../../../../../ui/widgets/OptionsToggle/OptionsToggle";
 import { Switch } from "../../../../../ui/shadcn/Switch";
-import { BOOKING_DOCUMENTS_FIELD, BOOKING_SEND_DOCUMENTS_FIELD } from "../../../../../api/bookingDocuments";
+import { BOOKING_DOCUMENT_MAX_BYTES, BOOKING_DOCUMENTS_FIELD, BOOKING_SEND_DOCUMENTS_FIELD } from "../../../../../api/bookingDocuments";
 import { BookingDocumentsSection, type BookingDocumentDraft } from "./BookingDocumentsSection";
 import { useBookingDocumentsSocket } from "../BookingDocuments/useBookingDocumentsSocket";
 
@@ -669,6 +669,10 @@ export function BookingEditor({
     for (let index = 0; index < documentRows.length; index += 1) {
       const row = documentRows[index];
       if (!row.file) continue;
+      // Same cap the server enforces; refuse before buffering the frame.
+      if (row.file.size > BOOKING_DOCUMENT_MAX_BYTES) {
+        throw new Error(`"${row.file.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_BYTES / (1024 * 1024))} MB`);
+      }
       setUploadingIndex(index);
       try {
         const created = await uploadDocument(row.file, row.title || row.file.name);
@@ -720,8 +724,15 @@ export function BookingEditor({
     // booking-create call as draft ids; the flag decides whether the customer
     // receives a copy with the confirmation.
     if (showDocumentsSection && documentsEnabled) {
+      // An upload can fail (over the cap, server error). Nothing is created
+      // until every document is stored, so abort here and show the reason.
+      try {
+        payload[BOOKING_DOCUMENTS_FIELD] = await uploadDocuments();
+      } catch (e) {
+        setUploadingIndex(null);
+        return setFormError(e instanceof Error ? e.message : "No se pudieron subir los documentos");
+      }
       payload[BOOKING_SEND_DOCUMENTS_FIELD] = Boolean(sendToClient);
-      payload[BOOKING_DOCUMENTS_FIELD] = await uploadDocuments();
     }
 
     // Coordination id: booking_is_event_v1 — only sent from the page that shows it.
