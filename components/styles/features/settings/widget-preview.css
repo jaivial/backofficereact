@@ -431,6 +431,12 @@
   }
 }
 
+@media (min-width: 760px) {
+  .bo-reservaAddPage {
+    margin-inline: auto;
+  }
+}
+
 .bo-bookingEditorBody {
   flex: 1 1 auto;
   min-height: 0;
@@ -737,7 +743,7 @@
     align-items: center;
   }
 
-  .bo-bookingPanel--menu button:not(.bo-actionBtn):not(.bo-counterBtn),
+  .bo-bookingPanel--menu button:not(.bo-actionBtn):not(.bo-counterBtn):not([data-testid="booking-editor-event-toggle"]),
   .bo-bookingPanel--menu a.bo-btn,
   .bo-bookingPanel--arroz button:not(.bo-actionBtn):not(.bo-counterBtn),
   .bo-bookingPanel--arroz a.bo-btn {
