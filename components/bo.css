@@ -38,6 +38,7 @@
 /* ── Features extracted from components (kept before the rest of features so
       later feature files can still override them) ─────────────── */
 @import "./styles/features/reservas/reservas-page.css";
+@import "./styles/features/reservas/booking-documents.css";
 @import "./styles/features/reservas/config-floors.css";
 @import "./styles/features/facturas/payment.css";
 @import "./styles/features/public/auth.css";
