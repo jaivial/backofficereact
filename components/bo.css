@@ -38,6 +38,7 @@
 /* ── Features extracted from components (kept before the rest of features so
       later feature files can still override them) ─────────────── */
 @import "./styles/features/reservas/reservas-page.css";
+@import "./styles/features/reservas/booking-documents.css";
 @import "./styles/features/reservas/config-floors.css";
 @import "./styles/features/facturas/payment.css";
 @import "./styles/features/public/auth.css";
@@ -82,6 +83,9 @@
 
 /* ── Features: Facturas — Analytics ───────────────────── */
 @import "./styles/features/facturas/invoice-analytics.css";
+
+/* ── Features: Estadísticas ─────────────────────────────── */
+@import "./styles/features/estadisticas/estadisticas-page.css";
 
 /* ── Components: Badge & Chip ─────────────────────────── */
 @import "./styles/components/badge.css";

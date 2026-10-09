@@ -92,6 +92,9 @@ import type {
   AnalyticsOverviewParams,
   AnalyticsRefreshRequest,
   AnalyticsRefreshResponse,
+  AffluenceBucket,
+  AffluenceResponse,
+  AffluenceSeasonalResponse,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 // Coordination id: menu_type_codes_v1 - menus.menu_type travels as a numeric code.
@@ -867,6 +870,16 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         const q = new URLSearchParams({ from: params.from, to: params.to, granularity: params.granularity });
         if (params.compare) q.set("compare", params.compare);
         return json(`/api/admin/analytics/overview?${q.toString()}`, { method: "GET" });
+      },
+      /** Client-flow series for the selected period. Tag: affluence_stats_v1. */
+      async getAffluence(params: { from: string; to: string; bucket: AffluenceBucket }): Promise<AffluenceResponse> {
+        const q = new URLSearchParams({ from: params.from, to: params.to, bucket: params.bucket });
+        return json(`/api/admin/analytics/affluence?${q.toString()}`, { method: "GET" });
+      },
+      /** Same months across every year with data (seasonality). Tag: affluence_stats_v1. */
+      async getAffluenceSeasonal(months: number[]): Promise<AffluenceSeasonalResponse> {
+        const q = new URLSearchParams({ months: months.join(",") });
+        return json(`/api/admin/analytics/affluence/seasonal?${q.toString()}`, { method: "GET" });
       },
       async refresh(params: AnalyticsRefreshRequest): Promise<AnalyticsRefreshResponse> {
         return json("/api/admin/analytics/refresh", {

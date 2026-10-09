@@ -27,6 +27,8 @@ import { POSDayBillingDialog } from "./POSDayBillingDialog";
 import { POSFiscalDialog } from "./POSFiscalDialog";
 import { POSGuestDialog } from "./POSGuestDialog";
 import { POSOfflineBar } from "./POSOfflineBar";
+import { POSSalonDialog, type POSSalonActions } from "./POSSalonDialog";
+import { todayISO } from "../../../reservas/tables/helpers/tables";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
 import type { POSCashDay, POSCashDayTotals } from "../../../../../api/types";
@@ -58,6 +60,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   const [keypadContext, setKeypadContext] = useState<KeypadContext>({ kind: "quantity" });
   const [selectedLineId, setSelectedLineId] = useState(0);
   const [showTables, setShowTables] = useState(false);
+  const [showSalon, setShowSalon] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutMethod, setCheckoutMethod] = useState<POSPaymentMethod>("CASH");
   const tenders = useCheckoutTenders({ saleTotalCents: register.ticketTotal, tipCents: register.tipCents });
@@ -247,6 +250,18 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   }, [register.loadReservations, register.visit, showTables]);
 
   const closeTables = useCallback(() => { setShowTables(false); setAreaFilter(0); }, []);
+  const closeSalon = useCallback(() => setShowSalon(false), []);
+  // The salon popover reuses the tables-grid flows (restore / move) and opens
+  // free tables with its own covers/booking instead of the tables modal.
+  const salonActions = useMemo<POSSalonActions>(() => ({
+    currentVisit: register.visit,
+    visits: register.visits,
+    tables: register.tables,
+    busy: register.busy,
+    readOnly,
+    onSelectTable: selectTable,
+    onOpenTable: (table, covers, bookingId) => register.openVisit({ table, covers, bookingId }),
+  }), [readOnly, register.busy, register.openVisit, register.tables, register.visit, register.visits, selectTable]);
 
   const openPrompt = useCallback((key: RailFeatureKey) => {
     register.setError("");
@@ -534,7 +549,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       case "separar-comanda": if (register.visit) { register.setError(""); setGuestDialog("create"); } break;
       case "borrar-comanda": if (register.ticket) { register.setError(""); setVoidOrderOpen(true); } break;
       case "dividir-comanda": if (register.ticket) { register.setError(""); setDivideOpen(true); } break;
-      case "salon": setAreaFilter(0); setShowTables(true); break;
+      case "salon": setShowSalon(true); break;
       case "barra": void register.openBar(); break;
       case "llevar": void register.openTakeaway(); break;
       case "facturacion": if (date) setBillingOpen(true); break;
@@ -669,6 +684,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
         onClose={() => setLineToVoid(null)}
         onConfirm={confirmVoidLine}
       />
+
+      {showSalon ? <POSSalonDialog date={date || todayISO()} actions={salonActions} onClose={closeSalon} /> : null}
 
       {showTables ? (
         <POSDialog testId="pos-tables" title={register.visit ? "Cambiar mesa" : "Mesas"} busy={register.busy} error={register.error} onClose={closeTables} headerTestId="pos-tables-modal-header" titleTestId="pos-tables-modal-title">

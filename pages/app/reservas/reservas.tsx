@@ -32,6 +32,7 @@ import { BookingCardGrid } from "./functionalComponents/BookingCardGrid/BookingC
 import { ReservasColumnsModal } from "./functionalComponents/ReservasColumns/ReservasColumnsModal";
 import { SpecialBookingQrModal } from "./functionalComponents/SpecialBookingQr/SpecialBookingQrModal";
 import { QrScannerModal } from "./functionalComponents/SpecialBookingQr/QrScannerModal";
+import { BookingDocumentsModal } from "./functionalComponents/BookingDocuments/BookingDocumentsModal";
 import { useReservasColumnsRealtime } from "./functionalComponents/ReservasColumns/useReservasColumnsRealtime";
 import {
   RESERVAS_COLUMNS_PREF_KEY,
@@ -137,11 +138,13 @@ const BookingRow = React.memo(function BookingRow({
   onOpenDetails,
   onSaveTable,
   onOpenQr,
+  onOpenDocuments,
   busy,
 }: {
   booking: Booking;
   columns: ReservasColumnDef[];
   onOpenQr: (b: Booking) => void;
+  onOpenDocuments: (b: Booking) => void;
   onCancel: (b: Booking) => void;
   onEdit: (b: Booking) => void;
   onOpenDetails: (b: Booking) => void;
@@ -182,6 +185,8 @@ const BookingRow = React.memo(function BookingRow({
     onMesaBlur: () => void save(),
     mesaDisabled: busy || saving,
     onOpenQr: () => onOpenQr(booking),
+    // Coordination id: booking_documents_v1
+    onOpenDocuments: () => onOpenDocuments(booking),
   };
 
   return (
@@ -307,6 +312,8 @@ export default function Page() {
   // Coordination id: special_booking_qr_v1 - QR/PDF modal + camera scanner.
   const [qrBooking, setQrBooking] = useState<Booking | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
+  // Coordination id: booking_documents_v1 - documents modal (booking id only).
+  const [documentsBookingId, setDocumentsBookingId] = useState<number | null>(null);
 
   const [confirm, setConfirm] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
   const [details, setDetails] = useState<{ open: boolean; booking: Booking | null }>({ open: false, booking: null });
@@ -614,6 +621,21 @@ export default function Page() {
     void loadSpecialDate(date);
   }, [count, data, date, dir, loadBookings, loadMonth, loadSpecialDate, loadSummary, page, q, session, sort, status, view]);
 
+  // Deep link from the POS salon map: /app/reservas?date=...&edit=<bookingId>
+  // opens that booking in the regular editor. Coordination id: pos_salon_map_popover_v1
+  useEffect(() => {
+    if (!session) return;
+    const url = new URL(window.location.href);
+    const editId = Number(url.searchParams.get("edit"));
+    if (!editId) return;
+    url.searchParams.delete("edit");
+    window.history.replaceState(null, "", url.toString());
+    void api.reservas.get(editId).then((res) => {
+      if (res.success) openEdit(res.booking);
+      else setError(res.message || "No se pudo abrir la reserva");
+    });
+  }, [api.reservas, openEdit, session]);
+
   const editInitial = useMemo<BookingEditorDraft | null>(() => {
     const b = edit.booking;
     if (!b) return null;
@@ -898,7 +920,7 @@ export default function Page() {
                               </thead>
                               <tbody data-slot="reservas-tbody">
                                 {rows.map((b) => (
-                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onOpenQr={setQrBooking} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
+                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onOpenQr={setQrBooking} onOpenDocuments={(b) => setDocumentsBookingId(b.id)} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
                                 ))}
                                 {!rows.length ? (
                                   <tr data-slot="reservas-tro"><td colSpan={tableColumns.length + 1} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
@@ -962,6 +984,8 @@ export default function Page() {
 
       <SpecialBookingQrModal booking={qrBooking} onClose={() => setQrBooking(null)} />
       <QrScannerModal open={scannerOpen} onClose={() => setScannerOpen(false)} />
+      {/* Coordination id: booking_documents_v1 */}
+      <BookingDocumentsModal bookingId={documentsBookingId} onClose={() => setDocumentsBookingId(null)} />
 
       <ReservasColumnsModal
         open={columnsModalOpen}

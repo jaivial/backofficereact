@@ -1,0 +1,61 @@
+/* ============================================
+   Estadísticas (Afluencia / Ventas) — mobile layout
+   ============================================ */
+
+/* Only two tabs: keep the label next to the icon at every width instead of
+   the shared icons-only phone mode. */
+.bo-estadisticasTabsBar .bo-tabLabel {
+  display: inline;
+}
+
+@media (max-width: 639px) {
+  /* Slimmer page gutters so cards and charts use the full phone width. */
+  .bo-main:has([data-ui="estadisticas-tabs-root"]) {
+    padding-inline: 8px;
+    padding-top: 10px;
+  }
+
+  [data-ui="estadisticas-tabs-root"] {
+    gap: 12px;
+  }
+
+  /* Tab strip spans the width with two equal, thumb-sized tabs. */
+  :is(.bo-app, #bo-portal) .bo-estadisticasTabsBar .bo-tabs {
+    width: 100%;
+    gap: 6px;
+    padding: 4px;
+    border-radius: 14px;
+  }
+
+  .bo-estadisticasTabsBar .bo-tab,
+  .bo-estadisticasTabsBar .bo-tab.is-active {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 8px 12px;
+    min-height: 40px;
+    border-radius: 10px;
+  }
+
+  .bo-estadisticasTabsBar .bo-tabIndicator {
+    border-radius: 10px;
+  }
+
+  .bo-estadisticasTabsBar .bo-tabInner {
+    gap: 8px;
+  }
+
+  .bo-estadisticasTabsBar .bo-tab.is-active .bo-tabIcon {
+    opacity: 1;
+  }
+
+  /* Tighter cards: less inner padding, slightly smaller radius. */
+  [data-ui="estadisticas-tabs-root"] .bo-card {
+    padding: 12px 10px 10px;
+    border-radius: 14px;
+  }
+
+  /* Denser tables so product names don't wrap on every row. */
+  [data-ui="estadisticas-tabs-root"] table {
+    font-size: 13px;
+  }
+}

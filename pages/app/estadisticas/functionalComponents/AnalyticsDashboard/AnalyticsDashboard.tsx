@@ -248,19 +248,19 @@ export function AnalyticsDashboard({
   const toggleFilters = useCallback(() => setFiltersExpanded((prev) => !prev), []);
 
   return (
-    <section className={cn("mx-auto flex w-full max-w-screen-2xl flex-col gap-5 px-4 pb-4 text-[var(--bo-text)] sm:px-6 sm:pb-6 xl:px-8 xl:pb-8", className)} data-ui="analytics-dashboard" {...props}>
+    <section className={cn("mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-0 pb-4 text-[var(--bo-text)] sm:gap-5 sm:px-6 sm:pb-6 xl:px-8 xl:pb-8", className)} data-ui="analytics-dashboard" {...props}>
       {/* Header */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between" data-ui="analytics-dashboard-header">
         <div className="min-w-0" data-ui="analytics-dashboard-heading">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--bo-accent-2)]" data-ui="analytics-dashboard-eyebrow">Control financiero</p>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl" data-ui="analytics-dashboard-title">Estadísticas</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--bo-muted)]" data-ui="analytics-dashboard-description">Ingresos facturados y TPV, personas identificadas y coste real de stock.</p>
+          <p className="mt-1.5 max-w-2xl text-sm leading-6 text-[var(--bo-muted)] sm:mt-2" data-ui="analytics-dashboard-description">Ingresos facturados y TPV, personas identificadas y coste real de stock.</p>
         </div>
       </header>
 
       {/* Collapsible Filters */}
       <Card variant="glass" data-ui="analytics-filters-accordion">
-        <div className="flex items-center justify-between gap-4 p-4" data-ui="analytics-filters-header">
+        <div className="flex items-center justify-between gap-3 p-3 sm:gap-4 sm:p-4" data-ui="analytics-filters-header">
           <div className="flex items-center gap-3" data-ui="analytics-filters-title">
             <Filter size={15} className="text-[var(--bo-muted)]" data-ui="analytics-filters-icon" />
             <span className="text-sm font-medium" data-role="analytics-filters-label">Filtros</span>
@@ -304,7 +304,7 @@ export function AnalyticsDashboard({
               transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: "easeInOut" }}
               data-ui="analytics-filters-expandable"
             >
-              <div className="border-t border-[var(--bo-border)] p-4" data-ui="analytics-filters-body">
+              <div className="border-t border-[var(--bo-border)] p-3 sm:p-4" data-ui="analytics-filters-body">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5" data-ui="analytics-filters-grid">
                   <label className="flex min-w-0 flex-col gap-1.5" data-ui="analytics-filter-from">
                     <span data-slot="analyticsDashboard-text-[var(-bo" className="text-xs font-medium text-[var(--bo-muted)]">Desde</span>
@@ -378,9 +378,9 @@ export function AnalyticsDashboard({
 
       {!loading && !error && overview ? (
         hasAnyData ? (
-          <div className="flex flex-col gap-5" data-testid="analytics-populated" data-ui="analytics-populated">
+          <div className="flex flex-col gap-4 sm:gap-5" data-testid="analytics-populated" data-ui="analytics-populated">
           {/* KPI Cards */}
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" data-ui="analytics-kpis">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-5 [&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1" data-ui="analytics-kpis">
             <KpiCard label="Ingresos facturados" value={formatCurrency(overview.summary.invoicedRevenueEUR)} detail="Facturas emitidas en EUR" testId="analytics-invoiced-revenue" icon={<Receipt className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("invoicedRevenueEUR", overview.comparison)} />
             <KpiCard label="Ingresos TPV" value={formatCurrency(overview.summary.posRevenueEUR)} detail="Ventas punto de venta en EUR" testId="analytics-pos-revenue" icon={<ShoppingCart className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("posRevenueEUR", overview.comparison)} />
             <KpiCard label="Personas identificadas" value={formatNumber(overview.summary.identifiedPeople)} detail="Personas únicas con identidad" testId="analytics-identified-people" icon={<Users className="h-4 w-4" aria-hidden="true" />} trend={comparisonText("identifiedPeople", overview.comparison)} />
@@ -389,9 +389,9 @@ export function AnalyticsDashboard({
           </div>
 
           {/* Row 1: Revenue Area + Quality Panel */}
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]" data-ui="analytics-primary-grid">
+          <div className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]" data-ui="analytics-primary-grid">
             <AnalyticsPanel title="Ingresos por periodo" description="Facturado y TPV permanecen separados." icon={<BarChart3 className="h-4 w-4" aria-hidden="true" />} testId="analytics-revenue-panel">
-              <ChartContainer className="h-72 min-h-60" config={revenueChartConfig} id="analytics-revenue" data-testid="analytics-revenue-chart">
+              <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={revenueChartConfig} id="analytics-revenue" data-testid="analytics-revenue-chart">
                 <AreaChartPrimitive data={revenueSeries} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="analytics-invoiced-fill" x1="0" y1="0" x2="0" y2="1">
@@ -421,7 +421,7 @@ export function AnalyticsDashboard({
           <div className="grid gap-5" data-ui="analytics-category-row">
             <AnalyticsPanel title="Ingresos por categoría" description="Distribución de ventas por tipo de producto." icon={<Utensils className="h-4 w-4" aria-hidden="true" />} testId="analytics-category-panel">
               {categorySeries.length ? (
-                <ChartContainer className="h-72 min-h-60" config={categoryChartConfig} id="analytics-category" data-testid="analytics-category-chart">
+                <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={categoryChartConfig} id="analytics-category" data-testid="analytics-category-chart">
                   <BarChartPrimitive data={categorySeries} layout="vertical" margin={{ top: 12, right: 12, left: 80, bottom: 0 }}>
                     <CartesianGridPrimitive horizontal={false} stroke="var(--bo-border)" />
                     <XAxisPrimitive type="number" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} tickFormatter={(value: number) => `${(value / 1000).toFixed(0)}k €`} />
@@ -435,10 +435,10 @@ export function AnalyticsDashboard({
           </div>
 
           {/* Row 3: Payment Methods (Pie) + Payment Totals */}
-          <div className="grid gap-5 lg:grid-cols-2" data-ui="analytics-payment-row">
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-2" data-ui="analytics-payment-row">
             <AnalyticsPanel title="Métodos de pago" description="Distribución por forma de pago." icon={<PieChartIcon className="h-4 w-4" aria-hidden="true" />} testId="analytics-payment-panel">
               {paymentSeries.length ? (
-                <ChartContainer className="h-72 min-h-60" config={{}} id="analytics-payment" data-testid="analytics-payment-chart">
+                <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={{}} id="analytics-payment" data-testid="analytics-payment-chart">
                   <PieChartPrimitive>
                     <PiePrimitive
                       data={paymentSeries}
@@ -500,10 +500,10 @@ export function AnalyticsDashboard({
           </div>
 
           {/* Row 3: Day of Week (Bar) + Hourly Distribution (Line) */}
-          <div className="grid gap-5 lg:grid-cols-2" data-ui="analytics-time-row">
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-2" data-ui="analytics-time-row">
             <AnalyticsPanel title="Rendimiento por día" description="Ingresos y comensales por día de la semana." icon={<BarChart3 className="h-4 w-4" aria-hidden="true" />} testId="analytics-day-panel">
               {daySeries.length ? (
-                <ChartContainer className="h-72 min-h-60" config={dayChartConfig} id="analytics-day" data-testid="analytics-day-chart">
+                <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={dayChartConfig} id="analytics-day" data-testid="analytics-day-chart">
                   <BarChartPrimitive data={daySeries} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                     <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
                     <XAxisPrimitive dataKey="day" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
@@ -520,7 +520,7 @@ export function AnalyticsDashboard({
 
             <AnalyticsPanel title="Distribución horaria" description="Comensales e ingresos por hora del servicio." icon={<TrendingUp className="h-4 w-4" aria-hidden="true" />} testId="analytics-hourly-panel">
               {hourlySeries.length ? (
-                <ChartContainer className="h-72 min-h-60" config={hourlyChartConfig} id="analytics-hourly" data-testid="analytics-hourly-chart">
+                <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={hourlyChartConfig} id="analytics-hourly" data-testid="analytics-hourly-chart">
                   <LineChartPrimitive data={hourlySeries} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                     <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
                     <XAxisPrimitive dataKey="hour" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
@@ -537,9 +537,9 @@ export function AnalyticsDashboard({
           </div>
 
           {/* Row 4: Stock Cost Area + Margin Analysis */}
-          <div className="grid gap-5 lg:grid-cols-2" data-ui="analytics-cost-row">
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-2" data-ui="analytics-cost-row">
             <AnalyticsPanel title="Coste de stock y merma" description="Costes conocidos trazados; importes incompletos se muestran como N/D." icon={<Database className="h-4 w-4" aria-hidden="true" />} testId="analytics-stock-panel">
-              <ChartContainer className="h-72 min-h-60" config={stockChartConfig} id="analytics-stock" data-testid="analytics-stock-chart">
+              <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={stockChartConfig} id="analytics-stock" data-testid="analytics-stock-chart">
                 <AreaChartPrimitive data={stockSeries} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="analytics-stock-fill" x1="0" y1="0" x2="0" y2="1">
@@ -573,9 +573,9 @@ export function AnalyticsDashboard({
           </div>
 
           {/* Row 5: Coverage Radial + Top Items + Waste Breakdown */}
-          <div className="grid gap-5 lg:grid-cols-3" data-ui="analytics-detail-row">
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-3" data-ui="analytics-detail-row">
             <AnalyticsPanel title="Cobertura de datos" description="Porcentaje de items con coste conocido." icon={<Database className="h-4 w-4" aria-hidden="true" />} testId="analytics-coverage-panel">
-              <ChartContainer className="h-64 min-h-56" config={{}} id="analytics-coverage" data-testid="analytics-coverage-chart">
+              <ChartContainer className="h-56 min-h-52 sm:h-64 sm:min-h-56" config={{}} id="analytics-coverage" data-testid="analytics-coverage-chart">
                 <RadialBarChartPrimitive cx="50%" cy="50%" innerRadius="30%" outerRadius="90%" data={coverageData} startAngle={180} endAngle={0}>
                   <RadialBarPrimitive minAngle={15} background clockWise dataKey="value" cornerRadius={4} />
                   <ChartTooltip content={<ChartTooltipContent formatter={(value) => `${value}%`} />} />
@@ -623,7 +623,7 @@ export function AnalyticsDashboard({
 
           {/* Row 7: Comparison Panel (if enabled) */}
           {overview.comparison ? (
-            <div className="grid gap-5 lg:grid-cols-2" data-ui="analytics-comparison-row">
+            <div className="grid gap-4 sm:gap-5 lg:grid-cols-2" data-ui="analytics-comparison-row">
               <ComparisonPanel overview={overview} />
               <DataQualityNote quality={overview.dataQuality} />
             </div>
@@ -639,7 +639,7 @@ export function AnalyticsDashboard({
 
 function ChartEmpty({ message }: { message: string }) {
   return (
-    <div className="flex h-72 min-h-60 items-center justify-center rounded-xl border border-dashed border-[var(--bo-border-2)] bg-[var(--bo-surface-3)] px-6 text-center text-sm leading-6 text-[var(--bo-muted)]" data-ui="analytics-chart-empty">
+    <div className="flex h-60 min-h-56 items-center justify-center rounded-xl border border-dashed border-[var(--bo-border-2)] bg-[var(--bo-surface-3)] px-4 sm:h-72 sm:min-h-60 sm:px-6 text-center text-sm leading-6 text-[var(--bo-muted)]" data-ui="analytics-chart-empty">
       {message}
     </div>
   );
@@ -665,7 +665,7 @@ function KpiCard({ label, value, detail, testId, icon, trend }: { label: string;
         <span data-slot="analyticsDashboard-text-[var(-bo" className="rounded-lg bg-[var(--bo-bg-selected)] p-2 text-[var(--bo-accent)]" aria-hidden="true">{icon}</span>
       </div>
       <div data-slot="analyticsDashboard-div">
-        <div data-slot="analyticsDashboard-tracking-tight" className="mt-3 text-2xl font-semibold tracking-tight">{value}</div>
+        <div data-slot="analyticsDashboard-tracking-tight" className="mt-2 text-xl font-semibold tracking-tight sm:mt-3 sm:text-2xl">{value}</div>
         <p data-slot="analyticsDashboard-text-[var(-bo" className="mt-1 text-xs leading-5 text-[var(--bo-muted)]">{detail}</p>
         {trend ? <p className={cn("mt-2 text-xs font-medium", trend.startsWith("-") ? "text-[var(--bo-on-surface-danger)]" : "text-[var(--bo-on-surface-success)]")}>{trend}</p> : null}
       </div>
@@ -822,7 +822,7 @@ function LoadingState() {
         {["one", "two", "three", "four", "five"].map((key) => <div className="h-36 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" key={key} />)}
       </div>
       <div data-slot="analyticsDashboard-bg-[var(-bo" className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
-      <div data-slot="analyticsDashboard-lg:grid-cols-2" className="grid gap-5 lg:grid-cols-2">
+      <div data-slot="analyticsDashboard-lg:grid-cols-2" className="grid gap-4 sm:gap-5 lg:grid-cols-2">
         <div data-slot="analyticsDashboard-bg-[var(-bo" className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
         <div data-slot="analyticsDashboard-bg-[var(-bo" className="h-80 animate-pulse rounded-2xl border border-[var(--bo-border)] bg-[var(--bo-surface)]" />
       </div>
