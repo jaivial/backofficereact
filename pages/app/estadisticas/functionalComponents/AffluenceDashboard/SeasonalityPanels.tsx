@@ -129,7 +129,7 @@ export function MonthSeasonPanel({
           <ChartEmpty testId={`${testId}-empty`} message={`Sin reservas de ${monthName(month)} en el histórico.`} />
         ) : (
           <div className="flex flex-col gap-4" data-ui={`${testId}-results`}>
-            <ChartContainer className="h-72 min-h-60" config={chartConfig} id={`${testId}-chart`} data-testid={`${testId}-chart`}>
+            <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={chartConfig} id={`${testId}-chart`} data-testid={`${testId}-chart`}>
               <BarChartPrimitive data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                 <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
                 <XAxisPrimitive dataKey="week" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
@@ -238,7 +238,7 @@ export function SeasonPanel({
           <ChartEmpty testId={`${testId}-empty`} message="Sin reservas para los meses seleccionados." />
         ) : (
           <>
-            <ChartContainer className="h-72 min-h-60" config={chartConfig} id={`${testId}-chart`} data-testid={`${testId}-chart`}>
+            <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={chartConfig} id={`${testId}-chart`} data-testid={`${testId}-chart`}>
               <BarChartPrimitive data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                 <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
                 <XAxisPrimitive dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />
