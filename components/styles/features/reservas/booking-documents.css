@@ -388,3 +388,10 @@
 .bo-bookingDocumentsDraftTrash {
   flex-shrink: 0;
 }
+
+/* The global .bo-modalActions footer is sticky with no background; on the
+   glass documents modal the rows showed through it. Solid footer. */
+.bo-bookingDocumentsModal .bo-modalActions {
+  background: rgb(42 43 52);
+  border-radius: 0 0 14px 14px;
+}
