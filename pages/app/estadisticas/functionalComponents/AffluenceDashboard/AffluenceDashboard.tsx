@@ -152,7 +152,7 @@ export function AffluenceDashboard({ initialPeriod = "1y", className, ...props }
 
   return (
     <section
-      className={["mx-auto flex w-full max-w-screen-2xl flex-col gap-5 px-4 pb-4 text-[var(--bo-text)] sm:px-6 sm:pb-6 xl:px-8 xl:pb-8", className].filter(Boolean).join(" ")}
+      className={["mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-0 pb-4 text-[var(--bo-text)] sm:gap-5 sm:px-6 sm:pb-6 xl:px-8 xl:pb-8", className].filter(Boolean).join(" ")}
       data-ui="affluence-dashboard"
       data-testid="affluence-dashboard"
       {...props}
@@ -165,7 +165,7 @@ export function AffluenceDashboard({ initialPeriod = "1y", className, ...props }
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl" data-testid="affluence-dashboard-title" data-ui="affluence-dashboard-title">
             Comensales y reservas
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--bo-muted)]" data-ui="affluence-dashboard-description">
+          <p className="mt-1.5 max-w-2xl text-sm leading-6 text-[var(--bo-muted)] sm:mt-2" data-ui="affluence-dashboard-description">
             Evolución de la afluencia de clientes sobre el histórico completo de reservas, con comparativas por temporada.
           </p>
           <p className="mt-1 text-xs text-[var(--bo-faint)]" data-testid="affluence-history-bounds" data-ui="affluence-history-bounds">
@@ -203,7 +203,7 @@ export function AffluenceDashboard({ initialPeriod = "1y", className, ...props }
         </Card>
       ) : null}
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4" data-testid="affluence-kpis" data-ui="affluence-kpis" data-loading={loading}>
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-5 xl:grid-cols-4" data-testid="affluence-kpis" data-ui="affluence-kpis" data-loading={loading}>
         <AffluenceKpi
           label="Comensales"
           value={formatNumber(totals?.covers ?? 0)}
@@ -247,7 +247,7 @@ export function AffluenceDashboard({ initialPeriod = "1y", className, ...props }
         <div className="flex flex-col gap-4" data-ui="affluence-trend-body">
           <PeriodDeltaBanner delta={data?.deltaPercent.covers ?? null} testId="affluence-period-delta" />
           {hasData && seriesData.length > 0 ? (
-            <ChartContainer className="h-80 min-h-64" config={LINE_CONFIG} id="affluence-trend" data-testid="affluence-trend-chart">
+            <ChartContainer className="h-64 min-h-56 sm:h-80 sm:min-h-64" config={LINE_CONFIG} id="affluence-trend" data-testid="affluence-trend-chart">
               <LineChartPrimitive data={seriesData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                 <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
                 <XAxisPrimitive dataKey="label" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} interval="preserveStartEnd" />
@@ -263,7 +263,7 @@ export function AffluenceDashboard({ initialPeriod = "1y", className, ...props }
         </div>
       </AffluencePanel>
 
-      <div className="grid gap-5 lg:grid-cols-2" data-ui="affluence-bars-row">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-2" data-ui="affluence-bars-row">
         <AffluencePanel
           title="Comensales por periodo"
           description={`Reparto del volumen en bloques de ${BUCKET_LABELS[bucket]}.`}
@@ -271,7 +271,7 @@ export function AffluenceDashboard({ initialPeriod = "1y", className, ...props }
           testId="affluence-bucket-panel"
         >
           {hasData ? (
-            <ChartContainer className="h-72 min-h-60" config={BAR_CONFIG} id="affluence-bucket" data-testid="affluence-bucket-chart">
+            <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={BAR_CONFIG} id="affluence-bucket" data-testid="affluence-bucket-chart">
               <BarChartPrimitive data={seriesData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                 <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
                 <XAxisPrimitive dataKey="label" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} interval="preserveStartEnd" />
@@ -292,7 +292,7 @@ export function AffluenceDashboard({ initialPeriod = "1y", className, ...props }
           testId="affluence-weekday-panel"
         >
           {hasData ? (
-            <ChartContainer className="h-72 min-h-60" config={BAR_CONFIG} id="affluence-weekday" data-testid="affluence-weekday-chart">
+            <ChartContainer className="h-60 min-h-56 sm:h-72 sm:min-h-60" config={BAR_CONFIG} id="affluence-weekday" data-testid="affluence-weekday-chart">
               <BarChartPrimitive data={weekdayData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
                 <CartesianGridPrimitive vertical={false} stroke="var(--bo-border)" />
                 <XAxisPrimitive dataKey="day" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "var(--bo-muted)", fontSize: 11 }} />

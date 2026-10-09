@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
+import { TrendingUp, Users } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { AnalyticsOverview, AnalyticsOverviewParams } from "../../../api/types";
@@ -76,11 +77,11 @@ export default function Page() {
 
   return (
     <div className="flex flex-col" data-testid="estadisticas-tabs-root" data-ui="estadisticas-tabs-root">
-      <div className="mx-auto w-full max-w-screen-2xl px-4 pt-4 sm:px-6 xl:px-8" data-ui="estadisticas-tabs-bar">
+      <div className="bo-estadisticasTabsBar mx-auto w-full max-w-screen-2xl px-0 pt-1 sm:px-6 sm:pt-4 xl:px-8" data-ui="estadisticas-tabs-bar">
         <SimpleTabs
           items={[
-            { id: "afluencia", label: "Afluencia", title: "Afluencia de clientes" },
-            { id: "ventas", label: "Ventas", title: "Estadísticas de ventas" },
+            { id: "afluencia", label: "Afluencia", title: "Afluencia de clientes", icon: <Users size={17} strokeWidth={1.8} /> },
+            { id: "ventas", label: "Ventas", title: "Estadísticas de ventas", icon: <TrendingUp size={17} strokeWidth={1.8} /> },
           ]}
           activeId={activeTab}
           onChange={(id) => setActiveTab(id as EstadisticasTab)}

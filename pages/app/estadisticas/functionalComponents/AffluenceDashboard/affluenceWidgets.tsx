@@ -102,7 +102,7 @@ export function AffluenceKpi({
         </span>
       </div>
       <div data-ui={`${testId}-body`}>
-        <div className="mt-3 text-2xl font-semibold tracking-tight" data-testid={`${testId}-value`} data-ui={`${testId}-value`}>
+        <div className="mt-2 text-xl font-semibold tracking-tight sm:mt-3 sm:text-2xl" data-testid={`${testId}-value`} data-ui={`${testId}-value`}>
           {value}
         </div>
         <p className="mt-1 text-xs leading-5 text-[var(--bo-muted)]" data-ui={`${testId}-detail`}>
@@ -161,7 +161,7 @@ export function AffluencePanel({
 export function ChartEmpty({ message, testId }: { message: string; testId: string }) {
   return (
     <div
-      className="flex h-64 min-h-56 items-center justify-center rounded-xl border border-dashed border-[var(--bo-border-2)] bg-[var(--bo-surface-3)] px-6 text-center text-sm leading-6 text-[var(--bo-muted)]"
+      className="flex h-56 min-h-52 items-center sm:h-64 sm:min-h-56 justify-center rounded-xl border border-dashed border-[var(--bo-border-2)] bg-[var(--bo-surface-3)] px-4 text-center sm:px-6 text-sm leading-6 text-[var(--bo-muted)]"
       data-testid={testId}
       data-ui={`${testId}-empty`}
     >

@@ -84,6 +84,9 @@
 /* ── Features: Facturas — Analytics ───────────────────── */
 @import "./styles/features/facturas/invoice-analytics.css";
 
+/* ── Features: Estadísticas ─────────────────────────────── */
+@import "./styles/features/estadisticas/estadisticas-page.css";
+
 /* ── Components: Badge & Chip ─────────────────────────── */
 @import "./styles/components/badge.css";
 @import "./styles/components/allergens.css";
