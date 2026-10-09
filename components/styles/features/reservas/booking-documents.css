@@ -195,6 +195,8 @@
   gap: 12px;
   min-height: 0;
   margin-top: 10px;
+  max-height: min(66vh, 640px);
+  overflow-y: auto;
 }
 
 .bo-bookingDocumentsList {
