@@ -7,6 +7,7 @@ import {
   type BookingDocumentDeleteMessage,
   type BookingDocumentUploadMessage,
 } from "../../../../../api/bookingDocuments";
+import { prepareImageForUpload } from "../../../../../lib/imageUpload";
 
 /**
  * One socket for the whole booking-documents flow (upload / list / delete).
@@ -177,14 +178,16 @@ export function useBookingDocumentsSocket(options: { enabled?: boolean } = {}): 
     async (file: File, title: string, bookingId?: number | null): Promise<BookingDocument> => {
       // requestId is assigned by `send` (it is the correlation key of the
       // pending promise), so the frame is built without one.
+      // Images go out prepared (<=2MB WebP); other documents pass through.
+      const prepared = await prepareImageForUpload(file);
       const message: Omit<BookingDocumentUploadMessage, "requestId"> = {
         type: "bookingDocumentUpload",
-        filename: file.name,
-        mimeType: file.type || "application/octet-stream",
+        filename: prepared.name,
+        mimeType: prepared.type || "application/octet-stream",
         title,
         // A draft has no booking yet; the server keeps it until the create binds it.
         bookingId: bookingId && bookingId > 0 ? bookingId : null,
-        dataBase64: await fileToBase64(file),
+        dataBase64: await fileToBase64(prepared),
       };
       const reply = await send((requestId) => ({ ...message, requestId }));
       const document = messageOf(reply).document as BookingDocument | undefined;

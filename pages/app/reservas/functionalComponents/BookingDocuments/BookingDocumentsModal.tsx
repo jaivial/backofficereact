@@ -19,6 +19,7 @@ import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { DocumentAttachmentField } from "./DocumentAttachmentField";
 import { DocumentPreview } from "./DocumentPreview";
 import { useBookingDocumentsSocket } from "./useBookingDocumentsSocket";
+import { prepareImageForUpload } from "../../../../../lib/imageUpload";
 
 /**
  * "Documentos" modal of the reservations table: list, delete, upload and preview
@@ -84,7 +85,10 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
       // file, bookingDocumentMaxDocuments for the count, and a 10 MB INPUT cap
       // for images because the backend webp encoder refuses anything larger.
       for (const row of rows) {
-        const file = row.file as File;
+        // Images are compressed to <=2MB webp BEFORE the caps, so a large
+        // photo no longer trips the 10MB image input limit (pedido Jaime).
+        const file = await prepareImageForUpload(row.file as File);
+        row.file = file;
         if (file.size > BOOKING_DOCUMENT_MAX_BYTES) {
           throw new Error(`"${file.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_BYTES / (1024 * 1024))} MB`);
         }

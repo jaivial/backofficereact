@@ -1,5 +1,6 @@
 import { createPOSModule } from "./modules/pos";
 import { adminApiAuthHeaders } from "./adminApiAuth";
+import { prepareFormImages } from "../lib/imageUpload";
 import type {
   APIError,
   APISuccess,
@@ -178,6 +179,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
   }
 
   async function json<T>(path: string, init: RequestInit): Promise<T> {
+    // Global image upload rule: images in multipart bodies leave the frontend
+    // as <=2MB WebP (coord id image_upload_prepare_v1).
+    if (init.body instanceof FormData) {
+      init = { ...init, body: await prepareFormImages(init.body) };
+    }
     const res = await apiFetch(path, init);
     const data = await readJSON(res);
     emitSessionExpirationUpdate((data as any)?.moving_expiration_date ?? res.headers.get("x-moving-expiration-date"));
