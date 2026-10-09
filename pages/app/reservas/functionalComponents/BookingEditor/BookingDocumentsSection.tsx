@@ -1,6 +1,6 @@
 import React from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 import { Panel } from "../../../../../ui/shell/Panel";
 import { Switch } from "../../../../../ui/shadcn/Switch";
@@ -107,19 +107,39 @@ export function BookingDocumentsSection({
 
             <div className="bo-bookingDocumentsRows" data-slot="booking-editor-documents-rows" data-testid="booking-editor-documents-rows">
               {rows.map((row, index) => (
-                <DocumentAttachmentField
+                <div
                   key={index}
-                  index={index}
-                  title={row.title}
-                  file={row.file}
-                  busy={busy || uploadingIndex === index}
-                  disabled={busy}
-                  state={uploadingIndex === index ? "uploading" : "done"}
-                  onTitleChange={(title) => onRowChange(index, { title })}
-                  onFileChange={(file) => onRowChange(index, { file })}
-                  onRemove={() => onRemoveRow(index)}
-                  testId="booking-editor-document"
-                />
+                  className="bo-bookingDocumentsDraftRow"
+                  data-slot="booking-editor-document-row"
+                  data-testid={`booking-editor-document-row-${index}`}
+                >
+                  <div className="bo-bookingDocumentsDraftField" data-slot="booking-editor-document-field">
+                    <DocumentAttachmentField
+                      index={index}
+                      title={row.title}
+                      file={row.file}
+                      busy={busy || uploadingIndex === index}
+                      disabled={busy}
+                      state={uploadingIndex === index ? "uploading" : "done"}
+                      onTitleChange={(title) => onRowChange(index, { title })}
+                      onFileChange={(file) => onRowChange(index, { file })}
+                      onRemove={() => onRowChange(index, { file: null })}
+                      testId="booking-editor-document"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="bo-actionBtn bo-bookingDocumentsDraftTrash"
+                    onClick={() => onRemoveRow(index)}
+                    disabled={busy}
+                    aria-label={`Eliminar fila ${index + 1}`}
+                    title="Eliminar fila"
+                    data-slot="booking-editor-document-remove-row"
+                    data-testid={`booking-editor-document-${index}-remove-row`}
+                  >
+                    <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
+                  </button>
+                </div>
               ))}
             </div>
 

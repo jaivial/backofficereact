@@ -195,6 +195,8 @@
   gap: 12px;
   min-height: 0;
   margin-top: 10px;
+  max-height: min(66vh, 640px);
+  overflow-y: auto;
 }
 
 .bo-bookingDocumentsList {
@@ -368,4 +370,28 @@
   width: 150px;
   min-width: 150px;
   white-space: nowrap;
+}
+
+/* Draft/upload rows: the field grows, the trash action button removes the
+   whole row (used in reservas/anadir and in the documents modal upload). */
+.bo-bookingDocumentsDraftRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-bookingDocumentsDraftField {
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-bookingDocumentsDraftTrash {
+  flex-shrink: 0;
+}
+
+/* The global .bo-modalActions footer is sticky with no background; on the
+   glass documents modal the rows showed through it. Solid footer. */
+.bo-bookingDocumentsModal .bo-modalActions {
+  background: rgb(42 43 52);
+  border-radius: 0 0 14px 14px;
 }
