@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ChevronLeft, Download, ExternalLink, Share2, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, Download, ExternalLink, Plus, Share2, Trash2, Upload } from "lucide-react";
 
 import {
   BOOKING_DOCUMENT_MAX_BYTES,
@@ -34,9 +34,9 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [uploadTitle, setUploadTitle] = useState("");
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadRows, setUploadRows] = useState<Array<{ title: string; file: File | null }>>([{ title: "", file: null }]);
   const [uploading, setUploading] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BookingDocument | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [openDoc, setOpenDoc] = useState<BookingDocument | null>(null);
@@ -71,44 +71,58 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
   const close = useCallback(() => {
     setOpenDoc(null);
     setUploadOpen(false);
-    setUploadTitle("");
-    setUploadFile(null);
+    setUploadRows([{ title: "", file: null }]);
     setNotice(null);
     onClose();
   }, [onClose]);
 
   const doUpload = useCallback(async () => {
-    if (!bookingId || !uploadFile) return;
+    const rows = uploadRows.filter((row) => row.file != null);
+    if (!bookingId || rows.length === 0) return;
     setUploading(true);
     setError(null);
     try {
       // Same caps the server enforces: bookingDocumentMaxUploadBytes for any
       // file, bookingDocumentMaxDocuments for the count, and a 10 MB INPUT cap
       // for images because the backend webp encoder refuses anything larger.
-      if (uploadFile.size > BOOKING_DOCUMENT_MAX_BYTES) {
-        throw new Error(`"${uploadFile.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_BYTES / (1024 * 1024))} MB`);
+      for (const row of rows) {
+        const file = row.file as File;
+        if (file.size > BOOKING_DOCUMENT_MAX_BYTES) {
+          throw new Error(`"${file.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_BYTES / (1024 * 1024))} MB`);
+        }
+        if (file.type.startsWith("image/") && file.size > BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES) {
+          throw new Error(
+            `"${file.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES / (1024 * 1024))} MB para imágenes; comprímela antes de subirla`,
+          );
+        }
       }
-      if (uploadFile.type.startsWith("image/") && uploadFile.size > BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES) {
-        throw new Error(
-          `"${uploadFile.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_IMAGE_INPUT_BYTES / (1024 * 1024))} MB para imágenes; comprímela antes de subirla`,
-        );
+      if (documents.length + rows.length > BOOKING_DOCUMENT_MAX_DOCUMENTS) {
+        throw new Error(`Esta reserva admite un máximo de ${BOOKING_DOCUMENT_MAX_DOCUMENTS} documentos`);
       }
-      if (documents.length >= BOOKING_DOCUMENT_MAX_DOCUMENTS) {
-        throw new Error(`Esta reserva ya tiene el máximo de ${BOOKING_DOCUMENT_MAX_DOCUMENTS} documentos`);
+      const createdTitles: string[] = [];
+      for (let index = 0; index < uploadRows.length; index++) {
+        const row = uploadRows[index];
+        if (!row.file) continue;
+        setUploadingIndex(index);
+        const created = await upload(row.file, row.title || row.file.name, bookingId);
+        createdTitles.push(created.title || created.original_filename);
       }
-      const created = await upload(uploadFile, uploadTitle || uploadFile.name, bookingId);
       // Success is shown from the socket reply, not from the click.
-      setNotice(`"${created.title || created.original_filename}" subido correctamente`);
-      setUploadTitle("");
-      setUploadFile(null);
+      setNotice(
+        createdTitles.length === 1
+          ? `"${createdTitles[0]}" subido correctamente`
+          : `${createdTitles.length} documentos subidos correctamente`,
+      );
+      setUploadRows([{ title: "", file: null }]);
       setUploadOpen(false);
       await reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo subir el documento");
     } finally {
       setUploading(false);
+      setUploadingIndex(null);
     }
-  }, [bookingId, documents.length, reload, upload, uploadFile, uploadTitle]);
+  }, [bookingId, documents.length, reload, upload, uploadRows]);
 
   const doDelete = useCallback(async () => {
     if (!bookingId || !deleteTarget) return;
@@ -273,17 +287,63 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
                       data-slot="booking-documents-upload"
                       data-testid="reservas-documents-upload"
                     >
-                      <DocumentAttachmentField
-                        index={0}
-                        title={uploadTitle}
-                        file={uploadFile}
-                        busy={uploading}
-                        state={uploading ? "uploading" : "idle"}
-                        onTitleChange={setUploadTitle}
-                        onFileChange={setUploadFile}
-                        onRemove={() => setUploadFile(null)}
-                        testId="reservas-documents-upload-row"
-                      />
+                      <div className="bo-bookingDocumentsRows" data-slot="booking-documents-upload-rows" data-testid="reservas-documents-upload-rows">
+                        {uploadRows.map((row, index) => (
+                          <div
+                            key={index}
+                            className="bo-bookingDocumentsDraftRow"
+                            data-slot="booking-documents-upload-row-wrapper"
+                            data-testid={`reservas-documents-upload-row-${index}`}
+                          >
+                            <div className="bo-bookingDocumentsDraftField" data-slot="booking-documents-upload-row-field">
+                              <DocumentAttachmentField
+                                index={index}
+                                title={row.title}
+                                file={row.file}
+                                busy={uploading && uploadingIndex === index}
+                                disabled={uploading}
+                                state={uploading && uploadingIndex === index ? "uploading" : "idle"}
+                                onTitleChange={(title) =>
+                                  setUploadRows((rows) => rows.map((r, i) => (i === index ? { ...r, title } : r)))
+                                }
+                                onFileChange={(file) =>
+                                  setUploadRows((rows) => rows.map((r, i) => (i === index ? { ...r, file } : r)))
+                                }
+                                onRemove={() =>
+                                  setUploadRows((rows) => rows.map((r, i) => (i === index ? { ...r, file: null } : r)))
+                                }
+                                testId="reservas-documents-upload-field"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="bo-actionBtn bo-bookingDocumentsDraftTrash"
+                              onClick={() =>
+                                setUploadRows((rows) =>
+                                  rows.length === 1 ? [{ title: "", file: null }] : rows.filter((_, i) => i !== index),
+                                )
+                              }
+                              disabled={uploading}
+                              aria-label={`Eliminar fila ${index + 1}`}
+                              title="Eliminar fila"
+                              data-slot="booking-documents-upload-remove-row"
+                              data-testid={`reservas-documents-upload-row-${index}-remove`}
+                            >
+                              <Trash2 size={16} strokeWidth={1.8} aria-hidden="true" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="bo-btn bo-btn--ghost bo-btn--sm"
+                        onClick={() => setUploadRows((rows) => [...rows, { title: "", file: null }])}
+                        disabled={uploading}
+                        data-slot="booking-documents-upload-add-row"
+                        data-testid="reservas-documents-upload-add-row"
+                      >
+                        <Plus size={16} strokeWidth={1.8} aria-hidden="true" /> Añadir
+                      </button>
                       <div className="bo-modalActions" data-slot="booking-documents-upload-actions">
                         <button
                           type="button"
@@ -298,10 +358,14 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
                           type="button"
                           className="bo-btn bo-btn--primary"
                           onClick={() => void doUpload()}
-                          disabled={uploading || !uploadFile}
+                          disabled={uploading || !uploadRows.some((row) => row.file != null)}
                           data-testid="reservas-documents-upload-submit"
                         >
-                          {uploading ? "Subiendo…" : "Subir documento"}
+                          {uploading
+                            ? "Subiendo…"
+                            : uploadRows.filter((row) => row.file != null).length > 1
+                              ? "Subir documentos"
+                              : "Subir documento"}
                         </button>
                       </div>
                     </motion.div>

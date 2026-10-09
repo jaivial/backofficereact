@@ -369,3 +369,20 @@
   min-width: 150px;
   white-space: nowrap;
 }
+
+/* Draft/upload rows: the field grows, the trash action button removes the
+   whole row (used in reservas/anadir and in the documents modal upload). */
+.bo-bookingDocumentsDraftRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bo-bookingDocumentsDraftField {
+  flex: 1;
+  min-width: 0;
+}
+
+.bo-bookingDocumentsDraftTrash {
+  flex-shrink: 0;
+}
