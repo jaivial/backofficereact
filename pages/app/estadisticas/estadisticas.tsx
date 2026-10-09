@@ -3,8 +3,13 @@ import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../api/client";
 import type { AnalyticsOverview, AnalyticsOverviewParams } from "../../../api/types";
+import { SimpleTabs } from "../../../ui/nav/SimpleTabs";
 import type { Data } from "./+data";
+import { AffluenceDashboard } from "./functionalComponents/AffluenceDashboard/AffluenceDashboard";
 import { AnalyticsDashboard } from "./functionalComponents/AnalyticsDashboard/AnalyticsDashboard";
+
+/** Afluencia (client flow, full booking history) and Ventas (financial analytics). */
+type EstadisticasTab = "afluencia" | "ventas";
 
 const EMPTY_DATA: Data = {
   params: { from: "", to: "", granularity: "day", compare: "previous" },
@@ -16,6 +21,7 @@ export default function Page() {
   const pageContext = usePageContext();
   const initialData = (pageContext.data ?? EMPTY_DATA) as Data;
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
+  const [activeTab, setActiveTab] = useState<EstadisticasTab>("afluencia");
   const [params, setParams] = useState<AnalyticsOverviewParams>(initialData.params);
   const [overview, setOverview] = useState<AnalyticsOverview | null>(initialData.overview);
   const [error, setError] = useState<string | null>(initialData.error);
@@ -69,14 +75,31 @@ export default function Page() {
   }, [api.analytics, loadOverview, params]);
 
   return (
-    <AnalyticsDashboard
-      overview={overview}
-      params={params}
-      loading={loading}
-      error={error}
-      onParamsChange={handleParamsChange}
-      onRefresh={handleRefresh}
-      data-ui="estadisticas-page-dashboard"
-    />
+    <div className="flex flex-col" data-testid="estadisticas-tabs-root" data-ui="estadisticas-tabs-root">
+      <div className="mx-auto w-full max-w-screen-2xl px-4 pt-4 sm:px-6 xl:px-8" data-ui="estadisticas-tabs-bar">
+        <SimpleTabs
+          items={[
+            { id: "afluencia", label: "Afluencia", title: "Afluencia de clientes" },
+            { id: "ventas", label: "Ventas", title: "Estadísticas de ventas" },
+          ]}
+          activeId={activeTab}
+          onChange={(id) => setActiveTab(id as EstadisticasTab)}
+          aria-label="Pestañas de estadísticas"
+        />
+      </div>
+      {activeTab === "afluencia" ? (
+        <AffluenceDashboard data-ui="estadisticas-page-affluence" />
+      ) : (
+        <AnalyticsDashboard
+          overview={overview}
+          params={params}
+          loading={loading}
+          error={error}
+          onParamsChange={handleParamsChange}
+          onRefresh={handleRefresh}
+          data-ui="estadisticas-page-dashboard"
+        />
+      )}
+    </div>
   );
 }

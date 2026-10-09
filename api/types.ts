@@ -335,6 +335,82 @@ export type AnalyticsRefreshPayload = {
 
 export type AnalyticsRefreshResponse = APISuccess<AnalyticsRefreshPayload> | APIError;
 
+/** Affluence (client flow) analytics — tag `affluence_stats_v1`. */
+export type AffluenceBucket = "day" | "week" | "month" | "year";
+
+export type AffluenceTotals = {
+  bookings: number;
+  covers: number;
+  avgPartySize: number;
+  activeDays: number;
+  avgCoversPerActiveDay: number;
+};
+
+export type AffluenceSeriesPoint = {
+  key: string;
+  bookings: number;
+  covers: number;
+};
+
+export type AffluenceWeekdayPoint = {
+  weekday: number;
+  bookings: number;
+  covers: number;
+};
+
+export type AffluenceHistory = {
+  firstDate: string | null;
+  lastDate: string | null;
+};
+
+export type AffluencePayload = {
+  tag: string;
+  from: string;
+  to: string;
+  bucket: AffluenceBucket;
+  history: AffluenceHistory;
+  totals: AffluenceTotals;
+  previous: AffluenceTotals & { from: string; to: string };
+  deltaPercent: { bookings: number | null; covers: number | null };
+  series: AffluenceSeriesPoint[];
+  weekday: AffluenceWeekdayPoint[];
+};
+
+/** Success payload plus the standard APIError branch (discriminated by `success`). */
+export type AffluenceResponse = APISuccess<AffluencePayload> | APIError;
+
+export type AffluenceSeasonalWeek = {
+  bookings: number;
+  covers: number;
+};
+
+export type AffluenceSeasonalMonth = {
+  month: number;
+  bookings: number;
+  covers: number;
+  weeks: AffluenceSeasonalWeek[];
+};
+
+export type AffluenceSeasonalYear = {
+  year: number;
+  bookings: number;
+  covers: number;
+  partial: boolean;
+  deltaPercentCovers: number | null;
+  /** True when the delta compares an unfinished season against the previous year up to the same day. */
+  deltaToDate: boolean;
+  months: AffluenceSeasonalMonth[];
+};
+
+export type AffluenceSeasonalPayload = {
+  tag: string;
+  months: number[];
+  today: string;
+  years: AffluenceSeasonalYear[];
+};
+
+export type AffluenceSeasonalResponse = APISuccess<AffluenceSeasonalPayload> | APIError;
+
 export type MenuVisibilityItem = {
   menuKey: string;
   menuName: string;
