@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ChevronLeft, Download, ExternalLink, Plus, Share2, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, Download, ExternalLink, Plus, Share2, Trash2 } from "lucide-react";
 
 import {
   BOOKING_DOCUMENT_MAX_BYTES,
@@ -15,6 +15,7 @@ import { ModalHeader } from "../../../../../ui/overlays/ModalHeader";
 import { ConfirmDialog } from "../../../../../ui/overlays/ConfirmDialog";
 import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { useErrorToast } from "../../../../../ui/feedback/useErrorToast";
+import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { DocumentAttachmentField } from "./DocumentAttachmentField";
 import { DocumentPreview } from "./DocumentPreview";
 import { useBookingDocumentsSocket } from "./useBookingDocumentsSocket";
@@ -32,9 +33,8 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
   const [documents, setDocuments] = useState<BookingDocument[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [uploadRows, setUploadRows] = useState<Array<{ title: string; file: File | null }>>([{ title: "", file: null }]);
+  const { pushToast } = useToasts();
+  const [uploadRows, setUploadRows] = useState<Array<{ title: string; file: File | null }>>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BookingDocument | null>(null);
@@ -70,9 +70,7 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
   // Closing the modal resets every step so the next open starts on the list.
   const close = useCallback(() => {
     setOpenDoc(null);
-    setUploadOpen(false);
-    setUploadRows([{ title: "", file: null }]);
-    setNotice(null);
+    setUploadRows([]);
     onClose();
   }, [onClose]);
 
@@ -107,14 +105,15 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
         const created = await upload(row.file, row.title || row.file.name, bookingId);
         createdTitles.push(created.title || created.original_filename);
       }
-      // Success is shown from the socket reply, not from the click.
-      setNotice(
-        createdTitles.length === 1
-          ? `"${createdTitles[0]}" subido correctamente`
-          : `${createdTitles.length} documentos subidos correctamente`,
-      );
-      setUploadRows([{ title: "", file: null }]);
-      setUploadOpen(false);
+      // Success toast lives at page level, not inside the modal.
+      pushToast({
+        kind: "success",
+        title:
+          createdTitles.length === 1
+            ? `"${createdTitles[0]}" subido correctamente`
+            : `${createdTitles.length} documentos subidos correctamente`,
+      });
+      setUploadRows([]);
       await reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo subir el documento");
@@ -122,7 +121,7 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
       setUploading(false);
       setUploadingIndex(null);
     }
-  }, [bookingId, documents.length, reload, upload, uploadRows]);
+  }, [bookingId, documents.length, pushToast, reload, upload, uploadRows]);
 
   const doDelete = useCallback(async () => {
     if (!bookingId || !deleteTarget) return;
@@ -148,13 +147,13 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
         return;
       }
       await navigator.clipboard.writeText(url);
-      setNotice("Enlace copiado al portapapeles");
+      pushToast({ kind: "success", title: "Enlace copiado al portapapeles" });
     } catch (e) {
       // A cancelled share sheet is not an error worth surfacing.
       if (e instanceof Error && e.name === "AbortError") return;
       setError("No se pudo compartir el documento");
     }
-  }, []);
+  }, [pushToast]);
 
   const fade = reduceMotion
     ? { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } }
@@ -240,9 +239,6 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
                 data-slot="booking-documents-step-list"
                 data-testid="reservas-documents-step-list"
               >
-                {notice ? (
-                  <InlineAlert kind="success" title="Listo" message={notice} testId="reservas-documents-notice" />
-                ) : null}
                 {error ? <InlineAlert kind="error" title="Error" message={error} testId="reservas-documents-error" /> : null}
                 {loading && documents.length === 0 ? (
                   <p className="bo-muted" data-testid="reservas-documents-loading">Cargando documentos…</p>
@@ -277,16 +273,13 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
                   ))}
                 </div>
 
-                <AnimatePresence initial={false}>
-                  {uploadOpen ? (
-                    <motion.div
-                      key="upload"
-                      style={{ display: "flex", flexDirection: "column", gap: 10 }}
-                      {...fade}
-                      transition={transition}
-                      data-slot="booking-documents-upload"
-                      data-testid="reservas-documents-upload"
-                    >
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                  data-slot="booking-documents-upload"
+                  data-testid="reservas-documents-upload"
+                >
+                  {uploadRows.length > 0 ? (
+                    <>
                       <div className="bo-bookingDocumentsRows" data-slot="booking-documents-upload-rows" data-testid="reservas-documents-upload-rows">
                         {uploadRows.map((row, index) => (
                           <div
@@ -320,7 +313,7 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
                               className="bo-actionBtn bo-bookingDocumentsDraftTrash"
                               onClick={() =>
                                 setUploadRows((rows) =>
-                                  rows.length === 1 ? [{ title: "", file: null }] : rows.filter((_, i) => i !== index),
+                                  rows.length === 1 ? [] : rows.filter((_, i) => i !== index),
                                 )
                               }
                               disabled={uploading}
@@ -334,21 +327,11 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
                           </div>
                         ))}
                       </div>
-                      <button
-                        type="button"
-                        className="bo-btn bo-btn--ghost bo-btn--sm"
-                        onClick={() => setUploadRows((rows) => [...rows, { title: "", file: null }])}
-                        disabled={uploading}
-                        data-slot="booking-documents-upload-add-row"
-                        data-testid="reservas-documents-upload-add-row"
-                      >
-                        <Plus size={16} strokeWidth={1.8} aria-hidden="true" /> Añadir
-                      </button>
                       <div className="bo-modalActions" data-slot="booking-documents-upload-actions">
                         <button
                           type="button"
                           className="bo-btn bo-btn--ghost"
-                          onClick={() => setUploadOpen(false)}
+                          onClick={() => setUploadRows([])}
                           disabled={uploading}
                           data-testid="reservas-documents-upload-cancel"
                         >
@@ -368,23 +351,24 @@ export function BookingDocumentsModal({ bookingId, onClose }: { bookingId: numbe
                               : "Subir documento"}
                         </button>
                       </div>
-                    </motion.div>
-                  ) : (
-                    <motion.button
-                      key="upload-trigger"
-                      type="button"
-                      className="bo-btn bo-btn--primary bo-bookingDocumentsUploadBtn"
-                      onClick={() => setUploadOpen(true)}
-                      disabled={!connected}
-                      title={connected ? "Subir un documento a esta reserva" : "Conectando con el servidor…"}
-                      {...fade}
-                      transition={transition}
-                      data-testid="reservas-documents-upload-open"
-                    >
-                      <Upload size={16} strokeWidth={1.8} aria-hidden="true" /> Subir documento
-                    </motion.button>
-                  )}
-                </AnimatePresence>
+                    </>
+                  ) : null}
+                  <button
+                    type="button"
+                    className={
+                      uploadRows.length > 0
+                        ? "bo-btn bo-btn--ghost bo-btn--sm"
+                        : "bo-btn bo-btn--primary bo-bookingDocumentsUploadBtn"
+                    }
+                    onClick={() => setUploadRows((rows) => [...rows, { title: "", file: null }])}
+                    disabled={uploading || !connected}
+                    title={connected ? "Añadir un documento a esta reserva" : "Conectando con el servidor…"}
+                    data-slot="booking-documents-upload-add-row"
+                    data-testid="reservas-documents-upload-add-row"
+                  >
+                    <Plus size={16} strokeWidth={1.8} aria-hidden="true" /> Añadir documento
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
