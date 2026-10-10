@@ -502,8 +502,8 @@ export function MenuSectionEditor({
                       data-coordination-id="dessert_section_source_v1"
                     >
                       {dessertSource === DESSERT_SOURCE_GENERAL
-                        ? "Sincronizada con la carta general de postres: al editar aqui se pedira confirmacion y los cambios se aplicaran tambien a la carta general."
-                        : "Personalizada: esta seccion tiene su propia lista de postres, totalmente editable aqui."}
+                        ? "Sincronizada con la carta general de postres: al editar aquí se pedirá confirmación y los cambios se aplicarán también a la carta general."
+                        : "Personalizada: esta sección tiene su propia lista de postres, totalmente editable aquí."}
                     </div>
                   </div>
                 ) : null}
@@ -515,7 +515,7 @@ export function MenuSectionEditor({
                   data-testid={`menu-section-editor-settings-delete-${sec.clientId}`}
                   data-coordination-id="menu-section-delete-v1"
                 >
-                  <Trash2 size={14} /> Eliminar seccion
+                  <Trash2 size={14} /> Eliminar sección
                 </button>
               </div>
             ) : visibleDishes.length > 0 ? (

@@ -547,7 +547,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
     try {
       setAd(addContentItem(ad, type));
     } catch (error) {
-      notify("info", "Limite", error instanceof Error ? error.message : "No se puede anadir otro elemento");
+      notify("info", "Limite", error instanceof Error ? error.message : "No se puede añadir otro elemento");
     }
   }, [activeStep, ad, editingBody, isMultiple, notify]);
 
@@ -807,7 +807,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 steps={layout.steps}
                 activeStepId={activeStep?.id ?? ""}
                 onSelect={(stepId) => { setActiveStepId(stepId); setWizardStep(0); setSelectedId(null); }}
-                onAdd={() => { try { setAd(addStep(ad)); } catch (error) { notify("info", "Limite", error instanceof Error ? error.message : "No se puede anadir otro anuncio"); } }}
+                onAdd={() => { try { setAd(addStep(ad)); } catch (error) { notify("info", "Limite", error instanceof Error ? error.message : "No se puede añadir otro anuncio"); } }}
                 onRemove={(stepId) => setAd(removeStep(ad, stepId))}
                 onReorder={(ordered) => setAd(reorderSteps(ad, ordered.map((step) => step.id)))}
               >
@@ -1763,7 +1763,7 @@ export function ButtonInspector({
 
       {/* Live pill: the button as it renders, so colour and text are judged in place. */}
       <span className="bo-adModalCta bo-adInspectorPreview" style={{ ["--ad-primary" as string]: cta.color || AD_DEFAULT_COLOR }} data-testid={`ad-cta-${cta.id}-preview`}>
-        {cta.text || "Mas informacion"}
+        {cta.text || "Más información"}
       </span>
 
       <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-content`}>
@@ -1821,7 +1821,7 @@ export function ButtonInspector({
           <div className="bo-adGroup bo-adWhatsapp" data-testid={`ad-cta-${cta.id}-whatsapp`}>
             <div className="bo-adGroupTitle">WhatsApp</div>
             <Field label="Teléfono del restaurante" testId={`ad-cta-${cta.id}-phone-restaurant`}>
-              <input value={phone || "Sin telefono"} readOnly className="bo-input bo-inputReadonly" />
+              <input value={phone || "Sin teléfono"} readOnly className="bo-input bo-inputReadonly" />
             </Field>
             <Field label="Teléfono personalizado" testId={`ad-cta-${cta.id}-phone-custom`}>
               <input

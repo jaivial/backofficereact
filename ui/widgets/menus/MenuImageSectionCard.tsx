@@ -87,7 +87,7 @@ function MenuImageSectionCardImpl({
         <button
           type="button"
           className="bo-menuImageSectionCardDrag"
-          aria-label="Reordenar seccion"
+          aria-label="Reordenar sección"
           {...dragHandleProps}
           data-testid={`menu-image-section-card-drag-${sectionId}`}
           data-slot="menu-image-section-card-drag"
@@ -112,7 +112,7 @@ function MenuImageSectionCardImpl({
               onBlur={(e) => { if (e.currentTarget.value.trim() !== (price == null ? "" : String(price))) onPriceCommit(e.currentTarget.value); }}
               inputMode="decimal"
               placeholder="Precio"
-              aria-label="Precio de la seccion"
+              aria-label="Precio de la sección"
               disabled={busy}
               data-testid={`menu-image-section-card-price-${sectionId}`}
             />
@@ -124,7 +124,7 @@ function MenuImageSectionCardImpl({
           className="bo-btn bo-btn--ghost bo-btn--danger"
           onClick={onDelete}
           disabled={busy}
-          aria-label="Eliminar seccion"
+          aria-label="Eliminar sección"
           data-testid={`menu-image-section-card-delete-${sectionId}`}
           data-slot="menu-image-section-card-delete"
         >
@@ -164,7 +164,7 @@ function MenuImageSectionCardImpl({
         ) : (
           <div className="bo-menuImageSectionCardDropzone" data-slot="menu-image-section-card-dropzone">
             <Upload size={32} />
-            <p data-slot="menu-image-section-card-empty-title">Sube una imagen para esta seccion</p>
+            <p data-slot="menu-image-section-card-empty-title">Sube una imagen para esta sección</p>
             <p className="bo-mutedText" data-slot="menu-image-section-card-empty-meta">PNG, JPG, WEBP o GIF hasta 10MB</p>
             <button
               type="button"

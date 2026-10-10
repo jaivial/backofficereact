@@ -156,7 +156,7 @@ export function InvoiceHistoryModal({
             <div data-testid="invoice-history-empty" className="bo-historyEmpty" data-slot="invoice-history-empty">
               <Clock size={32} />
               <span data-testid="invoiceHistoryModal-ble" data-slot="invoiceHistoryModal-ble">No hay historial disponible</span>
-              <p data-testid="invoiceHistoryModal-qui" data-slot="invoiceHistoryModal-qui">Los cambios realizados en esta factura se mostraran aqui.</p>
+              <p data-testid="invoiceHistoryModal-qui" data-slot="invoiceHistoryModal-qui">Los cambios realizados en esta factura se mostrarán aquí.</p>
             </div>
           )}
 

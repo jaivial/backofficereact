@@ -385,7 +385,7 @@ function ButtonNode({
         data-slot={`ad-preview-cta-${cta.id}`}
         data-testid={`ad-preview-cta-${cta.id}`}
       >
-        {cta.text || "Mas informacion"}
+        {cta.text || "Más información"}
       </a>
     );
   }
@@ -576,7 +576,7 @@ function WizardCard({
             value={step.description}
             multiline
             ariaLabel="Descripción del anuncio"
-            placeholder="Descripcion"
+            placeholder="Descripción"
             testId={`ad-wizard-card-${step.id}-description`}
             className="bo-adWizardCardDesc"
             onCommit={(description) => onStepChange?.(step.id, { description })}
@@ -608,7 +608,7 @@ function WizardCard({
                 onClick={(event) => event.stopPropagation()}
                 data-testid={`ad-wizard-card-${step.id}-${cta.id}`}
               >
-                {cta.text || "Mas informacion"}
+                {cta.text || "Más información"}
               </a>
             ))
           )}

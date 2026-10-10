@@ -230,7 +230,7 @@ function CreateRestaurantForm({ onCreated }: { onCreated: () => void }) {
       <input className="bo-platformInput" placeholder="Slug (ej: mi-restaurante)" value={slug} onChange={(e) => setSlug(e.target.value)} data-ui="restaurant-create-slug" />
       <input className="bo-platformInput" placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} data-ui="restaurant-create-name" />
       <input data-testid="email-contacto" className="bo-platformInput" placeholder="Email contacto" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input data-testid="telefono" className="bo-platformInput" placeholder="Telefono" value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <input data-testid="telefono" className="bo-platformInput" placeholder="Teléfono" value={phone} onChange={(e) => setPhone(e.target.value)} />
       {error && <div className="bo-platformError">{error}</div>}
       <button className="bo-platformBtn" disabled={loading || !slug || !name} onClick={() => void submit()} data-ui="restaurant-create-submit">
         {loading ? "Creando..." : "Crear"}
@@ -532,7 +532,7 @@ function StripeTab() {
         <h3 data-slot="plataforma-platformCardTitle" className="bo-platformCardTitle">Procesar Devolucion (Refund)</h3>
         <div data-slot="plataforma-platformForm" className="bo-platformForm">
           <input className="bo-platformInput" placeholder="Charge ID (ch_...) o Payment Intent (pi_...)" value={refundId} onChange={(e) => setRefundId(e.target.value)} data-ui="stripe-refund-id" />
-          <input className="bo-platformInput" type="number" step="0.01" placeholder="Cantidad EUR (vacio = total)" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} data-ui="stripe-refund-amount" />
+          <input className="bo-platformInput" type="number" step="0.01" placeholder="Cantidad EUR (vacío = total)" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} data-ui="stripe-refund-amount" />
           <select className="bo-platformInput" value={refundReason} onChange={(e) => setRefundReason(e.target.value)} data-ui="stripe-refund-reason">
             <option value="requested_by_customer">Solicitada por cliente</option>
             <option value="duplicate">Duplicado</option>

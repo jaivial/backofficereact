@@ -766,7 +766,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
                     className="bo-textarea"
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
-                    placeholder="Descripcion del elemento..."
+                    placeholder="Descripción del elemento..."
                     rows={3}
                   />
                 </div>

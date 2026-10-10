@@ -44,7 +44,7 @@ export function ConfigChatGPTPlugin() {
   }, [pushToast]);
 
   if (!loaded) {
-    return <div className="bo-panel p-6 text-sm text-[var(--bo-muted)]" data-slot="config-chatgpt-plugin-loading">Cargando configuracion...</div>;
+    return <div className="bo-panel p-6 text-sm text-[var(--bo-muted)]" data-slot="config-chatgpt-plugin-loading">Cargando configuración...</div>;
   }
 
   const active = tokens.filter((t) => t.active);

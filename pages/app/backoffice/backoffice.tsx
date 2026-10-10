@@ -39,7 +39,7 @@ export default function Page() {
         <h1 className="bo-homeTitle" data-ui="backoffice-title">
           Bienvenido, <span className="bo-homeTitleAccent" data-ui="backoffice-name">{firstName}</span>
         </h1>
-        <p className="bo-homeSub" data-ui="backoffice-subtitle">Selecciona una seccion para empezar.</p>
+        <p className="bo-homeSub" data-ui="backoffice-subtitle">Selecciona una sección para empezar.</p>
       </header>
 
       <section className="bo-homeNav" data-ui="backoffice-nav-orbit" aria-label="Accesos rapidos">

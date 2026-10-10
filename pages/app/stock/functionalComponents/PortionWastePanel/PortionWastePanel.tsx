@@ -142,7 +142,7 @@ export function PortionWastePanel() {
         </select>
       </FormField>
 
-      <FormField label="Almacen" htmlFor="portion-waste-warehouse">
+      <FormField label="Almacén" htmlFor="portion-waste-warehouse">
         <select
           id="portion-waste-warehouse"
           className="bo-input"

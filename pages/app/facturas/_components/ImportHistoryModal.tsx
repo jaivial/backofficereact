@@ -121,7 +121,7 @@ export function ImportHistoryModal({ open, onClose }: ImportHistoryModalProps) {
             <div data-testid="import-history-empty" className="bo-importHistoryEmpty" data-slot="import-history-empty">
               <FileText size={48} />
               <p data-testid="importHistoryModal-ias" data-slot="importHistoryModal-ias">No hay importaciones previas</p>
-              <span data-testid="importHistoryModal-qui" data-slot="importHistoryModal-qui">El historial de importaciones aparecera aqui</span>
+              <span data-testid="importHistoryModal-qui" data-slot="importHistoryModal-qui">El historial de importaciones aparecerá aquí</span>
             </div>
           ) : (
             <div data-testid="import-history-list" className="bo-importHistoryList" data-slot="import-history-list">

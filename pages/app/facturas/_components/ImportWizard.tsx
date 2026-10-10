@@ -802,7 +802,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
                 ) : (
                   <>
                     <Upload size={48} />
-                    <p data-testid="importWizard-importWizardHint-2" className="bo-importWizardHint" data-slot="importWizard-importWizardHint">Arrastra un archivo CSV aqui</p>
+                    <p data-testid="importWizard-importWizardHint-2" className="bo-importWizardHint" data-slot="importWizard-importWizardHint">Arrastra un archivo CSV aquí</p>
                     <p data-testid="importWizard-importWizardSubhint" className="bo-importWizardSubhint" data-slot="importWizard-importWizardSubhint">o haz clic para seleccionar</p>
                   </>
                 )}

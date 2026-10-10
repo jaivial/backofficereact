@@ -99,7 +99,7 @@ export function InvoiceNumberingPanel({ invoiceSettings, busy, onSettingsChange,
           </div>
 
           <label className="bo-field" data-ui="nextNumberField">
-            <div className="bo-label" data-slot="fieldLabel">Proximo numero</div>
+            <div className="bo-label" data-slot="fieldLabel">Próximo número</div>
             <input
               className="bo-input"
               type="number"
@@ -108,11 +108,11 @@ export function InvoiceNumberingPanel({ invoiceSettings, busy, onSettingsChange,
               onChange={(e) => onSettingsChange((p) => ({ ...p, nextNumber: parseInt(e.target.value) || 1 }))}
               data-slot="fieldInput"
             />
-            <div className="bo-mutedText" data-slot="fieldHint">El numero que se usara para la siguiente factura</div>
+            <div className="bo-mutedText" data-slot="fieldHint">El número que se usará para la siguiente factura</div>
           </label>
 
           <div className="bo-field" style={{ padding: 16, backgroundColor: "var(--bo-bg-elevated)", borderRadius: 8, marginTop: 8 }} data-ui="previewCard">
-            <div className="bo-label" data-slot="previewLabel">Vista previa del siguiente numero de factura</div>
+            <div className="bo-label" data-slot="previewLabel">Vista previa del siguiente número de factura</div>
             <div style={{ fontSize: 24, fontWeight: 600, marginTop: 8, fontFamily: "monospace" }} data-slot="previewNumber">{previewInvoiceNumber}</div>
           </div>
 

@@ -479,7 +479,7 @@ function AdminHorariosView({ data }: { data: Data }) {
                   ))}
                   {filteredMembers.length === 0 ? (
                     <div className="bo-mutedText" style={{ textAlign: "center", padding: 14 }} data-slot="empty-state">
-                      {memberSearch.trim() ? "Sin resultados." : "Todos los miembros ya tienen horario para este dia."}
+                      {memberSearch.trim() ? "Sin resultados." : "Todos los miembros ya tienen horario para este día."}
                     </div>
                   ) : null}
                 </div>

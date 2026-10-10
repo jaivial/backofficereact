@@ -226,7 +226,7 @@ function FoodTypePage() {
               <Tabs
                 tabs={[
                   { id: "platos", label: listLabel, href: "#", icon: <UtensilsCrossed size={16} strokeWidth={1.8} /> },
-                  { id: "configuracion", label: "Configuracion", href: "#", icon: <Settings2 size={16} strokeWidth={1.8} /> },
+                  { id: "configuracion", label: "Configuración", href: "#", icon: <Settings2 size={16} strokeWidth={1.8} /> },
                 ]}
                 activeId={settingsTab}
                 ariaLabel="Secciones de la pagina de comida"

@@ -179,7 +179,7 @@ export function CampaignsUnsubscribed() {
 
 function CampaignUnsubscribedPager({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (target: number) => void }) {
   return (
-    <nav className="flex items-center justify-between gap-2 border-t border-bo-border pt-3" aria-label="Paginacion de bajas" data-testid="campaigns-unsubscribed-pager">
+    <nav className="flex items-center justify-between gap-2 border-t border-bo-border pt-3" aria-label="Paginación de bajas" data-testid="campaigns-unsubscribed-pager">
       <span className="text-xs text-bo-muted" data-testid="campaigns-unsubscribed-pager-status">
         Pagina {page} de {totalPages}
       </span>
