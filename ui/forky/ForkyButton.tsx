@@ -76,7 +76,7 @@ export function ForkyButton() {
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-6 right-6 z-[110]"
+      className="forky-floating-host fixed bottom-6 right-6 z-[110]"
       data-testid="forky-floating-host"
     >
       <button
