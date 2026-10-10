@@ -78,7 +78,7 @@ export default function Page() {
             </div>
           </div>
           <div className="bo-cardObTitle" data-slot="dashboard-cardObTitle">{data.date}</div>
-          <div className="bo-cardObBody" data-slot="dashboard-cardObBody">Panel inicial del backoffice. Mas modulos se agregan aqui.</div>
+          <div className="bo-cardObBody" data-slot="dashboard-cardObBody">Panel inicial del backoffice. Más módulos se agregan aquí.</div>
         </div>
       </section>
 

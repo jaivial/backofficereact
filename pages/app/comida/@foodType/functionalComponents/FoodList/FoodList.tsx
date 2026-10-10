@@ -149,7 +149,7 @@ export function FoodList({
         </div>
       )}
 
-      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginacion" data-ui="food-list-pager">
+      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-ui="food-list-pager">
         <div className="bo-pagerText" data-role="food-list-pager-info">
           Pagina {page} de {totalPages} · {total} resultados
         </div>

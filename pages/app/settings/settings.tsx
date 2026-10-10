@@ -167,7 +167,7 @@ export default function Page() {
         return;
       }
       setInvoiceSettings(res.settings);
-      pushToast({ kind: "success", title: "Guardado", message: "Configuracion de facturas actualizada" });
+      pushToast({ kind: "success", title: "Guardado", message: "Configuración de facturas actualizada" });
     } catch (e) {
       pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar" });
     } finally {

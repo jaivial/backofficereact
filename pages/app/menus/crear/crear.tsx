@@ -486,7 +486,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
         data-testid="menu-crear-add-special-section"
         data-slot="crear-menuImageSectionsAdd"
       >
-        <Plus size={14} /> Anadir seccion
+        <Plus size={14} /> Añadir sección
       </button>
     </div>
   );
@@ -658,7 +658,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       </button>
                     </div>
                     <AutosaveInput className="bo-input" value={sec.title} onChange={(e) => updateSection(sec.clientId, { title: e.target.value })} data-testid={`menu-crear-section-title-input-${idx}`} />
-                    <button className="bo-btn bo-btn--ghost" type="button" aria-label={`Eliminar seccion ${sec.title || idx + 1}`} disabled={sections.length <= 1} onClick={() => removeSection(sec.clientId)} data-testid={`menu-crear-section-delete-${idx}`}>
+                    <button className="bo-btn bo-btn--ghost" type="button" aria-label={`Eliminar sección ${sec.title || idx + 1}`} disabled={sections.length <= 1} onClick={() => removeSection(sec.clientId)} data-testid={`menu-crear-section-delete-${idx}`}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -669,7 +669,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
 
           <div className="bo-menuWizardActions" data-slot="crear-menuWizardActions">
             <button className="bo-btn bo-btn--ghost" type="button" onClick={requestAddSection} data-testid="menu-crear-add-section">
-              <Plus size={14} /> Añadir seccion
+              <Plus size={14} /> Añadir sección
             </button>
             <div className="bo-menuWizardActionsRight" data-slot="crear-menuWizardActionsRight">
               <button className="bo-btn bo-btn--ghost" type="button" onClick={() => setStep(1)} data-testid="menu-crear-step2-back">Volver</button>
@@ -694,7 +694,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
             <Tabs
               tabs={[
                 { id: "platos", label: "Platos", href: "#" },
-                { id: "configuracion", label: "Configuracion", href: "#" },
+                { id: "configuracion", label: "Configuración", href: "#" },
               ]}
               activeId={editorTab}
               ariaLabel="Secciones del editor"
@@ -775,7 +775,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                 ))}                </Reorder.Group>
                 <div className="bo-menuWizardActions bo-menuWizardActions--platosAddSection" data-testid="menu-crear-platos-add-section-row">
                   <button className="bo-btn bo-btn--ghost" type="button" onClick={requestAddSection} data-testid="menu-crear-platos-add-section">
-                    <Plus size={14} /> Añadir seccion
+                    <Plus size={14} /> Añadir sección
                   </button>
                 </div>
               </>
@@ -1085,7 +1085,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                           onClick={addImportantInfoLine}
                           data-testid="menu-crear-important-info-add"
                         >
-                          <Plus size={14} /> Añadir informacion importante
+                          <Plus size={14} /> Añadir información importante
                         </button>
                       </div>
                     </div>
@@ -1265,7 +1265,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
 
       {/* Section delete confirmation modal */}
       <ConfirmDialog
-        title="Eliminar seccion"
+        title="Eliminar sección"
         message={pendingSectionDelete
           ? `¿Eliminar la seccion "${pendingSectionDelete.sectionLabel}" y todos sus platos? Esta accion no se puede deshacer.`
           : ""}

@@ -264,7 +264,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
             {!hasPhone && (
               <div data-testid="send-whatsapp-no-phone-warning" className="bo-sendWhatsAppWarning" data-slot="send-whatsapp-no-phone-warning">
                 <AlertCircle size={16} />
-                <span data-testid="send-whatsapp-no-phone-text" data-slot="send-whatsapp-no-phone-text">El cliente no tiene un numero de telefono registrado. No se puede enviar WhatsApp.</span>
+                <span data-testid="send-whatsapp-no-phone-text" data-slot="send-whatsapp-no-phone-text">El cliente no tiene un número de teléfono registrado. No se puede enviar WhatsApp.</span>
               </div>
             )}
 
@@ -272,7 +272,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
             {isResend && hasPhone && (
               <div data-testid="send-whatsapp-resend-warning" className="bo-sendWhatsAppWarning" data-slot="send-whatsapp-resend-warning">
                 <AlertCircle size={16} />
-                <span data-testid="send-whatsapp-resend-text" data-slot="send-whatsapp-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo numero.</span>
+                <span data-testid="send-whatsapp-resend-text" data-slot="send-whatsapp-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviará al mismo número.</span>
               </div>
             )}
 

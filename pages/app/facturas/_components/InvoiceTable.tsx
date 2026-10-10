@@ -782,7 +782,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                   {invoice.due_date ? (
                     <span data-testid="invoice-table-due-date"
                       className={`bo-dueDate ${new Date(invoice.due_date) < new Date(new Date().toDateString()) && (invoice.status === "pendiente" || invoice.status === "enviada") && !invoice.payment_date ? "bo-dueDate--overdue" : ""}`}
-                      data-slot="invoice-table-due-date"                      title={isOverdue ? `Vencida hace ${daysOverdue} dias` : "Fecha de vencimiento"}
+                      data-slot="invoice-table-due-date"                      title={isOverdue ? `Vencida hace ${daysOverdue} días` : "Fecha de vencimiento"}
                     >
                       {formatDate(invoice.due_date)}
                     </span>
@@ -799,7 +799,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                       {formatDate(invoice.payment_date)}
                     </span>
                   ) : isOverdue ? (
-                    <span data-testid="invoiceTable-daysOverdue" className="bo-daysOverdue" title={`${daysOverdue} dias de retraso`} data-slot="invoiceTable-daysOverdue">
+                    <span data-testid="invoiceTable-daysOverdue" className="bo-daysOverdue" title={`${daysOverdue} días de retraso`} data-slot="invoiceTable-daysOverdue">
                       <AlertTriangle size={12} />
                       {daysOverdue} dias
                     </span>

@@ -3362,7 +3362,7 @@ export default function TableManagerPage() {
 				pushToast({
 					kind: "error",
 					title: "Error",
-					message: res.message || "No se pudo abrir el dia",
+					message: res.message || "No se pudo abrir el día",
 				});
 				return;
 			}
@@ -3370,7 +3370,7 @@ export default function TableManagerPage() {
 			pushToast({ kind: "success", title: "Guardado", message: "Dia abierto" });
 			void loadData();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "No se pudo abrir el dia");
+			setError(err instanceof Error ? err.message : "No se pudo abrir el día");
 		} finally {
 			setDayBusy(false);
 		}
@@ -4270,7 +4270,7 @@ export default function TableManagerPage() {
 				pushToast({
 					kind: "success",
 					title: "Plantilla guardada",
-					message: "Se aplicara por defecto para este salon en todos los dias.",
+					message: "Se aplicará por defecto para este salón en todos los días.",
 				});
 				return;
 			}
@@ -4297,8 +4297,8 @@ export default function TableManagerPage() {
 			);
 			pushToast({
 				kind: "success",
-				title: "Cambios guardados para este dia",
-				message: "Solo afectaran al dia seleccionado.",
+				title: "Cambios guardados para este día",
+				message: "Solo afectarán al día seleccionado.",
 			});
 		} finally {
 			setSavingLimitTemplate(false);
@@ -4327,7 +4327,7 @@ export default function TableManagerPage() {
 			pushToast({
 				kind: "success",
 				title: "Plantilla eliminada",
-				message: "Este salon vuelve a las ediciones por dia.",
+				message: "Este salón vuelve a las ediciones por día.",
 			});
 		} finally {
 			setSavingLimitTemplate(false);
@@ -4366,14 +4366,14 @@ export default function TableManagerPage() {
 					pushToast({
 						kind: "error",
 						title: "Error",
-						message: res.message || "No se pudo cambiar a cambios por dia",
+						message: res.message || "No se pudo cambiar a cambios por día",
 					});
 					return;
 				}
 				setTemplateScope("day");
 				pushToast({
 					kind: "info",
-					title: "Cambios solo para este dia",
+					title: "Cambios solo para este día",
 					message: "Los cambios futuros se guardaran solo para esta fecha.",
 				});
 				return;
@@ -4406,7 +4406,7 @@ export default function TableManagerPage() {
 			pushToast({
 				kind: "info",
 				title: "Cambios en la plantilla",
-				message: "Los cambios futuros afectaran a todos los dias.",
+				message: "Los cambios futuros afectarán a todos los días.",
 			});
 		},
 		[
@@ -4751,7 +4751,7 @@ export default function TableManagerPage() {
 												<div
 													data-slot="tooltip-stats"
 													className="bo-tableMapTooltipStats"
-													aria-label="Resumen del dia"
+													aria-label="Resumen del día"
 												>
 													<div data-ui="stat-people">
 														Personas / Limite:{" "}
@@ -5176,7 +5176,7 @@ export default function TableManagerPage() {
 															{savingLimitTemplate
 																? "Guardando..."
 																: templateScope === "day"
-																	? "Guardar solo este dia"
+																	? "Guardar solo este día"
 																	: "Guardar plantilla salon"}
 														</button>
 													)}
@@ -5276,7 +5276,7 @@ export default function TableManagerPage() {
 													className={`bo-tableMapDrawSectionPill${floorTemplate ? " is-active" : ""}`}
 													aria-label={
 														floorTemplate
-															? "Plantilla guardada para este salon"
+															? "Plantilla guardada para este salón"
 															: "Sin plantilla"
 													}
 												>

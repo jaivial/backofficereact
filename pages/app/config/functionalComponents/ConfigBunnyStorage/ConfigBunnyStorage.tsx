@@ -20,7 +20,7 @@ export function ConfigBunnyStorage() {
   };
 
   if (!loaded) {
-    return <div className="bo-panel p-6 text-sm text-[var(--bo-muted)]" data-slot="config-cdn-loading">Cargando configuracion...</div>;
+    return <div className="bo-panel p-6 text-sm text-[var(--bo-muted)]" data-slot="config-cdn-loading">Cargando configuración...</div>;
   }
 
   return (
@@ -49,7 +49,7 @@ export function ConfigBunnyStorage() {
               <p data-slot="configBunnyStorage-p">El <strong>nombre</strong> de tu Storage Zone, no la URL.</p>
               <p data-slot="configBunnyStorage-p">
                 En BunnyCDN: <em>Storage &rsaquo; tu zona &rsaquo; FTP &amp; API Access</em>. Ahi veras
-                el endpoint como <code>https://storage.bunnycdn.com/villacarmen</code> — aqui va solo la
+                el endpoint como <code>https://storage.bunnycdn.com/villacarmen</code> — aquí va solo la
                 ultima parte, <code>villacarmen</code>.
               </p>
             </InfoHint>

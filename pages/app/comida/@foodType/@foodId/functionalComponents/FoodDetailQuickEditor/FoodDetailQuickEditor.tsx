@@ -22,7 +22,7 @@ function DescripcionToggle({ value, onChange, disabled }: { value: string; onCha
             if (!v) onChange("");
           }}
           disabled={disabled}
-          aria-label="Mostrar descripcion"
+          aria-label="Mostrar descripción"
         />
       </div>
       {show ? (

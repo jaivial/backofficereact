@@ -51,7 +51,7 @@ export function QrGeneralTab({ website }: QrGeneralTabProps): React.ReactElement
     <div className="qr-screen" data-testid="qr-general-tab" data-ui="qr-general-tab">
       <div className="qr-previewCard" data-testid="qr-general-preview" data-slot="qr-general-preview" data-coord-id="qr-page:generate">
         {hasUrl ? (
-          <QrCode value={url} size={300} alt="Codigo QR de la pagina web" data-testid="qr-general-code" />
+          <QrCode value={url} size={300} alt="Código QR de la página web" data-testid="qr-general-code" />
         ) : (
           <QrEmptyState
             message="Sin enlace para generar el QR"

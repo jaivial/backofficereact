@@ -1057,7 +1057,7 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
               Coordination id: reservation_self_modification_v1 */}
           <ToggleRow
             title="Permitir modificacion por el cliente"
-            desc="El cliente podra modificar online su reserva si ya existe una para este dia"
+            desc="El cliente podrá modificar online su reserva si ya existe una para este día"
             checked={draft.allow_customer_modification}
             onToggle={handleCustomerModificationToggle}
             ariaLabel="Permitir que el cliente modifique su reserva en esta fecha"

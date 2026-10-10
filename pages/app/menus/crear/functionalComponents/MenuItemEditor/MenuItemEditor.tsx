@@ -196,7 +196,7 @@ export function MenuItemEditor({
                   className="bo-input bo-textarea"
                   value={dish.description}
                   onChange={(e) => updateDish(sectionClientId, dish.clientId, { description: e.target.value })}
-                  placeholder="Descripcion"
+                  placeholder="Descripción"
                   data-testid={`menu-item-editor-description-input-${dish.clientId}`}
                 />
               ) : null}

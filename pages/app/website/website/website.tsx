@@ -68,7 +68,7 @@ export default function WebsitePage() {
         <Panel data-ui="loading-panel">
             <div className="bo-loadingState" data-ui="loading-state">
               <Loader2 className="bo-spinnerIcon" size={24} aria-hidden="true" data-ui="loading-spinner" />
-              <span className="bo-mutedText" data-ui="loading-text">Cargando configuracion...</span>
+              <span className="bo-mutedText" data-ui="loading-text">Cargando configuración...</span>
             </div>
         </Panel>
       </div>

@@ -37,7 +37,7 @@ export default function Page() {
             </div>
           </div>
           <div className="bo-cardObTitle" data-ui="summary-date">{data.date}</div>
-          <div className="bo-cardObBody" data-ui="summary-body">Panel inicial del backoffice. Mas modulos se agregan aqui.</div>
+          <div className="bo-cardObBody" data-ui="summary-body">Panel inicial del backoffice. Más módulos se agregan aquí.</div>
         </div>
         <a className="bo-card bo-card--clickable" href="/app/campanas" aria-label="Campañas" data-testid="dashboard-campanas-card">
           <div className="bo-statLabel" data-ui="campanas-card-label">Campañas</div>

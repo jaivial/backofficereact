@@ -207,11 +207,11 @@ const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod | ""; label: string }[] = [
 
 const PAYMENT_TERMS_OPTIONS: { value: string; label: string }[] = [
   { value: "0", label: "Contado" },
-  { value: "15", label: "Net 15 (15 dias)" },
-  { value: "30", label: "Net 30 (30 dias)" },
-  { value: "45", label: "Net 45 (45 dias)" },
-  { value: "60", label: "Net 60 (60 dias)" },
-  { value: "90", label: "Net 90 (90 dias)" },
+  { value: "15", label: "Net 15 (15 días)" },
+  { value: "30", label: "Net 30 (30 días)" },
+  { value: "45", label: "Net 45 (45 días)" },
+  { value: "60", label: "Net 60 (60 días)" },
+  { value: "90", label: "Net 90 (90 días)" },
 ];
 
 const STATUS_OPTIONS: { value: InvoiceStatus; label: string }[] = [
@@ -1279,7 +1279,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             <div data-testid="invoiceForm-invoiceFormRow-invoiceNumber" className="bo-invoiceFormRow bo-invoiceFormRow--invoiceNumber" data-slot="invoiceForm-invoiceFormRow--invoiceNumber">
               <div data-testid="invoiceForm-field-switch-2" className="bo-field bo-field--switch" data-slot="invoiceForm-field--switch">
                 <Switch checked={overrideInvoiceNumber} onCheckedChange={setOverrideInvoiceNumber} data-testid="invoice-override-number-toggle" />
-                <span data-testid="invoiceForm-label-14" className="bo-label" data-slot="invoiceForm-label">Personalizar numero de factura</span>
+                <span data-testid="invoiceForm-label-14" className="bo-label" data-slot="invoiceForm-label">Personalizar número de factura</span>
               </div>
 
               {overrideInvoiceNumber && (
@@ -1293,7 +1293,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                     placeholder="F-2024-0001"
                     data-testid="invoice-number-input-2"
                   />
-                  <div data-testid="invoiceForm-mutedText" className="bo-mutedText" data-slot="invoiceForm-mutedText">Deja este campo vacio para usar el numero automatico</div>
+                  <div data-testid="invoiceForm-mutedText" className="bo-mutedText" data-slot="invoiceForm-mutedText">Deja este campo vacío para usar el número automático</div>
                 </label>
               )}
 
