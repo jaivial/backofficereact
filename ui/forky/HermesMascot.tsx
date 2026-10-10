@@ -23,7 +23,7 @@ const MODEL_URL = "/mascot/mascot.glb";
 /** Self-hosted Draco decoder (copied from three/examples/jsm/libs/draco/gltf). */
 const DRACO_PATH = "/draco/";
 const CAMERA_FOV = 32;
-const CAMERA_MARGIN = 1.3;
+const CAMERA_MARGIN = 1.06;
 
 type GLTFResult = { scene: THREE.Group };
 

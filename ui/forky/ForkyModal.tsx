@@ -243,7 +243,7 @@ function EmptyState() {
       {/* Large breathing orb */}
       {mounted && (
         <div data-slot="forkyModal-div" style={{ animation: "fui-fade-in 500ms ease-out both" }}>
-          <HermesMascot state="breathing" size={64} />
+          <HermesMascot state="breathing" size={112} />
         </div>
       )}
 
