@@ -12,7 +12,7 @@ import { useAtom } from "jotai";
 import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
-import { ThinkingOrb } from "thinking-orbs";
+import { HermesMascot } from "./HermesMascot";
 import {
   BuiIsland,
   LoadingState,
@@ -36,7 +36,7 @@ import { useForkyTurnSteps } from "./forkyStatus";
 // ---------------------------------------------------------------------------
 // beautifului.dev design language (tokens in
 // components/styles/features/forky/forky-bui.css, exposed as Tailwind
-// utilities: bg-fui-surface, text-fui-ink, ...). The ThinkingOrb is kept as
+// utilities: bg-fui-surface, text-fui-ink, ...). The Hermes mascot is kept as
 // the assistant identity across every state. The literal beautifului.dev
 // components (ui/forky/bui/) always render inside <BuiIsland>, which scopes
 // their own stylesheet (forky-bui-island.css) so neither side leaks.
@@ -125,7 +125,7 @@ function AssistantMessage() {
       className="group/message w-full py-2.5"
       style={{ animation: "fui-fade-up 400ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "top left" }}
     >
-      {/* The turn in the shared chat-bubble layout: the ThinkingOrb stays the avatar of the
+      {/* The turn in the shared chat-bubble layout: the Hermes mascot stays the avatar of the
           run, outside the bubble, and the reply rides in the vendored MessageBubble. */}
       <MessageBubble
         role="assistant"
@@ -136,7 +136,7 @@ function AssistantMessage() {
         avatar={
           <span data-testid="forky-avatar-orb" className="flex items-center" style={{ height: 28 }}>
             <span className="shrink-0" style={{ transform: "scale(0.42)", transformOrigin: "left center", width: 27, height: 27 }}>
-              {mounted && <ThinkingOrb state="solving" size={64} theme="auto" />}
+              {mounted && <HermesMascot state="solving" size={64} />}
             </span>
           </span>
         }
@@ -243,7 +243,7 @@ function EmptyState() {
       {/* Large breathing orb */}
       {mounted && (
         <div data-slot="forkyModal-div" style={{ animation: "fui-fade-in 500ms ease-out both" }}>
-          <ThinkingOrb state="breathing" size={64} theme="auto" />
+          <HermesMascot state="breathing" size={64} />
         </div>
       )}
 
