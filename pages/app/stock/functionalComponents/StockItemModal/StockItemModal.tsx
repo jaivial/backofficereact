@@ -46,7 +46,7 @@ async function createRawItem(input: {
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok || !body.success) {
-    throw new Error(body.message || "No se pudo crear el articulo");
+    throw new Error(body.message || "No se pudo crear el artículo");
   }
 }
 
@@ -110,7 +110,7 @@ export function StockItemModal({
           await videoRef.current.play().catch(() => undefined);
         }
       } catch {
-        setScanError("No se pudo acceder a la camara. Usa \"Anadir manualmente\".");
+        setScanError("No se pudo acceder a la cámara. Usa \"Añadir manualmente\".");
       }
     })();
     return () => {
@@ -123,7 +123,7 @@ export function StockItemModal({
   const captureAndScan = useCallback(async () => {
     const video = videoRef.current;
     if (!video || !video.videoWidth) {
-      setScanError("La camara aun no esta lista");
+      setScanError("La cámara aún no está lista");
       return;
     }
     const canvas = document.createElement("canvas");
@@ -195,7 +195,7 @@ export function StockItemModal({
         return;
       }
       if (isPreparado && stockRecipeId == null) {
-        setError("Crea o selecciona una ficha tecnica antes de crear el articulo");
+        setError("Crea o selecciona una ficha técnica antes de crear el artículo");
         return;
       }
       if (!Number.isFinite(factorNum) || factorNum <= 0) {
@@ -222,7 +222,7 @@ export function StockItemModal({
         onClose();
         await onCreated();
       } catch (reason) {
-        setError(reason instanceof Error ? reason.message : "No se pudo crear el articulo");
+        setError(reason instanceof Error ? reason.message : "No se pudo crear el artículo");
       } finally {
         setSaving(false);
       }
@@ -231,7 +231,7 @@ export function StockItemModal({
   );
 
   return (
-    <Modal open={open} title={step === "scan" ? "Escanear documento" : "Nuevo articulo"} onClose={onClose} size="lg">
+    <Modal open={open} title={step === "scan" ? "Escanear documento" : "Nuevo artículo"} onClose={onClose} size="lg">
       {step === "choice" ? (
         <div className="bo-stockChoice" data-ui="stock-item-choice">
           <button
@@ -287,7 +287,7 @@ export function StockItemModal({
                   className="bo-input"
                   value={nombre}
                   onChange={(event) => setNombre(event.target.value)}
-                  placeholder="Nombre del articulo"
+                  placeholder="Nombre del artículo"
                   required
                   data-testid="stock-item-name"
                 />

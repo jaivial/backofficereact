@@ -126,7 +126,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
       pushToast({
         kind: "error",
         title: "Error",
-        message: "El cliente no tiene un numero de telefono registrado",
+        message: "El cliente no tiene un número de teléfono registrado",
       });
       return;
     }

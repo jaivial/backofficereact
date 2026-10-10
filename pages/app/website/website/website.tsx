@@ -171,7 +171,7 @@ export default function WebsitePage() {
                   <label className="bo-field" data-ui="ai-prompt-field">
                     <textarea
                       className="bo-textarea bo-textarea--lg"
-                      placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
+                      placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografía elegante y muestra mi menú de arroces en la página principal..."
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       rows={6}

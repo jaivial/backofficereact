@@ -44,8 +44,8 @@ const INVOICE_STATUS_OPTIONS: { value: InvoiceStatus | ""; label: string }[] = [
 ];
 
 const INVOICE_SORT_OPTIONS: { value: string; label: string }[] = [
-  { value: "date_desc", label: "Fecha mas reciente" },
-  { value: "date_asc", label: "Fecha mas antigua" },
+  { value: "date_desc", label: "Fecha más reciente" },
+  { value: "date_asc", label: "Fecha más antigua" },
   { value: "amount_desc", label: "Importe mayor" },
   { value: "amount_asc", label: "Importe menor" },
 ];

@@ -537,7 +537,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                 <div className="flex flex-wrap gap-2">
                   <input
                     className="bo-input min-w-0 flex-1"
-                    placeholder="email o telefono de prueba"
+                    placeholder="email o teléfono de prueba"
                     aria-label="Destino de la prueba"
                     value={testTarget}
                     onChange={(e) => setTestTarget(e.currentTarget.value)}

@@ -167,7 +167,7 @@ function AdminHorariosView({ data }: { data: Data }) {
   const loadDay = useCallback(
     async (dateISO: string) => {
       const res = await api.horarios.list(dateISO);
-      if (!res.success) throw new Error(res.message || "No se pudo cargar horarios del dia");
+      if (!res.success) throw new Error(res.message || "No se pudo cargar horarios del día");
       setSchedules(res.schedules);
     },
     [api.horarios],

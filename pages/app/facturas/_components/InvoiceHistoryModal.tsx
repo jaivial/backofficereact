@@ -55,7 +55,7 @@ function formatFieldName(field: string): string {
 
 function formatValue(value: string | undefined): string {
   if (value === undefined || value === null || value === "") {
-    return "(vacio)";
+    return "(vacío)";
   }
   return value;
 }

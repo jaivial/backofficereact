@@ -84,7 +84,7 @@ export function PortionWastePanel() {
       return;
     }
     if (!selectedItem || !warehouseId) {
-      setError("Selecciona el articulo y el almacen");
+      setError("Selecciona el artículo y el almacén");
       return;
     }
     setSaving(true);

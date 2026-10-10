@@ -25,7 +25,7 @@ const ERROR_CONTENT: Record<ErrorStatus, ErrorContent> = {
   },
   403: {
     title: "Acceso denegado",
-    message: "Tu usuario no tiene permisos para ver esta seccion.",
+    message: "Tu usuario no tiene permisos para ver esta sección.",
     primaryLabel: "Volver al panel",
     primaryHref: "/app/backoffice",
     secondaryLabel: "Cambiar sesion",

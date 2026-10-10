@@ -550,8 +550,8 @@ export function MenuSectionEditor({
             ) : (
               <div className="bo-dishesEmpty" role="status" aria-live="polite" data-slot="menuSectionEditor-dishesEmpty">
                 {dishTab === "active"
-                  ? "No hay platos activos en esta seccion."
-                  : "No hay platos inactivos en esta seccion."}
+                  ? "No hay platos activos en esta sección."
+                  : "No hay platos inactivos en esta sección."}
               </div>
             )}
           </div>

@@ -81,7 +81,7 @@ export const AddSectionModal = React.memo(function AddSectionModal({
     [busy, kind, onConfirm],
   );
 
-  const title = step === "kind" ? "Anadir seccion" : "Carta de postres";
+  const title = step === "kind" ? "Añadir sección" : "Carta de postres";
 
   return (
     <Modal open={open} title={title} onClose={onClose} widthPx={step === "kind" ? 520 : 680} className={className} hideClose>
@@ -98,7 +98,7 @@ export const AddSectionModal = React.memo(function AddSectionModal({
                 value={kind}
                 onChange={setKind}
                 options={SECTION_KIND_PRESET_OPTIONS}
-                ariaLabel="Tipo de seccion"
+                ariaLabel="Tipo de sección"
                 data-testid="add-section-modal-kind-select"
               />
             </label>
@@ -124,7 +124,7 @@ export const AddSectionModal = React.memo(function AddSectionModal({
               onClick={handleKindContinue}
               data-testid="add-section-modal-continue"
             >
-              {preset.needsExtraStep ? "Continuar" : "Anadir seccion"}
+              {preset.needsExtraStep ? "Continuar" : "Añadir sección"}
             </button>
           </div>
         </>
