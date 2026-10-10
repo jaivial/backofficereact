@@ -151,7 +151,7 @@ export function FoodList({
 
       <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-ui="food-list-pager">
         <div className="bo-pagerText" data-role="food-list-pager-info">
-          Pagina {page} de {totalPages} · {total} resultados
+          Página {page} de {totalPages} · {total} resultados
         </div>
         <div className="bo-foodPagerExtras" data-ui="food-list-pager-extras">
           <Select
@@ -162,7 +162,7 @@ export function FoodList({
               onPageChange(1);
             }}
             options={PAGE_SIZE_OPTIONS}
-            ariaLabel="Elementos por pagina"
+            ariaLabel="Elementos por página"
             size="sm"
           />
           {showPagerBtns ? (

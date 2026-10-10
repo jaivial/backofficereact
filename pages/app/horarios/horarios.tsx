@@ -542,7 +542,7 @@ function AdminHorariosView({ data }: { data: Data }) {
                     <th data-slot="col-end">Salida</th>
                     <th data-slot="col-duration">Duración</th>
                     <th data-slot="col-live">Fichaje en vivo</th>
-                    <th data-slot="col-action">Accion</th>
+                    <th data-slot="col-action">Acción</th>
                   </tr>
                 </thead>
                 <tbody data-slot="table-body">

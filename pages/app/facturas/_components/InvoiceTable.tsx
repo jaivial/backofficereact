@@ -661,7 +661,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
         >
           <div data-testid="invoiceTable-bulkBarContent-2" className="bo-bulkBarContent" data-slot="invoiceTable-bulkBarContent">
             <div data-testid="invoiceTable-bulkBarInfo-2" className="bo-bulkBarInfo" data-slot="invoiceTable-bulkBarInfo">
-              <span data-testid="invoiceTable-bulkBarCount-2" className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{invoices.length} facturas en esta pagina</span>
+              <span data-testid="invoiceTable-bulkBarCount-2" className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{invoices.length} facturas en esta página</span>
             </div>
             <div data-testid="invoiceTable-bulkBarActions-2" className="bo-bulkBarActions" data-slot="invoiceTable-bulkBarActions">
               <button
@@ -801,7 +801,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                   ) : isOverdue ? (
                     <span data-testid="invoiceTable-daysOverdue" className="bo-daysOverdue" title={`${daysOverdue} días de retraso`} data-slot="invoiceTable-daysOverdue">
                       <AlertTriangle size={12} />
-                      {daysOverdue} dias
+                      {daysOverdue} días
                     </span>
                   ) : (
                     <span data-testid="invoiceTable-mutedText-2" className="bo-mutedText" data-slot="invoiceTable-mutedText">-</span>

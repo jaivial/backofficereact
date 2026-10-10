@@ -130,7 +130,7 @@ export function BookingSearch({ onSearch, onClear, busy, reduceMotion }: Booking
           />
         </div>
         <div className="bo-bookingSearchCountRow" data-slot="search-count-row">
-          <span className="bo-filterRow--countLabel" data-slot="search-count-label">Resultados por pagina</span>
+          <span className="bo-filterRow--countLabel" data-slot="search-count-label">Resultados por página</span>
           <Select
             value={String(count)}
             onChange={onCountChange}

@@ -55,7 +55,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
     }
     const food = item as FoodItem;
     if (food.alergenos?.length) {
-      return `${food.alergenos.length} alergenos`;
+      return `${food.alergenos.length} alérgenos`;
     }
     return "";
   }, [isWine, item]);

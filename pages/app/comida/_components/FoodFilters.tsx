@@ -103,7 +103,7 @@ export const FoodFilters = React.memo(function FoodFilters({
         </div>
         <div className="bo-foodFiltersExtras" data-ui="food-filters-extras">
           <div className="bo-foodFilter bo-foodFilter--images" data-slot="food-filters-images">
-            <span className="bo-label" data-role="food-filters-images-label">Mostrar imagenes</span>
+            <span className="bo-label" data-role="food-filters-images-label">Mostrar imágenes</span>
             <Switch
               checked={showImages}
               onCheckedChange={onShowImagesChange}

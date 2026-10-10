@@ -453,7 +453,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               {form.audience === "bookings" ? (
                 <CampaignFieldCell>
                   <InlineCounter
-                    label="Ultimos dias"
+                    label="Últimos días"
                     value={form.audience_days}
                     min={1}
                     max={3650}

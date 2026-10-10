@@ -21,7 +21,7 @@ export const FOOD_ENTRIES: FoodEntry[] = [
 ];
 
 export const PAGE_SIZE_OPTIONS = [
-  { value: "12", label: "12 / pagina" },
-  { value: "24", label: "24 / pagina" },
-  { value: "48", label: "48 / pagina" },
+  { value: "12", label: "12 / página" },
+  { value: "24", label: "24 / página" },
+  { value: "48", label: "48 / página" },
 ];
