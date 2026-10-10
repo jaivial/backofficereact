@@ -166,7 +166,7 @@ export default function WebsitePage() {
             <Panel data-ui="ai-prompt-panel" title="Generar con IA" meta="Describe tu sitio ideal">
                 <div className="bo-stack" data-ui="ai-prompt-stack">
                   <p className="bo-mutedText" data-ui="ai-prompt-description">
-                    Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.
+                    Describe cómo quieres que se vea tu sitio web. Nuestra IA creará el código HTML/CSS por ti, integrando tus menús y horarios automáticamente.
                   </p>
                   <label className="bo-field" data-ui="ai-prompt-field">
                     <textarea

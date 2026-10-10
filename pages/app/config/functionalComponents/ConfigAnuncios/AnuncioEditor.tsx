@@ -1756,7 +1756,7 @@ export function ButtonInspector({
     <div className="bo-adInspector bo-adInspectorButton" data-testid="ad-inspector-selection">
       <div className="bo-adInspectorHead">
         <span className="bo-adStudioSectionTitle">Boton</span>
-        <button type="button" className="bo-anunciosIconBtn" data-tone="danger" aria-label="Eliminar boton" data-testid={`ad-cta-${cta.id}-delete`} onClick={onDelete}>
+        <button type="button" className="bo-anunciosIconBtn" data-tone="danger" aria-label="Eliminar botón" data-testid={`ad-cta-${cta.id}-delete`} onClick={onDelete}>
           <Trash2 size={15} aria-hidden="true" />
         </button>
       </div>
@@ -1769,17 +1769,17 @@ export function ButtonInspector({
       <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-content`}>
         <div className="bo-adGroupTitle">Contenido</div>
         <Field label="Texto" testId={`ad-cta-${cta.id}-text`}>
-          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" placeholder="Texto del boton" />
+          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" placeholder="Texto del botón" />
         </Field>
         <ColorField label="Color" value={cta.color} onChange={(color) => onChange({ color: color || AD_DEFAULT_COLOR })} testId={`ad-cta-${cta.id}-color`} />
         <NumberField label="Ancho (%)" value={cta.width} min={ELEMENT_MIN_WIDTH_PCT} max={ELEMENT_MAX_WIDTH_PCT} onChange={(width) => onChange({ width })} testId={`ad-cta-${cta.id}-width`} />
       </div>
 
       <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-action`}>
-        <div className="bo-adGroupTitle">Accion</div>
-        <div className="bo-adSeg" role="group" aria-label="Accion del boton" data-testid={`ad-cta-${cta.id}-action-select`}>
+        <div className="bo-adGroupTitle">Acción</div>
+        <div className="bo-adSeg" role="group" aria-label="Acción del botón" data-testid={`ad-cta-${cta.id}-action-select`}>
           {([
-            { value: "route", label: "Web", title: "Pagina de la web" },
+            { value: "route", label: "Web", title: "Página de la web" },
             { value: "url", label: "URL", title: "URL propia" },
             { value: "whatsapp", label: "WhatsApp", title: "Abrir una conversacion" },
           ] as Array<{ value: ButtonAction; label: string; title: string }>).map((option) => (
@@ -1798,8 +1798,8 @@ export function ButtonInspector({
         </div>
 
         {action === "route" ? (
-          <Field label="Pagina" testId={`ad-cta-${cta.id}-route`}>
-            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={routeOptions} size="sm" ariaLabel="Pagina del boton" listMaxHeightPx={260} />
+          <Field label="Página" testId={`ad-cta-${cta.id}-route`}>
+            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={routeOptions} size="sm" ariaLabel="Página del botón" listMaxHeightPx={260} />
           </Field>
         ) : null}
 

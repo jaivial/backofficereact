@@ -102,7 +102,7 @@ export function POSPackPicker({ pack, busy = false, error, onClose, onConfirm }:
       </div>
       <footer className="pos-modal__footer pos-modifierPicker__footer">
         <span className="pos-modifierPicker__qty">
-          <button className="pos-modifierOption__step" type="button" aria-label="Quitar una unidad del menu" disabled={busy || quantity <= 1} onClick={() => setQuantity((current) => Math.max(1, current - 1))} data-testid="pos-pack-qty-minus">
+          <button className="pos-modifierOption__step" type="button" aria-label="Quitar una unidad del menú" disabled={busy || quantity <= 1} onClick={() => setQuantity((current) => Math.max(1, current - 1))} data-testid="pos-pack-qty-minus">
             <Minus className="h-4 w-4" aria-hidden="true" />
           </button>
           <span data-testid="pos-pack-qty">{quantity}</span>

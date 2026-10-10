@@ -351,7 +351,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
                 </>
               ) : (
                 <button type="button" className="bo-btn bo-btn--primary" disabled data-testid="whatsapp-no-phone-btn">
-                  Sin numero de telefono
+                  Sin número de teléfono
                 </button>
               )}
             </div>

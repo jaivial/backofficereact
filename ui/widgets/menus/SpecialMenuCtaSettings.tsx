@@ -50,8 +50,8 @@ export function SpecialMenuCtaSettings({
             <AutosaveInput className="bo-input" value={config.label} placeholder="RESERVAR" onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ label: e.target.value })} data-testid="menu-crear-special-cta-label-input" />
           </div>
           <div className="bo-field" data-slot="special-cta-action-field">
-            <div className="bo-label" data-slot="special-cta-action-label">Accion del boton</div>
-            <Select className="bo-menuSettingSelect" value={config.action} onChange={(value) => onChange({ action: value as SpecialMenuCtaAction })} options={ACTION_OPTIONS} size="sm" ariaLabel="Accion del boton reservar" disabled={busy} data-testid="menu-crear-special-cta-action-select" />
+            <div className="bo-label" data-slot="special-cta-action-label">Acción del botón</div>
+            <Select className="bo-menuSettingSelect" value={config.action} onChange={(value) => onChange({ action: value as SpecialMenuCtaAction })} options={ACTION_OPTIONS} size="sm" ariaLabel="Acción del botón reservar" disabled={busy} data-testid="menu-crear-special-cta-action-select" />
           </div>
           {config.action === "menu" ? (
             <div className="bo-field" data-slot="special-cta-menu-field">
