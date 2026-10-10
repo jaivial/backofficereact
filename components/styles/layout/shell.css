@@ -190,7 +190,7 @@ html:has(.bo-app--page) { overflow: clip; }
 /* Mobile: the sidebar becomes a bottom bar (see donut.css <=720px), so the
    floating Forky orb must sit above it or it covers the 5th "..." button. */
 @media (max-width: 720px), (max-aspect-ratio: 9 / 16) {
-  [data-testid="forky-floating-host"] {
+  .bo-app [data-testid="forky-floating-host"] {
     bottom: calc(76px + env(safe-area-inset-bottom, 0px));
     right: 12px;
   }
