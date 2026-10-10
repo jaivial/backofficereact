@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { useAtom, useAtomValue } from "jotai";
-import { ThinkingOrb, type OrbState } from "thinking-orbs";
+import { HermesMascot, type HermesState } from "./HermesMascot";
 
 import { forkyOpenAtom, forkyHiddenAtom } from "../../state/atoms";
 import {
@@ -12,8 +12,8 @@ import {
 
 export const FORKY_HIDDEN_KEY = "forky_hidden";
 
-/** Map ForkyVisualState to ThinkingOrb state */
-function mapVisualStateToOrbState(state: ForkyVisualState): OrbState {
+/** Map ForkyVisualState to Hermes mascot state (same names the old orb used). */
+function mapVisualStateToHermesState(state: ForkyVisualState): HermesState {
   switch (state) {
     case "think":
       return "working";
@@ -71,7 +71,7 @@ export function ForkyButton() {
   // If hidden or modal is open, render nothing
   if (hidden || open) return null;
 
-  const orbState = mapVisualStateToOrbState(visualState);
+  const hermesState = mapVisualStateToHermesState(visualState);
 
   return (
     <div
@@ -91,9 +91,9 @@ export function ForkyButton() {
       >
         {/* Glow effect - subtle white glow instead of purple */}
         <div data-slot="forkyButton-group-hover:bg-white/20" className="absolute -inset-2 rounded-full bg-white/10 blur-lg transition-opacity duration-300 group-hover:bg-white/20" />
-        {/* Orb */}
+        {/* Hermes mascot */}
         <div data-slot="forkyButton-relative" className="relative">
-          <ThinkingOrb state={orbState} size={64} theme="dark" data-testid="forky-canvas" />
+          <HermesMascot state={hermesState} size={64} testId="forky-canvas" />
         </div>
       </button>
     </div>
