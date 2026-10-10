@@ -758,7 +758,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               <span className="bo-anunciosPreviewSwitchLabel">Preview</span>
             </button>
           </div>
-          <SaveStatusBadge state={saveState} />
+          <SaveStatusBadge state={saveState} neverSaved={mode === "create"} />
         </div>
       </div>
 
@@ -1142,7 +1142,7 @@ function StepLayers({
   );
 }
 
-function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "error" }) {
+function SaveStatusBadge({ state, neverSaved = false }: { state: "idle" | "saving" | "saved" | "error"; neverSaved?: boolean }) {
   if (state === "idle") {
     return (
       <span
@@ -1152,7 +1152,7 @@ function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "erro
         aria-live="polite"
         data-slot="ad-save-status"
       >
-        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Guardado</span>
+        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">{neverSaved ? "Sin guardar" : "Guardado"}</span>
       </span>
     );
   }

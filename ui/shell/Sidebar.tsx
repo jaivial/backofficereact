@@ -112,7 +112,7 @@ export function Sidebar({
       <a
         className="bo-brand"
         href="/app/backoffice"
-        aria-label="Ir al inicio de Villa Carmen"
+        aria-label="Ir al inicio de Backoffice APP"
         data-testid="sidebar-logo"
         onClick={(e) => {
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -120,7 +120,7 @@ export function Sidebar({
           void navigate("/app/backoffice");
         }}
       >
-        <img className="bo-logo-img" src="https://herorestaurantmedia.b-cdn.net/icon/ChatGPT_Image_Jul_15__2026__05_39_27_PM-removebg-preview.png" alt="Villa Carmen" />
+        <img className="bo-logo-img" src="https://herorestaurantmedia.b-cdn.net/icon/ChatGPT_Image_Jul_15__2026__05_39_27_PM-removebg-preview.png" alt="Backoffice APP" />
       </a>
 
       <nav className="bo-nav bo-navDesktop" aria-label="Navigation" data-testid="sidebar-nav-desktop" data-slot="sidebar-nav-desktop">

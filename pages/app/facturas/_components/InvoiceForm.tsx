@@ -1161,7 +1161,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                 </div>
 
                 <label data-testid="invoice-form-customer-dni-cif-label" className={`bo-field ${hasError("customerDniCif") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-dni-cif-label">
-                  <span data-testid="invoiceForm-label-7" className="bo-label" data-slot="invoiceForm-label">{useDni ? "DNI" : "CIF"}</span>
+                  <span data-testid="invoiceForm-label-7" className="sr-only" data-slot="invoiceForm-label">{useDni ? "DNI" : "CIF"}</span>
                   <input
                     className={`bo-input ${hasError("customerDniCif") ? "bo-input--error" : ""}`}
                     type="text"

@@ -46,10 +46,10 @@ export default function Page() {
             data-ui="login-logo"
             aria-hidden="true"
           >
-            <span className="text-3xl font-bold text-white" data-slot="login-font-bold">VC</span>
+            <span className="text-3xl font-bold text-white" data-slot="login-font-bold">BA</span>
           </div>
           <h1 className="text-2xl font-bold text-[hsl(var(--foreground))]" data-ui="login-title">
-            Villa Carmen
+            Backoffice APP
           </h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))]" data-ui="login-subtitle">
             Accede a tu cuenta
@@ -127,7 +127,7 @@ export default function Page() {
         </form>
 
         <p className="mt-8 text-center text-xs text-[hsl(var(--muted-foreground))]" data-ui="login-footer">
-          Villa Carmen &copy; {new Date().getFullYear()}
+          Backoffice APP &copy; {new Date().getFullYear()}
         </p>
       </section>
 

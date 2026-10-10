@@ -63,6 +63,9 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const [busy, setBusy] = useState(false);
   const [testTarget, setTestTarget] = useState("");
   const [recipients, setRecipients] = useState<CampaignRecipient[]>([]);
+  // Snapshot of the last persisted form: "Enviar" sends the saved campaign, so
+  // it must stay disabled while the editor holds unsaved changes.
+  const savedFormRef = useRef<string>(JSON.stringify(initialCampaign ? campaignToInput(initialCampaign) : null));
   const coordId = campaign?.coord_id ?? "camp-new";
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -110,6 +113,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     try {
       const result = campaign ? await api.update(campaign.id, form) : await api.create(form);
       if (!result.success || !result.campaign) throw new Error(apiMessage(result, "No se pudo guardar la campaña"));
+      savedFormRef.current = JSON.stringify(form);
       setCampaign(result.campaign);
       pushToast({ kind: "success", title: "Campañas", message: "Campaña guardada" });
       return result.campaign;
@@ -207,6 +211,8 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     if (result.success) void navigate(LIST_HREF);
   }, [api, campaign]);
 
+  const hasUnsavedChanges = campaign !== null && JSON.stringify(form) !== savedFormRef.current;
+
   const themeKeys = [
     ["accent", "Color principal"],
     ["text", "Color texto"],
@@ -248,7 +254,13 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             <Button variant="primary" onClick={() => void save()} disabled={busy} data-testid="campaign-save-btn">
               <PenLine size={16} aria-hidden="true" /> Guardar
             </Button>
-            <Button variant="secondary" onClick={() => void sendAll()} disabled={!campaign || busy} data-testid="campaign-send-btn">
+            <Button
+              variant="secondary"
+              onClick={() => void sendAll()}
+              disabled={!campaign || busy || hasUnsavedChanges}
+              title={hasUnsavedChanges ? "Guarda los cambios antes de enviar" : undefined}
+              data-testid="campaign-send-btn"
+            >
               <Send size={16} aria-hidden="true" /> Enviar
             </Button>
             {campaign && (
