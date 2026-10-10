@@ -212,7 +212,7 @@ export function IngredientPickerPopover({
           disabled={!canAdd}
           onClick={() => void add()}
         >
-          {busy ? "Anadiendo..." : "Anadir ingrediente"}
+          {busy ? "Añadiendo..." : "Añadir ingrediente"}
         </Button>
       </div>
     </Popover>

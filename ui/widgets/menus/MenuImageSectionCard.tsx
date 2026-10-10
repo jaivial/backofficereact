@@ -134,7 +134,7 @@ function MenuImageSectionCardImpl({
 
       <div className="bo-menuImageSectionCardMedia" data-slot="menu-image-section-card-media">
         {isUploading ? (
-          <MediaSkeleton testId={`menu-image-section-card-media-skeleton-${sectionId}`} label="Subiendo imagen de la seccion" />
+          <MediaSkeleton testId={`menu-image-section-card-media-skeleton-${sectionId}`} label="Subiendo imagen de la sección" />
         ) : imageUrl ? (
           <div className="bo-menuImageSectionCardPreview" data-slot="menu-image-section-card-preview">
             <img src={imageUrl} alt={title || "Imagen de la seccion"} loading="lazy" decoding="async" data-slot="menu-image-section-card-image" />

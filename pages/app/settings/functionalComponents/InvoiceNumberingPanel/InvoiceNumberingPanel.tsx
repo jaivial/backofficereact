@@ -33,7 +33,7 @@ export function InvoiceNumberingPanel({ invoiceSettings, busy, onSettingsChange,
     <Panel title="Numeracion de facturas" meta="Configura el formato de los numeros de factura" aria-label="Numeracion de facturas" data-ui="invoiceNumbering-panel">
       <div className="bo-stack" data-slot="invoiceNumberingPanel-stack">
           <div className="bo-mutedText" style={{ marginBottom: 16 }} data-ui="tokensHint">
-            Usa los siguientes tokens en el formato: {"{YYYY}"} (ano), {"{YY}"} (ano corto), {"{0001}"} (numero con ceros), {"{N}"} (numero sin padding), {"{prefix}"} (prefijo), {"{suffix}"} (sufijo)
+            Usa los siguientes tokens en el formato: {"{YYYY}"} (año), {"{YY}"} (año corto), {"{0001}"} (número con ceros), {"{N}"} (número sin padding), {"{prefix}"} (prefijo), {"{suffix}"} (sufijo)
           </div>
 
           <label className="bo-field" data-ui="formatField">

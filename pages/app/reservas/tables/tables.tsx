@@ -4724,7 +4724,7 @@ export default function TableManagerPage() {
 															<Plus size={16} strokeWidth={1.8} />
 														</span>
 														<span data-ui="menu-label" className="bo-menuLabel">
-															Anadir mesa
+															Añadir mesa
 														</span>
 													</button>
 

@@ -992,7 +992,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 {scheduleError ? <p className="bo-anunciosScheduleError" role="alert">{scheduleError}</p> : null}
               </div>
               <button type="button" onClick={addCta} className="bo-adFieldReset" data-testid="ad-add-button">
-                Anadir boton
+                Añadir botón
               </button>
             </>
           )

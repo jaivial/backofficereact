@@ -1515,7 +1515,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     // New sections start with display_title seeded from the backoffice title so
     // the public heading is never blank. subtitle and tab_label stay empty
     // until the operator fills them in the settings tab.
-    const title = seededTitle || "Nueva seccion";
+    const title = seededTitle || "Nueva sección";
     const dessertSource = normalizeDessertSource(kind, selection?.dessertSource);
     const clientId = uid("section");
     console.log("[checkpoint] menu_section_added", `kind=${kind}`, `dessert_source=${dessertSource}`);
@@ -2016,20 +2016,20 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
 
   const addSpecialMenuSection = useCallback(async () => {
     if (!menuId) {
-      pushToast({ kind: "error", title: "Error", message: "Guarda primero el menu para anadir secciones." });
+      pushToast({ kind: "error", title: "Error", message: "Guarda primero el menú para añadir secciones." });
       return;
     }
     setSaveState("saving");
     try {
       const res = await api.menus.gruposV2.createSpecialSection(menuId, { title: "" });
-      if (!res.success) throw new Error(res.message || "No se pudo crear la seccion");
+      if (!res.success) throw new Error(res.message || "No se pudo crear la sección");
       const created = res.section;
       setSpecialMenuSections((prev) => [...prev, created].sort((a, b) => a.position - b.position));
       setSaveState("saved");
       console.log("[checkpoint] special_menu_section_added", `section=${created.id}`);
     } catch (e) {
       setSaveState("error");
-      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo crear la seccion" });
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo crear la sección" });
     }
   }, [api, menuId, pushToast]);
 
@@ -2052,11 +2052,11 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
     setSectionBusy(sectionId, true);
     try {
       const res = await api.menus.gruposV2.deleteSpecialSection(menuId, sectionId);
-      if (!res.success) throw new Error(res.message || "No se pudo eliminar la seccion");
+      if (!res.success) throw new Error(res.message || "No se pudo eliminar la sección");
       setSpecialMenuSections((prev) => prev.filter((sec) => sec.id !== sectionId));
       console.log("[checkpoint] special_menu_section_removed", `section=${sectionId}`);
     } catch (e) {
-      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo eliminar la seccion" });
+      pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo eliminar la sección" });
     } finally {
       setSectionBusy(sectionId, false);
     }
@@ -2329,7 +2329,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
       const { enabled, label, action, menu_id, whatsapp_phone, whatsapp_message, special_date_id } = next;
       void api.menus.gruposV2.putSpecialMenuCta(menuId, { enabled, label, action, menu_id, whatsapp_phone, whatsapp_message, special_date_id })
         .then((res) => {
-          if (!res.success) throw new Error(res.message || "No se pudo guardar el boton reservar");
+          if (!res.success) throw new Error(res.message || "No se pudo guardar el botón reservar");
           const { href, opens_new_tab, website_base_url, target_date } = res.special_cta;
           setSpecialCta((cur) => ({ ...cur, href, opens_new_tab, website_base_url, target_date }));
           console.log("[checkpoint] special_menu_cta_persisted", `action=${action}`, `enabled=${enabled}`);

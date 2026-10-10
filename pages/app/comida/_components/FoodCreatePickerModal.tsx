@@ -9,7 +9,7 @@ const OPTIONS: Array<{ type: CreateFoodType; label: string; hint: string; icon: 
   { type: "bebidas", label: "Bebida", hint: "Refrescos y cocteles", icon: GlassWater },
   { type: "vinos", label: "Vino", hint: "Bodega y añadas", icon: Wine },
   { type: "cafes", label: "Cafe", hint: "Cafe e infusiones", icon: Coffee },
-  { type: "menus", label: "Menu", hint: "Carta, grupo, dia o fin de semana", icon: Utensils },
+  { type: "menus", label: "Menú", hint: "Carta, grupo, día o fin de semana", icon: Utensils },
 ];
 
 export function FoodCreatePickerModal({

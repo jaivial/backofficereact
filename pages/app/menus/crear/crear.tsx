@@ -340,7 +340,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
         const res = await api.menus.gruposV2.deleteSection(menuId, target.id);
         if (!("success" in res) || !res.success) throw new Error("delete failed");
       } catch (err) {
-        pushToast({ kind: "error", title: "Error", message: "No se pudo eliminar la seccion" });
+        pushToast({ kind: "error", title: "Error", message: "No se pudo eliminar la sección" });
         console.log("[checkpoint] section_delete_failed", `section=${target.id}`);
         return;
       }
@@ -1039,8 +1039,8 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                             onDecrease={() => setMainLimitNum(String(Math.max(1, (Number.parseInt(mainLimitNum || "1", 10) || 1) - 1)))}
                             onIncrease={() => setMainLimitNum(String(Math.max(1, (Number.parseInt(mainLimitNum || "1", 10) || 1) + 1)))}
                             canDecrease={(Number.parseInt(mainLimitNum || "1", 10) || 1) > 1}
-                            decrementAriaLabel="Reducir numero maximo de principales por mesa"
-                            incrementAriaLabel="Aumentar numero maximo de principales por mesa"
+                            decrementAriaLabel="Reducir número máximo de principales por mesa"
+                            incrementAriaLabel="Aumentar número máximo de principales por mesa"
                           />
                         </div>
                       ) : null}
@@ -1312,7 +1312,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
       <ConfirmDialog
         title="Eliminar plato"
         message={pendingDishDelete
-          ? `¿Eliminar el plato "${pendingDishDelete.dishLabel}" de esta seccion? Esta accion no se puede deshacer.`
+          ? `¿Eliminar el plato "${pendingDishDelete.dishLabel}" de esta sección? Esta acción no se puede deshacer.`
           : ""}
         confirmText="Eliminar"
         cancelText="Cancelar"

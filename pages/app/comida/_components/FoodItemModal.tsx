@@ -271,7 +271,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   const saveItem = useCallback(async (): Promise<FoodItem | null> => {
     const nombreOrDesc = isPostre ? (descripcion.trim() || nombre.trim()) : nombre.trim();
     if (!nombreOrDesc) {
-      pushToast({ kind: "error", title: "Error", message: isPostre ? "La descripcion es requerida" : "El nombre es requerido" });
+      pushToast({ kind: "error", title: "Error", message: isPostre ? "La descripción es requerida" : "El nombre es requerido" });
       return null;
     }
 

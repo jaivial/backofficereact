@@ -106,7 +106,7 @@ export function POSPackPicker({ pack, busy = false, error, onClose, onConfirm }:
             <Minus className="h-4 w-4" aria-hidden="true" />
           </button>
           <span data-testid="pos-pack-qty">{quantity}</span>
-          <button className="pos-modifierOption__step" type="button" aria-label="Anadir otra unidad del menu" disabled={busy || quantity >= MAX_PACK_QUANTITY} onClick={() => setQuantity((current) => Math.min(MAX_PACK_QUANTITY, current + 1))} data-testid="pos-pack-qty-plus">
+          <button className="pos-modifierOption__step" type="button" aria-label="Añadir otra unidad del menú" disabled={busy || quantity >= MAX_PACK_QUANTITY} onClick={() => setQuantity((current) => Math.min(MAX_PACK_QUANTITY, current + 1))} data-testid="pos-pack-qty-plus">
             <Plus className="h-4 w-4" aria-hidden="true" />
           </button>
         </span>
@@ -114,7 +114,7 @@ export function POSPackPicker({ pack, busy = false, error, onClose, onConfirm }:
           Total {money(total)}
         </span>
         <button className="pos-modal__primary" type="button" disabled={busy || !canConfirm} onClick={() => onConfirm({ quantity, choices: answered })} data-testid="pos-pack-picker-confirm">
-          Anadir a la cuenta
+          Añadir a la cuenta
         </button>
       </footer>
     </POSDialog>

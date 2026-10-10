@@ -75,7 +75,7 @@ export function TechnicalSheetInfoTab({
             onClick={() => setIngredientOpen((open) => !open)}
           >
             <Plus size={14} aria-hidden="true" />
-            Anadir ingrediente
+            Añadir ingrediente
           </button>
         </div>
 
@@ -112,13 +112,13 @@ export function TechnicalSheetInfoTab({
             ref={addAllergenRef}
             type="button"
             className="bo-btn bo-btn--secondary bo-btn--sm"
-            aria-label="Añadir alergeno"
+            aria-label="Añadir alérgeno"
             aria-expanded={allergenOpen}
             data-role="sheet-add-allergen"
             onClick={() => setAllergenOpen((open) => !open)}
           >
             <Plus size={14} aria-hidden="true" />
-            Anadir alergeno
+            Añadir alérgeno
           </button>
         </div>
 

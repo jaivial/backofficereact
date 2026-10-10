@@ -98,7 +98,7 @@ export function CampaignsUnsubscribed() {
             variant="tailwind"
             className="p-10"
             title="Sin bajas"
-            description="Cuando un cliente pulse el boton de darse de baja en una campaña, su reserva aparecer\u00e1 aqu\u00ed."
+            description="Cuando un cliente pulse el botón de darse de baja en una campaña, su reserva aparecer\u00e1 aqu\u00ed."
             data-testid="campaigns-unsubscribed-empty"
           />
         ) : (

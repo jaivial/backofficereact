@@ -70,7 +70,7 @@ export function StepCard({
             ref={imageButtonRef}
             type="button"
             className="bo-stepCard__imageAdd"
-            aria-label={`Anadir imagen al paso ${step.stepNo}`}
+            aria-label={`Añadir imagen al paso ${step.stepNo}`}
             aria-expanded={imageOpen}
             onClick={() => setImageOpen((open) => !open)}
           >

@@ -103,7 +103,7 @@ export function ImportWizard({ open, onClose, onImportComplete, api, settings = 
           const lines = text.split(/\r?\n/).filter((line) => line.trim());
 
           if (lines.length === 0) {
-            reject(new Error("El archivo esta vacio"));
+            reject(new Error("El archivo está vacío"));
             return;
           }
 

@@ -502,7 +502,7 @@ export default function RichTextEditorSurface({
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-muted">Texto visible</span>
                 <input
                   className="bo-input bo-input--sm w-full"
-                  placeholder="Se usa la direccion si lo dejas vacio"
+                  placeholder="Se usa la dirección si lo dejas vacío"
                   value={linkText}
                   onChange={(event) => setLinkText(event.currentTarget.value)}
                   onKeyDown={(event) => {

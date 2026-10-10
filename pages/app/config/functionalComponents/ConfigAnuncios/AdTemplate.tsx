@@ -392,8 +392,8 @@ function ButtonNode({
   return (
     <EditableText
       value={cta.text}
-      ariaLabel="Texto del boton"
-      placeholder="Texto del boton"
+      ariaLabel="Texto del botón"
+      placeholder="Texto del botón"
       testId={`ad-button-${cta.id}-edit`}
       onCommit={(text) => onChange({ text })}
       onSelect={() => onSelect?.(cta.id)}

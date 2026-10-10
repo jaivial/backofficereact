@@ -115,7 +115,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
       pushToast({
         kind: "error",
         title: "Error",
-        message: "El cliente no tiene un numero de telefono registrado",
+        message: "El cliente no tiene un número de teléfono registrado",
       });
       return;
     }
