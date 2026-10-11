@@ -105,7 +105,7 @@ export function parseForkyWidget(text: string): ForkyWidgetSpec | null {
 export function parseForkyDoc(text: string): ForkyDocSpec | null {
   return parseJsonBlock(text, "forky-doc", (raw) => {
     if (typeof raw.title !== "string" || typeof raw.url !== "string") return null;
-    if (!/^https?:\/\//.test(raw.url)) return null;
+    if (!/^(https?:\/\/|\/)/.test(raw.url)) return null; // allow same-origin relative URLs (tool-provided pdf_url)
     return {
       title: raw.title,
       url: raw.url,
