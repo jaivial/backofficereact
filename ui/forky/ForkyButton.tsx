@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useAtom, useAtomValue } from "jotai";
 import { HermesMascot, type HermesState } from "./HermesMascot";
@@ -50,6 +50,17 @@ export function ForkyButton() {
   const hidden = useAtomValue(forkyHiddenAtom);
   const visualState = useForkyVisualState();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Smaller, higher FAB on phones so it covers less of the content and
+  // clears the bottom tab bar.
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 520px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Set greet state when modal opens
   useEffect(() => {
@@ -76,7 +87,7 @@ export function ForkyButton() {
   return (
     <div
       ref={containerRef}
-      className="forky-floating-host fixed bottom-6 right-6 z-[110]"
+      className="forky-floating-host fixed bottom-24 right-4 z-[110] sm:bottom-6 sm:right-6"
       data-testid="forky-floating-host"
     >
       <button
@@ -93,7 +104,7 @@ export function ForkyButton() {
         <div data-slot="forkyButton-group-hover:bg-white/20" className="absolute -inset-2 rounded-full bg-white/10 blur-lg transition-opacity duration-300 group-hover:bg-white/20" />
         {/* Hermes mascot */}
         <div data-slot="forkyButton-relative" className="relative">
-          <HermesMascot state={hermesState} size={64} testId="forky-canvas" />
+          <HermesMascot state={hermesState} size={isMobile ? 44 : 64} testId="forky-canvas" />
         </div>
       </button>
     </div>
