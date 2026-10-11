@@ -37,7 +37,10 @@ function parseJsonBlock<T>(text: string, tag: string, validate: (raw: Record<str
   const match = text.match(new RegExp("```" + tag + "\\s*([\\s\\S]*?)```"));
   if (!match) return null;
   try {
-    const raw = JSON.parse(match[1]);
+    let raw: unknown = JSON.parse(match[1]);
+    // The model occasionally double-encodes the block (JSON.stringify of the
+    // object, then wrapped again): parse yields a string. Unwrap once.
+    if (typeof raw === "string") raw = JSON.parse(raw);
     if (typeof raw !== "object" || raw === null) return null;
     return validate(raw as Record<string, unknown>);
   } catch {
