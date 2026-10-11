@@ -36,19 +36,58 @@ const WIDGET_MAX_HEIGHT = 640;
 function parseJsonBlock<T>(text: string, tag: string, validate: (raw: Record<string, unknown>) => T | null): T | null {
   const match = text.match(new RegExp("```" + tag + "\\s*([\\s\\S]*?)```"));
   if (!match) return null;
-  try {
-    let raw: unknown = JSON.parse(match[1]);
-    // The model occasionally double-encodes the block (JSON.stringify of the
-    // object, then wrapped again): parse yields a string. Unwrap once.
-    if (typeof raw === "string") raw = JSON.parse(raw);
-    if (typeof raw !== "object" || raw === null) return null;
-    return validate(raw as Record<string, unknown>);
-  } catch {
-    return null;
+  const candidates = [match[1]];
+  // The model often writes HTML attribute quotes double-escaped (\\"
+  // instead of \"): every attribute quote then ends the JSON string early
+  // and the parse fails. Retry with the extra escaping folded back.
+  if (match[1].includes('\\\\"')) candidates.push(match[1].replace(/\\\\"/g, '\\"'));
+  for (const candidate of candidates) {
+    try {
+      let raw: unknown = JSON.parse(candidate);
+      // The model occasionally double-encodes the block (JSON.stringify of
+      // the object, then wrapped again): parse yields a string. Unwrap once.
+      if (typeof raw === "string") raw = JSON.parse(raw);
+      if (typeof raw !== "object" || raw === null) continue;
+      const spec = validate(raw as Record<string, unknown>);
+      if (spec !== null) return spec;
+    } catch {
+      // try next candidate
+    }
   }
+  return null;
 }
 
 export function parseForkyWidget(text: string): ForkyWidgetSpec | null {
+  const match = text.match(/```forky-widget\s*([\s\S]*?)```/);
+  if (!match) return null;
+  const body = match[1].trim();
+  if (!body) return null;
+
+  // Current protocol: raw HTML body (no JSON to escape). Optional header
+  // lines "key: value" (title, height) closed by a line with only "---".
+  if (!body.startsWith("{")) {
+    let title: string | undefined;
+    let height: number | undefined;
+    let html = body;
+    const header = body.match(/^((?:[\w-]+:\s*.*\n)+)---\n?/);
+    if (header) {
+      for (const line of header[1].trimEnd().split("\n")) {
+        const kv = line.match(/^([\w-]+):\s*(.*)$/);
+        if (!kv) continue;
+        if (kv[1] === "title") title = kv[2].trim();
+        if (kv[1] === "height") {
+          const n = Number.parseInt(kv[2], 10);
+          if (Number.isFinite(n)) height = Math.min(Math.max(n, 120), WIDGET_MAX_HEIGHT);
+        }
+      }
+      html = body.slice(header[0].length);
+    }
+    if (!html.trim()) return null;
+    return { title, html, css: undefined, height };
+  }
+
+  // Legacy JSON body (first rollout): keep the tolerant parse for old stored
+  // blocks. Escaped attribute quotes made these brittle; raw HTML replaced it.
   return parseJsonBlock(text, "forky-widget", (raw) => {
     if (typeof raw.html !== "string" || raw.html.trim().length === 0) return null;
     const height = typeof raw.height === "number" && Number.isFinite(raw.height)
