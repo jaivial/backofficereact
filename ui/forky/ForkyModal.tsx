@@ -10,6 +10,7 @@ import {
 import { useAtom } from "jotai";
 
 import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
+import { ForkyDoc, ForkyWidget, stripForkyRichBlocks } from "./ForkyRichBlocks";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
 import { HermesMascot } from "./HermesMascot";
@@ -96,7 +97,7 @@ function AssistantLoading() {
 // delimiter rows MiniMax intermittently mangles, so columnar data renders as a
 // real table instead of literal pipes.
 const forkyPreprocess = (text: string): string =>
-  repairGfmTables(stripForkyChartBlocks(text));
+  repairGfmTables(stripForkyRichBlocks(stripForkyChartBlocks(text)));
 
 function AssistantMessage() {
   const [copied, setCopied] = useState(false);
@@ -149,6 +150,8 @@ function AssistantMessage() {
         <MessagePrimitive.Parts components={{ Text: ({ text }: { text: string }) => (
           <>
             <ForkyChart text={text} />
+            <ForkyWidget text={text} />
+            <ForkyDoc text={text} />
             <MarkdownText preprocess={forkyPreprocess} />
           </>
         ) }} />
