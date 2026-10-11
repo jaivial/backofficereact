@@ -53,13 +53,16 @@ export function sectionForPath(pathname: string): BOSection | null {
   if (!pathname.startsWith("/app")) return null;
   if (pathname === "/app" || pathname.startsWith("/app/dashboard")) return "reservas";
   if (pathname.startsWith("/app/reservas") || pathname.startsWith("/app/config") || pathname.startsWith("/app/comsit")) return "reservas";
+  // Mobile-only routes (rbacPath maps /m/app/* to /app/*): the mobile menus hub
+  // lives at /m/app/menus and its section is "menus" (desktop equivalent: /app/comida/menus).
+  if (pathname.startsWith("/app/menus")) return "menus";
   if (pathname.startsWith("/app/comida/menus")) return "menus";
   if (pathname.startsWith("/app/comida")) return "comida";
   if (pathname.startsWith("/app/stock")) return "stock";
   if (pathname.startsWith("/app/pos")) return "pos";
   if (pathname.startsWith("/app/settings")) return "ajustes";
   if (pathname.startsWith("/app/website") || pathname.startsWith("/app/site-builder")) return "website";
-  if (pathname === "/app/miembros/mi-horario") return "horarios";
+  if (pathname === "/app/miembros/mi-horario" || pathname === "/app/mi-horario") return "horarios";
   if (pathname.startsWith("/app/miembros")) return "miembros";
   if (pathname.startsWith("/app/horarios")) return "horarios";
   if (pathname.startsWith("/app/fichaje")) return "fichaje";
