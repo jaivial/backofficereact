@@ -55,6 +55,20 @@ export default function Page() {
             <img className="bo-homeCenterLogo" src="https://herorestaurantmedia.b-cdn.net/icon/ChatGPT_Image_Jul_15__2026__05_39_27_PM-removebg-preview.png" alt="" />
           </div>
 
+          {orbitItems.map((item) => (
+            <span
+              key={`ghost-${item.key}`}
+              className="bo-homeNodeGhost"
+              aria-hidden="true"
+              data-ui="orbit-node-ghost"
+              style={{
+                ["--bo-home-angle" as any]: `${item.angleDeg}deg`,
+              }}
+            >
+              <span className="bo-homeNodeGhostLabel" data-ui="orbit-node-ghost-label">{item.label}</span>
+            </span>
+          ))}
+
           {orbitItems.map((item, index) => (
             <a
               key={item.key}
