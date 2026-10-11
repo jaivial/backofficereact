@@ -773,6 +773,14 @@ export default function Page() {
   const occPeople = dailyLimit?.totalPeople ?? 0;
   const occLimit = dailyLimit?.limit ?? 45;
 
+  const selectedDayLabel = useMemo(() => {
+    if (!date) return "";
+    const [y, m, d] = date.split("-").map((part) => Number.parseInt(part, 10));
+    if (!y || !m || !d) return date;
+    const label = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(y, m - 1, d));
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }, [date]);
+
   const pagerEl = (
     <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="reservas-page-pagination">
       <div className="bo-pagerText" data-slot="reservas-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
@@ -793,6 +801,10 @@ export default function Page() {
             {isDayOpen ? <BookingSearch onSearch={onSearch} onClear={onSearchClear} busy={busy || searchBusy} reduceMotion={reduceMotion === true} /> : null}
             <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`} data-slot="reservas-div">
               <MonthCalendar year={view.year} month={view.month} days={calendarDays} selectedDateISO={date} onSelectDate={onSelectDate} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} loading={monthBusy} />
+
+              {isDayOpen && selectedDayLabel ? (
+                <h2 className="bo-reservasDayTitle" data-slot="reservas-day-title">{selectedDayLabel}</h2>
+              ) : null}
 
               <AnimatePresence initial={false}>
                 {isDayOpen ? (

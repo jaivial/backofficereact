@@ -296,6 +296,27 @@ export default function Page() {
     updateUrl({ tab: "resumen", id: "" });
   }, []);
 
+  // Handle delete invoice: confirma y borra de verdad (antes onDelete era un
+  // no-op y el popover se cerraba sin borrar nada).
+  const handleDeleteInvoice = useCallback(
+    async (invoice: Invoice) => {
+      const label = invoice.invoice_number ?? `#${invoice.id}`;
+      if (!window.confirm(`¿Borrar la factura ${label}? Esta acción no se puede deshacer.`)) return;
+      try {
+        const res = await api.invoices.delete(invoice.id);
+        if (res.success) {
+          pushToast({ kind: "success", title: "Factura borrada", message: `La factura ${label} ha sido eliminada` });
+          await fetchInvoices();
+        } else {
+          pushToast({ kind: "error", title: "Error", message: "message" in res ? res.message : "No se pudo borrar la factura" });
+        }
+      } catch {
+        pushToast({ kind: "error", title: "Error", message: "No se pudo borrar la factura" });
+      }
+    },
+    [api, pushToast, fetchInvoices],
+  );
+
   // Handle save invoice. Returns the saved invoice id (undefined on
   // failure). opts.keepOpen keeps the form mounted and adopts a newly
   // created invoice into edit state so the next save updates instead of
@@ -643,7 +664,7 @@ export default function Page() {
             onEdit={handleEditInvoice}
             onDuplicate={() => {}}
             onSplit={() => {}}
-            onDelete={() => {}}
+            onDelete={handleDeleteInvoice}
             onDownloadPdf={() => {}}
             onSendEmail={handleSendEmail}
             onSendWhatsApp={handleSendWhatsApp}
@@ -673,7 +694,7 @@ export default function Page() {
               onEdit={handleEditInvoice}
               onRegisterPayment={() => {}}
               onSendEmail={handleSendEmail}
-              onDelete={() => {}}
+              onDelete={handleDeleteInvoice}
             />
               <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-testid="facturas-grid-pager" data-slot="facturas-grid-pager">
                 <div className="bo-pagerText" data-testid="facturas-grid-pagerText" data-slot="facturas-grid-pagerText">

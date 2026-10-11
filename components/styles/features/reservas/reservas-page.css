@@ -725,6 +725,15 @@
    Coordination id: reservas_download_and_order_v1
    Descargar lives at the right of the display row and below the pagination, for
    every viewport. The search / filters order flips at <=1400px. */
+.bo-reservasDayTitle {
+  grid-column: 1;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--bo-text);
+}
+
 .bo-reservasLayout {
   display: flex;
   flex-direction: column;

@@ -133,6 +133,9 @@ export const FoodDishCard = React.memo(function FoodDishCard({
               ) : (
                 <div data-ui="dish-card-media-placeholder" className="bo-foodMemberMediaPlaceholder">
                   <UtensilsCrossed size={30} />
+                  <span data-ui="dish-card-media-placeholder-label" className="bo-foodMemberMediaPlaceholderLabel">
+                    Añadir imagen
+                  </span>
                 </div>
               )}
               <span data-ui="dish-card-media-overlay" className="bo-foodMemberMediaOverlay" aria-hidden="true">
