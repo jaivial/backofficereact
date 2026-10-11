@@ -6,6 +6,7 @@ import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput, Reservati
 import { sessionAtom } from "../../../state/atoms";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
+import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
 import { FileText, PlusCircle, Table as TableIcon, LayoutGrid, MoreVertical } from "lucide-react";
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 import { Panel } from "../../../ui/shell/Panel";
@@ -296,26 +297,29 @@ export default function Page() {
     updateUrl({ tab: "resumen", id: "" });
   }, []);
 
-  // Handle delete invoice: confirma y borra de verdad (antes onDelete era un
-  // no-op y el popover se cerraba sin borrar nada).
-  const handleDeleteInvoice = useCallback(
-    async (invoice: Invoice) => {
-      const label = invoice.invoice_number ?? `#${invoice.id}`;
-      if (!window.confirm(`¿Borrar la factura ${label}? Esta acción no se puede deshacer.`)) return;
-      try {
-        const res = await api.invoices.delete(invoice.id);
-        if (res.success) {
-          pushToast({ kind: "success", title: "Factura borrada", message: `La factura ${label} ha sido eliminada` });
-          await fetchInvoices();
-        } else {
-          pushToast({ kind: "error", title: "Error", message: "message" in res ? res.message : "No se pudo borrar la factura" });
-        }
-      } catch {
-        pushToast({ kind: "error", title: "Error", message: "No se pudo borrar la factura" });
+  // Handle delete invoice: ConfirmDialog propio de la app (antes onDelete era
+  // un no-op y el popover se cerraba sin borrar nada).
+  const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
+  const handleDeleteInvoice = useCallback((invoice: Invoice) => {
+    setDeleteTarget(invoice);
+  }, []);
+  const doDeleteInvoice = useCallback(async () => {
+    const invoice = deleteTarget;
+    if (!invoice) return;
+    const label = invoice.invoice_number ?? `#${invoice.id}`;
+    setDeleteTarget(null);
+    try {
+      const res = await api.invoices.delete(invoice.id);
+      if (res.success) {
+        pushToast({ kind: "success", title: "Factura borrada", message: `La factura ${label} ha sido eliminada` });
+        await fetchInvoices();
+      } else {
+        pushToast({ kind: "error", title: "Error", message: "message" in res ? res.message : "No se pudo borrar la factura" });
       }
-    },
-    [api, pushToast, fetchInvoices],
-  );
+    } catch {
+      pushToast({ kind: "error", title: "Error", message: "No se pudo borrar la factura" });
+    }
+  }, [api, pushToast, fetchInvoices, deleteTarget]);
 
   // Handle save invoice. Returns the saved invoice id (undefined on
   // failure). opts.keepOpen keeps the form mounted and adopts a newly
@@ -735,6 +739,15 @@ export default function Page() {
       ) : null}
 
       {/* Send Email Modal */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Borrar factura"
+        message={deleteTarget ? `¿Borrar la factura ${deleteTarget.invoice_number ?? `#${deleteTarget.id}`}? Esta acción no se puede deshacer.` : ""}
+        confirmText="Borrar"
+        danger
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={doDeleteInvoice}
+      />
       <SendEmailModal
         open={!!emailInvoice}
         invoice={emailInvoice}
