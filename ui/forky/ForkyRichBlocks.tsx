@@ -173,7 +173,7 @@ const DOC_ICONS: Record<string, string> = {
 
 function ForkyDocView({ spec }: { spec: ForkyDocSpec }) {
   const [open, setOpen] = useState(false);
-  const isPdf = spec.mime === "application/pdf" || /\.pdf($|\?)/i.test(spec.url);
+  const isPdf = spec.mime === "application/pdf" || /\.pdf($|\?)/i.test(spec.url) || /\/pdf$/i.test(spec.url);
   const badge = DOC_ICONS[spec.kind ?? ""] ?? "DOC";
   return (
     <div data-testid="forky-doc" className="my-2 overflow-hidden rounded-[10px] border border-fui-line bg-fui-surface">
