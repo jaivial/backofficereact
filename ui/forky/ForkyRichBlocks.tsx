@@ -75,7 +75,11 @@ export function parseForkyDoc(text: string): ForkyDocSpec | null {
 
 /** Remove rich fenced blocks so the prose renderer never shows raw JSON. */
 export function stripForkyRichBlocks(text: string): string {
-  return text.replace(/```forky-(?:widget|doc)\s*[\s\S]*?```/g, "");
+  return text
+    .replace(/```forky-(?:widget|doc)\s*[\s\S]*?```/g, "")
+    // Unterminated block (model hit the token cap mid-widget): hide the raw
+    // JSON from prose too; the widget simply does not render.
+    .replace(/```forky-(?:widget|doc)\s*[\s\S]*$/g, "");
 }
 
 function buildWidgetSrcDoc(spec: ForkyWidgetSpec): string {
