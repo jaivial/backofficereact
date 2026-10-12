@@ -1837,6 +1837,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             supplement_enabled: boolean;
             supplement_price: number | null;
             active?: boolean;
+            apply_to_catalog?: boolean;
           }>,
         ): Promise<APISuccess<{ dishes: GroupMenuV2Dish[] }> | APIError> {
           return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/dishes`, {
@@ -1859,6 +1860,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
             supplement_price: number | null;
             price: number | null;
             active: boolean;
+            apply_to_catalog: boolean;
           }>,
         ): Promise<APISuccess<{ dish: GroupMenuV2Dish }> | APIError> {
           return json(`/api/admin/group-menus-v2/${id}/sections/${sectionId}/dishes/${dishId}`, {

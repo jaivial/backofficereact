@@ -22,6 +22,9 @@ export type EditorDish = {
   ai_generating: boolean;
   ai_generated_img?: string | null;
   same_day_booking_blocked?: boolean;
+  // Coordination id: menu_dish_apply_to_catalog_v1 - opt-in: also write these
+  // edits to the general catalog ficha (default: menu snapshot only).
+  apply_to_catalog?: boolean;
   // Coordination id: dessert_section_source_v1 - dish owned by the general
   // desserts carta, so the editor must render it read-only.
   read_only?: boolean;

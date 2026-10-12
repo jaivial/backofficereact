@@ -874,6 +874,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
                   supplement_price: dish.supplement_price,
                   price: isALaCarte ? dish.price : null,
                   active: dish.active,
+                  apply_to_catalog: dish.apply_to_catalog === true,
                 });
                 if (!patched.success) throw new Error(patched.message || "No se pudo guardar el plato");
               }
@@ -883,6 +884,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
           const payloadDishes: Array<{
             id?: number; catalog_dish_id?: number | null; title: string; description: string; description_enabled: boolean; allergens: string[];
             supplement_enabled: boolean; supplement_price: number | null; price: number | null; active: boolean;
+            apply_to_catalog?: boolean;
           }> = [];
           const localDishes: EditorDish[] = [];
           let localDishMutated = false;
@@ -909,6 +911,7 @@ export function useMenuEditor(options: { embedded?: boolean } = {}): UseMenuEdit
               description_enabled: dish.description_enabled,
               allergens: dish.allergens, supplement_enabled: dish.supplement_enabled,
               supplement_price: dish.supplement_price, price: isALaCarte ? dish.price : null, active: dish.active,
+              apply_to_catalog: dish.apply_to_catalog === true,
             });
           }
 
