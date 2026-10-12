@@ -19,7 +19,7 @@ import {
   LoadingState,
   MessageBubble,
   PromptBar,
-  ThinkingState,
+  TaskRows,
 } from "./bui";
 import {
   CopyIcon,
@@ -70,15 +70,17 @@ function AssistantLoading() {
         {/* Pending turn = the beautifului thinking trace of what the run observed so
             far, with the pixel-grid LoadingState as its fallback underneath. */}
         <div data-testid="forky-thinking-state">
-          <ThinkingState
-            testIdPrefix="forky-thinking"
-            active="Pensando"
-            done="Listo"
+          <TaskRows
+            testIdPrefix="forky-taskrows"
             rows={[
-              { primary: "Leyendo la pregunta" },
-              // The tools the turn really called, as the WS reports them (status: tool).
-              ...steps.map((tool) => ({ primary: forkyToolLabel(tool) })),
-              { primary: "Escribiendo la respuesta" },
+              { primary: "Leyendo la pregunta", status: steps.length > 0 ? "completed" : "running" },
+              // The tools the turn really called, as the WS reports them (status: tool):
+              // every landed call is done, the latest one is still running.
+              ...steps.map((tool, index) => ({
+                primary: forkyToolLabel(tool),
+                status: index === steps.length - 1 ? ("running" as const) : ("completed" as const),
+              })),
+              { primary: "Escribiendo la respuesta", status: "pending" },
             ]}
           />
         </div>
