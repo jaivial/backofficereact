@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical, Sparkles, ScanLine } from "lucide-react";
+import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical, Sparkles, ScanLine, ReceiptText } from "lucide-react";
 import { createClient } from "../../../api/client";
 import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics, SpecialDateSettings } from "../../../api/types";
 import { StatusBadge } from "../../../ui/feedback/StatusBadge";
@@ -136,6 +136,7 @@ const BookingRow = React.memo(function BookingRow({
   onCancel,
   onEdit,
   onOpenDetails,
+  onCrearFactura,
   onSaveTable,
   onOpenQr,
   onOpenDocuments,
@@ -148,6 +149,7 @@ const BookingRow = React.memo(function BookingRow({
   onCancel: (b: Booking) => void;
   onEdit: (b: Booking) => void;
   onOpenDetails: (b: Booking) => void;
+  onCrearFactura: (b: Booking) => void;
   onSaveTable: (b: Booking, value: string) => Promise<boolean>;
   busy: boolean;
 }) {
@@ -214,6 +216,7 @@ const BookingRow = React.memo(function BookingRow({
           items={[
             { id: "details", label: "Reserva completa", onSelect: () => onOpenDetails(booking), icon: <FileText size={16} strokeWidth={1.8} /> },
             { id: "edit", label: "Editar", onSelect: () => onEdit(booking), icon: <Pencil size={16} strokeWidth={1.8} /> },
+            { id: "invoice", label: "Crear factura", onSelect: () => onCrearFactura(booking), icon: <ReceiptText size={16} strokeWidth={1.8} /> },
             { id: "cancel", label: "Cancelar", tone: "danger", onSelect: () => onCancel(booking), icon: <XCircle size={16} strokeWidth={1.8} /> },
           ]}
         />
@@ -932,7 +935,7 @@ export default function Page() {
                               </thead>
                               <tbody data-slot="reservas-tbody">
                                 {rows.map((b) => (
-                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onOpenQr={setQrBooking} onOpenDocuments={(b) => setDocumentsBookingId(b.id)} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
+                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onOpenQr={setQrBooking} onOpenDocuments={(b) => setDocumentsBookingId(b.id)} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onCrearFactura={onCrearFactura} onSaveTable={saveTableNumber} busy={busy} />
                                 ))}
                                 {!rows.length ? (
                                   <tr data-slot="reservas-tro"><td colSpan={tableColumns.length + 1} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>
