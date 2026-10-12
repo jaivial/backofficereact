@@ -93,7 +93,10 @@ function formatNumber(value: number | null | undefined): string {
 }
 
 function formatDateLabel(value: string): string {
-  return value.slice(5).replace("-", "/");
+  // ISO "YYYY-MM-DD" (or month "YYYY-MM") rendered DD/MM (Spanish order).
+  const mm = value.slice(5, 7);
+  const dd = value.slice(8, 10);
+  return dd ? `${dd}/${mm}` : mm || value;
 }
 
 function knownCost(value: number | null, label: string): string {

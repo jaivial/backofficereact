@@ -6,6 +6,7 @@ import type { Invoice, InvoiceListParams, InvoiceStatus, InvoiceInput, Reservati
 import { sessionAtom } from "../../../state/atoms";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
+import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
 import { FileText, PlusCircle, Table as TableIcon, LayoutGrid, MoreVertical } from "lucide-react";
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
 import { Panel } from "../../../ui/shell/Panel";
@@ -44,8 +45,8 @@ const INVOICE_STATUS_OPTIONS: { value: InvoiceStatus | ""; label: string }[] = [
 ];
 
 const INVOICE_SORT_OPTIONS: { value: string; label: string }[] = [
-  { value: "date_desc", label: "Fecha mas reciente" },
-  { value: "date_asc", label: "Fecha mas antigua" },
+  { value: "date_desc", label: "Fecha más reciente" },
+  { value: "date_asc", label: "Fecha más antigua" },
   { value: "amount_desc", label: "Importe mayor" },
   { value: "amount_asc", label: "Importe menor" },
 ];
@@ -295,6 +296,30 @@ export default function Page() {
     setActiveTab("resumen");
     updateUrl({ tab: "resumen", id: "" });
   }, []);
+
+  // Handle delete invoice: ConfirmDialog propio de la app (antes onDelete era
+  // un no-op y el popover se cerraba sin borrar nada).
+  const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
+  const handleDeleteInvoice = useCallback((invoice: Invoice) => {
+    setDeleteTarget(invoice);
+  }, []);
+  const doDeleteInvoice = useCallback(async () => {
+    const invoice = deleteTarget;
+    if (!invoice) return;
+    const label = invoice.invoice_number ?? `#${invoice.id}`;
+    setDeleteTarget(null);
+    try {
+      const res = await api.invoices.delete(invoice.id);
+      if (res.success) {
+        pushToast({ kind: "success", title: "Factura borrada", message: `La factura ${label} ha sido eliminada` });
+        await fetchInvoices();
+      } else {
+        pushToast({ kind: "error", title: "Error", message: "message" in res ? res.message : "No se pudo borrar la factura" });
+      }
+    } catch {
+      pushToast({ kind: "error", title: "Error", message: "No se pudo borrar la factura" });
+    }
+  }, [api, pushToast, fetchInvoices, deleteTarget]);
 
   // Handle save invoice. Returns the saved invoice id (undefined on
   // failure). opts.keepOpen keeps the form mounted and adopts a newly
@@ -643,7 +668,7 @@ export default function Page() {
             onEdit={handleEditInvoice}
             onDuplicate={() => {}}
             onSplit={() => {}}
-            onDelete={() => {}}
+            onDelete={handleDeleteInvoice}
             onDownloadPdf={() => {}}
             onSendEmail={handleSendEmail}
             onSendWhatsApp={handleSendWhatsApp}
@@ -673,7 +698,7 @@ export default function Page() {
               onEdit={handleEditInvoice}
               onRegisterPayment={() => {}}
               onSendEmail={handleSendEmail}
-              onDelete={() => {}}
+              onDelete={handleDeleteInvoice}
             />
               <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-testid="facturas-grid-pager" data-slot="facturas-grid-pager">
                 <div className="bo-pagerText" data-testid="facturas-grid-pagerText" data-slot="facturas-grid-pagerText">
@@ -714,6 +739,15 @@ export default function Page() {
       ) : null}
 
       {/* Send Email Modal */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Borrar factura"
+        message={deleteTarget ? `¿Borrar la factura ${deleteTarget.invoice_number ?? `#${deleteTarget.id}`}? Esta acción no se puede deshacer.` : ""}
+        confirmText="Borrar"
+        danger
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={doDeleteInvoice}
+      />
       <SendEmailModal
         open={!!emailInvoice}
         invoice={emailInvoice}

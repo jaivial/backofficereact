@@ -24,7 +24,7 @@ interface IVAFiltersProps {
 const DATE_PRESETS: { value: DatePreset; label: string }[] = [
   { value: "this_quarter", label: "Este trimestre" },
   { value: "last_quarter", label: "Trimestre anterior" },
-  { value: "this_year", label: "Este ano" },
+  { value: "this_year", label: "Este año" },
   { value: "last_year", label: "Ano anterior" },
   { value: "custom", label: "Personalizado" },
 ];

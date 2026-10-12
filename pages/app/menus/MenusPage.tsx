@@ -37,8 +37,8 @@ const MENU_STATUS_FILTER_OPTIONS: { value: MenuStatusFilter; label: string }[] =
   { value: "inactive", label: "Inactivos" },
 ];
 const MENU_SORT_OPTIONS: { value: MenuSortOption; label: string }[] = [
-  { value: "created_desc", label: "Adicion mas nueva" },
-  { value: "created_asc", label: "Adicion mas antigua" },
+  { value: "created_desc", label: "Adición más nueva" },
+  { value: "created_asc", label: "Adición más antigua" },
   { value: "price_asc", label: "Precio ascendente" },
   { value: "price_desc", label: "Precio descendente" },
 ];

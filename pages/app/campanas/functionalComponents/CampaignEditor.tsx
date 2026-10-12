@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "vike/client/router";
-import { Eye, FileText, Gauge, Mail, MessageCircle, Palette, PenLine, ScrollText, Send, Settings, Trash2, Users } from "lucide-react";
+import { Eye, FileText, Gauge, Mail, MessageCircle, Palette, PenLine, ScrollText, Send, Settings, Trash2, Users, Workflow } from "lucide-react";
 import type { Campaign, CampaignChannel, CampaignInput, CampaignRecipient } from "../../../../api/types";
 import { Button } from "../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
@@ -13,6 +13,7 @@ import { InlineCounter } from "../../../../ui/widgets/InlineCounter";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_PAUSE, CAMPAIGN_RATE_LIMITS, CAMPAIGN_RATE_NOTES, createCampaignsAPI, emptyCampaignInput, estimatedTime } from "./campaignsApi";
 import { CampaignPreview } from "./CampaignPreview";
+import { CampaignFlowCanvas, type CampaignFlowSection } from "./CampaignFlowCanvas";
 
 /** Message of a rejected request, falling back to a copy the operator can act on. */
 function errorMessage(err: unknown, fallback: string): string {
@@ -21,9 +22,10 @@ function errorMessage(err: unknown, fallback: string): string {
 
 const LIST_HREF = "/app/campanas";
 
-export type CampaignEditorTab = "editor" | "preview" | "settings";
+export type CampaignEditorTab = "flow" | "editor" | "preview" | "settings";
 
 const CAMPAIGN_EDITOR_TABS: TabItem[] = [
+  { id: "flow", label: "Flujo", href: "#", icon: <Workflow size={16} aria-hidden="true" /> },
   { id: "editor", label: "Editor", href: "#", icon: <PenLine size={16} aria-hidden="true" /> },
   { id: "preview", label: "Previsualizacion", href: "#", icon: <Eye size={16} aria-hidden="true" /> },
   { id: "settings", label: "Ajustes", href: "#", icon: <Settings size={16} aria-hidden="true" /> },
@@ -58,13 +60,24 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const themeApplied = useRef(false);
   const navigated = useRef(false);
   const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
-  const [tab, setTab] = useState<CampaignEditorTab>("editor");
+  const [tab, setTab] = useState<CampaignEditorTab>("flow");
   const [audience, setAudience] = useState<{ total: number; emails: number; whatsapp: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [testTarget, setTestTarget] = useState("");
   const [recipients, setRecipients] = useState<CampaignRecipient[]>([]);
+  // Snapshot of the last persisted form: "Enviar" sends the saved campaign, so
+  // it must stay disabled while the editor holds unsaved changes.
+  const savedFormRef = useRef<string>(JSON.stringify(initialCampaign ? campaignToInput(initialCampaign) : null));
   const coordId = campaign?.coord_id ?? "camp-new";
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Flujo -> editor: pulsar un nodo del grafo abre su seccion del editor.
+  const jumpToSection = useCallback((section: CampaignFlowSection) => {
+    setTab("editor");
+    window.setTimeout(() => {
+      document.querySelector(`[data-testid="${section}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  }, []);
 
   const patch = useCallback(<K extends keyof CampaignInput>(key: K, value: CampaignInput[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -110,6 +123,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     try {
       const result = campaign ? await api.update(campaign.id, form) : await api.create(form);
       if (!result.success || !result.campaign) throw new Error(apiMessage(result, "No se pudo guardar la campaña"));
+      savedFormRef.current = JSON.stringify(form);
       setCampaign(result.campaign);
       pushToast({ kind: "success", title: "Campañas", message: "Campaña guardada" });
       return result.campaign;
@@ -207,6 +221,8 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     if (result.success) void navigate(LIST_HREF);
   }, [api, campaign]);
 
+  const hasUnsavedChanges = campaign !== null && JSON.stringify(form) !== savedFormRef.current;
+
   const themeKeys = [
     ["accent", "Color principal"],
     ["text", "Color texto"],
@@ -248,7 +264,13 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             <Button variant="primary" onClick={() => void save()} disabled={busy} data-testid="campaign-save-btn">
               <PenLine size={16} aria-hidden="true" /> Guardar
             </Button>
-            <Button variant="secondary" onClick={() => void sendAll()} disabled={!campaign || busy} data-testid="campaign-send-btn">
+            <Button
+              variant="secondary"
+              onClick={() => void sendAll()}
+              disabled={!campaign || busy || hasUnsavedChanges}
+              title={hasUnsavedChanges ? "Guarda los cambios antes de enviar" : undefined}
+              data-testid="campaign-send-btn"
+            >
               <Send size={16} aria-hidden="true" /> Enviar
             </Button>
             {campaign && (
@@ -269,6 +291,17 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         onNavigate={(_href, id) => setTab(id as CampaignEditorTab)}
         tabs={CAMPAIGN_EDITOR_TABS}
       />
+
+      {tab === "flow" && (
+        <div role="tabpanel" aria-label="Flujo" data-testid="campaign-tabpanel-flow">
+          <CampaignFlowCanvas
+            form={form}
+            audience={audience}
+            status={campaign?.status ?? null}
+            onEdit={jumpToSection}
+          />
+        </div>
+      )}
 
       {tab === "editor" && (
         <div className="grid gap-4" role="tabpanel" aria-label="Editor" data-testid="campaign-tabpanel-editor">
@@ -453,7 +486,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               {form.audience === "bookings" ? (
                 <CampaignFieldCell>
                   <InlineCounter
-                    label="Ultimos dias"
+                    label="Últimos días"
                     value={form.audience_days}
                     min={1}
                     max={3650}
@@ -537,7 +570,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                 <div className="flex flex-wrap gap-2">
                   <input
                     className="bo-input min-w-0 flex-1"
-                    placeholder="email o telefono de prueba"
+                    placeholder="email o teléfono de prueba"
                     aria-label="Destino de la prueba"
                     value={testTarget}
                     onChange={(e) => setTestTarget(e.currentTarget.value)}

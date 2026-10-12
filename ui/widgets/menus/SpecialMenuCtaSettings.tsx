@@ -50,8 +50,8 @@ export function SpecialMenuCtaSettings({
             <AutosaveInput className="bo-input" value={config.label} placeholder="RESERVAR" onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ label: e.target.value })} data-testid="menu-crear-special-cta-label-input" />
           </div>
           <div className="bo-field" data-slot="special-cta-action-field">
-            <div className="bo-label" data-slot="special-cta-action-label">Accion del boton</div>
-            <Select className="bo-menuSettingSelect" value={config.action} onChange={(value) => onChange({ action: value as SpecialMenuCtaAction })} options={ACTION_OPTIONS} size="sm" ariaLabel="Accion del boton reservar" disabled={busy} data-testid="menu-crear-special-cta-action-select" />
+            <div className="bo-label" data-slot="special-cta-action-label">Acción del botón</div>
+            <Select className="bo-menuSettingSelect" value={config.action} onChange={(value) => onChange({ action: value as SpecialMenuCtaAction })} options={ACTION_OPTIONS} size="sm" ariaLabel="Acción del botón reservar" disabled={busy} data-testid="menu-crear-special-cta-action-select" />
           </div>
           {config.action === "menu" ? (
             <div className="bo-field" data-slot="special-cta-menu-field">
@@ -69,7 +69,7 @@ export function SpecialMenuCtaSettings({
                   onCountryCodeChange={(cc) => onChange({ whatsapp_phone: phone.national ? `${cc}${phone.national}` : "" })}
                   onNumberChange={(national) => onChange({ whatsapp_phone: national.replace(/\D/g, "") ? `${phone.countryCode}${national.replace(/\D/g, "")}` : "" })}
                   disabled={busy}
-                  numberAriaLabel="Teléfono de WhatsApp del boton"
+                  numberAriaLabel="Teléfono de WhatsApp del botón"
                 />
               </div>
               <div className="bo-field bo-field--full" data-slot="special-cta-message-field">
@@ -87,7 +87,7 @@ export function SpecialMenuCtaSettings({
                 onChange={(value) => onChange({ special_date_id: Number(value) || 0 })}
                 options={[{ value: "0", label: "Pagina de reservas por defecto" }, ...specialDateOptions]}
                 size="sm"
-                ariaLabel="Fecha de reserva del boton"
+                ariaLabel="Fecha de reserva del botón"
                 disabled={busy}
                 data-testid="menu-crear-special-cta-date-select"
               />

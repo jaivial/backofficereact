@@ -1,45 +1,27 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAtomValue } from "jotai";
 import { ChevronRight, UtensilsCrossed } from "lucide-react";
 import { sessionAtom } from "../../../../state/atoms";
-import { usePageContext } from "vike-react/usePageContext";
+import { MENU_TYPE_GROUPS, type MenuTypeGroup } from "./menuTypeGroups";
 
-type MenuType = "desayuno" | "almuerzo" | "cena" | "bar";
-
-const MENU_TYPE_LABELS: Record<MenuType, string> = {
-  desayuno: "Desayuno",
-  almuerzo: "Almuerzo",
-  cena: "Cena",
-  bar: "Bar",
-};
-
-const MENU_TYPE_COLORS: Record<MenuType, string> = {
-  desayuno: "bg-amber-500",
-  almuerzo: "bg-emerald-500",
-  cena: "bg-indigo-500",
-  bar: "bg-rose-500",
-};
-
-function MenuTypeCard({ type, href }: { type: MenuType; href: string }) {
-  const label = MENU_TYPE_LABELS[type];
-  const color = MENU_TYPE_COLORS[type];
+function MenuTypeCard({ group }: { group: MenuTypeGroup }) {
   return (
     <a
-      href={href}
+      href={`/m/app/menus/${group.slug}`}
       className="flex items-center gap-4 p-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] no-underline active:scale-[0.99] transition-transform"
       data-ui="mobile-menu-type-card"
-      data-role={type}
+      data-role={group.slug}
     >
       <div
-        className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}
+        className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${group.color}`}
         data-ui="mobile-menu-type-icon-wrap"
         aria-hidden="true"
       >
         <UtensilsCrossed size={22} className="text-white" strokeWidth={1.8} aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0" data-slot="menus-min-w-0">
-        <h3 className="text-base font-bold text-[hsl(var(--foreground))]" data-ui="mobile-menu-type-label">{label}</h3>
-        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5" data-ui="mobile-menu-type-desc">Ver menus y precios</p>
+        <h3 className="text-base font-bold text-[hsl(var(--foreground))]" data-ui="mobile-menu-type-label">{group.label}</h3>
+        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5" data-ui="mobile-menu-type-desc">{group.desc}</p>
       </div>
       <ChevronRight size={20} className="text-[hsl(var(--muted-foreground))] flex-shrink-0" strokeWidth={1.8} aria-hidden="true" />
     </a>
@@ -48,7 +30,6 @@ function MenuTypeCard({ type, href }: { type: MenuType; href: string }) {
 
 export default function MobileMenusPage() {
   const session = useAtomValue(sessionAtom);
-  const menuTypes: MenuType[] = ["desayuno", "almuerzo", "cena", "bar"];
 
   if (!session) return null;
 
@@ -60,12 +41,8 @@ export default function MobileMenusPage() {
       </header>
 
       <div className="flex flex-col gap-3" data-ui="mobile-menu-types-list" role="list">
-        {menuTypes.map((type) => (
-          <MenuTypeCard
-            key={type}
-            type={type}
-            href={`/m/app/menus/${type}`}
-          />
+        {MENU_TYPE_GROUPS.map((group) => (
+          <MenuTypeCard key={group.slug} group={group} />
         ))}
       </div>
     </div>

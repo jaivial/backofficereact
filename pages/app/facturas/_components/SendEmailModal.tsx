@@ -46,6 +46,12 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
   const [message, setMessage] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
+  // Vista previa del PDF de la factura dentro del propio modal (mejora UX 5):
+  // el usuario ve lo que va a mandar en vez de solo una caja de texto.
+  const [showPdf, setShowPdf] = useState(true);
+  const [pdfLoading, setPdfLoading] = useState(true);
+  const [pdfError, setPdfError] = useState(false);
+
   // Notification method: email or whatsapp
   const [notificationMethod, setNotificationMethod] = useState<"email" | "whatsapp">("email");
 
@@ -68,6 +74,9 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
       setMessage(DEFAULT_MESSAGE);
       setSent(false);
       setShowPreview(false);
+      setShowPdf(true);
+      setPdfLoading(true);
+      setPdfError(false);
       setNotificationMethod("email");
     }
   }, [open, invoice]);
@@ -95,6 +104,12 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
     return { subject: subjectPreview, message: messagePreview };
   }, [invoice, subject, message, publicInvoiceUrl]);
+
+  // URL del PDF generado (mismo endpoint que la vista previa de la ficha)
+  const pdfUrl = useMemo(() => {
+    if (!invoice?.id) return "";
+    return `/api/admin/invoices/${invoice.id}/pdf`;
+  }, [invoice?.id]);
 
   // Format phone number for WhatsApp
   const formatPhoneForWhatsApp = (phone: string): string => {
@@ -126,7 +141,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
       pushToast({
         kind: "error",
         title: "Error",
-        message: "El cliente no tiene un numero de telefono registrado",
+        message: "El cliente no tiene un número de teléfono registrado",
       });
       return;
     }
@@ -329,6 +344,48 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
                 </span>
               </div>
             </div>
+
+            {/* Vista previa del PDF adjunto */}
+            {pdfUrl && (
+              <div data-testid="send-email-pdf-section" className="bo-sendEmailPdfSection" data-slot="send-email-pdf-section">
+                <div data-testid="send-email-pdf-header" className="bo-fieldHeader" data-slot="send-email-pdf-header">
+                  <label data-testid="sendEmailModal-pdfLabel" className="bo-label" data-slot="sendEmailModal-pdfLabel">Factura adjunta (PDF)</label>
+                  <button
+                    type="button"
+                    className="bo-btn bo-btn--ghost bo-btn--sm"
+                    onClick={() => setShowPdf(!showPdf)}
+                    disabled={sending}
+                    data-testid="send-email-toggle-pdf"
+                  >
+                    {showPdf ? "Ocultar" : "Ver PDF"}
+                  </button>
+                </div>
+                {showPdf && (
+                  <div data-testid="send-email-pdf-frame-wrap" className="bo-sendEmailPdfWrap" data-slot="send-email-pdf-frame-wrap">
+                    {pdfLoading && !pdfError && (
+                      <div data-testid="send-email-pdf-loading" className="bo-sendEmailPdfLoading" data-slot="send-email-pdf-loading">
+                        <Loader2 size={20} className="bo-spin" />
+                        <span>Generando vista previa...</span>
+                      </div>
+                    )}
+                    {pdfError && (
+                      <div data-testid="send-email-pdf-error" className="bo-sendEmailPdfError" data-slot="send-email-pdf-error">
+                        No se pudo cargar la vista previa del PDF.
+                      </div>
+                    )}
+                    <iframe
+                      title={`Vista previa PDF factura ${invoice.invoice_number || invoice.id}`}
+                      src={pdfUrl}
+                      className="bo-sendEmailPdfFrame"
+                      style={pdfLoading || pdfError ? { visibility: "hidden", position: "absolute" } : undefined}
+                      onLoad={() => { setPdfLoading(false); setPdfError(false); }}
+                      onError={() => { setPdfLoading(false); setPdfError(true); }}
+                      data-testid="send-email-pdf-frame"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Resend warning */}
             {isResend && (

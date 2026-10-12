@@ -120,9 +120,13 @@ export function StripeConnectTab() {
   }
 
   const visible = onlyConnected ? accounts.filter((a) => a.connected) : accounts;
+  // Cobrando mirrors the per-row "cobros" capability (charges_enabled), not the
+  // raw status, so a connected-but-restricted account shows under Pendientes
+  // instead of vanishing from the totals.
   const counts = {
     connected: accounts.filter((a) => a.connected && !a.demo).length,
-    active: accounts.filter((a) => a.status === "active" && !a.demo).length,
+    active: accounts.filter((a) => a.charges_enabled && !a.demo).length,
+    pending: accounts.filter((a) => a.connected && !a.charges_enabled && !a.demo).length,
     demo: accounts.filter((a) => a.demo).length,
     overrides: accounts.filter((a) => a.fee_override !== null).length,
   };
@@ -137,6 +141,10 @@ export function StripeConnectTab() {
         <div className="bo-metricCard" data-testid="platform-connect-metric-active">
           <div className="bo-metricValue">{counts.active}</div>
           <div className="bo-metricLabel">Cobrando</div>
+        </div>
+        <div className="bo-metricCard" data-testid="platform-connect-metric-pending">
+          <div className="bo-metricValue">{counts.pending}</div>
+          <div className="bo-metricLabel">Pendientes</div>
         </div>
         <div className="bo-metricCard" data-testid="platform-connect-metric-demo">
           <div className="bo-metricValue">{counts.demo}</div>

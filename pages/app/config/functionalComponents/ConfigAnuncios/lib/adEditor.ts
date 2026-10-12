@@ -145,6 +145,7 @@ export function adSavePayload(ad: RestaurantAd, website = "") {
     layout: layout.mode === "multiple" ? { ...layout, steps: layout.steps.map((step) => ({ ...step, buttons: ctas(step.buttons) })) } : layout,
     starts_at: ad.starts_at ?? null,
     ends_at: ad.ends_at ?? null,
+    ...(ad.canvas ? { canvas: ad.canvas } : {}),
   };
 }
 

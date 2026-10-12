@@ -34,12 +34,12 @@ export function ConfigAIImage() {
   const onSave = async () => {
     const ok = await save();
     pushToast(ok
-      ? { kind: "success", title: "Configuracion IA guardada" }
-      : { kind: "error", title: "Error", message: "No se pudo guardar la configuracion" });
+      ? { kind: "success", title: "Configuración IA guardada" }
+      : { kind: "error", title: "Error", message: "No se pudo guardar la configuración" });
   };
 
   if (!loaded) {
-    return <div className="bo-panel p-6 text-sm text-[var(--bo-muted)]" data-slot="config-ai-loading">Cargando configuracion...</div>;
+    return <div className="bo-panel p-6 text-sm text-[var(--bo-muted)]" data-slot="config-ai-loading">Cargando configuración...</div>;
   }
 
   return (

@@ -20,12 +20,12 @@ export function ConfigMiniMax() {
   const onSave = async () => {
     const res = await save();
     pushToast(res.ok
-      ? { kind: "success", title: "Configuracion de MiniMax guardada" }
-      : { kind: "error", title: "Error", message: res.message || "No se pudo guardar la configuracion" });
+      ? { kind: "success", title: "Configuración de MiniMax guardada" }
+      : { kind: "error", title: "Error", message: res.message || "No se pudo guardar la configuración" });
   };
 
   if (!loaded) {
-    return <div className="bo-panel p-6 text-sm text-[var(--bo-muted)]" data-slot="config-minimax-loading">Cargando configuracion...</div>;
+    return <div className="bo-panel p-6 text-sm text-[var(--bo-muted)]" data-slot="config-minimax-loading">Cargando configuración...</div>;
   }
 
   return (
@@ -77,7 +77,7 @@ export function ConfigMiniMax() {
 
         <div className="bo-foodDetailQuickStatus" data-slot="config-minimax-status-field">
           <span data-slot="configMiniMax-label" className="bo-label">
-            {config.hasApiKey ? "Clave guardada en este restaurante" : "Sin clave propia: se usara la global del servidor (si existe)"}
+            {config.hasApiKey ? "Clave guardada en este restaurante" : "Sin clave propia: se usará la global del servidor (si existe)"}
           </span>
         </div>
       </div>

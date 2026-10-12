@@ -58,7 +58,7 @@ export function TechnicalSheetRecipeTab({
       <div data-slot="technicalSheetRecipeTab-sheetTabActions" className="bo-sheetTabActions">
         <Button variant="primary" onClick={onAddStep} className="!mx-auto">
           <Plus size={14} aria-hidden="true" />
-          Anadir paso
+          Añadir paso
         </Button>
       </div>
     </div>

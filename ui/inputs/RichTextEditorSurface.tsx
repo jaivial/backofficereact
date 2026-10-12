@@ -364,7 +364,7 @@ export default function RichTextEditorSurface({
       tools: [
         { id: "bold", label: "Negrita", shortcut: "Ctrl+B", icon: <BoldIcon size={15} aria-hidden="true" />, active: state?.bold, run: () => editor?.chain().focus().toggleBold().run() },
         { id: "italic", label: "Cursiva", shortcut: "Ctrl+I", icon: <ItalicIcon size={15} aria-hidden="true" />, active: state?.italic, run: () => editor?.chain().focus().toggleItalic().run() },
-        { id: "code", label: "Codigo", shortcut: "Ctrl+E", icon: <CodeIcon size={15} aria-hidden="true" />, active: state?.code, run: () => editor?.chain().focus().toggleCode().run() },
+        { id: "code", label: "Código", shortcut: "Ctrl+E", icon: <CodeIcon size={15} aria-hidden="true" />, active: state?.code, run: () => editor?.chain().focus().toggleCode().run() },
       ],
     },
     {
@@ -502,7 +502,7 @@ export default function RichTextEditorSurface({
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-muted">Texto visible</span>
                 <input
                   className="bo-input bo-input--sm w-full"
-                  placeholder="Se usa la direccion si lo dejas vacio"
+                  placeholder="Se usa la dirección si lo dejas vacío"
                   value={linkText}
                   onChange={(event) => setLinkText(event.currentTarget.value)}
                   onKeyDown={(event) => {

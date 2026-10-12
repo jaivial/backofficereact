@@ -25,14 +25,14 @@ const ERROR_CONTENT: Record<ErrorStatus, ErrorContent> = {
   },
   403: {
     title: "Acceso denegado",
-    message: "Tu usuario no tiene permisos para ver esta seccion.",
+    message: "Tu usuario no tiene permisos para ver esta sección.",
     primaryLabel: "Volver al panel",
     primaryHref: "/app/backoffice",
     secondaryLabel: "Cambiar sesion",
     secondaryHref: "/login",
   },
   404: {
-    title: "Pagina no encontrada",
+    title: "Página no encontrada",
     message: "La ruta solicitada no existe o ha cambiado.",
     primaryLabel: "Volver al panel",
     primaryHref: "/app/backoffice",
@@ -41,7 +41,7 @@ const ERROR_CONTENT: Record<ErrorStatus, ErrorContent> = {
   },
   500: {
     title: "Error interno",
-    message: "Algo ha fallado al cargar esta pagina. Puedes reintentar ahora.",
+    message: "Algo ha fallado al cargar esta página. Puedes reintentar ahora.",
     primaryLabel: "Reintentar",
     primaryAction: "reload",
     secondaryLabel: "Volver al panel",

@@ -10,15 +10,16 @@ import {
 import { useAtom } from "jotai";
 
 import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
+import { ForkyDoc, ForkyWidget, stripForkyRichBlocks } from "./ForkyRichBlocks";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
-import { ThinkingOrb } from "thinking-orbs";
+import { HermesMascot } from "./HermesMascot";
 import {
   BuiIsland,
   LoadingState,
   MessageBubble,
   PromptBar,
-  ThinkingState,
+  TaskRows,
 } from "./bui";
 import {
   CopyIcon,
@@ -36,7 +37,7 @@ import { useForkyTurnSteps } from "./forkyStatus";
 // ---------------------------------------------------------------------------
 // beautifului.dev design language (tokens in
 // components/styles/features/forky/forky-bui.css, exposed as Tailwind
-// utilities: bg-fui-surface, text-fui-ink, ...). The ThinkingOrb is kept as
+// utilities: bg-fui-surface, text-fui-ink, ...). The Hermes mascot is kept as
 // the assistant identity across every state. The literal beautifului.dev
 // components (ui/forky/bui/) always render inside <BuiIsland>, which scopes
 // their own stylesheet (forky-bui-island.css) so neither side leaks.
@@ -69,15 +70,17 @@ function AssistantLoading() {
         {/* Pending turn = the beautifului thinking trace of what the run observed so
             far, with the pixel-grid LoadingState as its fallback underneath. */}
         <div data-testid="forky-thinking-state">
-          <ThinkingState
-            testIdPrefix="forky-thinking"
-            active="Pensando"
-            done="Listo"
+          <TaskRows
+            testIdPrefix="forky-taskrows"
             rows={[
-              { primary: "Leyendo la pregunta" },
-              // The tools the turn really called, as the WS reports them (status: tool).
-              ...steps.map((tool) => ({ primary: forkyToolLabel(tool) })),
-              { primary: "Escribiendo la respuesta" },
+              { primary: "Leyendo la pregunta", status: steps.length > 0 ? "completed" : "running" },
+              // The tools the turn really called, as the WS reports them (status: tool):
+              // every landed call is done, the latest one is still running.
+              ...steps.map((tool, index) => ({
+                primary: forkyToolLabel(tool),
+                status: index === steps.length - 1 ? ("running" as const) : ("completed" as const),
+              })),
+              { primary: "Escribiendo la respuesta", status: "pending" },
             ]}
           />
         </div>
@@ -96,7 +99,7 @@ function AssistantLoading() {
 // delimiter rows MiniMax intermittently mangles, so columnar data renders as a
 // real table instead of literal pipes.
 const forkyPreprocess = (text: string): string =>
-  repairGfmTables(stripForkyChartBlocks(text));
+  repairGfmTables(stripForkyRichBlocks(stripForkyChartBlocks(text)));
 
 function AssistantMessage() {
   const [copied, setCopied] = useState(false);
@@ -125,7 +128,7 @@ function AssistantMessage() {
       className="group/message w-full py-2.5"
       style={{ animation: "fui-fade-up 400ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "top left" }}
     >
-      {/* The turn in the shared chat-bubble layout: the ThinkingOrb stays the avatar of the
+      {/* The turn in the shared chat-bubble layout: the Hermes mascot stays the avatar of the
           run, outside the bubble, and the reply rides in the vendored MessageBubble. */}
       <MessageBubble
         role="assistant"
@@ -136,7 +139,7 @@ function AssistantMessage() {
         avatar={
           <span data-testid="forky-avatar-orb" className="flex items-center" style={{ height: 28 }}>
             <span className="shrink-0" style={{ transform: "scale(0.42)", transformOrigin: "left center", width: 27, height: 27 }}>
-              {mounted && <ThinkingOrb state="solving" size={64} theme="auto" />}
+              {mounted && <HermesMascot state="solving" size={64} />}
             </span>
           </span>
         }
@@ -149,6 +152,8 @@ function AssistantMessage() {
         <MessagePrimitive.Parts components={{ Text: ({ text }: { text: string }) => (
           <>
             <ForkyChart text={text} />
+            <ForkyWidget text={text} />
+            <ForkyDoc text={text} />
             <MarkdownText preprocess={forkyPreprocess} />
           </>
         ) }} />
@@ -243,7 +248,7 @@ function EmptyState() {
       {/* Large breathing orb */}
       {mounted && (
         <div data-slot="forkyModal-div" style={{ animation: "fui-fade-in 500ms ease-out both" }}>
-          <ThinkingOrb state="breathing" size={64} theme="auto" />
+          <HermesMascot state="breathing" size={112} />
         </div>
       )}
 

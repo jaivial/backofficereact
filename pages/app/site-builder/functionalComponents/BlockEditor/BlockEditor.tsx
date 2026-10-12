@@ -83,7 +83,7 @@ export function BlockEditor({
           onDragOver={(event) => onDropZoneDragOver(event, placement)}
           onDrop={(event) => onDropOnPlacement(event, placement)}
         >
-          <span className="bo-siteBuilderDropZoneLabel" data-ui="drop-zone-label">Soltar aqui</span>
+          <span className="bo-siteBuilderDropZoneLabel" data-ui="drop-zone-label">Soltar aquí</span>
         </div>
       );
     },

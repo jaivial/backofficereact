@@ -85,7 +85,7 @@ export function FoodList({
   const createButton = (
     <FloatingActionButton
       icon={<Plus size={24} data-role="food-list-create-icon" />}
-      aria-label={`Anadir ${singularLabel}`}
+      aria-label={`Añadir ${singularLabel}`}
       onClick={onOpenCreate}
       data-role="food-list-create-btn"
     />
@@ -107,7 +107,7 @@ export function FoodList({
       <>
         <div className="bo-foodEmpty" data-ui="food-list-empty">
           <p data-role="food-list-empty-text">No hay {listLabel.toLowerCase()} con estos filtros.</p>
-          <p data-role="food-list-empty-hint">Usa el boton + para anadir el primer {singularLabel}.</p>
+          <p data-role="food-list-empty-hint">Usa el botón + para añadir el primer {singularLabel}.</p>
         </div>
         {createButton}
       </>
@@ -149,9 +149,9 @@ export function FoodList({
         </div>
       )}
 
-      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginacion" data-ui="food-list-pager">
+      <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-ui="food-list-pager">
         <div className="bo-pagerText" data-role="food-list-pager-info">
-          Pagina {page} de {totalPages} · {total} resultados
+          Página {page} de {totalPages} · {total} resultados
         </div>
         <div className="bo-foodPagerExtras" data-ui="food-list-pager-extras">
           <Select
@@ -162,7 +162,7 @@ export function FoodList({
               onPageChange(1);
             }}
             options={PAGE_SIZE_OPTIONS}
-            ariaLabel="Elementos por pagina"
+            ariaLabel="Elementos por página"
             size="sm"
           />
           {showPagerBtns ? (

@@ -76,7 +76,7 @@ export default function Page() {
     if (!member) return;
     const parsed = parseHours(weeklyContractHours);
     if (parsed === null) {
-      setError("Las horas de contrato deben ser un numero >= 0");
+      setError("Las horas de contrato deben ser un número >= 0");
       return;
     }
 

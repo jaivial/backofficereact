@@ -6,6 +6,7 @@ import {
   CircleAlert,
   Eye,
   GripVertical,
+  Frame,
   Layers,
   ImagePlus,
   Megaphone,
@@ -67,6 +68,8 @@ import {
   type ButtonAction,
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
+import { AdCanvasEditor } from "./AdCanvasEditor";
+import type { RestaurantAdCanvas } from "../../../../../api/types";
 import { AdBlockBar, AdBlockHover, AdMoveableBox, AdStudioShell } from "./AdEditorChrome";
 import { useMenuRouteOptions, type RouteOption } from "./hooks/useMenuRouteOptions";
 import {
@@ -200,6 +203,25 @@ const SELECTION_KEEP_SELECTOR = [
   ".bo-popover",
   ".bo-modalOverlay",
 ].join(", ");
+
+// Coordination id: ads_canvas_v1 - "Visual" layout mode: a free-form canvas
+// document rendered 1-1 by the backend render endpoint (iframe).
+function defaultCanvasFromAd(source: RestaurantAd): RestaurantAdCanvas {
+  const elements: RestaurantAdCanvas["elements"] = [];
+  const title = source.content.find((item) => item.type === "title");
+  const image = source.content.find((item) => item.type === "image");
+  const cta = source.ctas[0];
+  if (title) {
+    elements.push({ id: "txt-title", type: "text", x: 50, y: 40, w: 700, h: 90, z: 2, props: { text: title.value, fontSize: 44, color: "#111111", align: "center", bold: true } });
+  }
+  if (image && image.value) {
+    elements.push({ id: "img-main", type: "image", x: 250, y: 150, w: 300, h: 200, z: 1, props: { src: image.value, fit: "cover", radius: 16, alt: "" } });
+  }
+  if (cta) {
+    elements.push({ id: "btn-main", type: "button", x: 300, y: 400, w: 200, h: 56, z: 3, props: { text: cta.text || "Ver mas", href: cta.navigation_mode === "custom" ? cta.custom_url || "/" : cta.route || "/", bg: cta.color || "#c9a86a", color: "#1a2e22", radius: 28, fontSize: 20, bold: true } });
+  }
+  return { version: 1, width: 800, height: 500, background: { type: "color", value: "#ffffff" }, elements };
+}
 
 export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs, sendAdScheduleCheck }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
@@ -486,6 +508,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   // the inspector always write the same shape.
   const layout = useMemo(() => adLayout(ad), [ad]);
   const isMultiple = layout.mode === "multiple";
+  const isCanvas = ad?.canvas != null;
   const [activeStepId, setActiveStepId] = useState<string>("");
   const activeStep = useMemo(
     () => layout.steps.find((step) => step.id === activeStepId) ?? layout.steps[0] ?? null,
@@ -547,7 +570,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
     try {
       setAd(addContentItem(ad, type));
     } catch (error) {
-      notify("info", "Limite", error instanceof Error ? error.message : "No se puede anadir otro elemento");
+      notify("info", "Limite", error instanceof Error ? error.message : "No se puede añadir otro elemento");
     }
   }, [activeStep, ad, editingBody, isMultiple, notify]);
 
@@ -735,6 +758,17 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               <Layers size={14} aria-hidden="true" />
               <span className="bo-anunciosPreviewSwitchLabel">Múltiple</span>
             </button>
+            <button
+              type="button"
+              className={`bo-anunciosPreviewSwitchBtn ${isCanvas ? "is-active" : ""}`}
+              onClick={() => setAd((current) => (current ? { ...current, canvas: current.canvas ?? defaultCanvasFromAd(current) } : current))}
+              aria-pressed={isCanvas}
+              data-testid="ad-layout-visual"
+              data-slot="ad-layout-visual"
+            >
+              <Frame size={14} aria-hidden="true" />
+              <span className="bo-anunciosPreviewSwitchLabel">Visual</span>
+            </button>
           </div>
           <div className="bo-anunciosPreviewSwitch" role="group" aria-label="Modo de visualización" data-slot="ads-preview-switch">
             <button
@@ -758,7 +792,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               <span className="bo-anunciosPreviewSwitchLabel">Preview</span>
             </button>
           </div>
-          <SaveStatusBadge state={saveState} />
+          <SaveStatusBadge state={saveState} neverSaved={mode === "create"} />
         </div>
       </div>
 
@@ -801,13 +835,13 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
       <AdStudioShell
         canvasLabel={`${isMultiple ? (wizardStep === 0 ? "Pile de tarjetas" : `Anuncio ${wizardStep} de ${layout.steps.length}`) : "Anuncio"} ${previewOpen ? "(preview)" : "(editable)"}`}
         layers={
-          <>
+          !isCanvas ? <>
             {isMultiple ? (
               <StepListPanel
                 steps={layout.steps}
                 activeStepId={activeStep?.id ?? ""}
                 onSelect={(stepId) => { setActiveStepId(stepId); setWizardStep(0); setSelectedId(null); }}
-                onAdd={() => { try { setAd(addStep(ad)); } catch (error) { notify("info", "Limite", error instanceof Error ? error.message : "No se puede anadir otro anuncio"); } }}
+                onAdd={() => { try { setAd(addStep(ad)); } catch (error) { notify("info", "Limite", error instanceof Error ? error.message : "No se puede añadir otro anuncio"); } }}
                 onRemove={(stepId) => setAd(removeStep(ad, stepId))}
                 onReorder={(ordered) => setAd(reorderSteps(ad, ordered.map((step) => step.id)))}
               >
@@ -875,11 +909,33 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             </button>
           </div>
         </div>
-          </>
+          </> : null
         }
         canvas={
           <>
-            {/* Live template: the same markup as the public ad, editable in place. */}
+            {isCanvas && ad?.canvas ? (
+              <div className="bo-anunciosCanvasCol" data-slot="ads-canvas-column" data-testid="ad-canvas-mode">
+                {previewOpen && ad.id > 0 ? (
+                  <div
+                    className="publicAdCanvasFrame"
+                    style={{ aspectRatio: `${ad.canvas.width} / ${ad.canvas.height}`, width: "100%", maxWidth: 720 }}
+                  >
+                    <iframe
+                      src={`/api/public/ads/${ad.id}/render?src=backoffice-preview`}
+                      title={ad.name || "Anuncio"}
+                      style={{ width: "100%", height: "100%", border: 0, display: "block", borderRadius: 10 }}
+                    />
+                  </div>
+                ) : previewOpen ? (
+                  <p className="bo-adcanvasHint">Guarda el anuncio una vez para ver la preview 1-1.</p>
+                ) : (
+                  <AdCanvasEditor
+                    canvas={ad.canvas}
+                    onChange={(canvas) => setAd((current) => (current ? { ...current, canvas } : current))}
+                  />
+                )}
+              </div>
+            ) : (
             <div
               className="bo-anunciosCanvasCol"
               data-slot="ads-canvas-column"
@@ -946,6 +1002,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 </>
               ) : null}
             </div>
+            )}
           </>
         }
         properties={
@@ -992,7 +1049,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 {scheduleError ? <p className="bo-anunciosScheduleError" role="alert">{scheduleError}</p> : null}
               </div>
               <button type="button" onClick={addCta} className="bo-adFieldReset" data-testid="ad-add-button">
-                Anadir boton
+                Añadir botón
               </button>
             </>
           )
@@ -1142,7 +1199,7 @@ function StepLayers({
   );
 }
 
-function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "error" }) {
+function SaveStatusBadge({ state, neverSaved = false }: { state: "idle" | "saving" | "saved" | "error"; neverSaved?: boolean }) {
   if (state === "idle") {
     return (
       <span
@@ -1152,7 +1209,7 @@ function SaveStatusBadge({ state }: { state: "idle" | "saving" | "saved" | "erro
         aria-live="polite"
         data-slot="ad-save-status"
       >
-        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Guardado</span>
+        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">{neverSaved ? "Sin guardar" : "Guardado"}</span>
       </span>
     );
   }
@@ -1756,30 +1813,30 @@ export function ButtonInspector({
     <div className="bo-adInspector bo-adInspectorButton" data-testid="ad-inspector-selection">
       <div className="bo-adInspectorHead">
         <span className="bo-adStudioSectionTitle">Boton</span>
-        <button type="button" className="bo-anunciosIconBtn" data-tone="danger" aria-label="Eliminar boton" data-testid={`ad-cta-${cta.id}-delete`} onClick={onDelete}>
+        <button type="button" className="bo-anunciosIconBtn" data-tone="danger" aria-label="Eliminar botón" data-testid={`ad-cta-${cta.id}-delete`} onClick={onDelete}>
           <Trash2 size={15} aria-hidden="true" />
         </button>
       </div>
 
       {/* Live pill: the button as it renders, so colour and text are judged in place. */}
       <span className="bo-adModalCta bo-adInspectorPreview" style={{ ["--ad-primary" as string]: cta.color || AD_DEFAULT_COLOR }} data-testid={`ad-cta-${cta.id}-preview`}>
-        {cta.text || "Mas informacion"}
+        {cta.text || "Más información"}
       </span>
 
       <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-content`}>
         <div className="bo-adGroupTitle">Contenido</div>
         <Field label="Texto" testId={`ad-cta-${cta.id}-text`}>
-          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" placeholder="Texto del boton" />
+          <input value={cta.text} onChange={(event) => onChange({ text: event.target.value })} className="bo-input" placeholder="Texto del botón" />
         </Field>
         <ColorField label="Color" value={cta.color} onChange={(color) => onChange({ color: color || AD_DEFAULT_COLOR })} testId={`ad-cta-${cta.id}-color`} />
         <NumberField label="Ancho (%)" value={cta.width} min={ELEMENT_MIN_WIDTH_PCT} max={ELEMENT_MAX_WIDTH_PCT} onChange={(width) => onChange({ width })} testId={`ad-cta-${cta.id}-width`} />
       </div>
 
       <div className="bo-adGroup" data-testid={`ad-cta-${cta.id}-action`}>
-        <div className="bo-adGroupTitle">Accion</div>
-        <div className="bo-adSeg" role="group" aria-label="Accion del boton" data-testid={`ad-cta-${cta.id}-action-select`}>
+        <div className="bo-adGroupTitle">Acción</div>
+        <div className="bo-adSeg" role="group" aria-label="Acción del botón" data-testid={`ad-cta-${cta.id}-action-select`}>
           {([
-            { value: "route", label: "Web", title: "Pagina de la web" },
+            { value: "route", label: "Web", title: "Página de la web" },
             { value: "url", label: "URL", title: "URL propia" },
             { value: "whatsapp", label: "WhatsApp", title: "Abrir una conversacion" },
           ] as Array<{ value: ButtonAction; label: string; title: string }>).map((option) => (
@@ -1798,8 +1855,8 @@ export function ButtonInspector({
         </div>
 
         {action === "route" ? (
-          <Field label="Pagina" testId={`ad-cta-${cta.id}-route`}>
-            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={routeOptions} size="sm" ariaLabel="Pagina del boton" listMaxHeightPx={260} />
+          <Field label="Página" testId={`ad-cta-${cta.id}-route`}>
+            <Select value={cta.route || "/reservas"} onChange={(route) => onChange({ route })} options={routeOptions} size="sm" ariaLabel="Página del botón" listMaxHeightPx={260} />
           </Field>
         ) : null}
 
@@ -1821,7 +1878,7 @@ export function ButtonInspector({
           <div className="bo-adGroup bo-adWhatsapp" data-testid={`ad-cta-${cta.id}-whatsapp`}>
             <div className="bo-adGroupTitle">WhatsApp</div>
             <Field label="Teléfono del restaurante" testId={`ad-cta-${cta.id}-phone-restaurant`}>
-              <input value={phone || "Sin telefono"} readOnly className="bo-input bo-inputReadonly" />
+              <input value={phone || "Sin teléfono"} readOnly className="bo-input bo-inputReadonly" />
             </Field>
             <Field label="Teléfono personalizado" testId={`ad-cta-${cta.id}-phone-custom`}>
               <input

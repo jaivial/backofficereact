@@ -166,7 +166,7 @@ export default function Page() {
 
         autoTable(doc, {
           startY: currentY + 5,
-          head: [["Factura", "Fecha", "Descripcion", "Importe", "Tipo/Estado"]],
+          head: [["Factura", "Fecha", "Descripción", "Importe", "Tipo/Estado"]],
           body: invoiceBody,
           theme: "striped",
         });
@@ -246,7 +246,7 @@ export default function Page() {
       lines.push("");
 
       lines.push("FACTURAS");
-      lines.push("Numero,Fecha,Descripcion,Importe,IVA,Tipo,Estado");
+      lines.push("Número,Fecha,Descripción,Importe,IVA,Tipo,Estado");
       customerStatement.invoices.forEach(inv => {
         lines.push(`${inv.invoice_number || ""},${inv.invoice_date},${inv.description},${inv.total},${inv.iva_amount},${inv.is_credit_note ? "NC" : "Factura"},${inv.status}`);
       });

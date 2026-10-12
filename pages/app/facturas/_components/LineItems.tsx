@@ -209,7 +209,7 @@ export const LineItems = React.forwardRef<LineItemsRef, LineItemsProps>(function
                     className="bo-input"
                     value={item.description}
                     onChange={(e) => handleUpdateItem(index, "description", e.target.value)}
-                    placeholder="Descripcion del producto/servicio"
+                    placeholder="Descripción del producto/servicio"
                     disabled={disabled}
                     data-testid={`line-item-description-${index}`}
                   />

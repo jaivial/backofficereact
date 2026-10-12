@@ -360,7 +360,7 @@ export default function Page() {
             </div>
           </div>
 
-          <Panel data-slot="@memberId-panel" title="Informacion de usuario">
+          <Panel data-slot="@memberId-panel" title="Información de usuario">
             <div className="bo-memberFormGrid" data-slot="@memberId-memberFormGrid">
                 <label className="bo-field" data-slot="@memberId-field">
                   <span className="bo-label" data-slot="@memberId-label">Nombre</span>

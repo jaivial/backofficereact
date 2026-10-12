@@ -661,7 +661,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
         >
           <div data-testid="invoiceTable-bulkBarContent-2" className="bo-bulkBarContent" data-slot="invoiceTable-bulkBarContent">
             <div data-testid="invoiceTable-bulkBarInfo-2" className="bo-bulkBarInfo" data-slot="invoiceTable-bulkBarInfo">
-              <span data-testid="invoiceTable-bulkBarCount-2" className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{invoices.length} facturas en esta pagina</span>
+              <span data-testid="invoiceTable-bulkBarCount-2" className="bo-bulkBarCount" data-slot="invoiceTable-bulkBarCount">{invoices.length} facturas en esta página</span>
             </div>
             <div data-testid="invoiceTable-bulkBarActions-2" className="bo-bulkBarActions" data-slot="invoiceTable-bulkBarActions">
               <button
@@ -782,7 +782,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                   {invoice.due_date ? (
                     <span data-testid="invoice-table-due-date"
                       className={`bo-dueDate ${new Date(invoice.due_date) < new Date(new Date().toDateString()) && (invoice.status === "pendiente" || invoice.status === "enviada") && !invoice.payment_date ? "bo-dueDate--overdue" : ""}`}
-                      data-slot="invoice-table-due-date"                      title={isOverdue ? `Vencida hace ${daysOverdue} dias` : "Fecha de vencimiento"}
+                      data-slot="invoice-table-due-date"                      title={isOverdue ? `Vencida hace ${daysOverdue} días` : "Fecha de vencimiento"}
                     >
                       {formatDate(invoice.due_date)}
                     </span>
@@ -799,9 +799,9 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                       {formatDate(invoice.payment_date)}
                     </span>
                   ) : isOverdue ? (
-                    <span data-testid="invoiceTable-daysOverdue" className="bo-daysOverdue" title={`${daysOverdue} dias de retraso`} data-slot="invoiceTable-daysOverdue">
+                    <span data-testid="invoiceTable-daysOverdue" className="bo-daysOverdue" title={`${daysOverdue} días de retraso`} data-slot="invoiceTable-daysOverdue">
                       <AlertTriangle size={12} />
-                      {daysOverdue} dias
+                      {daysOverdue} días
                     </span>
                   ) : (
                     <span data-testid="invoiceTable-mutedText-2" className="bo-mutedText" data-slot="invoiceTable-mutedText">-</span>

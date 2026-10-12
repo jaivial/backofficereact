@@ -76,7 +76,7 @@ export const CAMPAIGN_CHANNEL_UI: Record<CampaignChannel, { label: string }> = {
 /** Audience summary in words, so a card explains who it will reach. */
 export function campaignAudienceSummary(audience: Campaign["audience"], days: number, manualCount: number): string {
   if (audience === "manual") return `${manualCount} contacto${manualCount === 1 ? "" : "s"} manuales`;
-  return `Reservas de los ultimos ${days} dias`;
+  return `Reservas de los últimos ${days} días`;
 }
 
 const DAY_MS = 86_400_000;
@@ -92,13 +92,13 @@ export function campaignRelativeDate(value: string | undefined, now: number = Da
   const days = Math.floor((now - time) / DAY_MS);
   if (days <= 0) return "hoy";
   if (days === 1) return "ayer";
-  if (days < 30) return `hace ${days} dias`;
+  if (days < 30) return `hace ${days} días`;
   if (days < 365) {
     const months = Math.floor(days / 30);
     return `hace ${months} mes${months === 1 ? "" : "es"}`;
   }
   const years = Math.floor(days / 365);
-  return `hace ${years} ano${years === 1 ? "" : "s"}`;
+  return `hace ${years} año${years === 1 ? "" : "s"}`;
 }
 
 /** Absolute fallback for a card footer: "12 mar 2025". */

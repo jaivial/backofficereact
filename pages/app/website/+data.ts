@@ -37,17 +37,17 @@ export async function data(pageContext: PageContextServer) {
     });
 
     if (!res.ok) {
-      return { config: null as WebsiteConfig | null, error: `No se pudo cargar la configuracion (${res.status})` };
+      return { config: null as WebsiteConfig | null, error: `No se pudo cargar la configuración (${res.status})` };
     }
 
     const json = (await res.json()) as { success?: boolean; data?: WebsiteConfig | null };
     if (!json || json.success !== true) {
-      return { config: null as WebsiteConfig | null, error: typeof json?.success === "boolean" ? "No se pudo cargar la configuracion" : null };
+      return { config: null as WebsiteConfig | null, error: typeof json?.success === "boolean" ? "No se pudo cargar la configuración" : null };
     }
 
     return { config: json.data ?? null, error: null as string | null };
   } catch (err) {
-    const message = err instanceof Error ? err.message : "No se pudo cargar la configuracion";
+    const message = err instanceof Error ? err.message : "No se pudo cargar la configuración";
     return { config: null as WebsiteConfig | null, error: message };
   }
 }

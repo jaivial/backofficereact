@@ -103,7 +103,7 @@ export default function Page() {
       ]);
       if (!a.success) throw new Error(a.message || "Error cargando integraciones");
       if (!b.success) throw new Error(b.message || "Error cargando branding");
-      if (!c.success) throw new Error(c.message || "Error cargando configuracion de facturas");
+      if (!c.success) throw new Error(c.message || "Error cargando configuración de facturas");
       if (!d.success) throw new Error(d.message || "Error cargando pagina web");
       if (!e.success) throw new Error(e.message || "Error cargando datos fiscales");
 
@@ -167,7 +167,7 @@ export default function Page() {
         return;
       }
       setInvoiceSettings(res.settings);
-      pushToast({ kind: "success", title: "Guardado", message: "Configuracion de facturas actualizada" });
+      pushToast({ kind: "success", title: "Guardado", message: "Configuración de facturas actualizada" });
     } catch (e) {
       pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "No se pudo guardar" });
     } finally {

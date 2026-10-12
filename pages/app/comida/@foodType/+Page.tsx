@@ -198,7 +198,7 @@ function FoodTypePage() {
             <div className="bo-foodPage-heroTitles" data-ui="food-type-hero-titles">
               <h1 className="bo-pageTitle" data-role="food-type-title">{listLabel}</h1>
               <p className="bo-pageSubtitle" data-role="food-type-subtitle">
-                Gestiona {listLabel.toLowerCase()} con filtros, paginacion y alta rapida.
+                Gestiona {listLabel.toLowerCase()} con filtros, paginación y alta rápida.
               </p>
             </div>
             {showPageVisibilityToggle && !showSettingsTab && (
@@ -226,7 +226,7 @@ function FoodTypePage() {
               <Tabs
                 tabs={[
                   { id: "platos", label: listLabel, href: "#", icon: <UtensilsCrossed size={16} strokeWidth={1.8} /> },
-                  { id: "configuracion", label: "Configuracion", href: "#", icon: <Settings2 size={16} strokeWidth={1.8} /> },
+                  { id: "configuracion", label: "Configuración", href: "#", icon: <Settings2 size={16} strokeWidth={1.8} /> },
                 ]}
                 activeId={settingsTab}
                 ariaLabel="Secciones de la pagina de comida"

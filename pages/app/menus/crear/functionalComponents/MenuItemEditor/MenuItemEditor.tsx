@@ -196,7 +196,7 @@ export function MenuItemEditor({
                   className="bo-input bo-textarea"
                   value={dish.description}
                   onChange={(e) => updateDish(sectionClientId, dish.clientId, { description: e.target.value })}
-                  placeholder="Descripcion"
+                  placeholder="Descripción"
                   data-testid={`menu-item-editor-description-input-${dish.clientId}`}
                 />
               ) : null}
@@ -260,6 +260,18 @@ export function MenuItemEditor({
                       />
                       <span data-slot="menuItemEditor-sdb">No permitir reserva mismo dia</span>
                     </label>
+                    {dish.catalog_dish_id ? (
+                      <label className="bo-checkRow" data-slot="menuItemEditor-checkRow">
+                        <Switch
+                          checked={dish.apply_to_catalog ?? false}
+                          onCheckedChange={(checked) => {
+                            updateDish(sectionClientId, dish.clientId, { apply_to_catalog: checked });
+                          }}
+                          data-testid={`menu-item-editor-apply-to-catalog-switch-${dish.clientId}`}
+                        />
+                        <span data-slot="menuItemEditor-atc">Aplicar también a la ficha general</span>
+                      </label>
+                    ) : null}
                   </div>
                 </div>
               </div>

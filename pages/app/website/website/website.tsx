@@ -68,7 +68,7 @@ export default function WebsitePage() {
         <Panel data-ui="loading-panel">
             <div className="bo-loadingState" data-ui="loading-state">
               <Loader2 className="bo-spinnerIcon" size={24} aria-hidden="true" data-ui="loading-spinner" />
-              <span className="bo-mutedText" data-ui="loading-text">Cargando configuracion...</span>
+              <span className="bo-mutedText" data-ui="loading-text">Cargando configuración...</span>
             </div>
         </Panel>
       </div>
@@ -166,12 +166,12 @@ export default function WebsitePage() {
             <Panel data-ui="ai-prompt-panel" title="Generar con IA" meta="Describe tu sitio ideal">
                 <div className="bo-stack" data-ui="ai-prompt-stack">
                   <p className="bo-mutedText" data-ui="ai-prompt-description">
-                    Describe como quieres que se vea tu sitio web. Nuestra IA creara el codigo HTML/CSS por ti, integrando tus menus y horarios automaticamente.
+                    Describe cómo quieres que se vea tu sitio web. Nuestra IA creará el código HTML/CSS por ti, integrando tus menús y horarios automáticamente.
                   </p>
                   <label className="bo-field" data-ui="ai-prompt-field">
                     <textarea
                       className="bo-textarea bo-textarea--lg"
-                      placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografia elegante y muestra mi menu de arroces en la pagina principal..."
+                      placeholder="Ej: Quiero una web moderna con fondo oscuro y detalles en dorado. Usa una tipografía elegante y muestra mi menú de arroces en la página principal..."
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       rows={6}

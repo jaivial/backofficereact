@@ -85,7 +85,7 @@ export function MobileNav({ pathname, className }: MobileNavProps) {
 
   return (
     <nav
-      className={cn("bo-mobile-nav fixed bottom-0 left-0 right-0 z-50 flex items-stretch border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]", className)}
+      className={cn("bo-mobile-nav fixed bottom-0 left-0 right-0 z-50 flex items-stretch overflow-x-auto border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]", className)}
       data-ui="mobile-nav"
       aria-label="Navegacion principal"
     >
@@ -96,7 +96,7 @@ export function MobileNav({ pathname, className }: MobileNavProps) {
             key={item.key}
             href={item.href}
             className={[
-              "bo-mobile-nav-item flex-1 flex flex-col items-center justify-center gap-1 py-3 no-underline transition-colors",
+              "bo-mobile-nav-item flex-1 min-w-[72px] flex-shrink-0 flex flex-col items-center justify-center gap-1 py-3 px-1 no-underline transition-colors",
               active
                 ? "text-[hsl(var(--primary))]"
                 : "text-[hsl(var(--muted-foreground))]",
@@ -109,7 +109,7 @@ export function MobileNav({ pathname, className }: MobileNavProps) {
               {iconForSection(item.key)}
             </span>
             <span
-              className="text-[10px] font-medium leading-none"
+              className="text-[10px] font-medium leading-none whitespace-nowrap"
               data-ui="mobile-nav-label"
             >
               {item.label}

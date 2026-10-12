@@ -43,7 +43,7 @@ export default function Page() {
         <h1 className="bo-homeTitle" data-ui="backoffice-title">
           Bienvenido, <span className="bo-homeTitleAccent" data-ui="backoffice-name">{firstName}</span>
         </h1>
-        <p className="bo-homeSub" data-ui="backoffice-subtitle">Selecciona una seccion para empezar.</p>
+        <p className="bo-homeSub" data-ui="backoffice-subtitle">Selecciona una sección para empezar.</p>
       </header>
 
       <section className="bo-homeNav" aria-label="Accesos rapidos" data-ui="backoffice-nav-orbit">
@@ -54,6 +54,20 @@ export default function Page() {
           <div className="bo-homeCenter" aria-hidden="true" data-ui="orbit-center">
             <img className="bo-homeCenterLogo" src="https://herorestaurantmedia.b-cdn.net/icon/ChatGPT_Image_Jul_15__2026__05_39_27_PM-removebg-preview.png" alt="" />
           </div>
+
+          {orbitItems.map((item) => (
+            <span
+              key={`ghost-${item.key}`}
+              className="bo-homeNodeGhost"
+              aria-hidden="true"
+              data-ui="orbit-node-ghost"
+              style={{
+                ["--bo-home-angle" as any]: `${item.angleDeg}deg`,
+              }}
+            >
+              <span className="bo-homeNodeGhostLabel" data-ui="orbit-node-ghost-label">{item.label}</span>
+            </span>
+          ))}
 
           {orbitItems.map((item, index) => (
             <a

@@ -84,7 +84,7 @@ export function PortionWastePanel() {
       return;
     }
     if (!selectedItem || !warehouseId) {
-      setError("Selecciona el articulo y el almacen");
+      setError("Selecciona el artículo y el almacén");
       return;
     }
     setSaving(true);
@@ -142,7 +142,7 @@ export function PortionWastePanel() {
         </select>
       </FormField>
 
-      <FormField label="Almacen" htmlFor="portion-waste-warehouse">
+      <FormField label="Almacén" htmlFor="portion-waste-warehouse">
         <select
           id="portion-waste-warehouse"
           className="bo-input"

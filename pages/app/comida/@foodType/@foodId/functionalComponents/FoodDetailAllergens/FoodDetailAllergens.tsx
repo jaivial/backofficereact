@@ -22,7 +22,7 @@ export function FoodDetailAllergens({
       className="bo-foodDetailPanel bo-foodDetailPanel--allergens"
       headClassName="bo-foodDetailAllergenHead"
       title="Alergenos"
-      meta="Etiquetas usadas para informacion alergena del plato."
+      meta="Etiquetas usadas para información alergénica del plato."
       actions={supportsQuickEditor ? (
         <button className="bo-btn bo-btn--ghost bo-btn--sm" type="button" onClick={onOpenAllergenModal} data-role="food-detail-allergens-edit-btn">
           <Plus size={14} />

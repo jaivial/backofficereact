@@ -2413,3 +2413,18 @@
 .pos-salonPop__actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .pos-salonPop__actions > * { flex: 1 1 auto; }
 .pos-salonPop .pos-modal__covers { margin: 0; }
+
+/* Mobile TPV: products first.
+   Desktop keeps ticket | keypad side by side above the catalog. On phones the
+   register row stacked ticket THEN keypad, pushing the product grid below the
+   fold. Flatten the register row (display:contents) and reorder so the flow is
+   ticket -> catalog -> keypad: a waiter taps products immediately and only
+   scrolls to the keypad when a quantity/price override is needed. */
+@media (max-width: 900px) {
+  .pos-sell__work { display: contents; }
+  .pos-sell__row--register { display: contents; }
+
+  .pos-ticketPanel { order: 1; margin: 1rem 1rem 0; }
+  .pos-sell__row--catalog { order: 2; padding: 0.5rem 1rem 0; }
+  .pos-keypad { order: 3; margin: 0.5rem 1rem 1rem; }
+}

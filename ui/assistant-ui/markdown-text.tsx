@@ -93,6 +93,22 @@ const useCopyToClipboard = ({
 };
 
 const defaultComponents = memoizeMarkdownComponents({
+  img: ({ className, src, alt, ...props }) => (
+    // Chat images render as a bounded preview; clicking opens the full image.
+    <a href={typeof src === "string" ? src : undefined} target="_blank" rel="noreferrer noopener" className="my-2 block">
+      <img
+        data-slot="markdown-img"
+        src={src}
+        alt={alt ?? ""}
+        loading="lazy"
+        className={cn(
+          "max-h-72 w-auto max-w-full cursor-zoom-in rounded-[10px] border border-fui-line object-contain",
+          className,
+        )}
+        {...props}
+      />
+    </a>
+  ),
   h1: ({ className, ...props }) => (
     <h1
       data-slot="markdown-h1"

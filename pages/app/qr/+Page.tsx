@@ -50,7 +50,7 @@ export default function QrPage() {
 
   return (
     <section aria-label="QR" className="qr-page" data-testid="qr-page" data-ui="qr-page" data-coord-id="qr-page:root">
-      <SimpleTabs items={TABS} activeId={tab} onChange={(id) => setTab(id as QrTabId)} aria-label="Secciones del modulo QR" />
+      <SimpleTabs items={TABS} activeId={tab} onChange={(id) => setTab(id as QrTabId)} aria-label="Secciones del módulo QR" />
       {error ? (
         <InlineAlert kind="error" title="No se pudo cargar la pagina web" message={error} testId="qr-page-error" />
       ) : null}

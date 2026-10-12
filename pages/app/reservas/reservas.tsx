@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePageContext } from "vike-react/usePageContext";
-import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical, Sparkles, ScanLine } from "lucide-react";
+import { Download, FileText, Filter, Pencil, XCircle, ExternalLink, Table as TableIcon, LayoutGrid, MoreVertical, Sparkles, ScanLine, ReceiptText } from "lucide-react";
 import { createClient } from "../../../api/client";
 import type { Booking, CalendarDay, ConfigDailyLimit, ConfigDayStatus, ConfigFloor, DashboardMetrics, SpecialDateSettings } from "../../../api/types";
 import { StatusBadge } from "../../../ui/feedback/StatusBadge";
@@ -13,6 +13,7 @@ import { ModalHeader } from "../../../ui/overlays/ModalHeader";
 import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../ui/feedback/useToasts";
+import { useGlobalSocketTopic } from "../../../ui/realtime/GlobalSocketProvider";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { formatArrozShort, formatHHMM } from "../../../ui/lib/format";
 import { downloadReservationsPDF } from "../../../ui/lib/reservationsPdf";
@@ -136,6 +137,7 @@ const BookingRow = React.memo(function BookingRow({
   onCancel,
   onEdit,
   onOpenDetails,
+  onCrearFactura,
   onSaveTable,
   onOpenQr,
   onOpenDocuments,
@@ -148,6 +150,7 @@ const BookingRow = React.memo(function BookingRow({
   onCancel: (b: Booking) => void;
   onEdit: (b: Booking) => void;
   onOpenDetails: (b: Booking) => void;
+  onCrearFactura: (b: Booking) => void;
   onSaveTable: (b: Booking, value: string) => Promise<boolean>;
   busy: boolean;
 }) {
@@ -214,6 +217,7 @@ const BookingRow = React.memo(function BookingRow({
           items={[
             { id: "details", label: "Reserva completa", onSelect: () => onOpenDetails(booking), icon: <FileText size={16} strokeWidth={1.8} /> },
             { id: "edit", label: "Editar", onSelect: () => onEdit(booking), icon: <Pencil size={16} strokeWidth={1.8} /> },
+            { id: "invoice", label: "Crear factura", onSelect: () => onCrearFactura(booking), icon: <ReceiptText size={16} strokeWidth={1.8} /> },
             { id: "cancel", label: "Cancelar", tone: "danger", onSelect: () => onCancel(booking), icon: <XCircle size={16} strokeWidth={1.8} /> },
           ]}
         />
@@ -427,6 +431,27 @@ export default function Page() {
     } catch (e) { setError(e instanceof Error ? e.message : "Error cargando reservas"); }
     finally { setBusy(false); }
   }, [api, session]);
+
+  // Mejora UX 7: reservas en tiempo real sin recargar. El backend publica
+  // "booking" (booking_created|booking_updated|booking_cancelled) en el socket
+  // global en cada mutacion (backoffice, checkout web, bot de WhatsApp); aqui
+  // se recarga la vista actual con un pequeno debounce para juntar rafagas.
+  type ViewParams = Parameters<typeof loadBookings>[0];
+  const viewRef = useRef<ViewParams>({ date, status, q, sort, dir, page, count });
+  useEffect(() => {
+    viewRef.current = { date, status, q, sort, dir, page, count };
+  });
+  const rtTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useGlobalSocketTopic("booking", () => {
+    if (rtTimer.current) clearTimeout(rtTimer.current);
+    rtTimer.current = setTimeout(() => {
+      const v = viewRef.current;
+      void loadBookings({ date: v.date, status: v.status, q: v.q, sort: v.sort, dir: v.dir, page: v.page, count: v.count });
+      void loadSummary(v.date);
+      const [y, m] = v.date.split("-").map(Number);
+      if (y && m) void loadMonth(y, m);
+    }, 400);
+  });
 
   const syncURLDate = useCallback((d: string) => {
     const url = new URL(window.location.href);
@@ -773,6 +798,14 @@ export default function Page() {
   const occPeople = dailyLimit?.totalPeople ?? 0;
   const occLimit = dailyLimit?.limit ?? 45;
 
+  const selectedDayLabel = useMemo(() => {
+    if (!date) return "";
+    const [y, m, d] = date.split("-").map((part) => Number.parseInt(part, 10));
+    if (!y || !m || !d) return date;
+    const label = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(y, m - 1, d));
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }, [date]);
+
   const pagerEl = (
     <div className={`bo-pager${showPagerBtns ? "" : " is-solo"}`} aria-label="Paginación" data-slot="reservas-page-pagination">
       <div className="bo-pagerText" data-slot="reservas-pagerText">Página {page} de {totalPages} · {totalCount} resultados</div>
@@ -793,6 +826,10 @@ export default function Page() {
             {isDayOpen ? <BookingSearch onSearch={onSearch} onClear={onSearchClear} busy={busy || searchBusy} reduceMotion={reduceMotion === true} /> : null}
             <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`} data-slot="reservas-div">
               <MonthCalendar year={view.year} month={view.month} days={calendarDays} selectedDateISO={date} onSelectDate={onSelectDate} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} loading={monthBusy} />
+
+              {isDayOpen && selectedDayLabel ? (
+                <h2 className="bo-reservasDayTitle" data-slot="reservas-day-title">{selectedDayLabel}</h2>
+              ) : null}
 
               <AnimatePresence initial={false}>
                 {isDayOpen ? (
@@ -920,7 +957,7 @@ export default function Page() {
                               </thead>
                               <tbody data-slot="reservas-tbody">
                                 {rows.map((b) => (
-                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onOpenQr={setQrBooking} onOpenDocuments={(b) => setDocumentsBookingId(b.id)} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onSaveTable={saveTableNumber} busy={busy} />
+                                  <BookingRow key={b.id} booking={b} columns={tableColumns} onOpenQr={setQrBooking} onOpenDocuments={(b) => setDocumentsBookingId(b.id)} onCancel={onCancel} onEdit={openEdit} onOpenDetails={openDetails} onCrearFactura={onCrearFactura} onSaveTable={saveTableNumber} busy={busy} />
                                 ))}
                                 {!rows.length ? (
                                   <tr data-slot="reservas-tro"><td colSpan={tableColumns.length + 1} style={{ padding: 16, color: "var(--bo-muted)" }}>{busy ? "Cargando..." : "No hay reservas para este filtro."}</td></tr>

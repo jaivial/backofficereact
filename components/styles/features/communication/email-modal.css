@@ -160,3 +160,48 @@
   cursor: not-allowed;
 }
 
+
+
+/* Vista previa del PDF dentro del modal de envio (mejora UX 5) */
+.bo-sendEmailPdfSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bo-space-2, 8px);
+}
+
+.bo-sendEmailPdfWrap {
+  position: relative;
+  border: 1px solid var(--bo-border, rgba(15, 23, 42, 0.12));
+  border-radius: var(--bo-radius-md, 10px);
+  overflow: hidden;
+  background: var(--bo-surface-2, #f8fafc);
+  min-height: 120px;
+}
+
+.bo-sendEmailPdfFrame {
+  display: block;
+  width: 100%;
+  height: 380px;
+  border: 0;
+  background: #fff;
+}
+
+@media (max-width: 640px) {
+  .bo-sendEmailPdfFrame {
+    height: 300px;
+  }
+}
+
+.bo-sendEmailPdfLoading,
+.bo-sendEmailPdfError {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bo-space-2, 8px);
+  color: var(--bo-text-muted, #64748b);
+  font-size: 13px;
+  z-index: 1;
+}

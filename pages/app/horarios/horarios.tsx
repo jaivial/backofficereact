@@ -167,7 +167,7 @@ function AdminHorariosView({ data }: { data: Data }) {
   const loadDay = useCallback(
     async (dateISO: string) => {
       const res = await api.horarios.list(dateISO);
-      if (!res.success) throw new Error(res.message || "No se pudo cargar horarios del dia");
+      if (!res.success) throw new Error(res.message || "No se pudo cargar horarios del día");
       setSchedules(res.schedules);
     },
     [api.horarios],
@@ -479,7 +479,7 @@ function AdminHorariosView({ data }: { data: Data }) {
                   ))}
                   {filteredMembers.length === 0 ? (
                     <div className="bo-mutedText" style={{ textAlign: "center", padding: 14 }} data-slot="empty-state">
-                      {memberSearch.trim() ? "Sin resultados." : "Todos los miembros ya tienen horario para este dia."}
+                      {memberSearch.trim() ? "Sin resultados." : "Todos los miembros ya tienen horario para este día."}
                     </div>
                   ) : null}
                 </div>
@@ -542,7 +542,7 @@ function AdminHorariosView({ data }: { data: Data }) {
                     <th data-slot="col-end">Salida</th>
                     <th data-slot="col-duration">Duración</th>
                     <th data-slot="col-live">Fichaje en vivo</th>
-                    <th data-slot="col-action">Accion</th>
+                    <th data-slot="col-action">Acción</th>
                   </tr>
                 </thead>
                 <tbody data-slot="table-body">

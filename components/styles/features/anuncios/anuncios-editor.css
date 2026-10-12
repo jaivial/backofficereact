@@ -2142,3 +2142,23 @@ button.bg-bo-accent { color: var(--bo-bg); }
   border-inline-start: 1px dashed var(--bo-border);
   cursor: default;
 }
+
+/* ads_canvas_v1 - free-form visual canvas editor */
+.bo-adcanvas { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.bo-adcanvasToolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bo-adcanvasToolbar button { padding: 6px 12px; border: 1px solid var(--line, #d8d3c8); border-radius: 8px; background: var(--surface, #fff); cursor: pointer; font-size: 13px; }
+.bo-adcanvasToolbar button:hover { background: var(--accent-soft, #f4efe4); }
+.bo-adcanvasToolbar label { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.bo-adcanvasSpacer { flex: 1; }
+.bo-adcanvasStageWrap { overflow: hidden; border: 1px solid var(--line, #d8d3c8); border-radius: 12px; background: repeating-conic-gradient(#f2f2f2 0% 25%, #fafafa 0% 50%) 0 0 / 20px 20px; }
+.bo-adcanvasStage { position: relative; transform-origin: top left; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.bo-adcanvasEl { position: absolute; box-sizing: border-box; cursor: grab; }
+.bo-adcanvasEl.is-selected { outline: 2px solid var(--accent, #c9a86a); outline-offset: 1px; }
+.bo-adcanvasHandle { position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent, #c9a86a); border: 2px solid #fff; cursor: nwse-resize; }
+.bo-adcanvasPanel { border: 1px solid var(--line, #d8d3c8); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.bo-adcanvasPanelHead { display: flex; align-items: center; gap: 8px; }
+.bo-adcanvasPanelHead button { padding: 4px 10px; border: 1px solid var(--line, #d8d3c8); border-radius: 8px; background: var(--surface, #fff); cursor: pointer; font-size: 12px; }
+.bo-adcanvasFields { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+.bo-adcanvasFields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 110px; }
+.bo-adcanvasFields input[type="text"], .bo-adcanvasFields input[type="number"], .bo-adcanvasFields select, .bo-adcanvasFields textarea { padding: 6px 8px; border: 1px solid var(--line, #d8d3c8); border-radius: 8px; font-size: 13px; }
+.bo-adcanvasHint { font-size: 13px; opacity: .7; }

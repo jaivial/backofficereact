@@ -324,7 +324,7 @@ export function FichasTecnicasPanel() {
           <EmptyState
             icon={<ClipboardList size={32} aria-hidden="true" />}
             title="Sin fichas tecnicas"
-            description="Los platos y postres elaborados apareceran aqui como fichas tecnicas."
+            description="Los platos y postres elaborados aparecerán aquí como fichas técnicas."
             data-ui="fichas-empty"
           />
         ) : (

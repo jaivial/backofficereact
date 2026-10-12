@@ -46,6 +46,10 @@
   place-items: center;
 }
 
+.bo-homeNodeGhost {
+  display: none;
+}
+
 .bo-homeOrbit {
   --bo-home-node: calc(var(--bo-space-8) + var(--bo-space-4));
   /* 64px */
@@ -393,7 +397,34 @@
   }
 
   .bo-homeNodeLabel {
+    /* Screen-reader only: the visible pill is the ghost label, which paints
+       above every node circle (sibling with higher z-index). */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .bo-homeNodeGhost {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--bo-home-mobile-node);
+    height: var(--bo-home-mobile-node);
+    transform:
+      translate(-50%, -50%) rotate(var(--bo-home-angle)) translateX(var(--bo-home-mobile-radius)) rotate(calc(0deg - var(--bo-home-angle)));
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .bo-homeNodeGhostLabel {
+    position: absolute;
     top: calc(100% + var(--bo-space-1));
+    left: 50%;
+    transform: translateX(-50%);
     width: clamp(58px, 20vw, 78px);
     padding: 3px var(--bo-space-2);
     border-radius: var(--bo-radius-full);
@@ -402,6 +433,7 @@
     backdrop-filter: blur(8px);
     font-size: 10px;
     line-height: 1.15;
+    text-align: center;
     color: var(--bo-faint);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -435,7 +467,7 @@
     height: min(92vw, 380px);
   }
 
-  .bo-homeNodeLabel {
+  .bo-homeNodeGhostLabel {
     width: clamp(54px, 18vw, 70px);
     font-size: 9px;
   }

@@ -26,7 +26,7 @@ export function AdStudioShell({
 
   return (
     <div className="bo-adStudio" data-testid="ad-studio" data-panel={panel ?? "none"}>
-      <aside className="bo-adStudioSide bo-adStudioSide--layers" data-testid="ad-studio-layers" aria-label="Capas y anadir">
+      <aside className="bo-adStudioSide bo-adStudioSide--layers" data-testid="ad-studio-layers" aria-label="Capas y añadir">
         <div className="bo-adStudioSideHead">
           <Layers size={14} aria-hidden="true" />
           <span>Capas</span>

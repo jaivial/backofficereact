@@ -34,7 +34,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const tabs = useMemo<TabItem[]>(
     () => [
-      { id: "informacion", label: "Informacion", href: `${basePath}`, icon: <UserRound className="bo-ico" /> },
+      { id: "informacion", label: "Información", href: `${basePath}`, icon: <UserRound className="bo-ico" /> },
       { id: "contrato", label: "Contrato", href: `${basePath}/contrato`, icon: <FileSpreadsheet className="bo-ico" /> },
       { id: "estadisticas", label: "Estadísticas", href: `${basePath}/estadisticas`, icon: <BarChart3 className="bo-ico" /> },
     ],
