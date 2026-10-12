@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useAtom, useAtomValue } from "jotai";
-import { HermesMascot, type HermesState } from "./HermesMascot";
+import { ForkySquishMascot as HermesMascot, type HermesState } from "./ForkySquishMascot";
 
 import { forkyOpenAtom, forkyHiddenAtom } from "../../state/atoms";
 import {
