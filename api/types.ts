@@ -2877,6 +2877,28 @@ export type RestaurantAdStep = {
 };
 export type RestaurantAdLayout = { mode: RestaurantAdLayoutMode; steps: RestaurantAdStep[] };
 
+export type RestaurantAdCanvasBackground = { type: "color" | "image"; value: string };
+
+export type RestaurantAdCanvasElement = {
+  id: string;
+  type: "text" | "image" | "button" | "shape";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  rotation?: number;
+  z: number;
+  props: Record<string, unknown>;
+};
+
+export type RestaurantAdCanvas = {
+  version: 1;
+  width: number;
+  height: number;
+  background: RestaurantAdCanvasBackground;
+  elements: RestaurantAdCanvasElement[];
+};
+
 export type RestaurantAd = {
   id: number;
   name: string;
@@ -2884,6 +2906,8 @@ export type RestaurantAd = {
   content: RestaurantAdContentElement[];
   ctas: RestaurantAdCTA[];
   layout?: RestaurantAdLayout;
+  /** Free-form canvas document (ads_canvas_v1); rendered 1-1 via the render endpoint. */
+  canvas?: RestaurantAdCanvas | null;
   starts_at?: string | null;
   ends_at?: string | null;
   blocked_ranges?: RestaurantAdScheduleRange[];
