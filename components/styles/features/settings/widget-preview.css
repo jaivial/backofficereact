@@ -1195,39 +1195,13 @@
 
 .bo-btn--advisorPrimary {
   min-width: 188px;
-  border: 1px solid color-mix(in srgb, var(--bo-accent) 58%, rgba(0, 0, 0, 0.48));
-  background:
-    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.26), transparent 58%),
-    linear-gradient(
-      136deg,
-      color-mix(in srgb, var(--bo-accent) 82%, #251253 18%),
-      color-mix(in srgb, var(--bo-accent-2) 20%, #32156a 80%)
-    );
-  box-shadow:
-    0 10px 24px color-mix(in srgb, var(--bo-accent) 44%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.36);
-  color: #fdfdff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.44);
-  font-weight: var(--bo-weight-bold);
-  letter-spacing: 0.01em;
-}
-
-:root[data-theme="light"] .bo-btn--advisorPrimary {
-  border-color: color-mix(in srgb, var(--bo-accent) 70%, #2c1763 30%);
-  background:
-    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.2), transparent 58%),
-    linear-gradient(
-      136deg,
-      color-mix(in srgb, var(--bo-accent) 84%, #27135b 16%),
-      color-mix(in srgb, var(--bo-accent-2) 18%, #36186e 82%)
-    );
+  border: 1px solid rgba(185, 168, 255, 0.30);
+  background: rgba(185, 168, 255, 0.12);
+  color: var(--bo-text);
 }
 
 .bo-btn--advisorPrimary:hover:not(:disabled) {
-  filter: saturate(112%) brightness(1.04);
-  box-shadow:
-    0 12px 28px color-mix(in srgb, var(--bo-accent) 52%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+  background: rgba(185, 168, 255, 0.22);
 }
 
 .bo-btn--advisorPrimary:focus-visible {
@@ -1238,14 +1212,13 @@
 .bo-btn--advisorSecondary {
   min-width: 186px;
   border: 1px solid var(--bo-border-2);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.22)),
-    color-mix(in srgb, var(--bo-surface-2) 84%, #70788a 16%);
-  color: var(--bo-faint);
+  background: transparent;
+  color: var(--bo-muted);
 }
 
 .bo-btn--advisorSecondary:hover:not(:disabled) {
-  color: var(--bo-muted);
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
 }
 
 /* Booking choice rows (principales + arroz, create page and edit modal):
