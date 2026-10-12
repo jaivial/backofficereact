@@ -13,6 +13,7 @@ import { ModalHeader } from "../../../ui/overlays/ModalHeader";
 import { ConfirmDialog } from "../../../ui/overlays/ConfirmDialog";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useToasts } from "../../../ui/feedback/useToasts";
+import { useGlobalSocketTopic } from "../../../ui/realtime/GlobalSocketProvider";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { formatArrozShort, formatHHMM } from "../../../ui/lib/format";
 import { downloadReservationsPDF } from "../../../ui/lib/reservationsPdf";
@@ -430,6 +431,27 @@ export default function Page() {
     } catch (e) { setError(e instanceof Error ? e.message : "Error cargando reservas"); }
     finally { setBusy(false); }
   }, [api, session]);
+
+  // Mejora UX 7: reservas en tiempo real sin recargar. El backend publica
+  // "booking" (booking_created|booking_updated|booking_cancelled) en el socket
+  // global en cada mutacion (backoffice, checkout web, bot de WhatsApp); aqui
+  // se recarga la vista actual con un pequeno debounce para juntar rafagas.
+  type ViewParams = Parameters<typeof loadBookings>[0];
+  const viewRef = useRef<ViewParams>({ date, status, q, sort, dir, page, count });
+  useEffect(() => {
+    viewRef.current = { date, status, q, sort, dir, page, count };
+  });
+  const rtTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useGlobalSocketTopic("booking", () => {
+    if (rtTimer.current) clearTimeout(rtTimer.current);
+    rtTimer.current = setTimeout(() => {
+      const v = viewRef.current;
+      void loadBookings({ date: v.date, status: v.status, q: v.q, sort: v.sort, dir: v.dir, page: v.page, count: v.count });
+      void loadSummary(v.date);
+      const [y, m] = v.date.split("-").map(Number);
+      if (y && m) void loadMonth(y, m);
+    }, 400);
+  });
 
   const syncURLDate = useCallback((d: string) => {
     const url = new URL(window.location.href);
