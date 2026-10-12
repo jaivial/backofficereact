@@ -6,6 +6,7 @@ import { InlineAlert } from "../../../../../ui/feedback/InlineAlert";
 import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { FormField } from "../../../../../ui/inputs/FormField";
 import { Modal } from "../../../../../ui/overlays/Modal";
+import { prepareFormImages } from "../../../../../lib/imageUpload";
 
 type StockDocumentItem = {
   id: number;
@@ -52,8 +53,10 @@ type DocumentDetail = DocumentSummary & {
 
 async function documentRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
-  if (!(init?.body instanceof FormData)) headers.set("Content-Type", "application/json");
-  const response = await fetch(`/api/admin/stock${path}`, { ...init, credentials: "include", headers });
+  let preparedBody = init?.body;
+  if (preparedBody instanceof FormData) preparedBody = await prepareFormImages(preparedBody);
+  else headers.set("Content-Type", "application/json");
+  const response = await fetch(`/api/admin/stock${path}`, { ...init, body: preparedBody, credentials: "include", headers });
   const body = await response.json();
   if (!response.ok || !body.success) throw new Error(body.message || "Error procesando documento");
   return body as T;

@@ -38,6 +38,7 @@ import {
 } from "../../../../../api/bookingDocuments";
 import { BookingDocumentsSection, type BookingDocumentDraft } from "./BookingDocumentsSection";
 import { useBookingDocumentsSocket } from "../BookingDocuments/useBookingDocumentsSocket";
+import { prepareImageForUpload } from "../../../../../lib/imageUpload";
 
 import { principalesItemsFromMenu, specialMenusFromBooking, type PrincipalesRow, type RiceRow } from "./bookingDraft";
 import {
@@ -678,6 +679,8 @@ export function BookingEditor({
     for (let index = 0; index < documentRows.length; index += 1) {
       const row = documentRows[index];
       if (!row.file) continue;
+      // Images are compressed to <=2MB webp BEFORE the caps (pedido Jaime).
+      row.file = await prepareImageForUpload(row.file);
       // Same caps the server enforces; refuse before buffering the frame.
       if (row.file.size > BOOKING_DOCUMENT_MAX_BYTES) {
         throw new Error(`"${row.file.name}" supera el máximo de ${Math.round(BOOKING_DOCUMENT_MAX_BYTES / (1024 * 1024))} MB`);

@@ -13,7 +13,7 @@ import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
 import { ForkyDoc, ForkyWidget, stripForkyRichBlocks } from "./ForkyRichBlocks";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
-import { HermesMascot } from "./HermesMascot";
+import { ForkySquishMascot as HermesMascot } from "./ForkySquishMascot";
 import {
   BuiIsland,
   LoadingState,
