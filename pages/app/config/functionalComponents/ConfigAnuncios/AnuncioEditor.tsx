@@ -6,6 +6,7 @@ import {
   CircleAlert,
   Eye,
   GripVertical,
+  Frame,
   Layers,
   ImagePlus,
   Megaphone,
@@ -67,6 +68,8 @@ import {
   type ButtonAction,
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
+import { AdCanvasEditor } from "./AdCanvasEditor";
+import type { RestaurantAdCanvas } from "../../../../../api/types";
 import { AdBlockBar, AdBlockHover, AdMoveableBox, AdStudioShell } from "./AdEditorChrome";
 import { useMenuRouteOptions, type RouteOption } from "./hooks/useMenuRouteOptions";
 import {
@@ -200,6 +203,25 @@ const SELECTION_KEEP_SELECTOR = [
   ".bo-popover",
   ".bo-modalOverlay",
 ].join(", ");
+
+// Coordination id: ads_canvas_v1 - "Visual" layout mode: a free-form canvas
+// document rendered 1-1 by the backend render endpoint (iframe).
+function defaultCanvasFromAd(source: RestaurantAd): RestaurantAdCanvas {
+  const elements: RestaurantAdCanvas["elements"] = [];
+  const title = source.content.find((item) => item.type === "title");
+  const image = source.content.find((item) => item.type === "image");
+  const cta = source.ctas[0];
+  if (title) {
+    elements.push({ id: "txt-title", type: "text", x: 50, y: 40, w: 700, h: 90, z: 2, props: { text: title.value, fontSize: 44, color: "#111111", align: "center", bold: true } });
+  }
+  if (image && image.value) {
+    elements.push({ id: "img-main", type: "image", x: 250, y: 150, w: 300, h: 200, z: 1, props: { src: image.value, fit: "cover", radius: 16, alt: "" } });
+  }
+  if (cta) {
+    elements.push({ id: "btn-main", type: "button", x: 300, y: 400, w: 200, h: 56, z: 3, props: { text: cta.text || "Ver mas", href: cta.navigation_mode === "custom" ? cta.custom_url || "/" : cta.route || "/", bg: cta.color || "#c9a86a", color: "#1a2e22", radius: 28, fontSize: 20, bold: true } });
+  }
+  return { version: 1, width: 800, height: 500, background: { type: "color", value: "#ffffff" }, elements };
+}
 
 export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs, sendAdScheduleCheck }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
@@ -486,6 +508,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   // the inspector always write the same shape.
   const layout = useMemo(() => adLayout(ad), [ad]);
   const isMultiple = layout.mode === "multiple";
+  const isCanvas = ad?.canvas != null;
   const [activeStepId, setActiveStepId] = useState<string>("");
   const activeStep = useMemo(
     () => layout.steps.find((step) => step.id === activeStepId) ?? layout.steps[0] ?? null,
@@ -735,6 +758,17 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               <Layers size={14} aria-hidden="true" />
               <span className="bo-anunciosPreviewSwitchLabel">Múltiple</span>
             </button>
+            <button
+              type="button"
+              className={`bo-anunciosPreviewSwitchBtn ${isCanvas ? "is-active" : ""}`}
+              onClick={() => setAd((current) => (current ? { ...current, canvas: current.canvas ?? defaultCanvasFromAd(current) } : current))}
+              aria-pressed={isCanvas}
+              data-testid="ad-layout-visual"
+              data-slot="ad-layout-visual"
+            >
+              <Frame size={14} aria-hidden="true" />
+              <span className="bo-anunciosPreviewSwitchLabel">Visual</span>
+            </button>
           </div>
           <div className="bo-anunciosPreviewSwitch" role="group" aria-label="Modo de visualización" data-slot="ads-preview-switch">
             <button
@@ -801,7 +835,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
       <AdStudioShell
         canvasLabel={`${isMultiple ? (wizardStep === 0 ? "Pile de tarjetas" : `Anuncio ${wizardStep} de ${layout.steps.length}`) : "Anuncio"} ${previewOpen ? "(preview)" : "(editable)"}`}
         layers={
-          <>
+          !isCanvas ? <>
             {isMultiple ? (
               <StepListPanel
                 steps={layout.steps}
@@ -875,11 +909,33 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             </button>
           </div>
         </div>
-          </>
+          </> : null
         }
         canvas={
           <>
-            {/* Live template: the same markup as the public ad, editable in place. */}
+            {isCanvas && ad?.canvas ? (
+              <div className="bo-anunciosCanvasCol" data-slot="ads-canvas-column" data-testid="ad-canvas-mode">
+                {previewOpen && ad.id > 0 ? (
+                  <div
+                    className="publicAdCanvasFrame"
+                    style={{ aspectRatio: `${ad.canvas.width} / ${ad.canvas.height}`, width: "100%", maxWidth: 720 }}
+                  >
+                    <iframe
+                      src={`/api/public/ads/${ad.id}/render?src=backoffice-preview`}
+                      title={ad.name || "Anuncio"}
+                      style={{ width: "100%", height: "100%", border: 0, display: "block", borderRadius: 10 }}
+                    />
+                  </div>
+                ) : previewOpen ? (
+                  <p className="bo-adcanvasHint">Guarda el anuncio una vez para ver la preview 1-1.</p>
+                ) : (
+                  <AdCanvasEditor
+                    canvas={ad.canvas}
+                    onChange={(canvas) => setAd((current) => (current ? { ...current, canvas } : current))}
+                  />
+                )}
+              </div>
+            ) : (
             <div
               className="bo-anunciosCanvasCol"
               data-slot="ads-canvas-column"
@@ -946,6 +1002,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 </>
               ) : null}
             </div>
+            )}
           </>
         }
         properties={
