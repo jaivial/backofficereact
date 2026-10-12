@@ -11,6 +11,8 @@ export { default as LoadingState } from "./LoadingState";
 export { MessageBubble } from "./MessageBubble";
 export { EntityChip, Monogram } from "./EntityChip";
 export { default as ThinkingState } from "./ThinkingState";
+export { default as TaskRows } from "./TaskRows";
+export type { TaskRow, TaskRowStatus } from "./TaskRows";
 export { default as ThinkingBlock } from "./ThinkingBlock";
 export { default as CodeBlock } from "./CodeBlock";
 export { default as ContextCards } from "./ContextCards";
