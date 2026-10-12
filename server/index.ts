@@ -851,6 +851,10 @@ async function start() {
 
   app.use("/api/admin", (req, res) => proxyToBackend(backendOrigin, toBackendAdminPath(req.originalUrl), req, res, { injectAdminSecret: true }));
 
+  // Public ads endpoints (canvas render, embed list) keep their /api/public path on the
+  // Go backend. Proxied same-origin so the AnuncioEditor preview iframe works here too.
+  app.use("/api/public/ads", (req, res) => proxyToBackend(backendOrigin, req.originalUrl, req, res, { injectAdminSecret: false }));
+
   // MCP endpoint, served from the backoffice origin on purpose. The OAuth
   // authorize step identifies the operator through the backoffice session
   // cookie, which only exists on this domain, so ChatGPT authenticates against
