@@ -506,4 +506,14 @@
   .bo-invoiceCards {
     grid-template-columns: 1fr;
   }
+
+  /* facturas_mobile_tap_targets_v1: >=40px touch targets on card actions */
+  .bo-invoiceCardFootActions {
+    flex: 1;
+  }
+
+  .bo-invoiceCardFootActions .bo-btn {
+    flex: 1;
+    min-height: 40px;
+  }
 }
