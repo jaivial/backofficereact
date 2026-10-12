@@ -679,7 +679,7 @@ export default function PromptBar({
         <span
           ref={measureRef}
           aria-hidden="true"
-          className="pointer-events-none absolute invisible whitespace-pre text-[13px] leading-[18px]"
+          className="pointer-events-none absolute invisible whitespace-pre text-[16px] leading-6"
         >
           {draft}
         </span>
@@ -807,7 +807,7 @@ export default function PromptBar({
               transition: "opacity 220ms cubic-bezier(0.23,1,0.32,1)",
               opacity: dictationFade ? 0.55 : 1,
             }}
-            className={`${tall ? "min-h-[68px] px-2 py-2 text-[14px] leading-5" : "min-h-7 px-1 py-[5px] text-[13px] leading-[18px]"} min-w-0 w-full resize-none overflow-y-auto bg-transparent text-ink outline-none [overflow-wrap:anywhere] placeholder:text-ink-3 ${
+            className={`${tall ? "min-h-[68px] px-2 py-2 text-[16px] leading-6" : "min-h-7 px-1 py-[5px] text-[16px] leading-6"} min-w-0 w-full resize-none overflow-y-auto bg-transparent text-ink outline-none [overflow-wrap:anywhere] placeholder:text-ink-3 ${
               !controls
                 ? "col-start-1 row-start-1"
                 : wide
