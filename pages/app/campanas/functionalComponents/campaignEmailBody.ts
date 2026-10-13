@@ -13,6 +13,22 @@ function escapeHTML(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+// Same contract as the Go adCanvasSafeURL (internal/api/ads_canvas.go): only
+// http(s), mailto, tel and site-relative URLs may become href/src. Anything
+// else (javascript:, data:, vbscript:, ...) is dropped so an author cannot
+// smuggle a scheme into the email or its preview. Coordination id:
+// campaign_url_allowlist_v1.
+function campaignSafeUrl(raw: string): boolean {
+  const url = raw.trim();
+  if (!url) return false;
+  if (url.startsWith("/") && !url.startsWith("//")) return true;
+  const colon = url.indexOf(":");
+  const slash = url.indexOf("/");
+  if (colon === -1 || (slash !== -1 && slash < colon)) return false;
+  const scheme = url.slice(0, colon).toLowerCase();
+  return scheme === "http" || scheme === "https" || scheme === "mailto" || scheme === "tel";
+}
+
 function renderInline(line: string, theme: CampaignTheme): string {
   return escapeHTML(line)
     .replace(
@@ -20,10 +36,15 @@ function renderInline(line: string, theme: CampaignTheme): string {
       (_match, alt: string, src: string, hint?: string) => {
         // Same contract as the Go renderer: `![alt](URL =W)` sets the pixel width,
         // anything else keeps the natural size capped by max-width:100%.
+        if (!campaignSafeUrl(src)) {
+          // Unsafe scheme: no <img> at all, just the alt text.
+          return alt ? `<span>${alt}</span>` : "";
+        }
         const width = imageWidthFromHint(hint);
         return `<img src="${src}" alt="${alt}" style="max-width:100%;height:auto;border-radius:10px;display:block;margin:12px 0${width ? `;width:${width}px` : ""}" />`;
       })
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, `<a href="$2" style="color:${theme.accent};text-decoration:underline">$1</a>`)
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_match, text: string, href: string) =>
+      campaignSafeUrl(href) ? `<a href="${href}" style="color:${theme.accent};text-decoration:underline">${text}</a>` : text)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>")
     .replace(/`([^`]+)`/g, "<code>$1</code>");
