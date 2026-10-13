@@ -73,6 +73,9 @@ export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, devic
           ref={frameRef}
           title="Previsualización de email"
           srcDoc={html}
+          // Same-origin only, never scripts: the body is authored markdown, so
+          // the frame must not execute anything (campaign_url_allowlist_v1).
+          sandbox="allow-same-origin"
           onLoad={measure}
           scrolling="no"
           className="mx-auto block w-full rounded-xl border"
