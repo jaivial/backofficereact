@@ -247,7 +247,14 @@ export function AdCanvasEditor({ canvas, disabled, onChange }: Props) {
           </select>
         </label>
       </div>
-      <div className="bo-adcanvasStageWrap" onPointerMove={onPointerMove} onPointerUp={onPointerUp}>
+      <div
+        className="bo-adcanvasStageWrap"
+        /* The scaled stage keeps its unscaled layout box; sizing the wrap to
+           the visual height avoids a dead band below the ad on mobile. */
+        style={{ height: canvas.height * scale }}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
         <div
           ref={stageRef}
           className="bo-adcanvasStage"
