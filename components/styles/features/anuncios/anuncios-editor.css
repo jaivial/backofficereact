@@ -1608,6 +1608,14 @@ button.bg-bo-accent { color: var(--bo-bg); }
     grid-column: 1 / -1;
   }
 }
+/* 1024-1279: the sidebars are hidden (hamburger drawer) but the min-1024 rule
+   above still reserved their column, so the stage landed in a 260px track and
+   the free canvas was clipped mid-ad (coord id ads_studio_grid_fix_v1). */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .bo-adStudio {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (min-width: 1280px) {
   .bo-adStudio {
     grid-template-columns: minmax(230px, 270px) minmax(0, 1fr) minmax(240px, 300px);
