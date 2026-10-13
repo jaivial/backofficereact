@@ -33,6 +33,16 @@ import { ChatBubbleMotionProvider } from "./chat-motion";
 import { forkyOpenAtom } from "../../state/atoms";
 import { ForkyRuntimeProvider } from "./forkyRuntime";
 import { useForkyTurnSteps } from "./forkyStatus";
+import { createClient } from "../../api/client";
+import {
+  forkAttachMarker,
+  forkVoiceMarker,
+  parseForkyMarkers,
+  uploadAssistantMedia,
+  type ForkyAttachmentChip,
+} from "./forkyVoice";
+import { useForkyVoice } from "./useForkyVoice";
+import { formatAudioRecorderDuration } from "./control-ui/format-audio-recorder-duration";
 
 // ---------------------------------------------------------------------------
 // beautifului.dev design language (tokens in
@@ -203,6 +213,49 @@ function AssistantMessage() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Forky media markers ([forky-voice] / [forky-attach], coord forky_media_transcribe_v1).
+// A voice note renders as a playable bubble; an attachment renders as a chip
+// linking to its Bunny file. The transcript text around them stays plain text.
+// ---------------------------------------------------------------------------
+
+function ForkyVoiceBubble({ url }: { url: string }) {
+  return (
+    <audio
+      data-testid="forky-voice-player"
+      src={url}
+      controls
+      preload="metadata"
+      className="h-9 w-56 max-w-full align-middle"
+    />
+  );
+}
+
+function ForkyUserText({ text }: { text: string }) {
+  const parts = parseForkyMarkers(text);
+  if (parts.length === 1 && parts[0].type === "text") return <>{parts[0].text}</>;
+  return (
+    <div className="flex flex-col gap-1.5">
+      {parts.map((part, i) => {
+        if (part.type === "text") return <p key={i}>{part.text}</p>;
+        if (part.type === "voice") return <ForkyVoiceBubble key={i} url={part.url} />;
+        return (
+          <a
+            key={i}
+            data-testid="forky-attach-chip"
+            href={part.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex w-fit items-center gap-1.5 rounded-full bg-fui-hover px-2.5 py-1 text-[11.5px] text-fui-ink-2 underline-offset-2 hover:underline"
+          >
+            {part.name}
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
 function UserMessage() {
   return (
     <MessagePrimitive.Root
@@ -219,7 +272,7 @@ function UserMessage() {
         avatarTestId="forky-avatar-user"
       >
         <div data-testid="forky-user-message-text" className="text-[13px] leading-[1.4]">
-          <MessagePrimitive.Parts />
+          <MessagePrimitive.Parts components={{ Text: ForkyUserText }} />
         </div>
       </MessageBubble>
     </MessagePrimitive.Root>
@@ -301,6 +354,64 @@ function EmptyState() {
 // ---------------------------------------------------------------------------
 function ChatComposer() {
   const aui = useAui();
+  const [chips, setChips] = useState<ForkyAttachmentChip[]>([]);
+  const chipsRef = useRef<ForkyAttachmentChip[]>([]);
+  chipsRef.current = chips;
+
+  const sendText = useCallback(
+    (text: string) => {
+      aui.composer.setText(text);
+      aui.composer.send();
+    },
+    [aui],
+  );
+
+  /* voice: record → Bunny → STT → the transcript (plus the clip marker) sends
+   * as a normal message; a failed transcription still sends the clip alone. */
+  const voice = useForkyVoice({
+    onVoiceMessage: (transcript, url) => {
+      const marker = url ? forkVoiceMarker(url) : "";
+      sendText([transcript, marker].filter(Boolean).join(" "));
+    },
+  });
+
+  const handleSend = useCallback(
+    (text: string) => {
+      const ready = chipsRef.current.filter((chip) => chip.status === "ready" && chip.url);
+      const markers = ready.map((chip) => forkAttachMarker(chip.name, chip.url as string));
+      setChips([]);
+      sendText([text.trim(), ...markers].filter(Boolean).join(" "));
+    },
+    [sendText],
+  );
+
+  const handleAttachFiles = useCallback((files: File[]) => {
+    const api = createClient();
+    for (const file of files) {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const isImage = file.type.startsWith("image/");
+      const previewUrl = isImage ? URL.createObjectURL(file) : undefined;
+      setChips((prev) => [
+        ...prev,
+        { id, name: file.name, status: "uploading", previewUrl, kind: isImage ? "image" : "document" },
+      ]);
+      uploadAssistantMedia(api, file)
+        .then(({ url }) =>
+          setChips((prev) => prev.map((chip) => (chip.id === id ? { ...chip, status: "ready", url } : chip))),
+        )
+        .catch((err: unknown) =>
+          setChips((prev) =>
+            prev.map((chip) =>
+              chip.id === id
+                ? { ...chip, status: "error", error: err instanceof Error ? err.message : "upload_failed" }
+                : chip,
+            ),
+          ),
+        );
+    }
+  }, []);
+
+  const hasChipErrors = chips.some((chip) => chip.status === "error");
 
   return (
     <div data-testid="forky-composer-root" className="shrink-0 p-1.5">
@@ -310,12 +421,45 @@ function ChatComposer() {
           placeholder="Pregunta lo que quieras"
           inputAriaLabel="Prompt"
           sendLabel="Send"
-          onSend={(text) => {
-            aui.composer.setText(text);
-            aui.composer.send();
-          }}
+          onSend={handleSend}
+          onAttachFiles={handleAttachFiles}
+          attachments={chips.map(({ id, name, status, error, previewUrl, kind }) => ({
+            id,
+            name,
+            status,
+            error,
+            previewUrl,
+            kind,
+          }))}
+          onRemoveAttachment={(id) => setChips((prev) => prev.filter((chip) => chip.id !== id))}
+          dictating={voice.dictating}
+          voiceBusy={voice.voiceBusy}
+          onToggleDictation={voice.toggle}
         />
       </BuiIsland>
+      {voice.dictating && (
+        <div
+          data-testid="forky-voice-recording"
+          className="mt-1 flex items-center justify-center gap-2 text-[11px] text-fui-ink-2"
+        >
+          <span className="size-1.5 animate-pulse rounded-full bg-red-500" />
+          <span>Grabando… {formatAudioRecorderDuration(voice.durationMs)}</span>
+          <button
+            type="button"
+            onClick={voice.cancel}
+            className="rounded px-1.5 py-0.5 text-[11px] text-fui-ink-3 transition-colors hover:bg-fui-hover hover:text-fui-ink"
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+      {(voice.voiceBusy || voice.voiceError || hasChipErrors) && (
+        <p data-testid="forky-media-status" className="mt-1 text-center text-[11px] text-fui-ink-3">
+          {voice.voiceBusy
+            ? "Procesando la nota de voz…"
+            : voice.voiceError ?? "No se pudo subir un adjunto. Inténtalo de nuevo."}
+        </p>
+      )}
       <p
         data-testid="forky-composer-disclaimer"
         className="mt-2 text-center text-[11px] text-fui-ink-3"
