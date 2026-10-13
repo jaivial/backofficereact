@@ -954,7 +954,13 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
       <AdStudioShell
         canvasLabel={`${isMultiple ? (isCanvas ? `Lienzo de ${activeStep?.title || "anuncio"}` : "Tarjetas del wizard") : "Anuncio"} ${previewOpen ? "(preview)" : "(editable)"}`}
         layers={
-          !isCanvas ? <>
+          isCanvas && isMultiple ? <div className="bo-adWizardVisualGuide">
+            <strong>Pasos del wizard</strong>
+            <p>Cada anuncio tiene su propio lienzo y versiones por dispositivo.</p>
+            {layout.steps.map((step, index) => <button type="button" key={step.id} className={`bo-anunciosPreviewSwitchBtn ${step.id === activeStep?.id ? "is-active" : ""}`} onClick={() => { setActiveStepId(step.id); setWizardCards(false); setWizardStep(index + 1); }} aria-pressed={step.id === activeStep?.id}>{index + 1}. {step.title || "Anuncio"}</button>)}
+            <button type="button" className="bo-anunciosPreviewSwitchBtn" onClick={() => { setWizardCards(true); setWizardStep(0); }}>Editar tarjetas y orden</button>
+            <p>Selecciona el texto, imagen o botón del lienzo para editarlo. Los cambios se guardan automáticamente.</p>
+          </div> : !isCanvas ? <>
             {isMultiple ? (
               <StepListPanel
                 steps={layout.steps}
@@ -1034,7 +1040,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
           <>
             {isMultiple ? <div className="bo-anunciosPreviewSwitch bo-adWizardStepNav" role="group" aria-label="Pasos del anuncio múltiple">
               <button type="button" onClick={() => { setWizardCards(true); setWizardStep(0); }} className={`bo-anunciosPreviewSwitchBtn ${!isCanvas ? "is-active" : ""}`} aria-pressed={!isCanvas}>Tarjetas del wizard</button>
-              <button type="button" onClick={() => { if (!ad) return; try { const next = addStep(ad); setAd(next); const last = adLayout(next).steps.at(-1); if (last) { setActiveStepId(last.id); setWizardCards(false); } } catch (error) { notify("info", "Límite", error instanceof Error ? error.message : "No se puede añadir otro anuncio"); } }}>Añadir anuncio</button>
+              <button type="button" className="bo-anunciosPreviewSwitchBtn" onClick={() => { if (!ad) return; try { const next = addStep(ad); setAd(next); const last = adLayout(next).steps.at(-1); if (last) { setActiveStepId(last.id); setWizardCards(false); } } catch (error) { notify("info", "Límite", error instanceof Error ? error.message : "No se puede añadir otro anuncio"); } }}>Añadir anuncio</button>
               {layout.steps.map((step) => <button type="button" key={step.id} onClick={() => { setActiveStepId(step.id); setWizardCards(false); setWizardStep(layout.steps.indexOf(step) + 1); setSelectedId(null); }} className={`bo-anunciosPreviewSwitchBtn ${isCanvas && step.id === activeStep?.id ? "is-active" : ""}`} aria-pressed={isCanvas && step.id === activeStep?.id}>{step.title || "Anuncio"}</button>)}
             </div> : null}
             {isCanvas && editedCanvas ? (
