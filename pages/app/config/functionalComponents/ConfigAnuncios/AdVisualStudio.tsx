@@ -315,11 +315,17 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
   const addElement = useCallback(
     (type: RestaurantAdCanvasElement["type"]) => {
       const z = view.elements.reduce((acc, el) => Math.max(acc, el.z || 0), 0) + 1;
-      const el = defaultElement(type, view, z);
+      let id = "";
       updateDoc((doc) => {
-        doc.elements.push(el);
+        const el = defaultElement(type, doc, z);
+        const k = Math.min(1, (doc.width - 24) / el.w, (doc.height - 24) / el.h);
+        const sized = scaleElement(el, Math.max(0.1, k));
+        sized.x = Math.max(0, (doc.width - sized.w) / 2);
+        sized.y = Math.max(0, (doc.height - sized.h) / 2);
+        doc.elements.push(sized);
+        id = sized.id;
       });
-      setSelectedId(el.id);
+      setSelectedId(id);
     },
     [updateDoc, view],
   );
