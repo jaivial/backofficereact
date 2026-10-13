@@ -2173,7 +2173,16 @@ button.bg-bo-accent { color: var(--bo-bg); }
    hold up in dark AND light theme (audit: light-gray inputs and a white
    checkerboard leaked into dark). Editor chrome only: the ad canvas itself
    keeps the user's own background color. */
-.bo-adcanvas { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.bo-adcanvas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  /* The stage has an explicit canvas-width (800-1080px); without min-width:0
+     that intrinsic size inflates this column on narrow viewports and the
+     ResizeObserver then keeps scale at 1, clipping the ad (mobile audit). */
+  min-width: 0;
+}
 .bo-adcanvasToolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .bo-adcanvasToolbar button,
 .bo-adcanvasPanelHead button {
@@ -2205,6 +2214,9 @@ button.bg-bo-accent { color: var(--bo-bg); }
   /* Neutral checkerboard from tokens, visible on both themes. */
   background:
     repeating-conic-gradient(var(--bo-surface-3) 0% 25%, var(--bo-surface-2) 0% 50%) 0 0 / 20px 20px;
+  /* Flex item with an 800-1080px intrinsic child: min-width 0 lets it shrink
+     to the column so the ResizeObserver fits the stage instead of clipping. */
+  min-width: 0;
 }
 .bo-adcanvasStage { position: relative; transform-origin: top left; box-shadow: 0 2px 12px var(--bo-shadow-soft, rgba(0, 0, 0, 0.18)); }
 .bo-adcanvasEl { position: absolute; box-sizing: border-box; cursor: grab; touch-action: none; }
