@@ -11,6 +11,7 @@ import type { RestaurantAdCanvas, RestaurantAdCanvasBackground, RestaurantAdCanv
 type Props = {
   canvas: RestaurantAdCanvas;
   adId: number;
+  stepId?: string;
   adName: string;
   website: string;
   disabled?: boolean;
@@ -130,7 +131,7 @@ function defaultElement(type: RestaurantAdCanvasElement["type"], doc: ResolvedDo
   return { id: nextId("shp"), type, x: cx - 120, y: cy - 80, w: 240, h: 160, z, props: { shape: "rect", fill: "#f0e6d2", stroke: "", strokeWidth: 0, radius: 12, opacity: 1 } };
 }
 
-export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChange }: Props) {
+export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled, onChange }: Props) {
   const [device, setDevice] = useState<DeviceId>("mobile");
   const [viewport, setViewport] = useState<{ width: number; height: number }>({ width: DEVICES[2].width, height: DEVICES[2].height });
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -314,11 +315,17 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
   const addElement = useCallback(
     (type: RestaurantAdCanvasElement["type"]) => {
       const z = view.elements.reduce((acc, el) => Math.max(acc, el.z || 0), 0) + 1;
-      const el = defaultElement(type, view, z);
+      let id = "";
       updateDoc((doc) => {
-        doc.elements.push(el);
+        const el = defaultElement(type, doc, z);
+        const k = Math.min(1, (doc.width - 24) / el.w, (doc.height - 24) / el.h);
+        const sized = scaleElement(el, Math.max(0.1, k));
+        sized.x = Math.max(0, (doc.width - sized.w) / 2);
+        sized.y = Math.max(0, (doc.height - sized.h) / 2);
+        doc.elements.push(sized);
+        id = sized.id;
       });
-      setSelectedId(el.id);
+      setSelectedId(id);
     },
     [updateDoc, view],
   );
@@ -396,7 +403,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
     [fit],
   );
 
-  const siteURL = website && adId > 0 ? `${website.replace(/\/+$/, "")}/?vc_ad=${adId}&vc_preview=1&_r=${reloadKey}` : "";
+  const siteURL = website && adId > 0 ? `${website.replace(/\/+$/, "")}/?vc_ad=${adId}&vc_preview=1${stepId ? `&vc_step=${encodeURIComponent(stepId)}` : ""}&_r=${reloadKey}` : "";
 
   return (
     <div className="bo-adstudioRoot" data-testid="ad-visual-studio" data-coord-id="ads_visual_studio_v1">

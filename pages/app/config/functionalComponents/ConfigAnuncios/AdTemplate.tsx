@@ -663,6 +663,21 @@ function WizardCard({
 
 /** Multiple layout: step 0 is the cards column, any other index renders that
  * announcement. Clicking a card (not one of its action buttons) advances. */
+function WizardCanvasPreview({ adId, step }: { adId: number; step: RestaurantAdStep }) {
+  const [width, setWidth] = React.useState(1280);
+  React.useEffect(() => {
+    const sync = () => setWidth(window.innerWidth);
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
+  }, []);
+  const canvas = step.canvas!;
+  const variant = width < 768 ? canvas.variants?.mobile : width < 1024 ? canvas.variants?.tablet : undefined;
+  return <iframe title={step.title || "Anuncio"}
+    src={`/api/public/ads/${adId}/render?src=backoffice-preview&step=${encodeURIComponent(step.id)}&vw=${width}`}
+    style={{ width: "100%", aspectRatio: `${variant?.width || canvas.width} / ${variant?.height || canvas.height}`, border: 0, display: "block" }} />;
+}
+
 export function AdWizard({
   ad,
   website,
@@ -715,6 +730,9 @@ export function AdWizard({
           <ChevronLeft size={15} aria-hidden="true" />
           Volver
         </button>
+        {step.canvas && !editable ? (
+          <WizardCanvasPreview adId={ad.id} step={step} />
+        ) : (
         <AdSurface
           content={step.content}
           buttons={ad.ctas}
@@ -729,6 +747,7 @@ export function AdWizard({
           surfaceProps={{ style, "data-slot": "ad-wizard-step-surface" } as React.HTMLAttributes<HTMLDivElement>}
           testId={`${testId}-step`}
         />
+        )}
       </div>
     );
   }
