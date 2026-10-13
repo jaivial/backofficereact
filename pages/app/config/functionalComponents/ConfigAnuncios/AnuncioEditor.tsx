@@ -625,7 +625,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   // Entering visual mode never overwrites saved content. A missing step canvas
   // is converted only when the operator edits it, and every step stays separate.
   const savedCanvas = isMultiple ? activeStep?.canvas : ad?.canvas;
-  const visualStep = isMultiple && !wizardCards;
+  const visualStep = isMultiple && !wizardCards && (!previewOpen || savedCanvas != null);
   const editedCanvas = visualStep && activeStep && ad
     ? savedCanvas ?? defaultCanvasFromAd({ ...ad, content: activeStep.content, ctas: ad.ctas })
     : savedCanvas;
@@ -1061,6 +1061,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   <p className="bo-adcanvasHint">Guarda el anuncio una vez para ver la preview 1-1.</p>
                 ) : (
                   <AdVisualStudio
+                    key={isMultiple ? activeStep?.id : "single"}
                     canvas={editedCanvas}
                     adId={ad.id}
                     adName={activeStep?.title || ad.name}

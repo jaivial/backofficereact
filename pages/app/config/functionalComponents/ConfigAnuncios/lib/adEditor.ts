@@ -445,8 +445,12 @@ export function setLayoutMode(ad: RestaurantAd, mode: RestaurantAdLayoutMode): R
   if (current.mode === mode) return ad;
   // Moving to multiple seeds one step from the current announcement so nothing
   // the operator wrote is lost; moving back keeps the steps but stops using them.
+  const seed = () => {
+    const step = withStepContent(createDraftStep(), ad);
+    return { ...step, content: ad.content.length ? ad.content.map((item) => ({ ...item })) : step.content, canvas: ad.canvas };
+  };
   const steps = mode === "multiple" && current.steps.length === 0
-    ? [{ ...withStepContent(createDraftStep(), ad), content: ad.content.length ? ad.content.map((item) => ({ ...item })) : withStepContent(createDraftStep(), ad).content, canvas: ad.canvas }]
+    ? [seed()]
     : current.steps;
   return withLayout(ad, { mode, steps });
 }
