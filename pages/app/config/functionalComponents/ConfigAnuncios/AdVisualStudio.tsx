@@ -21,6 +21,7 @@ type VariantName = "desktop" | "tablet" | "mobile";
 
 type DragState =
   | { kind: "move"; id: string; startX: number; startY: number; origX: number; origY: number }
+  | { kind: "container"; startX: number; startY: number; origW: number; origH: number; scale: number }
   | { kind: "resize"; id: string; startX: number; startY: number; origW: number; origH: number };
 
 const MIN_SIZE = 12;
@@ -42,10 +43,10 @@ function variantForWidth(vw: number): VariantName {
 // pixel-aligned with what the visitor sees at the same viewport width.
 const POPOVER = {
   overlayPad: 20,
-  modalPadX: 22,
+  modalPadX: 0,
   modalDefaultRadius: 24,
   modalMaxHeightPct: 0.8,
-  frameRadius: 10,
+  frameRadius: 0,
 } as const;
 
 const DEVICES = [
@@ -143,7 +144,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
   const activeVariant = variantForWidth(viewport.width);
   const variant = activeVariant === "desktop" ? undefined : canvas.variants?.[activeVariant];
   const view = useMemo(() => resolveDoc(canvas, activeVariant), [canvas, activeVariant]);
-  const container = canvas.container ?? {};
+  const container = { ...canvas.container, ...variant?.container };
   // ads_container_geometry_v1 - by default the popover hugs the edited canvas
   // (1 canvas px = 1 screen px); an explicit container.maxWidth caps it.
   const modalMax = container.maxWidth || view.width + 2 * POPOVER.modalPadX;
@@ -228,6 +229,13 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
     [activeVariant, ensureVariant, update],
   );
 
+  const updateContainer = useCallback((patch: Partial<NonNullable<RestaurantAdCanvas["container"]>>) => {
+    update((draft) => {
+      if (activeVariant === "desktop") draft.container = { ...draft.container, ...patch };
+      else { const v = ensureVariant(draft); v.container = { ...draft.container, ...v.container, ...patch }; }
+    });
+  }, [activeVariant, update, ensureVariant]);
+
   const updateElement = useCallback(
     (id: string, patch: Partial<RestaurantAdCanvasElement> & { props?: Record<string, unknown> }) => {
       updateDoc((doc) => {
@@ -246,9 +254,10 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
       const stage = stageRef.current;
       if (!stage) return { x: 0, y: 0 };
       const rect = stage.getBoundingClientRect();
-      return { x: (clientX - rect.left) / canvasScale, y: (clientY - rect.top) / canvasScale };
+      const scale = rect.width / view.width;
+      return { x: (clientX - rect.left) / scale, y: (clientY - rect.top) / scale };
     },
-    [canvasScale],
+    [view.width],
   );
 
   const onElementPointerDown = useCallback(
@@ -281,7 +290,9 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
       const drag = dragRef.current;
       if (!drag) return;
       const pt = toCanvasPoint(event.clientX, event.clientY);
-      if (drag.kind === "move") {
+      if (drag.kind === "container") {
+        updateDoc((doc) => { doc.width = Math.max(100, Math.min(4096, Math.round(drag.origW + (event.clientX - drag.startX) / drag.scale))); doc.height = Math.max(100, Math.min(4096, Math.round(drag.origH + (event.clientY - drag.startY) / drag.scale))); });
+      } else if (drag.kind === "move") {
         updateElement(drag.id, {
           x: Math.round(drag.origX + (pt.x - drag.startX)),
           y: Math.round(drag.origY + (pt.y - drag.startY)),
@@ -293,7 +304,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
         });
       }
     },
-    [toCanvasPoint, updateElement],
+    [toCanvasPoint, updateElement, updateDoc],
   );
 
   const onPointerUp = useCallback(() => {
@@ -545,7 +556,8 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
               style={{
                 width: `min(100%, ${modalMax}px)`,
                 maxHeight: `${POPOVER.modalMaxHeightPct * 100}%`,
-                borderRadius: container.radius || POPOVER.modalDefaultRadius,
+                borderRadius: container.radius ?? POPOVER.modalDefaultRadius,
+                padding: 0,
               }}
             >
               <span className="bo-adstudioCloseMock" aria-hidden="true">×</span>
@@ -570,6 +582,9 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
                         : view.background.value || "#ffffff",
                   }}
                 >
+                  <button type="button" aria-label="Redimensionar contenedor" disabled={disabled}
+                    style={{ position: "absolute", bottom: 0, right: 0, zIndex: 10000, width: 24, height: 24, cursor: "nwse-resize", touchAction: "none" }}
+                    onPointerDown={(event) => { event.stopPropagation(); event.preventDefault(); dragRef.current = { kind: "container", startX: event.clientX, startY: event.clientY, origW: view.width, origH: view.height, scale: stageRef.current ? stageRef.current.getBoundingClientRect().width / view.width : 1 }; event.currentTarget.setPointerCapture(event.pointerId); }}>↘</button>
                   {sorted.map((el) => {
                     const isSel = el.id === selectedId;
                     return (
@@ -625,23 +640,17 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
         ) : null}
         <div className="bo-adcanvasPanel" data-testid="ad-studio-container-panel">
           <div className="bo-adcanvasPanelHead">
-            <strong>Contenedor del anuncio</strong>
+            <strong>Contenedor del anuncio · {DEVICES.find((item) => item.id === device)?.label}</strong>
           </div>
           <div className="bo-adcanvasFields">
             <label>Ancho máx.<input type="number" min={240} max={2000} disabled={disabled} value={container.maxWidth ?? ""} placeholder="auto (lienzo)" data-testid="ad-studio-container-maxwidth"
-              onChange={(event) => update((draft) => {
-                const raw = event.target.value;
-                draft.container = { ...draft.container, maxWidth: raw ? Math.max(240, Math.min(2000, Number(raw))) : undefined };
-              })} /></label>
+              onChange={(event) => { const raw = event.target.value; updateContainer({ maxWidth: raw ? Math.max(240, Math.min(2000, Number(raw))) : undefined }); }} /></label>
             <label>Color overlay<input type="text" disabled={disabled} value={container.overlay ?? ""} placeholder="rgba(20,24,21,.58)" data-testid="ad-studio-container-overlay"
-              onChange={(event) => update((draft) => { draft.container = { ...draft.container, overlay: event.target.value || undefined }; })} /></label>
+              onChange={(event) => updateContainer({ overlay: event.target.value || undefined })} /></label>
             <label>Radio modal<input type="number" min={0} max={96} disabled={disabled} value={container.radius ?? ""} placeholder={String(POPOVER.modalDefaultRadius)} data-testid="ad-studio-container-radius"
-              onChange={(event) => update((draft) => {
-                const raw = event.target.value;
-                draft.container = { ...draft.container, radius: raw ? Math.max(0, Math.min(96, Number(raw))) : undefined };
-              })} /></label>
+              onChange={(event) => { const raw = event.target.value; updateContainer({ radius: raw !== "" ? Math.max(0, Math.min(96, Number(raw))) : undefined }); }} /></label>
           </div>
-          <p className="bo-adcanvasHint">El contenedor se aplica en la web real al popover del anuncio (mismo estilo en escritorio, tablet y móvil).</p>
+          <p className="bo-adcanvasHint">Los cambios se guardan para el dispositivo seleccionado. El lienzo no añade padding: coloca tú los márgenes.</p>
         </div>
       </div>
     </div>

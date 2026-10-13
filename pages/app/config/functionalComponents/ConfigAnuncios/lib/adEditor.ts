@@ -401,6 +401,7 @@ export function normalizeLayout(layout: RestaurantAd["layout"]): RestaurantAdLay
     background_mode: (["image", "color", "transparent"] as RestaurantAdStepBackground[]).includes(step.background_mode) ? step.background_mode : "transparent",
     background_color: step.background_color ?? "",
     background_image: step.background_image ?? "",
+    canvas: step.canvas,
     detail_background_mode: step.detail_background_mode,
     detail_background_color: step.detail_background_color,
     detail_background_image: step.detail_background_image,

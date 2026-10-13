@@ -21,6 +21,11 @@ if (!process.env.VIKE_CRAWL) {
   process.env.VIKE_CRAWL = JSON.stringify(defaultVikeCrawl());
 }
 
+// Explicit production entry avoids dependency-relative paths from shared worktrees.
+if (process.env.NODE_ENV === "production") {
+  await import(new URL("../dist/server/entry.mjs", import.meta.url).href);
+}
+
 const MOBILE_UA_REGEX = /(android|iphone|ipad|ipod|mobile|webos|blackberry|windows phone)/i;
 
 function isMobileUA(userAgent: string | undefined): boolean {
