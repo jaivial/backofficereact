@@ -62,6 +62,9 @@ export function AnunciosList({ api, notify = NOOP_NOTIFY }: AnunciosListProps) {
       content: ad.content,
       ctas: ad.ctas,
       layout: ad.layout ?? { mode: "unico", steps: [] },
+      // Keep the figma canvas (ads_canvas_v1): an UPDATE without it clears
+      // canvas_json and wipes the whole design.
+      ...(ad.canvas ? { canvas: ad.canvas } : {}),
       starts_at: ad.starts_at ?? null,
       ends_at: ad.ends_at ?? null,
     };
