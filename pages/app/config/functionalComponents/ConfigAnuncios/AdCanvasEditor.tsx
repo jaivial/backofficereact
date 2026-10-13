@@ -17,6 +17,13 @@ type DragState =
 
 const MIN_SIZE = 12;
 
+const TYPE_LABEL: Record<RestaurantAdCanvasElement["type"], string> = {
+  text: "Texto",
+  image: "Imagen",
+  button: "Botón",
+  shape: "Forma",
+};
+
 function nextId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
 }
@@ -189,11 +196,11 @@ export function AdCanvasEditor({ canvas, disabled, onChange }: Props) {
 
   return (
     <div className="bo-adcanvas" data-testid="ad-canvas-editor">
-      <div className="bo-adcanvasToolbar">
-        <button type="button" disabled={disabled} onClick={() => addElement("text")}>+ Texto</button>
-        <button type="button" disabled={disabled} onClick={() => addElement("image")}>+ Imagen</button>
-        <button type="button" disabled={disabled} onClick={() => addElement("button")}>+ Botón</button>
-        <button type="button" disabled={disabled} onClick={() => addElement("shape")}>+ Forma</button>
+      <div className="bo-adcanvasToolbar" role="toolbar" aria-label="Herramientas del lienzo" data-testid="ad-canvas-toolbar">
+        <button type="button" disabled={disabled} onClick={() => addElement("text")} data-testid="ad-canvas-add-text">+ Texto</button>
+        <button type="button" disabled={disabled} onClick={() => addElement("image")} data-testid="ad-canvas-add-image">+ Imagen</button>
+        <button type="button" disabled={disabled} onClick={() => addElement("button")} data-testid="ad-canvas-add-button">+ Botón</button>
+        <button type="button" disabled={disabled} onClick={() => addElement("shape")} data-testid="ad-canvas-add-shape">+ Forma</button>
         <span className="bo-adcanvasSpacer" />
         <label>
           Fondo
@@ -283,11 +290,11 @@ export function AdCanvasEditor({ canvas, disabled, onChange }: Props) {
       {selected ? (
         <div className="bo-adcanvasPanel" data-testid="ad-canvas-panel">
           <div className="bo-adcanvasPanelHead">
-            <strong>{selected.type}</strong>
+            <strong data-testid="ad-canvas-panel-type">{TYPE_LABEL[selected.type] ?? selected.type}</strong>
             <span className="bo-adcanvasSpacer" />
-            <button type="button" disabled={disabled} onClick={() => reorder(selected.id, 1)}>Subir capa</button>
-            <button type="button" disabled={disabled} onClick={() => reorder(selected.id, -1)}>Bajar capa</button>
-            <button type="button" disabled={disabled} onClick={() => removeElement(selected.id)}>Eliminar</button>
+            <button type="button" disabled={disabled} onClick={() => reorder(selected.id, 1)} data-testid="ad-canvas-layer-up">Subir capa</button>
+            <button type="button" disabled={disabled} onClick={() => reorder(selected.id, -1)} data-testid="ad-canvas-layer-down">Bajar capa</button>
+            <button type="button" disabled={disabled} onClick={() => removeElement(selected.id)} data-tone="danger" data-testid="ad-canvas-delete">Eliminar</button>
           </div>
           <ElementInspector el={selected} disabled={disabled} onPatch={(props) => updateElement(selected.id, { props })} />
         </div>
