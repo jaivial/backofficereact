@@ -379,6 +379,9 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
 
   const removeAd = useCallback(async () => {
     if (!ad?.id) return;
+    /* Destructive action with no undo: confirm before the request (audit:
+       two identical red trash buttons carried the same weight, no confirm). */
+    if (!window.confirm(`Eliminar el anuncio "${ad.name || "sin nombre"}"? Esta accion no se puede deshacer.`)) return;
     setBusy(true);
     try {
       const result = await api.deleteAd(ad.id);
@@ -813,9 +816,11 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
           aria-haspopup="menu"
           aria-expanded={addContentOpen}
           aria-label="Añadir contenido o botón"
+          title="Añadir contenido o botón"
           data-testid="ad-add-content-trigger"
         >
           <Plus size={16} aria-hidden="true" />
+          <span className="bo-srOnly">Añadir contenido o botón</span>
         </button>
         {ad.id > 0 ? (
           <button
