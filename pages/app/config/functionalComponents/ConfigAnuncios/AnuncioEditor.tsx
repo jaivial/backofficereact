@@ -178,7 +178,85 @@ function mergeAdEcho(base: RestaurantAd, local: RestaurantAd, server: Restaurant
     ctas: mergeIdList(base.ctas, local.ctas, server.ctas),
     // Reference equality is enough: every layout edit produces a new object.
     layout: Object.is(base.layout, local.layout) ? server.layout : local.layout,
+    // Same for the canvas document (ads_canvas_v1): every canvas edit is a new object.
+    canvas: Object.is(base.canvas, local.canvas) ? server.canvas : local.canvas,
   };
+}
+
+
+// Real-site preview device (ads_site_preview_v1): width presets for the home
+// of preactvillacarmen with the ad forced via ?vc_ad=&vc_preview=1.
+const AD_PREVIEW_DEVICES = [
+  { id: "movil", label: "Móvil 390", width: 390, height: 640 },
+  { id: "tablet", label: "Tablet 834", width: 834, height: 900 },
+  { id: "escritorio", label: "Escritorio 1440", width: 1440, height: 900 },
+] as const;
+
+type AdPreviewDevice = (typeof AD_PREVIEW_DEVICES)[number]["id"];
+
+/**
+ * Backoffice preview of the ad INSIDE the real restaurant home: an iframe of
+ * `${website}/?vc_ad=<id>&vc_preview=1` at a real device width. The site then
+ * forces that ad in the popover (vc_preview=1 -> show it even if already seen
+ * or not in the active list). Falls back to the 1-1 canvas render when no
+ * website is configured (handled by the caller).
+ */
+function AdSitePreview({ adId, name, website }: { adId: number; name: string; website: string }) {
+  const [device, setDevice] = useState<AdPreviewDevice>("movil");
+  const preset = AD_PREVIEW_DEVICES.find((entry) => entry.id === device) ?? AD_PREVIEW_DEVICES[0];
+  const base = website.replace(/\/+$/, "");
+  const previewURL = `${base}/?vc_ad=${adId}&vc_preview=1`;
+  return (
+    <div className="bo-adSitePreview" data-testid="ad-site-preview" data-coord-id="ads_site_preview_v1">
+      <div className="bo-adSitePreviewBar">
+        <label className="bo-adSitePreviewLabel" htmlFor="ad-preview-device">Dispositivo</label>
+        <select
+          id="ad-preview-device"
+          data-testid="ad-preview-device"
+          value={device}
+          onChange={(event) => setDevice(event.target.value as AdPreviewDevice)}
+        >
+          {AD_PREVIEW_DEVICES.map((entry) => (
+            <option key={entry.id} value={entry.id}>{entry.label}</option>
+          ))}
+        </select>
+        <a className="bo-adSitePreviewOpen" href={previewURL} target="_blank" rel="noreferrer" data-testid="ad-preview-open">
+          Abrir en pestaña nueva
+        </a>
+      </div>
+      <div
+        className="bo-adSitePreviewDevice"
+        style={{ width: preset.width, maxWidth: "100%", height: preset.height }}
+        data-testid="ad-preview-frame-wrap"
+      >
+        <iframe
+          src={previewURL}
+          title={name || "Anuncio"}
+          style={{ width: "100%", height: "100%", border: 0, display: "block" }}
+          data-testid="ad-preview-iframe"
+        />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Autosave fingerprint: every persisted field, layout and canvas included, so
+ * any figma-canvas edit (move/resize/add/remove elements, canvas size) fires
+ * the autosave — and the post-save baseline matches it exactly, so the effect
+ * cannot loop. (coord id: autosave_three_way_merge_v1)
+ */
+function adAutosaveFingerprint(ad: RestaurantAd): string {
+  return JSON.stringify({
+    name: ad.name,
+    active: ad.active,
+    content: ad.content,
+    ctas: ad.ctas,
+    layout: adLayout(ad),
+    canvas: ad.canvas ?? null,
+    starts_at: ad.starts_at ?? null,
+    ends_at: ad.ends_at ?? null,
+  });
 }
 
 /** Fills the (single) image element with the uploaded URL, adding one if missing. */
@@ -357,9 +435,10 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
 
   useEffect(() => {
     if (!ad || !sendAdSave) return;
-    // The fingerprint covers every persisted field, layout included, so a
-    // wizard-only edit (step backgrounds, step content) autosaves too.
-    const json = JSON.stringify({ name: ad.name, active: ad.active, content: ad.content, ctas: ad.ctas, layout: adLayout(ad), starts_at: ad.starts_at ?? null, ends_at: ad.ends_at ?? null });
+    // The fingerprint covers every persisted field, layout and canvas included, so a
+    // wizard-only edit (step backgrounds, step content) and every figma-canvas edit
+    // (ads_canvas_v1) autosave too.
+    const json = adAutosaveFingerprint(ad);
     if (baselineRef.current === null) { baselineRef.current = json; return; }
     if (json === baselineRef.current) return;
     const timer = setTimeout(() => {
@@ -370,7 +449,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
           // Merge every typable field against the snapshot so a keystroke made
           // during the request survives the echo, and clearing a field sticks.
           setAd((current) => current ? mergeAdEcho(snapshot, current, saved) : saved);
-          baselineRef.current = JSON.stringify({ name: saved.name, active: saved.active, content: saved.content, ctas: saved.ctas, starts_at: saved.starts_at ?? null, ends_at: saved.ends_at ?? null });
+          baselineRef.current = adAutosaveFingerprint(saved);
         }
       }).catch((error) => notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio"));
     }, autosaveDelayMs ?? 1000);
@@ -921,16 +1000,23 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             {isCanvas && ad?.canvas ? (
               <div className="bo-anunciosCanvasCol" data-slot="ads-canvas-column" data-testid="ad-canvas-mode">
                 {previewOpen && ad.id > 0 ? (
-                  <div
-                    className="publicAdCanvasFrame"
-                    style={{ aspectRatio: `${ad.canvas.width} / ${ad.canvas.height}`, width: "100%", maxWidth: 720 }}
-                  >
-                    <iframe
-                      src={`/api/public/ads/${ad.id}/render?src=backoffice-preview`}
-                      title={ad.name || "Anuncio"}
-                      style={{ width: "100%", height: "100%", border: 0, display: "block", borderRadius: 10 }}
-                    />
-                  </div>
+                  website ? (
+                    <AdSitePreview adId={ad.id} name={ad.name} website={website} />
+                  ) : (
+                    <>
+                      <div
+                        className="publicAdCanvasFrame"
+                        style={{ aspectRatio: `${ad.canvas.width} / ${ad.canvas.height}`, width: "100%", maxWidth: 720 }}
+                      >
+                        <iframe
+                          src={`/api/public/ads/${ad.id}/render?src=backoffice-preview`}
+                          title={ad.name || "Anuncio"}
+                          style={{ width: "100%", height: "100%", border: 0, display: "block", borderRadius: 10 }}
+                        />
+                      </div>
+                      <p className="bo-adcanvasHint">Sin website configurado: preview 1-1 del lienzo (no de la home real).</p>
+                    </>
+                  )
                 ) : previewOpen ? (
                   <p className="bo-adcanvasHint">Guarda el anuncio una vez para ver la preview 1-1.</p>
                 ) : (
