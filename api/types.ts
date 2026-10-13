@@ -2859,6 +2859,7 @@ export type RestaurantAdScheduleRange = { id: number; name: string; starts_at: s
 export type RestaurantAdLayoutMode = "unico" | "multiple";
 export type RestaurantAdStepBackground = "image" | "color" | "transparent";
 export type RestaurantAdStep = {
+  canvas?: RestaurantAdCanvas | null;
   id: string;
   title: string;
   description: string;
@@ -2892,6 +2893,7 @@ export type RestaurantAdCanvasElement = {
 };
 
 export type RestaurantAdCanvasVariant = {
+  container?: RestaurantAdCanvasContainer | null;
   width: number;
   height: number;
   background?: RestaurantAdCanvasBackground;

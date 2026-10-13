@@ -204,11 +204,11 @@ type AdPreviewDevice = (typeof AD_PREVIEW_DEVICES)[number]["id"];
  * active list). Falls back to the 1-1 canvas render when no website is
  * configured (handled by the caller).
  */
-function AdSitePreview({ adId, name, website }: { adId: number; name: string; website: string }) {
+function AdSitePreview({ adId, name, website, stepId }: { adId: number; name: string; website: string; stepId?: string }) {
   const [device, setDevice] = useState<AdPreviewDevice>("movil");
   const [size, setSize] = useState<{ width: number; height: number }>({ width: AD_PREVIEW_DEVICES[0].width, height: AD_PREVIEW_DEVICES[0].height });
   const base = website.replace(/\/+$/, "");
-  const previewURL = `${base}/?vc_ad=${adId}&vc_preview=1`;
+  const previewURL = `${base}/?vc_ad=${adId}&vc_preview=1${stepId ? `&vc_step=${encodeURIComponent(stepId)}` : ""}`;
   const applyDevice = (id: AdPreviewDevice) => {
     const next = AD_PREVIEW_DEVICES.find((entry) => entry.id === id) ?? AD_PREVIEW_DEVICES[0];
     setDevice(id);
@@ -611,12 +611,15 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   // the inspector always write the same shape.
   const layout = useMemo(() => adLayout(ad), [ad]);
   const isMultiple = layout.mode === "multiple";
-  const isCanvas = ad?.canvas != null;
+
   const [activeStepId, setActiveStepId] = useState<string>("");
   const activeStep = useMemo(
     () => layout.steps.find((step) => step.id === activeStepId) ?? layout.steps[0] ?? null,
     [activeStepId, layout.steps],
   );
+  const editedCanvas = isMultiple ? activeStep?.canvas : ad?.canvas;
+  const isCanvas = editedCanvas != null;
+  const changeCanvas = (canvas: RestaurantAdCanvas) => setAd((current) => current ? (isMultiple && activeStep ? updateStep(current, activeStep.id, { canvas }) : { ...current, canvas }) : current);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const routeOptions = useMenuRouteOptions();
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -864,7 +867,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             <button
               type="button"
               className={`bo-anunciosPreviewSwitchBtn ${isCanvas ? "is-active" : ""}`}
-              onClick={() => setAd((current) => (current ? { ...current, canvas: current.canvas ?? defaultCanvasFromAd(current) } : current))}
+              onClick={() => { if (!ad) return; changeCanvas(editedCanvas ?? defaultCanvasFromAd(isMultiple && activeStep ? { ...ad, content: activeStep.content } : ad)); }}
               aria-pressed={isCanvas}
               data-testid="ad-layout-visual"
               data-slot="ad-layout-visual"
@@ -1018,19 +1021,23 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
         }
         canvas={
           <>
-            {isCanvas && ad?.canvas ? (
+            {isMultiple && isCanvas ? <div className="bo-anunciosPreviewSwitch" role="group" aria-label="Anuncio a editar">
+              <button type="button" onClick={() => { if (!ad) return; const next = addStep(ad); setAd(next); const last = adLayout(next).steps.at(-1); if (last) setActiveStepId(last.id); }}>Añadir anuncio</button>
+              {layout.steps.map((step) => <button type="button" key={step.id} onClick={() => setActiveStepId(step.id)} aria-pressed={step.id === activeStep?.id}>{step.title || "Anuncio"}</button>)}
+            </div> : null}
+            {isCanvas && editedCanvas ? (
               <div className="bo-anunciosCanvasCol" data-slot="ads-canvas-column" data-testid="ad-canvas-mode">
                 {previewOpen && ad.id > 0 ? (
                   website ? (
-                    <AdSitePreview adId={ad.id} name={ad.name} website={website} />
+                    <AdSitePreview adId={ad.id} name={ad.name} website={website} stepId={isMultiple ? activeStep?.id : undefined} />
                   ) : (
                     <>
                       <div
                         className="publicAdCanvasFrame"
-                        style={{ aspectRatio: `${ad.canvas.width} / ${ad.canvas.height}`, width: "100%", maxWidth: 720 }}
+                        style={{ aspectRatio: `${editedCanvas.width} / ${editedCanvas.height}`, width: "100%", maxWidth: 720 }}
                       >
                         <iframe
-                          src={`/api/public/ads/${ad.id}/render?src=backoffice-preview`}
+                          src={`/api/public/ads/${ad.id}/render?src=backoffice-preview${isMultiple && activeStep ? `&step=${encodeURIComponent(activeStep.id)}` : ""}`}
                           title={ad.name || "Anuncio"}
                           style={{ width: "100%", height: "100%", border: 0, display: "block", borderRadius: 10 }}
                         />
@@ -1042,11 +1049,11 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   <p className="bo-adcanvasHint">Guarda el anuncio una vez para ver la preview 1-1.</p>
                 ) : (
                   <AdVisualStudio
-                    canvas={ad.canvas}
+                    canvas={editedCanvas}
                     adId={ad.id}
                     adName={ad.name}
                     website={website}
-                    onChange={(canvas) => setAd((current) => (current ? { ...current, canvas } : current))}
+                    onChange={changeCanvas}
                   />
                 )}
               </div>
