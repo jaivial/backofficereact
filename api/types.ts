@@ -2859,6 +2859,7 @@ export type RestaurantAdScheduleRange = { id: number; name: string; starts_at: s
 export type RestaurantAdLayoutMode = "unico" | "multiple";
 export type RestaurantAdStepBackground = "image" | "color" | "transparent";
 export type RestaurantAdStep = {
+  canvas?: RestaurantAdCanvas | null;
   id: string;
   title: string;
   description: string;
@@ -2891,12 +2892,31 @@ export type RestaurantAdCanvasElement = {
   props: Record<string, unknown>;
 };
 
+export type RestaurantAdCanvasVariant = {
+  container?: RestaurantAdCanvasContainer | null;
+  width: number;
+  height: number;
+  background?: RestaurantAdCanvasBackground;
+  elements?: RestaurantAdCanvasElement[];
+};
+
+export type RestaurantAdCanvasContainer = {
+  maxWidth?: number;
+  overlay?: string;
+  radius?: number;
+};
+
 export type RestaurantAdCanvas = {
   version: 1;
   width: number;
   height: number;
   background: RestaurantAdCanvasBackground;
   elements: RestaurantAdCanvasElement[];
+  /** Per-breakpoint docs (ads_canvas_breakpoints_v1); a variant inherits every
+   * absent field from the base document. */
+  variants?: { tablet?: RestaurantAdCanvasVariant; mobile?: RestaurantAdCanvasVariant };
+  /** Popover chrome (ads_canvas_container_v1): maxWidth px, overlay color, radius px. */
+  container?: RestaurantAdCanvasContainer | null;
 };
 
 export type RestaurantAd = {
