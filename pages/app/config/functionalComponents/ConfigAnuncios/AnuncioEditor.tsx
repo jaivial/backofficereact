@@ -307,19 +307,23 @@ const SELECTION_KEEP_SELECTOR = [
 // document rendered 1-1 by the backend render endpoint (iframe).
 function defaultCanvasFromAd(source: RestaurantAd): RestaurantAdCanvas {
   const elements: RestaurantAdCanvas["elements"] = [];
-  const title = source.content.find((item) => item.type === "title");
-  const image = source.content.find((item) => item.type === "image");
-  const cta = source.ctas[0];
-  if (title) {
-    elements.push({ id: "txt-title", type: "text", x: 50, y: 40, w: 700, h: 90, z: 2, props: { text: title.value, fontSize: 44, color: "#111111", align: "center", bold: true } });
+  let y = 32;
+  for (const item of source.content) {
+    if (item.type === "image" && item.value) {
+      elements.push({ id: `visual-${item.id}`, type: "image", x: 40, y, w: 720, h: 220, z: elements.length + 1, props: { src: item.value, fit: "contain", radius: 0, alt: "" } });
+      y += 236;
+    } else if (item.type !== "image") {
+      const size = item.type === "title" ? 36 : item.type === "subtitle" ? 26 : 20;
+      const height = item.type === "text" ? 100 : 72;
+      elements.push({ id: `visual-${item.id}`, type: "text", x: 40, y, w: 720, h: height, z: elements.length + 1, props: { text: item.value, fontSize: size, color: "#111111", align: item.align || "left", bold: item.type === "title" } });
+      y += height + 12;
+    }
   }
-  if (image && image.value) {
-    elements.push({ id: "img-main", type: "image", x: 250, y: 150, w: 300, h: 200, z: 1, props: { src: image.value, fit: "cover", radius: 16, alt: "" } });
+  for (const cta of source.ctas) {
+    elements.push({ id: `visual-${cta.id}`, type: "button", x: 200, y, w: 400, h: 56, z: elements.length + 1, props: { text: cta.text || "Ver más", href: cta.navigation_mode === "custom" ? cta.custom_url || "/" : cta.route || "/", bg: cta.color || "#c9a86a", color: "#1a2e22", radius: 28, fontSize: 20, bold: true } });
+    y += 68;
   }
-  if (cta) {
-    elements.push({ id: "btn-main", type: "button", x: 300, y: 400, w: 200, h: 56, z: 3, props: { text: cta.text || "Ver mas", href: cta.navigation_mode === "custom" ? cta.custom_url || "/" : cta.route || "/", bg: cta.color || "#c9a86a", color: "#1a2e22", radius: 28, fontSize: 20, bold: true } });
-  }
-  return { version: 1, width: 800, height: 500, background: { type: "color", value: "#ffffff" }, elements };
+  return { version: 1, width: 800, height: Math.min(4096, Math.max(500, y + 32)), background: { type: "color", value: "#ffffff" }, elements };
 }
 
 export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs, sendAdScheduleCheck }: AnuncioEditorProps) {
@@ -332,6 +336,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   const scheduleCheckReqRef = useRef<string | null>(null);
 
   const [wizardStep, setWizardStep] = useState(0);
+  const [wizardCards, setWizardCards] = useState(false);
   /** Where the shared upload flow writes (coord id ads_image_target_v2):
    * the announcement image, a step content image, the card background or the
    * detail background of a step. */
@@ -617,8 +622,14 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
     () => layout.steps.find((step) => step.id === activeStepId) ?? layout.steps[0] ?? null,
     [activeStepId, layout.steps],
   );
-  const editedCanvas = isMultiple ? activeStep?.canvas : ad?.canvas;
-  const isCanvas = editedCanvas != null;
+  // Entering visual mode never overwrites saved content. A missing step canvas
+  // is converted only when the operator edits it, and every step stays separate.
+  const savedCanvas = isMultiple ? activeStep?.canvas : ad?.canvas;
+  const visualStep = isMultiple && !wizardCards && (!previewOpen || savedCanvas != null);
+  const editedCanvas = visualStep && activeStep && ad
+    ? savedCanvas ?? defaultCanvasFromAd({ ...ad, content: activeStep.content, ctas: ad.ctas })
+    : savedCanvas;
+  const isCanvas = isMultiple ? visualStep : editedCanvas != null;
   const changeCanvas = (canvas: RestaurantAdCanvas) => setAd((current) => current ? (isMultiple && activeStep ? updateStep(current, activeStep.id, { canvas }) : { ...current, canvas }) : current);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const routeOptions = useMenuRouteOptions();
@@ -867,7 +878,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             <button
               type="button"
               className={`bo-anunciosPreviewSwitchBtn ${isCanvas ? "is-active" : ""}`}
-              onClick={() => { if (!ad) return; changeCanvas(editedCanvas ?? defaultCanvasFromAd(isMultiple && activeStep ? { ...ad, content: activeStep.content } : ad)); }}
+              onClick={() => { if (!ad) return; if (isMultiple) { setWizardCards(false); setWizardStep(1); } else changeCanvas(editedCanvas ?? defaultCanvasFromAd(ad)); }}
               aria-pressed={isCanvas}
               data-testid="ad-layout-visual"
               data-slot="ad-layout-visual"
@@ -941,14 +952,20 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
       </div>
 
       <AdStudioShell
-        canvasLabel={`${isMultiple ? (wizardStep === 0 ? "Pile de tarjetas" : `Anuncio ${wizardStep} de ${layout.steps.length}`) : "Anuncio"} ${previewOpen ? "(preview)" : "(editable)"}`}
+        canvasLabel={`${isMultiple ? (isCanvas ? `Lienzo de ${activeStep?.title || "anuncio"}` : "Tarjetas del wizard") : "Anuncio"} ${previewOpen ? "(preview)" : "(editable)"}`}
         layers={
-          !isCanvas ? <>
+          isCanvas && isMultiple ? <div className="bo-adWizardVisualGuide">
+            <strong>Pasos del wizard</strong>
+            <p>Cada anuncio tiene su propio lienzo y versiones por dispositivo.</p>
+            {layout.steps.map((step, index) => <button type="button" key={step.id} className={`bo-anunciosPreviewSwitchBtn ${step.id === activeStep?.id ? "is-active" : ""}`} onClick={() => { setActiveStepId(step.id); setWizardCards(false); setWizardStep(index + 1); }} aria-pressed={step.id === activeStep?.id}>{index + 1}. {step.title || "Anuncio"}</button>)}
+            <button type="button" className="bo-anunciosPreviewSwitchBtn" onClick={() => { setWizardCards(true); setWizardStep(0); }}>Editar tarjetas y orden</button>
+            <p>Selecciona el texto, imagen o botón del lienzo para editarlo. Los cambios se guardan automáticamente.</p>
+          </div> : !isCanvas ? <>
             {isMultiple ? (
               <StepListPanel
                 steps={layout.steps}
                 activeStepId={activeStep?.id ?? ""}
-                onSelect={(stepId) => { setActiveStepId(stepId); setWizardStep(0); setSelectedId(null); }}
+                onSelect={(stepId) => { setActiveStepId(stepId); setWizardStep(0); setWizardCards(true); setSelectedId(null); }}
                 onAdd={() => { try { setAd(addStep(ad)); } catch (error) { notify("info", "Limite", error instanceof Error ? error.message : "No se puede añadir otro anuncio"); } }}
                 onRemove={(stepId) => setAd(removeStep(ad, stepId))}
                 onReorder={(ordered) => setAd(reorderSteps(ad, ordered.map((step) => step.id)))}
@@ -1021,9 +1038,10 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
         }
         canvas={
           <>
-            {isMultiple && isCanvas ? <div className="bo-anunciosPreviewSwitch" role="group" aria-label="Anuncio a editar">
-              <button type="button" onClick={() => { if (!ad) return; const next = addStep(ad); setAd(next); const last = adLayout(next).steps.at(-1); if (last) setActiveStepId(last.id); }}>Añadir anuncio</button>
-              {layout.steps.map((step) => <button type="button" key={step.id} onClick={() => setActiveStepId(step.id)} aria-pressed={step.id === activeStep?.id}>{step.title || "Anuncio"}</button>)}
+            {isMultiple ? <div className="bo-anunciosPreviewSwitch bo-adWizardStepNav" role="group" aria-label="Pasos del anuncio múltiple">
+              <button type="button" onClick={() => { setWizardCards(true); setWizardStep(0); }} className={`bo-anunciosPreviewSwitchBtn ${!isCanvas ? "is-active" : ""}`} aria-pressed={!isCanvas}>Tarjetas del wizard</button>
+              <button type="button" className="bo-anunciosPreviewSwitchBtn" onClick={() => { if (!ad) return; try { const next = addStep(ad); setAd(next); const last = adLayout(next).steps.at(-1); if (last) { setActiveStepId(last.id); setWizardCards(false); } } catch (error) { notify("info", "Límite", error instanceof Error ? error.message : "No se puede añadir otro anuncio"); } }}>Añadir anuncio</button>
+              {layout.steps.map((step) => <button type="button" key={step.id} onClick={() => { setActiveStepId(step.id); setWizardCards(false); setWizardStep(layout.steps.indexOf(step) + 1); setSelectedId(null); }} className={`bo-anunciosPreviewSwitchBtn ${isCanvas && step.id === activeStep?.id ? "is-active" : ""}`} aria-pressed={isCanvas && step.id === activeStep?.id}>{step.title || "Anuncio"}</button>)}
             </div> : null}
             {isCanvas && editedCanvas ? (
               <div className="bo-anunciosCanvasCol" data-slot="ads-canvas-column" data-testid="ad-canvas-mode">
@@ -1049,9 +1067,11 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   <p className="bo-adcanvasHint">Guarda el anuncio una vez para ver la preview 1-1.</p>
                 ) : (
                   <AdVisualStudio
+                    key={isMultiple ? activeStep?.id : "single"}
                     canvas={editedCanvas}
                     adId={ad.id}
-                    adName={ad.name}
+                    adName={activeStep?.title || ad.name}
+                    stepId={isMultiple ? activeStep?.id : undefined}
                     website={website}
                     onChange={changeCanvas}
                   />
@@ -1070,7 +1090,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   steps={layout.steps}
                   editable={!previewOpen}
                   stepIndex={wizardStep}
-                  onStepIndex={setWizardStep}
+                  onStepIndex={(index) => { setWizardStep(index); if (!previewOpen && index > 0 && layout.steps[index - 1]) { setActiveStepId(layout.steps[index - 1].id); setWizardCards(false); } }}
                   selectedId={selectedId}
                   onSelect={setSelectedId}
                   onStepsChange={(steps) => setAd(reorderSteps(ad, steps.map((step) => step.id)))}
