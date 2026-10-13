@@ -715,6 +715,13 @@ export function AdWizard({
           <ChevronLeft size={15} aria-hidden="true" />
           Volver
         </button>
+        {step.canvas && !editable ? (
+          <iframe
+            title={step.title || "Anuncio"}
+            src={`/api/public/ads/${ad.id}/render?src=backoffice-preview&step=${encodeURIComponent(step.id)}`}
+            style={{ width: "100%", aspectRatio: `${step.canvas.width} / ${step.canvas.height}`, border: 0, display: "block" }}
+          />
+        ) : (
         <AdSurface
           content={step.content}
           buttons={ad.ctas}
@@ -729,6 +736,7 @@ export function AdWizard({
           surfaceProps={{ style, "data-slot": "ad-wizard-step-surface" } as React.HTMLAttributes<HTMLDivElement>}
           testId={`${testId}-step`}
         />
+        )}
       </div>
     );
   }
