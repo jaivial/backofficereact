@@ -362,9 +362,16 @@
     touch-action: pan-y;
   }
 
+  /* Zoom controls reach the 44px touch minimum (visual glyph stays compact
+     because the button is a plain square hit area). */
   .campaign-flowCanvas .react-flow__controls-button {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .campaign-flowCanvas .react-flow__controls-button svg {
+    width: 16px;
+    height: 16px;
   }
 
   .campaign-flowNode {
@@ -374,5 +381,16 @@
 
   .campaign-flowLegend {
     gap: 10px;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. Bottom-nav clearance (mobile): the app shell keeps a fixed bottom
+ *    nav, so the editor reserves scroll room under it (audit: the last
+ *    flow node and the message body were clipped by the bar).
+ * ------------------------------------------------------------------ */
+@media (max-width: 720px) {
+  main[data-testid="app-layout-main"] {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px) + 12px);
   }
 }
