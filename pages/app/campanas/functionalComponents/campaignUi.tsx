@@ -146,6 +146,7 @@ export function CampaignSection({
           <span
             className="grid size-7 shrink-0 place-items-center rounded-bo-sm border border-bo-border-2 bg-bo-surface-2 text-bo-accent"
             aria-hidden="true"
+            data-coord-id="bo_editor_tokens_v1"
             data-observe={testId ? `${testId}-icon` : undefined}
           >
             {icon}

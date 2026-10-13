@@ -209,6 +209,10 @@
 .bo-anunciosSaveStatus {
   height: 32px;
   padding: 0 12px;
+  /* Autosave state is information, not a control: no pill chrome so it stops
+     reading as a tappable button next to the mode pills. */
+  border-color: transparent;
+  background: transparent;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -303,7 +307,7 @@
 
 .bo-anunciosIconBtn[data-tone="primary"] {
   background: var(--bo-accent);
-  color: var(--bo-bg);
+  color: var(--bo-on-accent);
   border-color: var(--bo-accent);
 }
 
@@ -455,7 +459,7 @@
 }
 
 .bo-anunciosPreviewSwitchBtn.is-active {
-  background: rgba(185, 168, 255, 0.24);
+  background: color-mix(in srgb, var(--bo-accent) 18%, var(--bo-surface-2));
   color: var(--bo-text);
 }
 
@@ -803,8 +807,11 @@ button.bg-bo-accent { color: var(--bo-bg); }
   width: fit-content;
   align-items: center;
   gap: 6px;
-  color: var(--bo-muted);
+  /* Primary escape affordance: was --bo-muted (gray-on-gray, audit
+     ads-editor-light-mobile-v3). */
+  color: var(--bo-text);
   font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
   padding: 6px 10px;
   border-radius: var(--bo-radius-sm, 8px);
@@ -1349,6 +1356,7 @@ button.bg-bo-accent { color: var(--bo-bg); }
   align-items: center;
   gap: 8px;
   width: 100%;
+  /* 44px touch target on touch screens, 32px visual density on desktop. */
   min-height: 32px;
   padding: 4px 8px;
   border: 0;
@@ -1381,6 +1389,10 @@ button.bg-bo-accent { color: var(--bo-bg); }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Full value on hover/focus so a truncated layer preview is never lost
+   (audit: values ellipsized mid-word with no recovery). */
+.bo-adLayerRow:hover .bo-adLayerValue,
+.bo-adLayerRow:focus-visible .bo-adLayerValue { white-space: normal; overflow-wrap: anywhere; }
 .bo-adLayersEmpty {
   margin: 0;
   color: var(--bo-faint);
@@ -2143,22 +2155,162 @@ button.bg-bo-accent { color: var(--bo-bg); }
   cursor: default;
 }
 
-/* ads_canvas_v1 - free-form visual canvas editor */
+/* ads_canvas_v1 - free-form visual canvas editor.
+   Every color goes through --bo-* tokens so the stage, toolbar and inspector
+   hold up in dark AND light theme (audit: light-gray inputs and a white
+   checkerboard leaked into dark). Editor chrome only: the ad canvas itself
+   keeps the user's own background color. */
 .bo-adcanvas { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 .bo-adcanvasToolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.bo-adcanvasToolbar button { padding: 6px 12px; border: 1px solid var(--line, #d8d3c8); border-radius: 8px; background: var(--surface, #fff); cursor: pointer; font-size: 13px; }
-.bo-adcanvasToolbar button:hover { background: var(--accent-soft, #f4efe4); }
-.bo-adcanvasToolbar label { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.bo-adcanvasToolbar button,
+.bo-adcanvasPanelHead button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--bo-border-2);
+  border-radius: 10px;
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+.bo-adcanvasToolbar button:hover,
+.bo-adcanvasPanelHead button:hover { background: var(--bo-bg-hover); border-color: color-mix(in srgb, var(--bo-accent) 45%, var(--bo-border-2)); }
+.bo-adcanvasToolbar button:focus-visible,
+.bo-adcanvasPanelHead button:focus-visible { outline: 2px solid var(--bo-accent); outline-offset: 2px; }
+.bo-adcanvasToolbar button:disabled { opacity: 0.45; cursor: not-allowed; }
+.bo-adcanvasPanelHead button[data-tone="danger"] { color: var(--bo-text-danger); border-color: color-mix(in srgb, var(--bo-text-danger) 40%, var(--bo-border-2)); }
+.bo-adcanvasToolbar label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--bo-muted); }
 .bo-adcanvasSpacer { flex: 1; }
-.bo-adcanvasStageWrap { overflow: hidden; border: 1px solid var(--line, #d8d3c8); border-radius: 12px; background: repeating-conic-gradient(#f2f2f2 0% 25%, #fafafa 0% 50%) 0 0 / 20px 20px; }
-.bo-adcanvasStage { position: relative; transform-origin: top left; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
-.bo-adcanvasEl { position: absolute; box-sizing: border-box; cursor: grab; }
-.bo-adcanvasEl.is-selected { outline: 2px solid var(--accent, #c9a86a); outline-offset: 1px; }
-.bo-adcanvasHandle { position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent, #c9a86a); border: 2px solid #fff; cursor: nwse-resize; }
-.bo-adcanvasPanel { border: 1px solid var(--line, #d8d3c8); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-.bo-adcanvasPanelHead { display: flex; align-items: center; gap: 8px; }
-.bo-adcanvasPanelHead button { padding: 4px 10px; border: 1px solid var(--line, #d8d3c8); border-radius: 8px; background: var(--surface, #fff); cursor: pointer; font-size: 12px; }
+.bo-adcanvasStageWrap {
+  overflow: hidden;
+  border: 1px solid var(--bo-border-2);
+  border-radius: 12px;
+  /* Neutral checkerboard from tokens, visible on both themes. */
+  background:
+    repeating-conic-gradient(var(--bo-surface-3) 0% 25%, var(--bo-surface-2) 0% 50%) 0 0 / 20px 20px;
+}
+.bo-adcanvasStage { position: relative; transform-origin: top left; box-shadow: 0 2px 12px var(--bo-shadow-soft, rgba(0, 0, 0, 0.18)); }
+.bo-adcanvasEl { position: absolute; box-sizing: border-box; cursor: grab; touch-action: none; }
+.bo-adcanvasEl.is-selected { outline: 2px solid var(--bo-accent); outline-offset: 1px; }
+.bo-adcanvasHandle {
+  /* 24px hit area, 12px visual dot (44px is unreachable on-canvas; this is the
+     largest affordance that stays inside the selected element's corner). */
+  position: absolute;
+  right: -12px;
+  bottom: -12px;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: nwse-resize;
+  padding: 0;
+}
+.bo-adcanvasHandle::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--bo-accent);
+  border: 2px solid var(--bo-surface);
+}
+.bo-adcanvasPanel { border: 1px solid var(--bo-border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bo-surface); }
+.bo-adcanvasPanelHead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bo-adcanvasPanelHead strong { color: var(--bo-text); font-size: 13px; text-transform: capitalize; }
 .bo-adcanvasFields { display: flex; flex-wrap: wrap; gap: 10px 16px; }
-.bo-adcanvasFields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 110px; }
-.bo-adcanvasFields input[type="text"], .bo-adcanvasFields input[type="number"], .bo-adcanvasFields select, .bo-adcanvasFields textarea { padding: 6px 8px; border: 1px solid var(--line, #d8d3c8); border-radius: 8px; font-size: 13px; }
-.bo-adcanvasHint { font-size: 13px; opacity: .7; }
+.bo-adcanvasFields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 110px; color: var(--bo-muted); }
+.bo-adcanvasFields input[type="text"],
+.bo-adcanvasFields input[type="number"],
+.bo-adcanvasFields select,
+.bo-adcanvasFields textarea {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--bo-border-2);
+  border-radius: 8px;
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+  font-size: 13px;
+}
+.bo-adcanvasFields input:focus-visible,
+.bo-adcanvasFields select:focus-visible,
+.bo-adcanvasFields textarea:focus-visible { outline: 2px solid var(--bo-accent); outline-offset: 1px; }
+.bo-adcanvasHint { font-size: 13px; color: var(--bo-muted); opacity: 1; }
+
+/* =====================================================================
+ * Ads editor touch + theme polish (coord id ads_touch_polish_v1).
+ * Audit: pills/icon buttons/layer rows under the 44px touch minimum, the
+ * status badge reading as a control, the mobile drawer without elevation
+ * and dead space under the fixed bottom nav. Desktop density is untouched:
+ * every rule here is scoped to coarse pointers or narrow viewports.
+ * ===================================================================== */
+
+/* --- Tap targets (44px minimum on touch devices, both themes) --- */
+@media (pointer: coarse) {
+  .bo-anunciosPreviewSwitchBtn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 16px;
+  }
+  .bo-anunciosPreviewSwitch { padding: 4px; }
+  .bo-anunciosIconBtn,
+  .bo-anunciosMoreTrigger {
+    width: 44px;
+    height: 44px;
+  }
+  .bo-anunciosSaveStatus { min-height: 44px; }
+  .bo-anunciosBackLink {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+  .bo-adLayerRow { min-height: 44px; padding: 6px 10px; }
+  .bo-adStepToggle { width: 44px; height: 44px; }
+  .bo-adStudioMenu { width: 44px; height: 44px; }
+  .bo-adStudioDrawerClose { width: 44px; height: 44px; }
+  .bo-adStudioDrawerTabs [role="tab"] { min-height: 44px; padding: 8px 16px; }
+  .bo-anunciosAddItem--inline { min-height: 44px; }
+  .bo-anunciosAddItem { min-height: 44px; }
+}
+
+/* --- Bottom-nav clearance: the app shell bar is fixed, so the editor keeps
+   a scroll pad under the canvas and its chrome (audit: content clipped by
+   the bottom bar, no scroll padding). --- */
+@media (max-width: 720px) {
+  main[data-testid="app-layout-main"] {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px) + 12px);
+  }
+  .bo-anunciosCanvasCol { overflow-clip-margin: 4px; }
+}
+
+/* --- Mobile drawer: visible elevation and border so the panel separates
+   from the canvas (audit: no border/elevation separation). --- */
+@media (max-width: 1279px) {
+  .bo-adStudioDrawer {
+    border-inline-end: 1px solid var(--bo-border-2);
+    border-block-end: 1px solid var(--bo-border-2);
+    border-radius: 0 14px 14px 0;
+    box-shadow: var(--bo-shadow);
+  }
+  .bo-adStudioDrawerBody { padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .bo-adStudioScrim { background: color-mix(in srgb, var(--bo-bg) 55%, black 20%); }
+}
+
+/* --- Mode pills: consistent radius/height and a readable active state on
+   light theme (audit: ragged two-row wrap, washed-out active pill). --- */
+.bo-anunciosPreviewSwitchBtn {
+  border-radius: 999px;
+  white-space: nowrap;
+}
+:root[data-theme="light"] .bo-anunciosPreviewSwitchBtn.is-active {
+  background: color-mix(in srgb, var(--bo-accent) 16%, var(--bo-shell));
+  color: var(--bo-text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bo-accent) 45%, transparent);
+}
+@media (max-width: 480px) {
+  .bo-anunciosEditorBar { row-gap: 8px; }
+  .bo-anunciosPreviewSwitchBtn { padding: 0 12px; gap: 4px; }
+  .bo-anunciosPreviewSwitchBtn .bo-anunciosPreviewSwitchLabel { font-size: 12px; }
+}

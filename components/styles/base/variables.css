@@ -101,6 +101,23 @@
   --bo-shadow: 0 18px 52px rgba(0, 0, 0, 0.55);
   --bo-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.36);
 
+  /* Control surfaces shared by the editors (rich-text toolbar, flow canvas).
+     Two greys so a control on a card can step half a tone without inventing a
+     colour: --bo-control is the resting fill, --bo-control-hover the hover.
+     Coordination id: bo_editor_tokens_v1 */
+  --bo-control: rgba(255, 255, 255, 0.04);
+  --bo-control-hover: rgba(255, 255, 255, 0.08);
+  --bo-canvas: color-mix(in srgb, var(--bo-surface-3) 88%, var(--bo-surface-2));
+  --bo-canvas-dot: rgba(148, 163, 184, 0.28);
+  --bo-edge: rgba(148, 163, 184, 0.55);
+  /* Flow node state colours: the dot and the 4px ring around the node card. */
+  --bo-state-ok: #10b981;
+  --bo-state-ok-ring: rgba(16, 185, 129, 0.25);
+  --bo-state-warn: #f59e0b;
+  --bo-state-warn-ring: rgba(245, 158, 11, 0.25);
+  --bo-state-off: #94a3b8;
+  --bo-state-off-ring: rgba(148, 163, 184, 0.22);
+
   /* Body background */
   --bo-body-bg:
     radial-gradient(1100px 640px at 18% -10%, rgba(185, 168, 255, 0.12), transparent 62%),
@@ -192,6 +209,21 @@
 
   --bo-shadow: 0 18px 52px rgba(0, 0, 0, 0.16);
   --bo-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.10);
+
+  /* Light counterparts of the editor control/canvas tokens: same roles, tuned
+     to stay visible on white cards (the dark rgba whites wash out here).
+     Coordination id: bo_editor_tokens_v1 */
+  --bo-control: rgba(20, 21, 26, 0.04);
+  --bo-control-hover: rgba(20, 21, 26, 0.08);
+  --bo-canvas: var(--bo-surface-3);
+  --bo-canvas-dot: rgba(71, 85, 105, 0.30);
+  --bo-edge: rgba(71, 85, 105, 0.60);
+  --bo-state-ok: #15803d;
+  --bo-state-ok-ring: rgba(21, 128, 61, 0.20);
+  --bo-state-warn: #b45309;
+  --bo-state-warn-ring: rgba(180, 83, 9, 0.20);
+  --bo-state-off: #64748b;
+  --bo-state-off-ring: rgba(100, 116, 139, 0.20);
 
   --bo-body-bg:
     radial-gradient(1100px 640px at 18% -10%, rgba(185, 168, 255, 0.20), transparent 62%),
