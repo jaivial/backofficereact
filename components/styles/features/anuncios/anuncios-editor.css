@@ -461,6 +461,9 @@
 .bo-anunciosPreviewSwitchBtn.is-active {
   background: color-mix(in srgb, var(--bo-accent) 18%, var(--bo-surface-2));
   color: var(--bo-text);
+  /* Same ring the light theme gets: without it the segmented groups read as
+     two grey tones and the active mode is ambiguous (live vision audit). */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bo-accent) 45%, transparent);
 }
 
 .bo-anunciosPreviewSwitchBtn:focus-visible {
@@ -1420,7 +1423,9 @@ button.bg-bo-accent { color: var(--bo-bg); }
 
 .bo-adStudioStageLabel {
   margin: 0;
-  color: var(--bo-faint);
+  /* --bo-muted, not --bo-faint: the label tells the editor whether the card
+     is editable or a 1-1 preview, so it must stay legible in both themes. */
+  color: var(--bo-muted);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -2246,6 +2251,31 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-adcanvasFields input:focus-visible,
 .bo-adcanvasFields select:focus-visible,
 .bo-adcanvasFields textarea:focus-visible { outline: 2px solid var(--bo-accent); outline-offset: 1px; }
+/* Toolbar controls: the Fondo/Lienzo selects and the color input live directly
+   in .bo-adcanvasToolbar (not in .bo-adcanvasFields), so they need the same
+   tokened treatment or they render native light dropdowns inside dark theme
+   (live audit ads_studio_grid_fix_v1 follow-up). */
+.bo-adcanvasToolbar select,
+.bo-adcanvasToolbar input[type="text"],
+.bo-adcanvasToolbar input[type="color"] {
+  min-height: 40px;
+  padding: 4px 8px;
+  border: 1px solid var(--bo-border-2);
+  border-radius: 8px;
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+  font-size: 13px;
+}
+.bo-adcanvasToolbar input[type="color"] {
+  width: 40px;
+  padding: 3px;
+  cursor: pointer;
+}
+.bo-adcanvasToolbar select:focus-visible,
+.bo-adcanvasToolbar input:focus-visible { outline: 2px solid var(--bo-accent); outline-offset: 1px; }
+.bo-adcanvasToolbar select:disabled,
+.bo-adcanvasToolbar input:disabled { opacity: 0.45; cursor: not-allowed; }
+
 .bo-adcanvasHint { font-size: 13px; color: var(--bo-muted); opacity: 1; }
 
 /* =====================================================================
