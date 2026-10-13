@@ -401,14 +401,14 @@ export default function RichTextEditorSurface({
   return (
     <div className="grid gap-2" data-testid={testId} data-coord-id={coordId} data-observe="rich-text-editor">
       <div
-        className="overflow-hidden rounded-bo-md border border-bo-border bg-[rgba(255,255,255,0.02)] transition-[border-color,box-shadow] duration-150 focus-within:border-[rgba(185,168,255,0.38)] focus-within:shadow-[0_0_0_3px_rgba(185,168,255,0.10)]"
+        className="bo-editorSurface"
         data-testid={`${testId}-surface`}
         data-observe="rich-text-editor-surface"
         data-coord-id={coordId ? `${coordId}-surface` : undefined}
       >
         <TooltipProvider delayDuration={350} skipDelayDuration={200}>
           <div
-            className="flex flex-wrap items-center gap-1 border-b border-bo-border bg-[rgba(255,255,255,0.02)] p-1.5"
+            className="bo-editorToolbar"
             role="toolbar"
             aria-label="Formato del mensaje"
             aria-controls={`${testId}-content`}
@@ -475,7 +475,7 @@ export default function RichTextEditorSurface({
 
           {linkOpen ? (
             <div
-              className="grid gap-2 border-b border-bo-border bg-[rgba(185,168,255,0.06)] p-2 sm:grid-cols-[1fr_1fr_auto]"
+              className="bo-editorLinkPanel"
               data-testid={`${testId}-link-panel`}
               data-observe="rich-text-editor-link-panel"
               data-coord-id={coordId ? `${coordId}-link` : undefined}
@@ -516,7 +516,7 @@ export default function RichTextEditorSurface({
               <div className="flex flex-wrap items-end gap-2">
                 <button
                   type="button"
-                  className={cn(toggleVariants({ size: "label" }), "border-[rgba(185,168,255,0.3)] bg-[rgba(185,168,255,0.16)] text-bo-text")}
+                  className={cn(toggleVariants({ size: "label" }), "bo-editorLinkApply")}
                   onClick={applyLink}
                   data-testid={`${testId}-link-apply-btn`}
                 >
@@ -547,7 +547,7 @@ export default function RichTextEditorSurface({
 
         {imageCount ? (
           <div
-            className="flex flex-wrap items-center gap-2 border-b border-bo-border bg-[rgba(255,255,255,0.02)] px-2 py-1.5"
+            className="bo-editorWidthStrip"
             data-testid={`${testId}-img-width-strip`}
             data-observe="rich-text-editor-image-width"
             data-coord-id={coordId ? `${coordId}-image-width` : undefined}

@@ -72,11 +72,11 @@ export function RichTextEditor({ value, onChange, onUploadImage, placeholder, mi
   return (
     <div className="grid gap-2" data-testid={testId} data-coord-id={coordId} data-observe="rich-text-editor">
       <div
-        className="overflow-hidden rounded-bo-md border border-bo-border bg-[rgba(255,255,255,0.02)]"
+        className="bo-editorSurface"
         data-testid={`${testId}-loading`}
       >
         <div
-          className="flex items-center gap-2 border-b border-bo-border bg-[rgba(255,255,255,0.02)] p-1.5 text-xs text-bo-faint"
+          className="bo-editorToolbar text-xs text-bo-faint"
           style={{ minHeight: TOOLBAR_HEIGHT }}
           aria-hidden="true"
           data-testid={`${testId}-loading-bar`}

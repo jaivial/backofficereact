@@ -71,7 +71,7 @@ export function CampaignPreview({ markdown, theme, shell, bodyPlaceholder, devic
         </figcaption>
         <iframe
           ref={frameRef}
-          title="Previsualizacion email"
+          title="Previsualización de email"
           srcDoc={html}
           onLoad={measure}
           scrolling="no"

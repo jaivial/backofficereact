@@ -19,20 +19,24 @@ export const toggleVariants = cva(
   [
     "inline-flex items-center justify-center gap-1.5 whitespace-nowrap border border-transparent",
     "text-bo-muted transition-[color,background-color,border-color,transform] duration-150",
-    "hover:bg-[rgba(255,255,255,0.06)] hover:text-bo-text",
+    // bo-toggle paints the resting/hover/active surfaces with the theme tokens
+    // (see campaign-editor.css): the old rgba whites painted light-theme boxes
+    // over the dark toolbar. Icon glyphs stay --bo-muted at rest and --bo-text
+    // on hover so undo/redo and friends are readable in both themes.
+    "bo-toggle",
+    "hover:text-bo-text",
     "disabled:pointer-events-none disabled:opacity-40",
     "motion-safe:active:scale-[0.96]",
-    "data-[state=on]:border-[rgba(185,168,255,0.4)] data-[state=on]:bg-[rgba(185,168,255,0.16)] data-[state=on]:text-bo-accent",
   ],
   {
     variants: {
       size: {
-        /** Square icon button; 32px keeps the touch target usable in the toolbar. */
-        icon: "size-8 shrink-0 rounded-[8px] p-0",
+        /** Square icon button; the visual box is 36px, the touch target 44px. */
+        icon: "bo-toggle--icon shrink-0 p-0",
         /** Text button for verbose controls such as the image width presets. */
-        label: "h-8 rounded-[8px] px-2.5 text-xs font-semibold",
+        label: "bo-toggle--label px-2.5 text-xs font-semibold",
         /** Compact variant of `label`. */
-        "label-sm": "h-7 rounded-[8px] px-2 text-[11px] font-semibold",
+        "label-sm": "bo-toggle--label-sm px-2 text-[11px] font-semibold",
       },
     },
     defaultVariants: { size: "icon" },
