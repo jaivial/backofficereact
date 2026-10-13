@@ -222,7 +222,7 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
     const sendState: NodeState = st === "enviada" || st === "completada" ? "ok" : st === "enviando" ? "warn" : "off";
     add("send", X, y, {
       icon: st === "enviando" ? <Gauge size={15} /> : <Send size={15} />,
-      title: "Envído",
+      title: "Envío",
       lines: [`Estado: ${status || "borrador"}`],
       state: sendState,
       section: "campaign-send-panel",

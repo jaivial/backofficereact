@@ -27,7 +27,7 @@ export type CampaignEditorTab = "flow" | "editor" | "preview" | "settings";
 const CAMPAIGN_EDITOR_TABS: TabItem[] = [
   { id: "flow", label: "Flujo", href: "#", icon: <Workflow size={16} aria-hidden="true" /> },
   { id: "editor", label: "Editor", href: "#", icon: <PenLine size={16} aria-hidden="true" /> },
-  { id: "preview", label: "Previsualizacion", href: "#", icon: <Eye size={16} aria-hidden="true" /> },
+  { id: "preview", label: "Previsualización", href: "#", icon: <Eye size={16} aria-hidden="true" /> },
   { id: "settings", label: "Ajustes", href: "#", icon: <Settings size={16} aria-hidden="true" /> },
 ];
 
@@ -196,10 +196,10 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     try {
       const result = await api.send(campaign.id);
       if (!result.success) {
-        pushToast({ kind: "error", title: "Envio", message: apiMessage(result, "No se pudo iniciar el envio") });
+        pushToast({ kind: "error", title: "Envío", message: apiMessage(result, "No se pudo iniciar el envío") });
         return;
       }
-      pushToast({ kind: "success", title: "Envio", message: `Encolados ${result.queued} destinatarios` });
+      pushToast({ kind: "success", title: "Envío", message: `Encolados ${result.queued} destinatarios` });
       pollRef.current = setInterval(async () => {
         const status = await api.status(campaign.id);
         if (!status.success) return;
@@ -305,7 +305,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
       {tab === "editor" && (
         <div className="grid gap-4" role="tabpanel" aria-label="Editor" data-testid="campaign-tabpanel-editor">
-          <CampaignSection icon={<PenLine size={15} aria-hidden="true" />} title="Contenido del mensaje" helper="El texto que leera cada cliente" data-testid="campaign-content-panel">
+          <CampaignSection icon={<PenLine size={15} aria-hidden="true" />} title="Contenido del mensaje" helper="El texto que leerá cada cliente" data-testid="campaign-content-panel">
             <RichTextEditor
               testId="campaign-richtext"
               coordId={coordId}
@@ -388,9 +388,9 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
       )}
 
       {tab === "preview" && (
-        <div className="grid gap-4" role="tabpanel" aria-label="Previsualizacion" data-testid="campaign-tabpanel-preview">
+        <div className="grid gap-4" role="tabpanel" aria-label="Previsualización" data-testid="campaign-tabpanel-preview">
           <Panel
-            title="Previsualizacion"
+            title="Previsualización"
             meta="El email y el WhatsApp tal y como los recibe el cliente"
             className="mx-auto h-auto w-full max-w-5xl"
             bodyClassName="grid content-start gap-3"
@@ -563,7 +563,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             </div>
           </CampaignSection>
 
-          <CampaignSection icon={<Send size={15} aria-hidden="true" />} title="Envio" helper="Prueba la campana y sigue el progreso" data-testid="campaign-send-panel">
+          <CampaignSection icon={<Send size={15} aria-hidden="true" />} title="Envío" helper="Prueba la campaña y sigue el progreso" data-testid="campaign-send-panel">
             <div className="grid content-start gap-3">
               {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campaña para poder probar y enviar." />}
               <div className="grid gap-3 md:grid-cols-2">
