@@ -256,7 +256,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         <div className="grid content-start gap-2 md:justify-items-end">
           <span className="flex flex-wrap items-center gap-2" data-testid="campaign-editor-meta">
             <CampaignStatusBadge status={campaign?.status} testId="campaign-editor-status" />
-            <span className="text-xs text-bo-muted">
+            <span className="text-xs text-bo-text" data-observe="campaign-editor-meta-progress">
               {campaign ? `${campaign.stats?.sent ?? 0}/${campaign.stats?.total ?? 0} enviados` : "Borrador sin guardar"}
             </span>
           </span>

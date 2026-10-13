@@ -42,9 +42,9 @@ type CampaignNodeData = {
 };
 
 const STATE_STYLES: Record<NodeState, { dot: string; ring: string }> = {
-  ok: { dot: "#10b981", ring: "rgba(16, 185, 129, 0.25)" },
-  warn: { dot: "#f59e0b", ring: "rgba(245, 158, 11, 0.25)" },
-  off: { dot: "#94a3b8", ring: "rgba(148, 163, 184, 0.2)" },
+  ok: { dot: "var(--bo-state-ok)", ring: "var(--bo-state-ok-ring)" },
+  warn: { dot: "var(--bo-state-warn)", ring: "var(--bo-state-warn-ring)" },
+  off: { dot: "var(--bo-state-off)", ring: "var(--bo-state-off-ring)" },
 };
 
 const STATE_LABEL: Record<NodeState, string> = {
@@ -61,44 +61,23 @@ function CampaignFlowNode({ data }: NodeProps<CampaignNodeData>) {
       onClick={() => data.onEdit(data.section)}
       data-testid={`campaign-flow-node-${data.section}`}
       data-slot={`campaign-flow-node-${data.section}`}
-      style={{
-        display: "grid",
-        gridTemplateColumns: "auto 1fr auto",
-        alignItems: "center",
-        gap: 10,
-        width: 240,
-        padding: "10px 12px",
-        textAlign: "left",
-        background: "var(--bo-surface, #fff)",
-        border: "1px solid var(--bo-border-2, rgba(15,23,42,.14))",
-        borderRadius: 12,
-        boxShadow: `0 1px 2px rgba(15,23,42,.06), 0 0 0 4px ${st.ring}`,
-        cursor: "pointer",
-      }}
+      data-state={data.state}
+      title={data.lines.filter(Boolean).join(" · ") || undefined}
+      className="campaign-flowNode"
+      style={{ boxShadow: `0 0 0 4px ${st.ring}` }}
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-      <span
-        aria-hidden="true"
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 30,
-          height: 30,
-          borderRadius: 8,
-          background: "var(--bo-surface-2, #f1f5f9)",
-          color: "var(--bo-accent, #6366f1)",
-        }}
-      >
+      <span aria-hidden="true" className="campaign-flowNodeIcon">
         {data.icon}
       </span>
-      <span style={{ display: "grid", gap: 1, minWidth: 0 }}>
-        <span style={{ fontSize: 13, fontWeight: 650, color: "var(--bo-text, #0f172a)" }}>{data.title}</span>
+      <span className="campaign-flowNodeText">
+        <span className="campaign-flowNodeTitle">{data.title}</span>
         {data.lines.map((l, i) => (
-          <span key={i} style={{ fontSize: 11, color: "var(--bo-muted, #64748b)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l}</span>
+          <span key={i} className="campaign-flowNodeLine" title={l}>{l}</span>
         ))}
       </span>
-      <span style={{ display: "flex", alignItems: "center", gap: 5 }} title={STATE_LABEL[data.state]}>
-        <span style={{ width: 8, height: 8, borderRadius: 99, background: st.dot }} />
+      <span className="campaign-flowNodeState" title={STATE_LABEL[data.state]} data-testid={`campaign-flow-node-state-${data.section}`}>
+        <span aria-hidden="true" style={{ background: st.dot }} />
       </span>
       <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
     </button>
@@ -135,8 +114,8 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
         id: `${a}-${b}`,
         source: a,
         target: b,
-        markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: "#94a3b8" },
-        style: { stroke: "#94a3b8", strokeWidth: 1.5 },
+        markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: "var(--bo-edge)" },
+        style: { stroke: "var(--bo-edge)", strokeWidth: 1.5 },
       });
     };
 
@@ -144,7 +123,7 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
     const dataOk = form.name.trim() !== "" && form.subject.trim() !== "";
     add("data", X, y, {
       icon: <FileText size={15} />,
-      title: "Campana",
+      title: "Campaña",
       lines: [form.name.trim() || "Sin nombre", form.subject.trim() || "Sin asunto"],
       state: dataOk ? "ok" : "warn",
       section: "campaign-data-panel",
@@ -174,7 +153,7 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
     add("content", X, y, {
       icon: <PenLine size={15} />,
       title: "Mensaje",
-      lines: [body ? (body.length > 44 ? body.slice(0, 44) + "…" : body) : "Vacio"],
+      lines: [body ? (body.length > 64 ? `${body.slice(0, 64)}…` : body) : "Vacío"],
       state: bodyOk ? "ok" : "warn",
       section: "campaign-content-panel",
       onEdit,
@@ -238,12 +217,12 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
     for (const c of channelIds) link(prev, c);
     y += STEP;
 
-    // 6. Envio
+    // 6. Envío
     const st = (status || "borrador").toLowerCase();
     const sendState: NodeState = st === "enviada" || st === "completada" ? "ok" : st === "enviando" ? "warn" : "off";
     add("send", X, y, {
       icon: st === "enviando" ? <Gauge size={15} /> : <Send size={15} />,
-      title: "Envio",
+      title: "Envído",
       lines: [`Estado: ${status || "borrador"}`],
       state: sendState,
       section: "campaign-send-panel",
@@ -255,11 +234,22 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
   }, [form, audience, status, onEdit]);
 
   return (
-    <div
-      data-testid="campaign-flow-canvas"
-      data-slot="campaign-flow-canvas"
-      style={{ height: 560, border: "1px solid var(--bo-border-2, rgba(15,23,42,.14))", borderRadius: 12, overflow: "hidden", background: "var(--bo-surface-2, #f8fafc)" }}
-    >
+    <div className="campaign-flowWrap" data-testid="campaign-flow-canvas" data-slot="campaign-flow-canvas">
+      <div className="campaign-flowLegend" data-testid="campaign-flow-legend" data-observe="campaign-flow-legend">
+        {(
+          [
+            ["ok", "listo"],
+            ["warn", "pendiente"],
+            ["off", "desactivado"],
+          ] as const
+        ).map(([state, label]) => (
+          <span key={state} className="campaign-flowLegendItem" data-testid={`campaign-flow-legend-${state}`}>
+            <span aria-hidden="true" className="campaign-flowLegendDot" style={{ background: STATE_STYLES[state].dot }} />
+            {label}
+          </span>
+        ))}
+      </div>
+      <div className="campaign-flowCanvas">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -273,9 +263,10 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
         panOnDrag
         proOptions={{ hideAttribution: true }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="rgba(100,116,139,.25)" />
+        <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="var(--bo-canvas-dot)" />
         <Controls showInteractive={false} position="bottom-right" />
       </ReactFlow>
+      </div>
     </div>
   );
 }
