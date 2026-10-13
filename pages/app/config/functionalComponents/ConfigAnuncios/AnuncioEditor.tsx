@@ -1022,6 +1022,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
         canvas={
           <>
             {isMultiple && isCanvas ? <div className="bo-anunciosPreviewSwitch" role="group" aria-label="Anuncio a editar">
+              <button type="button" onClick={() => { if (!ad) return; const next = addStep(ad); setAd(next); const last = adLayout(next).steps.at(-1); if (last) setActiveStepId(last.id); }}>Añadir anuncio</button>
               {layout.steps.map((step) => <button type="button" key={step.id} onClick={() => setActiveStepId(step.id)} aria-pressed={step.id === activeStep?.id}>{step.title || "Anuncio"}</button>)}
             </div> : null}
             {isCanvas && editedCanvas ? (
