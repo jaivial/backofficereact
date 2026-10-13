@@ -211,15 +211,15 @@
   padding: 0 12px;
   /* Autosave state is information, not a control: no pill chrome so it stops
      reading as a tappable button next to the mode pills. */
-  border-color: transparent;
+  border: 0;
   background: transparent;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--bo-border);
-  background: var(--bo-surface-2);
-  color: var(--bo-muted);
+  /* 0.64 alpha was borderline at 12px; full text colour keeps the status
+     readable without turning it into a button. */
+  color: var(--bo-text);
   cursor: default;
   font-size: 12px;
   font-weight: 600;
@@ -2300,6 +2300,15 @@ button.bg-bo-accent { color: var(--bo-bg); }
 
 /* --- Tap targets (44px minimum on touch devices, both themes) --- */
 @media (pointer: coarse) {
+  .bo-adcanvasToolbar select,
+  .bo-adcanvasToolbar input[type="text"],
+  .bo-adcanvasToolbar input[type="color"],
+  .bo-adcanvasFields input[type="text"],
+  .bo-adcanvasFields input[type="number"],
+  .bo-adcanvasFields select,
+  .bo-adcanvasFields textarea {
+    min-height: 44px;
+  }
   .bo-anunciosPreviewSwitchBtn {
     min-height: 44px;
     min-width: 44px;
