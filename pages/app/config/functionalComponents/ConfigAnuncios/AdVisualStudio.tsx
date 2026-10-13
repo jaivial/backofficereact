@@ -43,7 +43,6 @@ function variantForWidth(vw: number): VariantName {
 const POPOVER = {
   overlayPad: 20,
   modalPadX: 22,
-  modalDefaultMax: 560,
   modalDefaultRadius: 24,
   modalMaxHeightPct: 0.8,
   frameRadius: 10,
@@ -145,7 +144,9 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
   const variant = activeVariant === "desktop" ? undefined : canvas.variants?.[activeVariant];
   const view = useMemo(() => resolveDoc(canvas, activeVariant), [canvas, activeVariant]);
   const container = canvas.container ?? {};
-  const modalMax = container.maxWidth || POPOVER.modalDefaultMax;
+  // ads_container_geometry_v1 - by default the popover hugs the edited canvas
+  // (1 canvas px = 1 screen px); an explicit container.maxWidth caps it.
+  const modalMax = container.maxWidth || view.width + 2 * POPOVER.modalPadX;
   const frameWidth = Math.max(
     100,
     Math.min(modalMax, viewport.width - 2 * POPOVER.overlayPad) - 2 * POPOVER.modalPadX,
@@ -627,7 +628,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, disabled, onChan
             <strong>Contenedor del anuncio</strong>
           </div>
           <div className="bo-adcanvasFields">
-            <label>Ancho máx.<input type="number" min={240} max={2000} disabled={disabled} value={container.maxWidth ?? ""} placeholder={String(POPOVER.modalDefaultMax)} data-testid="ad-studio-container-maxwidth"
+            <label>Ancho máx.<input type="number" min={240} max={2000} disabled={disabled} value={container.maxWidth ?? ""} placeholder="auto (lienzo)" data-testid="ad-studio-container-maxwidth"
               onChange={(event) => update((draft) => {
                 const raw = event.target.value;
                 draft.container = { ...draft.container, maxWidth: raw ? Math.max(240, Math.min(2000, Number(raw))) : undefined };
