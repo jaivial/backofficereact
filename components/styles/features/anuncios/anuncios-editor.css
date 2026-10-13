@@ -2597,3 +2597,5 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-adWizardVisualGuide { display: flex; flex-direction: column; gap: 10px; }
 .bo-adWizardVisualGuide p { color: var(--bo-muted); font-size: 12px; line-height: 1.6; margin: 0; }
 .bo-adWizardVisualGuide .bo-anunciosPreviewSwitchBtn { justify-content: flex-start; height: auto; min-height: 36px; text-align: left; overflow-wrap: anywhere; }
+/* Keep wizard navigation before the visual canvas on small screens too. */
+.bo-adStudioStage > .bo-anunciosCanvasCol { order: 0; }
