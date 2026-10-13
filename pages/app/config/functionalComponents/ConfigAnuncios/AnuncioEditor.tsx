@@ -68,7 +68,7 @@ import {
   type ButtonAction,
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
-import { AdCanvasEditor } from "./AdCanvasEditor";
+import { AdVisualStudio } from "./AdVisualStudio";
 import type { RestaurantAdCanvas } from "../../../../../api/types";
 import { AdBlockBar, AdBlockHover, AdMoveableBox, AdStudioShell } from "./AdEditorChrome";
 import { useMenuRouteOptions, type RouteOption } from "./hooks/useMenuRouteOptions";
@@ -185,9 +185,11 @@ function mergeAdEcho(base: RestaurantAd, local: RestaurantAd, server: Restaurant
 
 
 // Real-site preview device (ads_site_preview_v1): width presets for the home
-// of preactvillacarmen with the ad forced via ?vc_ad=&vc_preview=1.
+// of preactvillacarmen with the ad forced via ?vc_ad=&vc_preview=1. The popover
+// inside resolves its responsive variant from the iframe width, exactly like a
+// real visitor at that width (ads_canvas_breakpoints_v1).
 const AD_PREVIEW_DEVICES = [
-  { id: "movil", label: "Móvil 390", width: 390, height: 640 },
+  { id: "movil", label: "Móvil 390", width: 390, height: 700 },
   { id: "tablet", label: "Tablet 834", width: 834, height: 900 },
   { id: "escritorio", label: "Escritorio 1440", width: 1440, height: 900 },
 ] as const;
@@ -196,37 +198,56 @@ type AdPreviewDevice = (typeof AD_PREVIEW_DEVICES)[number]["id"];
 
 /**
  * Backoffice preview of the ad INSIDE the real restaurant home: an iframe of
- * `${website}/?vc_ad=<id>&vc_preview=1` at a real device width. The site then
- * forces that ad in the popover (vc_preview=1 -> show it even if already seen
- * or not in the active list). Falls back to the 1-1 canvas render when no
- * website is configured (handled by the caller).
+ * `${website}/?vc_ad=<id>&vc_preview=1` at a real device width (editable, so
+ * any width between the presets can be checked). The site then forces that ad
+ * in the popover (vc_preview=1 -> show it even if already seen or not in the
+ * active list). Falls back to the 1-1 canvas render when no website is
+ * configured (handled by the caller).
  */
 function AdSitePreview({ adId, name, website }: { adId: number; name: string; website: string }) {
   const [device, setDevice] = useState<AdPreviewDevice>("movil");
-  const preset = AD_PREVIEW_DEVICES.find((entry) => entry.id === device) ?? AD_PREVIEW_DEVICES[0];
+  const [size, setSize] = useState<{ width: number; height: number }>({ width: AD_PREVIEW_DEVICES[0].width, height: AD_PREVIEW_DEVICES[0].height });
   const base = website.replace(/\/+$/, "");
   const previewURL = `${base}/?vc_ad=${adId}&vc_preview=1`;
+  const applyDevice = (id: AdPreviewDevice) => {
+    const next = AD_PREVIEW_DEVICES.find((entry) => entry.id === id) ?? AD_PREVIEW_DEVICES[0];
+    setDevice(id);
+    setSize({ width: next.width, height: next.height });
+  };
   return (
     <div className="bo-adSitePreview" data-testid="ad-site-preview" data-coord-id="ads_site_preview_v1">
       <div className="bo-adSitePreviewBar">
-        <label className="bo-adSitePreviewLabel" htmlFor="ad-preview-device">Dispositivo</label>
-        <select
-          id="ad-preview-device"
-          data-testid="ad-preview-device"
-          value={device}
-          onChange={(event) => setDevice(event.target.value as AdPreviewDevice)}
-        >
-          {AD_PREVIEW_DEVICES.map((entry) => (
-            <option key={entry.id} value={entry.id}>{entry.label}</option>
-          ))}
-        </select>
+        {AD_PREVIEW_DEVICES.map((entry) => (
+          <button
+            key={entry.id}
+            type="button"
+            className={`bo-adstudioDeviceBtn ${device === entry.id ? "is-active" : ""}`}
+            aria-pressed={device === entry.id}
+            data-testid={`ad-preview-device-${entry.id}`}
+            onClick={() => applyDevice(entry.id)}
+          >
+            {entry.label}
+          </button>
+        ))}
+        <label className="bo-adstudioField">
+          {"Ancho "}
+          <input
+            type="number"
+            min={240}
+            max={1920}
+            value={size.width}
+            aria-label="Ancho del preview"
+            data-testid="ad-preview-width"
+            onChange={(event) => setSize((current) => ({ ...current, width: Math.max(240, Math.min(1920, Number(event.target.value) || current.width)) }))}
+          />
+        </label>
         <a className="bo-adSitePreviewOpen" href={previewURL} target="_blank" rel="noreferrer" data-testid="ad-preview-open">
           Abrir en pestaña nueva
         </a>
       </div>
       <div
         className="bo-adSitePreviewDevice"
-        style={{ width: preset.width, maxWidth: "100%", height: preset.height }}
+        style={{ width: size.width, maxWidth: "100%", height: size.height }}
         data-testid="ad-preview-frame-wrap"
       >
         <iframe
@@ -1020,8 +1041,11 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 ) : previewOpen ? (
                   <p className="bo-adcanvasHint">Guarda el anuncio una vez para ver la preview 1-1.</p>
                 ) : (
-                  <AdCanvasEditor
+                  <AdVisualStudio
                     canvas={ad.canvas}
+                    adId={ad.id}
+                    adName={ad.name}
+                    website={website}
                     onChange={(canvas) => setAd((current) => (current ? { ...current, canvas } : current))}
                   />
                 )}

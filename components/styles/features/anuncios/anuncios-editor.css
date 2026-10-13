@@ -2425,3 +2425,168 @@ button.bg-bo-accent { color: var(--bo-bg); }
   .bo-anunciosPreviewSwitchBtn { padding: 0 12px; gap: 4px; }
   .bo-anunciosPreviewSwitchBtn .bo-anunciosPreviewSwitchLabel { font-size: 12px; }
 }
+
+/* ==========================================================================
+   Coordination id: ads_visual_studio_v1 - responsive visual studio (device
+   toolbar + real-site iframe + popover-geometry edit overlay).
+   ========================================================================== */
+.bo-adstudioRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+.bo-adstudioToolbar,
+.bo-adstudioDeviceBar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bo-adstudioToolbar { border-bottom: 1px solid var(--bo-border); padding-bottom: 8px; }
+.bo-adstudioToolbar button,
+.bo-adstudioDeviceBar > button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--bo-border-2);
+  border-radius: 10px;
+  background: var(--bo-surface-2);
+  color: var(--bo-text);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.bo-adstudioToolbar button:hover,
+.bo-adstudioDeviceBar > button:hover { background: var(--bo-bg-hover); border-color: color-mix(in srgb, var(--bo-accent) 45%, var(--bo-border-2)); }
+.bo-adstudioToolbar button:disabled { opacity: 0.45; cursor: not-allowed; }
+.bo-adstudioToolbar label,
+.bo-adstudioDeviceBar label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--bo-muted); }
+.bo-adstudioToolbar select,
+.bo-adstudioToolbar input[type="text"],
+.bo-adstudioToolbar input[type="color"] { min-height: 44px; }
+.bo-adstudioDeviceBar > button.is-active {
+  border-color: var(--bo-accent);
+  color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 12%, var(--bo-surface-2));
+}
+.bo-adstudioField input[type="number"],
+.bo-adstudioField input[type="text"] {
+  width: 76px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 1px solid var(--bo-border-2);
+  border-radius: 10px;
+  background: var(--bo-surface);
+  color: var(--bo-text);
+  font-size: 13px;
+}
+.bo-adstudioVariantChip {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--bo-border-2);
+  white-space: nowrap;
+}
+.bo-adstudioVariantChip.is-inherited { color: var(--bo-muted); }
+.bo-adstudioVariantChip.is-custom { color: var(--bo-accent); border-color: color-mix(in srgb, var(--bo-accent) 45%, var(--bo-border-2)); }
+
+.bo-adstudioViewportWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  min-height: 420px;
+  max-height: 72vh;
+  border: 1px solid var(--bo-border);
+  border-radius: 12px;
+  background:
+    linear-gradient(45deg, color-mix(in srgb, var(--bo-border) 35%, transparent) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--bo-border) 35%, transparent) 75%),
+    linear-gradient(45deg, color-mix(in srgb, var(--bo-border) 35%, transparent) 25%, transparent 25%, transparent 75%, color-mix(in srgb, var(--bo-border) 35%, transparent) 75%);
+  background-size: 22px 22px;
+  background-position: 0 0, 11px 11px;
+  padding: 12px;
+}
+.bo-adstudioScaleBox { position: relative; flex: none; }
+.bo-adstudioViewport { position: absolute; inset: 0; transform-origin: top left; background: #fff; }
+.bo-adstudioSite {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+  z-index: 0;
+}
+.bo-adstudioSite--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+  padding: 24px;
+}
+/* Edit overlay: mirrors .publicAdOverlay/.publicAdModal/.publicAdCanvasFrame
+   from preactvillacarmen frontend/src/index.css (ads_container_geometry_v1). */
+.bo-adstudioOverlayMock {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(20, 24, 21, 0.58);
+}
+.bo-adstudioModalMock {
+  position: relative;
+  overflow: auto;
+  border-radius: 24px;
+  padding: 24px 22px;
+  background: #fffdf8;
+  color: #24342b;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  box-sizing: border-box;
+}
+.bo-adstudioCloseMock {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(36, 52, 43, 0.08);
+  color: inherit;
+  font-size: 26px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  pointer-events: none;
+}
+.bo-adstudioFrameMock { position: relative; width: 100%; overflow: hidden; border-radius: 10px; }
+.bo-adstudioWidthHandle {
+  position: absolute;
+  top: 0;
+  right: -9px;
+  width: 18px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 2;
+  touch-action: none;
+}
+.bo-adstudioWidthHandle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  width: 4px;
+  height: 44px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: var(--bo-accent);
+  opacity: 0.75;
+}
+.bo-adstudioPanels { display: grid; gap: 10px; }
+@media (min-width: 1100px) {
+  .bo-adstudioPanels { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
+}
