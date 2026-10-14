@@ -528,6 +528,7 @@ export default function PromptBar({
                       progress={chip.progress}
                       previewUrl={chip.previewUrl}
                       errorLabel={errorLabel}
+                      onRemove={onRemoveAttachment ? () => onRemoveAttachment(chip.id) : undefined}
                       removeLabel={`Quitar ${chip.name}`}
                       uploadedLabel={(name) => `${name} listo para enviar`}
                       uploadFailedLabel={(name) => `${name} no se pudo adjuntar`}
