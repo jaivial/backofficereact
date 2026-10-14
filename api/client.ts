@@ -2445,6 +2445,25 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async getBunnyStorageConfig(): Promise<APISuccess<{ config: import("./types").BunnyStorageConfig }> | APIError> {
         return json("/api/admin/config/bunny-storage", { method: "GET" });
       },
+      // Forky prompt bar (coord forky_media_transcribe_v1): upload a voice
+      // clip or attachment into the restaurant's existing Bunny storage zone.
+      // Images go through the global <=2MB WebP rule; audio passes unchanged.
+      async uploadAssistantMedia(file: File | Blob, name?: string): Promise<APISuccess<{ url: string; path: string; name: string; content_type: string; size: number }> | APIError> {
+        const fallbackName = file instanceof File ? file.name : name ?? "clip.webm";
+        const form = new FormData();
+        form.append("file", file, fallbackName);
+        return json("/api/admin/assistant/media/upload", { method: "POST", body: form });
+      },
+      // Speech-to-text for Forky voice notes: the clip is forwarded to the bot
+      // pipeline's faster-whisper (the same STT path the WhatsApp voice notes
+      // use). The transcript is the payload — the text model never hears audio.
+      async transcribeAssistantAudio(audioB64: string): Promise<APISuccess<{ text: string; language: string }> | APIError> {
+        return json("/api/admin/assistant/transcribe", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ audio_b64: audioB64 }),
+        });
+      },
       async setBunnyStorageConfig(input: import("./types").BunnyStorageConfigInput): Promise<APISuccess<{ config: import("./types").BunnyStorageConfig }> | APIError> {
         return json("/api/admin/config/bunny-storage", {
           method: "POST",
