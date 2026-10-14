@@ -1,0 +1,474 @@
+"use client";
+
+// control-ui.dev r/chat-composer-attachment —
+// src/registry/sources/control-ui/chat-composer-attachment.tsx (owned source).
+// HOST-EDIT(control-ui install): two adaptations, both because this repo does
+// not install the registry's `button`/`scroll-area` items (they pull in
+// @base-ui/react, a new runtime dependency the forky island does not need):
+//   1. `ChatComposerAttachmentRemove` renders a native <button> carrying the
+//      exact same data attributes (data-control-family="button",
+//      data-chat-composer-attachment-remove="true") so the recipe CSS — which
+//      styles it through those attributes and the `--cui-button-*` knobs —
+//      applies unchanged. The forky island stylesheet paints it.
+//   2. `ChatComposerAttachments` wraps the rail in a plain overflow-x auto div
+//      instead of the registry ScrollArea (same data-slot="scroll").
+// Everything else is upstream verbatim; the `@/components/control-ui/…`
+// imports are rewritten to relative paths.
+
+import { XIcon } from "lucide-react";
+import type { ComponentProps, CSSProperties, MouseEvent, ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, useState } from "react";
+
+import type { ButtonKnobStyle } from "../knob-contracts/button-knobs";
+import type { ChatComposerAttachmentKnobStyle } from "../knob-contracts/chat-composer-attachment-knobs";
+import { cn } from "../lib/cn";
+import { LiveStatus } from "./live-status";
+import { Spinner } from "./spinner";
+
+export type ChatComposerAttachmentKind = "image" | "pdf" | "spreadsheet" | "document" | "archive" | "audio" | "video" | "file";
+export type ChatComposerAttachmentStatus = "idle" | "uploading" | "uploaded" | "error";
+export type ChatComposerAttachmentVariant = "auto" | "preview" | "file";
+
+type ChatComposerAttachmentContextValue = {
+  name: string;
+  type?: string;
+  description?: ReactNode;
+  status: ChatComposerAttachmentStatus;
+  progress?: number;
+  previewUrl?: string;
+  kind: ChatComposerAttachmentKind;
+  variant: Exclude<ChatComposerAttachmentVariant, "auto">;
+  extension: string;
+  onRemove?: () => void;
+  removeLabel?: string;
+  errorLabel: string;
+};
+
+const ChatComposerAttachmentContext = createContext<ChatComposerAttachmentContextValue | null>(null);
+
+function useChatComposerAttachmentContext() {
+  const context = useContext(ChatComposerAttachmentContext);
+  if (!context) throw new Error("ChatComposerAttachment compound components must be rendered inside <ChatComposerAttachment>.");
+  return context;
+}
+
+function extensionFromName(name: string) {
+  const match = name.match(/\.([a-z0-9]+)$/i);
+  return match?.[1]?.toLowerCase() ?? "";
+}
+
+function kindFromAttachment(type: string | undefined, name: string): ChatComposerAttachmentKind {
+  const mime = type?.toLowerCase() ?? "";
+  const extension = extensionFromName(name);
+
+  if (mime.startsWith("image/") || ["avif", "gif", "heic", "jpeg", "jpg", "png", "webp"].includes(extension)) return "image";
+  if (mime === "application/pdf" || extension === "pdf") return "pdf";
+  if (
+    mime.includes("spreadsheet") ||
+    mime.includes("excel") ||
+    mime.includes("csv") ||
+    ["csv", "numbers", "ods", "tsv", "xls", "xlsx"].includes(extension)
+  ) {
+    return "spreadsheet";
+  }
+  if (mime.startsWith("audio/") || ["aac", "flac", "m4a", "mp3", "ogg", "wav"].includes(extension)) return "audio";
+  if (mime.startsWith("video/") || ["avi", "mov", "mp4", "webm"].includes(extension)) return "video";
+  if (mime.includes("zip") || ["7z", "gz", "rar", "tar", "zip"].includes(extension)) return "archive";
+  if (mime.includes("document") || mime.includes("text") || ["doc", "docx", "md", "rtf", "txt"].includes(extension)) return "document";
+  return "file";
+}
+
+function resolveVariant(
+  variant: ChatComposerAttachmentVariant,
+  kind: ChatComposerAttachmentKind,
+  status: ChatComposerAttachmentStatus,
+  previewUrl: string | undefined,
+): Exclude<ChatComposerAttachmentVariant, "auto"> {
+  if (variant !== "auto") return variant;
+  if (status === "error") return "file";
+  return previewUrl || kind === "image" ? "preview" : "file";
+}
+
+function useObjectUrl(blob: Blob | undefined) {
+  const [objectUrl, setObjectUrl] = useState<{ blob: Blob; url: string }>();
+
+  useLayoutEffect(() => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    setObjectUrl({ blob, url });
+    return () => URL.revokeObjectURL(url);
+  }, [blob]);
+
+  return blob && objectUrl?.blob === blob ? objectUrl.url : undefined;
+}
+
+function progressValue(progress: number | undefined) {
+  if (typeof progress !== "number" || Number.isNaN(progress)) return undefined;
+  return Math.min(100, Math.max(0, progress));
+}
+
+function fallbackLabel(kind: ChatComposerAttachmentKind, extension: string) {
+  if (extension && extension.length <= 4) return extension.toUpperCase();
+  const labels: Record<ChatComposerAttachmentKind, string> = {
+    image: "IMG",
+    pdf: "PDF",
+    spreadsheet: "XLS",
+    document: "DOC",
+    archive: "ZIP",
+    audio: "AUD",
+    video: "VID",
+    file: "FILE",
+  };
+  return labels[kind];
+}
+
+function defaultDescription(context: ChatComposerAttachmentContextValue) {
+  const { progress } = context;
+  if (context.description) return context.description;
+  if (context.status === "uploading") return progress === undefined ? "Uploading…" : `Uploading ${Math.round(progress)}%`;
+  if (context.status === "error") return context.errorLabel;
+  return fallbackLabel(context.kind, context.extension);
+}
+
+function defaultUploadedLabel(name: string) {
+  return `${name} uploaded`;
+}
+
+function defaultUploadFailedLabel(name: string) {
+  return `${name} couldn't upload`;
+}
+
+function useUploadAnnouncement(
+  status: ChatComposerAttachmentStatus,
+  name: string,
+  uploadedLabel: (name: string) => string,
+  uploadFailedLabel: (name: string) => string,
+) {
+  const [previousStatus, setPreviousStatus] = useState(status);
+  const [announcement, setAnnouncement] = useState("");
+
+  if (status !== previousStatus) {
+    setPreviousStatus(status);
+    const labelFor: Partial<Record<ChatComposerAttachmentStatus, (name: string) => string>> = {
+      uploaded: uploadedLabel,
+      error: uploadFailedLabel,
+    };
+    setAnnouncement(labelFor[status]?.(name) ?? "");
+  }
+
+  return announcement;
+}
+
+export type ChatComposerAttachmentsProps = ComponentProps<"div"> & {
+  label?: string;
+  viewportClassName?: string;
+} & { style?: CSSProperties & ChatComposerAttachmentKnobStyle };
+
+export function ChatComposerAttachments({
+  label = "Attachments",
+  className,
+  viewportClassName,
+  children,
+  ...props
+}: ChatComposerAttachmentsProps) {
+  // HOST-EDIT(control-ui install): plain rail instead of the registry ScrollArea
+  // (scroll-area pulls in @base-ui/react). Same data-slot="scroll" contract.
+  return (
+    <div
+      data-control-ui="chat-composer-attachments"
+      data-control-family="chat-composer-attachment"
+      data-slot="root"
+      className={cn("min-w-0", className)}
+      {...props}
+    >
+      <div
+        data-control-ui="chat-composer-attachments"
+        data-slot="scroll"
+        className={cn("w-full overflow-x-auto", viewportClassName)}
+      >
+        <ul
+          aria-label={label}
+          data-control-ui="chat-composer-attachments"
+          data-control-family="chat-composer-attachment"
+          data-slot="list"
+          className="flex w-max min-w-full list-none"
+        >
+          {children}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+type ChatComposerAttachmentSource = { file: File; name?: string } | { file?: undefined; name: string };
+
+export type ChatComposerAttachmentProps = Omit<ComponentProps<"li">, "style"> &
+  ChatComposerAttachmentSource & {
+    type?: string;
+    description?: ReactNode;
+    status?: ChatComposerAttachmentStatus;
+    progress?: number;
+    previewUrl?: string;
+    kind?: ChatComposerAttachmentKind;
+    variant?: ChatComposerAttachmentVariant;
+    onRemove?: () => void;
+    removeLabel?: string;
+    errorLabel?: string;
+    uploadedLabel?: (name: string) => string;
+    uploadFailedLabel?: (name: string) => string;
+    style?: CSSProperties & ChatComposerAttachmentKnobStyle;
+  };
+
+export function ChatComposerAttachment({
+  file,
+  name: nameInput,
+  type: typeInput,
+  description,
+  status = "idle",
+  progress: progressInput,
+  previewUrl: previewUrlInput,
+  kind,
+  variant = "auto",
+  onRemove,
+  removeLabel,
+  errorLabel = "Couldn't upload. Remove and try again.",
+  uploadedLabel = defaultUploadedLabel,
+  uploadFailedLabel = defaultUploadFailedLabel,
+  className,
+  children,
+  "aria-label": ariaLabel,
+  ...props
+}: ChatComposerAttachmentProps) {
+  const name = nameInput ?? file?.name ?? "";
+  const type = typeInput ?? file?.type;
+  const resolvedKind = kind ?? kindFromAttachment(type, name);
+  const resolvedVariant = resolveVariant(variant, resolvedKind, status, previewUrlInput);
+  const filePreviewUrl = useObjectUrl(resolvedVariant === "preview" && !previewUrlInput ? file : undefined);
+  const previewUrl = previewUrlInput ?? filePreviewUrl;
+  const extension = extensionFromName(name);
+  const progress = progressValue(progressInput);
+  const announcement = useUploadAnnouncement(status, name, uploadedLabel, uploadFailedLabel);
+
+  return (
+    <ChatComposerAttachmentContext.Provider
+      value={{
+        name,
+        type,
+        description,
+        status,
+        progress,
+        previewUrl,
+        kind: resolvedKind,
+        variant: resolvedVariant,
+        extension,
+        onRemove,
+        removeLabel,
+        errorLabel,
+      }}
+    >
+      <li
+        aria-label={ariaLabel ?? name}
+        data-control-ui="chat-composer-attachment"
+        data-control-family="chat-composer-attachment"
+        data-slot="root"
+        data-surface="panel"
+        data-kind={resolvedKind}
+        data-state={status}
+        data-variant={resolvedVariant}
+        className={cn("relative isolate flex shrink-0 items-center overflow-hidden", className)}
+        {...props}
+      >
+        {children ?? (
+          <>
+            <ChatComposerAttachmentPreview />
+            {resolvedVariant === "file" && (
+              <ChatComposerAttachmentContent>
+                <ChatComposerAttachmentTitle />
+                <ChatComposerAttachmentDescription />
+              </ChatComposerAttachmentContent>
+            )}
+            <ChatComposerAttachmentRemove />
+            <ChatComposerAttachmentProgress />
+          </>
+        )}
+        <LiveStatus message={announcement} />
+      </li>
+    </ChatComposerAttachmentContext.Provider>
+  );
+}
+
+export type ChatComposerAttachmentPreviewProps = Omit<ComponentProps<"div">, "style"> & {
+  style?: CSSProperties & ChatComposerAttachmentKnobStyle;
+};
+
+export function ChatComposerAttachmentPreview({ className, children, ...props }: ChatComposerAttachmentPreviewProps) {
+  const context = useChatComposerAttachmentContext();
+  const label = fallbackLabel(context.kind, context.extension);
+
+  return (
+    <div
+      data-control-ui="chat-composer-attachment"
+      data-control-family="chat-composer-attachment"
+      data-slot="preview"
+      className={cn("relative flex shrink-0 items-center justify-center overflow-hidden", className)}
+      {...props}
+    >
+      {children ??
+        (context.previewUrl ? (
+          <img
+            src={context.previewUrl}
+            alt={context.name}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-auto max-w-full object-contain"
+          />
+        ) : (
+          <span
+            data-control-ui="chat-composer-attachment"
+            data-control-family="chat-composer-attachment"
+            data-slot="preview-label"
+            className="uppercase"
+          >
+            {label}
+          </span>
+        ))}
+    </div>
+  );
+}
+
+export type ChatComposerAttachmentContentProps = ComponentProps<"div"> & { style?: CSSProperties & ChatComposerAttachmentKnobStyle };
+
+export function ChatComposerAttachmentContent({ className, ...props }: ChatComposerAttachmentContentProps) {
+  return (
+    <div
+      data-control-ui="chat-composer-attachment"
+      data-control-family="chat-composer-attachment"
+      data-slot="content"
+      className={cn("min-w-0 flex-1", className)}
+      {...props}
+    />
+  );
+}
+
+export type ChatComposerAttachmentTitleProps = Omit<ComponentProps<"div">, "style"> & {
+  style?: CSSProperties & ChatComposerAttachmentKnobStyle;
+};
+
+export function ChatComposerAttachmentTitle({ className, children, ...props }: ChatComposerAttachmentTitleProps) {
+  const { name } = useChatComposerAttachmentContext();
+  const content = children ?? name;
+
+  return (
+    <div
+      data-control-ui="chat-composer-attachment"
+      data-control-family="chat-composer-attachment"
+      data-slot="title"
+      title={typeof content === "string" ? content : undefined}
+      className={cn("truncate", className)}
+      {...props}
+    >
+      {content}
+    </div>
+  );
+}
+
+export type ChatComposerAttachmentDescriptionProps = Omit<ComponentProps<"div">, "style"> & {
+  style?: CSSProperties & ChatComposerAttachmentKnobStyle;
+};
+
+export function ChatComposerAttachmentDescription({ className, children, ...props }: ChatComposerAttachmentDescriptionProps) {
+  const context = useChatComposerAttachmentContext();
+  const content = children ?? defaultDescription(context);
+
+  return (
+    <div
+      data-control-ui="chat-composer-attachment"
+      data-control-family="chat-composer-attachment"
+      data-slot="description"
+      title={typeof content === "string" ? content : undefined}
+      className={cn("truncate", className)}
+      data-state={context.status}
+      {...props}
+    >
+      {content}
+    </div>
+  );
+}
+
+export type ChatComposerAttachmentRemoveProps = Omit<ComponentProps<"button">, "style"> & {
+  style?: CSSProperties & ButtonKnobStyle & ChatComposerAttachmentKnobStyle;
+};
+
+export function ChatComposerAttachmentRemove({
+  className,
+  onClick,
+  children,
+  "aria-label": ariaLabel,
+  ...props
+}: ChatComposerAttachmentRemoveProps) {
+  const { name, onRemove, removeLabel } = useChatComposerAttachmentContext();
+
+  if (!onRemove) return null;
+
+  function handleClick(event: MouseEvent<HTMLButtonElement>) {
+    onClick?.(event);
+    if (!event.defaultPrevented) onRemove?.();
+  }
+
+  // HOST-EDIT(control-ui install): native button with the registry Button's
+  // data contract (see file header); the island stylesheet paints the
+  // --cui-button-* knobs the recipe CSS sets.
+  return (
+    <button
+      type="button"
+      data-control-ui="chat-composer-attachment"
+      data-control-family="button"
+      data-chat-composer-attachment-remove="true"
+      data-slot="remove"
+      aria-label={ariaLabel ?? removeLabel ?? `Remove ${name}`}
+      className={cn("absolute end-1 top-1 z-10", className)}
+      onClick={handleClick}
+      {...props}
+    >
+      {children ?? <XIcon aria-hidden="true" className="size-3" />}
+    </button>
+  );
+}
+
+export type ChatComposerAttachmentProgressProps = Omit<ComponentProps<"div">, "style"> & {
+  style?: CSSProperties & ChatComposerAttachmentKnobStyle;
+};
+
+export function ChatComposerAttachmentProgress({ className, children, ...props }: ChatComposerAttachmentProgressProps) {
+  const { name, status, progress } = useChatComposerAttachmentContext();
+
+  if (status !== "uploading") return null;
+
+  return (
+    <div
+      role="progressbar"
+      aria-label={`Uploading ${name}`}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={progress}
+      data-control-ui="chat-composer-attachment"
+      data-control-family="chat-composer-attachment"
+      data-slot="progress"
+      className={cn("pointer-events-none absolute inset-0 z-1 grid place-items-center", className)}
+      {...props}
+    >
+      {children ?? (
+        <>
+          <div
+            data-control-ui="chat-composer-attachment"
+            data-control-family="chat-composer-attachment"
+            data-slot="progress-indicator"
+            className="absolute inset-y-0 end-0"
+            style={{ inlineSize: `${100 - (progress ?? 0)}%` }}
+          />
+          {progress === undefined && <Spinner aria-hidden="true" className="relative" size="xs" />}
+        </>
+      )}
+    </div>
+  );
+}

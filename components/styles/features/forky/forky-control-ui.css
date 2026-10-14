@@ -1,0 +1,345 @@
+/* Forky island — Control UI (control-ui.dev) owned-source styles.
+ *
+ * Installed components: r/chat-composer-attachment + r/spinner (+ r/core lib,
+ * knob contracts). Component sources live in components/control-ui/; this file
+ * holds their recipe stylesheets, prefixed with .bui-scope (same convention as
+ * forky-bui-island.css, which is AUTO-GENERATED from beautifului.dev and must
+ * NOT be edited) so nothing leaks in or out of the <BuiIsland>.
+ *
+ * Control UI recipes read the registry theme tokens (--popover,
+ * --muted-foreground, --control-rim, …). This repo does not install the
+ * Control UI theme (its core theme.css targets Tailwind v4), so the shim below
+ * maps those tokens onto the island's beautifului.dev palette. The shim only
+ * references island tokens, so dark/light both follow the app theme.
+ *
+ * Regenerate on a control-ui update: re-fetch the two registry items, re-prefix
+ * the recipe css with .bui-scope, refresh the shim.
+ */
+
+/* ── Control UI theme token shim (island palette) ────────── */
+.bui-scope {
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --muted: var(--field);
+  --muted-foreground: var(--ink-3);
+  --destructive: var(--red);
+  --destructive-text: var(--red);
+  --primary: var(--accent);
+  --primary-text: var(--accent-ink);
+  --control-rim: var(--line);
+  --control-rim-width: 1px;
+  --radius-popover: 10px;
+  --image-outline: var(--line);
+  --overlay-opacity: 0.5;
+  --backdrop-blur-popover: 8px;
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.2);
+  --text-micro: 11px;
+  --text-caption: 12px;
+  --text-label: 12.5px;
+  --duration-base: 150ms;
+  --duration-slow: 300ms;
+  --duration-loop: 1s;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ── Button paint shim (attachment remove control) ──────────
+ * The registry button.css is NOT installed (it pulls @base-ui/react). The
+ * chat-composer-attachment recipe styles its remove control through the
+ * --cui-button-* knobs on a native button carrying the Button data contract
+ * (data-control-family="button"); this applies them. */
+.bui-scope :where([data-control-family="button"][data-chat-composer-attachment-remove="true"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--cui-button-radius);
+  background: var(--cui-button-background);
+  color: var(--cui-button-foreground);
+  box-shadow: var(--cui-button-shadow);
+  cursor: pointer;
+  transition-property: background-color, color;
+  transition-duration: var(--duration-base);
+  transition-timing-function: var(--ease-standard);
+}
+
+@media (hover: hover) {
+  .bui-scope :where([data-control-family="button"][data-chat-composer-attachment-remove="true"]:hover) {
+    background: var(--cui-button-hover-background);
+    color: var(--cui-button-hover-foreground);
+  }
+}
+
+/* ── r/chat-composer-attachment recipe (scoped) ──────────── */
+@layer components {
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="root"]:not([data-variant])) {
+    --cui-chat-composer-attachment-list-padding: calc(var(--spacing) * 3);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="root"][data-variant]) {
+    --cui-chat-composer-attachment-background: var(--popover);
+    --cui-chat-composer-attachment-border-color: var(--control-rim);
+    --cui-chat-composer-attachment-height: calc(var(--spacing) * 14);
+    --cui-chat-composer-attachment-radius: var(--radius-popover);
+    --cui-chat-composer-attachment-image-outline-color: var(--image-outline);
+    --cui-chat-composer-attachment-shadow:
+      inset 0 0 0 var(--control-rim-width) var(--cui-chat-composer-attachment-border-color), var(--shadow-sm);
+    --cui-chat-composer-attachment-backdrop-filter: blur(var(--backdrop-blur-popover));
+    --cui-chat-composer-attachment-progress-background: transparent;
+    --cui-chat-composer-attachment-progress-foreground: oklch(from var(--background) l c h / var(--overlay-opacity));
+    block-size: var(--cui-chat-composer-attachment-height);
+    text-align: start;
+    border-radius: var(--cui-chat-composer-attachment-radius);
+    background: var(--cui-chat-composer-attachment-background);
+    box-shadow: var(--cui-chat-composer-attachment-shadow);
+    backdrop-filter: var(--cui-chat-composer-attachment-backdrop-filter);
+    transition-property: background-color, box-shadow;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="list"]) {
+    gap: calc(var(--spacing) * 2);
+    padding: var(--cui-chat-composer-attachment-list-padding);
+  }
+
+  .bui-scope :where(
+    [data-control-family="chat-composer"][data-slot="shell"]
+      [data-control-family="chat-composer-attachment"][data-slot="root"][data-variant]
+  ) {
+    --cui-chat-composer-attachment-radius: max(
+      var(--radius-sm),
+      min(
+        calc(var(--cui-chat-composer-attachment-height) / 2),
+        calc(var(--cui-chat-composer-shell-radius) - var(--cui-chat-composer-attachment-list-padding))
+      )
+    );
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="root"][data-variant="preview"]) {
+    inline-size: fit-content;
+    max-inline-size: calc(var(--spacing) * 40);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="root"][data-variant="file"]) {
+    inline-size: calc(var(--spacing) * 64);
+    max-inline-size: calc(100vw - 5rem);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="root"][data-variant="preview"] [data-slot="preview"]) {
+    block-size: 100%;
+    inline-size: fit-content;
+    min-inline-size: calc(var(--spacing) * 10);
+    max-inline-size: 100%;
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="content"]) {
+    padding-inline: calc(var(--spacing) * 3) calc(var(--spacing) * 8);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="root"][data-state="error"]) {
+    --cui-chat-composer-attachment-border-color: oklch(from var(--destructive) l c h / 0.45);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="preview"]) {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    border-radius: inherit;
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="preview"] > img) {
+    border-radius: inherit;
+    outline: 1px solid var(--cui-chat-composer-attachment-image-outline-color);
+    outline-offset: -1px;
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="root"][data-variant="file"] [data-slot="preview"]) {
+    inline-size: calc(var(--spacing) * 14);
+    block-size: 100%;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-kind="pdf"] [data-slot="preview"]) {
+    background: oklch(from var(--destructive) l c h / 0.1);
+    color: var(--destructive-text);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-kind="spreadsheet"] [data-slot="preview"]) {
+    background: oklch(from var(--primary) l c h / 0.1);
+    color: var(--primary-text);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="preview-label"]) {
+    font-size: var(--text-micro);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="title"]) {
+    color: var(--popover-foreground);
+    font-size: var(--text-label);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="description"]) {
+    color: var(--muted-foreground);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="description"][data-state="error"]) {
+    color: var(--destructive-text);
+  }
+
+  .bui-scope :where([data-control-family="button"][data-chat-composer-attachment-remove="true"]) {
+    inline-size: calc(var(--spacing) * 5);
+    block-size: calc(var(--spacing) * 5);
+    padding: 0;
+    --cui-button-radius: 9999px;
+    --cui-button-background: var(--foreground);
+    --cui-button-foreground: var(--background);
+    --cui-button-shadow: var(--shadow-sm);
+  }
+
+  @media (hover: hover) {
+    .bui-scope :where(
+        [data-control-family="button"][data-chat-composer-attachment-remove="true"]:not(
+          :disabled,
+          [data-disabled],
+          [aria-disabled="true"]
+        ):hover
+      ) {
+      --cui-button-hover-background: oklch(from var(--foreground) l c h / 0.85);
+      --cui-button-hover-foreground: var(--background);
+    }
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="progress"]) {
+    background: var(--cui-chat-composer-attachment-progress-background);
+  }
+
+  .bui-scope :where([data-control-family="chat-composer-attachment"][data-slot="progress-indicator"]) {
+    background: var(--cui-chat-composer-attachment-progress-foreground);
+    transition-property: inline-size;
+    transition-duration: var(--duration-slow);
+    transition-timing-function: var(--ease-standard);
+  }
+}
+
+@property --cui-chat-composer-attachment-radius{
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cui-chat-composer-attachment-height{
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cui-chat-composer-attachment-list-padding{
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cui-chat-composer-attachment-background{
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --cui-chat-composer-attachment-border-color{
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --cui-chat-composer-attachment-shadow{
+  syntax: "*";
+  inherits: true;
+}
+
+@property --cui-chat-composer-attachment-backdrop-filter{
+  syntax: "*";
+  inherits: true;
+}
+
+@property --cui-chat-composer-attachment-progress-background{
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --cui-chat-composer-attachment-progress-foreground{
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --cui-chat-composer-attachment-image-outline-color{
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+/* ── r/spinner recipe (scoped) ───────────────────────────── */
+@layer components {
+  .bui-scope :where([data-control-family="spinner"][data-slot="root"]) {
+    --cui-spinner-foreground: var(--muted-foreground);
+    --cui-spinner-animation-duration: var(--duration-loop);
+    color: var(--cui-spinner-foreground);
+  }
+
+  .bui-scope :where([data-control-family="button"] [data-control-family="spinner"][data-slot="root"]) {
+    --cui-spinner-foreground: currentColor;
+  }
+
+  .bui-scope :where([data-control-family="spinner"][data-slot="indicator"]) {
+    inline-size: calc(var(--spacing) * 4);
+    block-size: calc(var(--spacing) * 4);
+    animation: cui-spin var(--cui-spinner-animation-duration) linear infinite;
+  }
+
+  .bui-scope :where([data-control-family="spinner"][data-slot="indicator"][data-size="xs"]) {
+    inline-size: calc(var(--spacing) * 3);
+    block-size: calc(var(--spacing) * 3);
+  }
+
+  .bui-scope :where([data-control-family="spinner"][data-slot="indicator"][data-size="md"]) {
+    inline-size: calc(var(--spacing) * 5);
+    block-size: calc(var(--spacing) * 5);
+  }
+
+  .bui-scope :where([data-control-family="spinner"][data-slot="indicator"][data-size="lg"]) {
+    inline-size: calc(var(--spacing) * 6);
+    block-size: calc(var(--spacing) * 6);
+  }
+}
+
+@property --cui-spinner-foreground{
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --cui-spinner-animation-duration{
+  syntax: "<time>";
+  inherits: true;
+  initial-value: 0s;
+}
+
+@keyframes cui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Control UI reduced-motion contract: the spinner is decorative motion. */
+@media (prefers-reduced-motion: reduce) {
+  .bui-scope :where([data-control-family="spinner"] [data-slot="indicator"]) {
+    animation: none;
+  }
+}

@@ -10,6 +10,14 @@ import {
 import { useAtom } from "jotai";
 
 import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
+import {
+  buildForkyMessageContent,
+  extractForkyAttachmentText,
+  FORKY_ATTACH_ACCEPT,
+  nextForkyAttachmentId,
+  validateForkyFiles,
+  type ForkyAttachment,
+} from "./forkyAttachments";
 import { ForkyDoc, ForkyWidget, stripForkyRichBlocks } from "./ForkyRichBlocks";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
@@ -298,9 +306,106 @@ function EmptyState() {
 // Composer — the literal beautifului.dev PromptBar inside a BuiIsland. Sends
 // through the assistant-ui composer runtime (setText + send), which queues
 // the message when a run is already in flight.
+//
+// F2 attachments: the clip control (Control UI chat-composer-attachment chips
+// above the input) picks files, forkyAttachments.ts validates caps and extracts
+// text, and the ready attachments ride INSIDE the message content (see
+// buildForkyMessageContent) — the WS contract carries a single text string, so
+// no protocol change. The demo @ /sources menu is demo-only chrome; a real
+// surface passes controls={false}, which also gives the clip its own column.
 // ---------------------------------------------------------------------------
 function ChatComposer() {
   const aui = useAui();
+  const [attachments, setAttachments] = useState<ForkyAttachment[]>([]);
+
+  const upsertAttachment = useCallback((next: ForkyAttachment) => {
+    setAttachments((current) => current.map((a) => (a.id === next.id ? next : a)));
+  }, []);
+
+  const readAttachment = useCallback(
+    (attachment: ForkyAttachment) => {
+      extractForkyAttachmentText(attachment.file)
+        .then((text) => {
+          upsertAttachment({ ...attachment, status: "ready", text: text ?? undefined });
+        })
+        .catch((err: unknown) => {
+          upsertAttachment({
+            ...attachment,
+            status: "error",
+            error: err instanceof Error ? err.message : "fallo de lectura",
+          });
+        });
+    },
+    [upsertAttachment],
+  );
+
+  const handleAttachFiles = useCallback(
+    (files: File[]) => {
+      setAttachments((current) => {
+        const { accepted, rejected } = validateForkyFiles(files, current.length);
+        const next: ForkyAttachment[] = [];
+        // Refusals stay visible as error chips — an honest error, never silence.
+        for (const { file, reason } of rejected) {
+          next.push({
+            id: nextForkyAttachmentId(),
+            file,
+            name: file.name,
+            mime: file.type,
+            size: file.size,
+            status: "error",
+            error: reason,
+          });
+        }
+        for (const file of accepted) {
+          const attachment: ForkyAttachment = {
+            id: nextForkyAttachmentId(),
+            file,
+            name: file.name,
+            mime: file.type,
+            size: file.size,
+            status: "reading",
+          };
+          if (file.type.startsWith("image/")) {
+            attachment.previewUrl = URL.createObjectURL(file);
+          }
+          next.push(attachment);
+          // Text extraction is async; the chip shows the Control UI progress
+          // state until it lands (or fails).
+          queueMicrotask(() => readAttachment(attachment));
+        }
+        return [...current, ...next];
+      });
+    },
+    [readAttachment],
+  );
+
+  const removeAttachment = useCallback((id: string) => {
+    setAttachments((current) => {
+      const target = current.find((a) => a.id === id);
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return current.filter((a) => a.id !== id);
+    });
+  }, []);
+
+  const readingCount = attachments.filter((a) => a.status === "reading").length;
+  const readyAttachments = attachments.filter((a) => a.status === "ready");
+  const errorAttachments = attachments.filter((a) => a.status === "error");
+
+  const handleSend = useCallback(
+    (text: string) => {
+      // Send gates on the text extraction: a half-read file would ride without
+      // its content. Error chips never block — they are just metadata blocks.
+      if (readingCount > 0) return;
+      const content = buildForkyMessageContent(text, [...readyAttachments, ...errorAttachments]);
+      aui.composer.setText(content);
+      aui.composer.send();
+      for (const a of attachments) {
+        if (a.previewUrl) URL.revokeObjectURL(a.previewUrl);
+      }
+      setAttachments([]);
+    },
+    [aui, attachments, errorAttachments, readyAttachments, readingCount],
+  );
 
   return (
     <div data-testid="forky-composer-root" className="shrink-0 p-1.5">
@@ -310,10 +415,20 @@ function ChatComposer() {
           placeholder="Pregunta lo que quieras"
           inputAriaLabel="Prompt"
           sendLabel="Send"
-          onSend={(text) => {
-            aui.composer.setText(text);
-            aui.composer.send();
-          }}
+          controls={false}
+          sendBlocked={readingCount > 0}
+          attachAccept={FORKY_ATTACH_ACCEPT}
+          onAttachFiles={handleAttachFiles}
+          onRemoveAttachment={removeAttachment}
+          attachments={attachments.map((a) => ({
+            id: a.id,
+            name: a.name,
+            mime: a.mime,
+            status: a.status === "reading" ? "uploading" : a.status,
+            error: a.error,
+            previewUrl: a.previewUrl,
+          }))}
+          onSend={handleSend}
         />
       </BuiIsland>
       <p
