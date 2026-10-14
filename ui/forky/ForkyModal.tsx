@@ -11,10 +11,13 @@ import { useAtom } from "jotai";
 
 import { ForkyChart, stripForkyChartBlocks } from "./ForkyChart";
 import {
+  buildForkyAttachmentRefs,
   buildForkyMessageContent,
   extractForkyAttachmentText,
   FORKY_ATTACH_ACCEPT,
+  isMediaAttachment,
   nextForkyAttachmentId,
+  uploadForkyAttachment,
   validateForkyFiles,
   type ForkyAttachment,
 } from "./forkyAttachments";
@@ -39,7 +42,7 @@ import {
 import { ChatBubbleMotionProvider } from "./chat-motion";
 
 import { forkyOpenAtom } from "../../state/atoms";
-import { ForkyRuntimeProvider } from "./forkyRuntime";
+import { ForkyRuntimeProvider, useForkyClient } from "./forkyRuntime";
 import { useForkyTurnSteps } from "./forkyStatus";
 
 // ---------------------------------------------------------------------------
@@ -308,14 +311,18 @@ function EmptyState() {
 // the message when a run is already in flight.
 //
 // F2 attachments: the clip control (Control UI chat-composer-attachment chips
-// above the input) picks files, forkyAttachments.ts validates caps and extracts
-// text, and the ready attachments ride INSIDE the message content (see
-// buildForkyMessageContent) — the WS contract carries a single text string, so
-// no protocol change. The demo @ /sources menu is demo-only chrome; a real
-// surface passes controls={false}, which also gives the clip its own column.
+// above the input) picks files, forkyAttachments.ts validates the caps, and
+// then the flow splits (coord forky_attachments_v1): textual files are read in
+// place and ride INSIDE the message content (buildForkyMessageContent), while
+// images and PDFs upload to Bunny via the existing media endpoint and travel
+// as `attachments[]` refs in the WS frame — the server re-reads the bytes and
+// hands the model real image/document blocks. The demo @ /sources menu is
+// demo-only chrome; a real surface passes controls={false}, which also gives
+// the clip its own column.
 // ---------------------------------------------------------------------------
 function ChatComposer() {
   const aui = useAui();
+  const client = useForkyClient();
   const [attachments, setAttachments] = useState<ForkyAttachment[]>([]);
 
   const upsertAttachment = useCallback((next: ForkyAttachment) => {
@@ -333,6 +340,27 @@ function ChatComposer() {
             ...attachment,
             status: "error",
             error: err instanceof Error ? err.message : "fallo de lectura",
+          });
+        });
+    },
+    [upsertAttachment],
+  );
+
+  // Media (images/PDFs) uploads to Bunny so the model receives real content;
+  // the chip shows the honest 0-100 from the XHR upload events.
+  const uploadAttachment = useCallback(
+    (attachment: ForkyAttachment) => {
+      uploadForkyAttachment(attachment.file, (percent) => {
+        upsertAttachment({ ...attachment, progress: percent });
+      })
+        .then(({ url, path }) => {
+          upsertAttachment({ ...attachment, status: "ready", url, path, progress: 100 });
+        })
+        .catch((err: unknown) => {
+          upsertAttachment({
+            ...attachment,
+            status: "error",
+            error: err instanceof Error ? err.message : "fallo de subida",
           });
         });
     },
@@ -357,26 +385,27 @@ function ChatComposer() {
           });
         }
         for (const file of accepted) {
+          const isMedia = isMediaAttachment(file);
           const attachment: ForkyAttachment = {
             id: nextForkyAttachmentId(),
             file,
             name: file.name,
             mime: file.type,
             size: file.size,
-            status: "reading",
+            status: isMedia ? "uploading" : "reading",
           };
           if (file.type.startsWith("image/")) {
             attachment.previewUrl = URL.createObjectURL(file);
           }
           next.push(attachment);
-          // Text extraction is async; the chip shows the Control UI progress
-          // state until it lands (or fails).
-          queueMicrotask(() => readAttachment(attachment));
+          // Both preparations are async; the chip shows the Control UI
+          // upload/progress state until it lands (or fails).
+          queueMicrotask(() => (isMedia ? uploadAttachment(attachment) : readAttachment(attachment)));
         }
         return [...current, ...next];
       });
     },
-    [readAttachment],
+    [readAttachment, uploadAttachment],
   );
 
   const removeAttachment = useCallback((id: string) => {
@@ -388,15 +417,21 @@ function ChatComposer() {
   }, []);
 
   const readingCount = attachments.filter((a) => a.status === "reading").length;
+  const uploadingCount = attachments.filter((a) => a.status === "uploading").length;
+  const preparingCount = readingCount + uploadingCount;
   const readyAttachments = attachments.filter((a) => a.status === "ready");
   const errorAttachments = attachments.filter((a) => a.status === "error");
 
   const handleSend = useCallback(
     (text: string) => {
-      // Send gates on the text extraction: a half-read file would ride without
-      // its content. Error chips never block — they are just metadata blocks.
-      if (readingCount > 0) return;
+      // Send gates on the preparation: a half-read file would ride without its
+      // content and a half-uploaded one without its ref. Error chips never
+      // block — they are just honest metadata.
+      if (preparingCount > 0) return;
       const content = buildForkyMessageContent(text, [...readyAttachments, ...errorAttachments]);
+      // Media refs ride the frame next to the content (forky_attachments_v1):
+      // one send = one FIFO batch, consumed by the model adapter.
+      client.pushPendingAttachments(buildForkyAttachmentRefs(attachments));
       aui.composer.setText(content);
       aui.composer.send();
       for (const a of attachments) {
@@ -404,7 +439,7 @@ function ChatComposer() {
       }
       setAttachments([]);
     },
-    [aui, attachments, errorAttachments, readyAttachments, readingCount],
+    [aui, attachments, client, errorAttachments, preparingCount, readyAttachments],
   );
 
   return (

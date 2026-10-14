@@ -6,6 +6,7 @@ import {
   type ForkyHistoryMessage,
   type ForkyTurnEvent,
 } from "./forkyRuntime";
+import type { ForkyAttachmentRef } from "./forkyAttachments";
 
 /** Minimal in-memory WebSocket stand-in for the transport tests. */
 class FakeWebSocket {
@@ -73,10 +74,11 @@ function helloFrame(sessionId: number | null, history: ForkyHistoryMessage[] = [
 async function collectTurn(
   client: ForkyWsClient,
   content: string,
-  abort?: AbortSignal
+  abort?: AbortSignal,
+  attachments?: ForkyAttachmentRef[]
 ): Promise<ForkyTurnEvent[]> {
   const events: ForkyTurnEvent[] = [];
-  for await (const event of client.runTurn(content, abort)) {
+  for await (const event of client.runTurn(content, { attachments, abortSignal: abort })) {
     events.push(event);
   }
   return events;
@@ -149,6 +151,70 @@ describe("ForkyWsClient", () => {
       type: "message",
       content: "hola",
     });
+    client.dispose();
+  });
+
+  it("rides attachment refs in the message frame (forky_attachments_v1)", async () => {
+    const { client } = makeClient();
+    const refs = [{ name: "doc.pdf", media_type: "application/pdf", size: 4096, url: "https://cdn.example/forky/1/doc.pdf", path: "forky/1/doc.pdf" }];
+    const turn = collectTurn(client, "mira", undefined, refs);
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+    ws.receive({ type: "done" });
+    await turn;
+
+    const frame = JSON.parse(ws.sent.find((s) => JSON.parse(s).type === "message")!);
+    expect(frame).toMatchObject({ type: "message", content: "mira", attachments: refs });
+    client.dispose();
+  });
+
+  it("omits the attachments key when the turn has no media", async () => {
+    const { client } = makeClient();
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+    ws.receive({ type: "done" });
+    await turn;
+
+    const frame = JSON.parse(ws.sent.find((s) => JSON.parse(s).type === "message")!);
+    expect(frame).toEqual({ type: "message", content: "hola" });
+    client.dispose();
+  });
+
+  it("consumes queued attachment batches FIFO (one send = one batch)", async () => {
+    const { client } = makeClient();
+    client.pushPendingAttachments([{ name: "a.png", media_type: "image/png", size: 1, url: "u1", path: "p1" }]);
+    client.pushPendingAttachments([]);
+    expect(client.takePendingAttachments()).toHaveLength(1);
+    expect(client.takePendingAttachments()).toHaveLength(0);
+    expect(client.takePendingAttachments()).toHaveLength(0);
+    client.dispose();
+  });
+
+  it("re-sends attachment refs with the message after a mid-turn reconnect", async () => {
+    const { client } = makeClient({ maxReconnectAttempts: 3 });
+    const refs = [{ name: "f.png", media_type: "image/png", size: 10, url: "u", path: "p" }];
+    const turn = collectTurn(client, "hola", undefined, refs);
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+
+    ws.close();
+    await new Promise((r) => setTimeout(r, 20));
+    const ws2 = FakeWebSocket.instances[1];
+    ws2.open();
+    ws2.receive(helloFrame(1));
+    ws2.receive({ type: "done" });
+    await turn;
+
+    const resent = ws2.sent.slice(0).map((s) => JSON.parse(s) as Record<string, unknown>).filter((f) => f.type === "message");
+    // The pending message (with its refs) is re-sent on the NEW socket.
+    expect(resent.some((f) => JSON.stringify(f.attachments) === JSON.stringify(refs))).toBe(true);
     client.dispose();
   });
 

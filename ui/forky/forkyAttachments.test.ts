@@ -8,8 +8,10 @@ import {
   FORKY_ATTACH_MAX_FILES,
   FORKY_ATTACH_MAX_TEXT_CHARS,
   isAcceptedForkyFile,
+  isMediaAttachment,
   isTextualAttachment,
   nextForkyAttachmentId,
+  buildForkyAttachmentRefs,
   validateForkyFiles,
   type ForkyAttachment,
 } from "./forkyAttachments";
@@ -99,6 +101,41 @@ describe("extractForkyAttachmentText", () => {
   });
 });
 
+describe("media attachments (upload to Bunny, coord forky_attachments_v1)", () => {
+  it("classifies images and PDFs as media; textual files and SVG stay inline", () => {
+    expect(isMediaAttachment({ name: "foto.jpg", type: "image/jpeg" })).toBe(true);
+    expect(isMediaAttachment({ name: "doc.pdf", type: "application/pdf" })).toBe(true);
+    expect(isMediaAttachment({ name: "doc.pdf", type: "" })).toBe(true);
+    expect(isMediaAttachment({ name: "notas.txt", type: "text/plain" })).toBe(false);
+    expect(isMediaAttachment({ name: "logo.svg", type: "image/svg+xml" })).toBe(false);
+    expect(isMediaAttachment({ name: "tabla.csv", type: "text/csv" })).toBe(false);
+  });
+
+  it("builds frame refs only from uploaded (ready + url + path) attachments", () => {
+    const refs = buildForkyAttachmentRefs([
+      attachmentOf({ name: "foto.png", mime: "image/png", size: 2048, status: "uploading", progress: 40 }),
+      attachmentOf({ name: "lista.txt", mime: "text/plain", size: 10, text: "a,b" }),
+      attachmentOf({ name: "doc.pdf", mime: "application/pdf", size: 4096, url: "https://cdn.example/forky/1/doc.pdf", path: "forky/1/doc.pdf" }),
+      attachmentOf({ name: "roto.png", mime: "image/png", size: 12, status: "error", error: "denied" }),
+    ]);
+    expect(refs).toHaveLength(1);
+    expect(refs[0]).toEqual({
+      name: "doc.pdf",
+      media_type: "application/pdf",
+      size: 4096,
+      url: "https://cdn.example/forky/1/doc.pdf",
+      path: "forky/1/doc.pdf",
+    });
+  });
+
+  it("uploaded media rides NO content block (the frame ref carries it)", () => {
+    const content = buildForkyMessageContent("mira", [
+      attachmentOf({ name: "foto.png", mime: "image/png", size: 2048, url: "https://cdn.example/f.png", path: "forky/1/f.png" }),
+    ]);
+    expect(content).toBe("mira");
+  });
+});
+
 describe("buildForkyMessageContent", () => {
   it("returns the bare text when nothing is attached", () => {
     expect(buildForkyMessageContent("hola", [])).toBe("hola");
@@ -128,7 +165,7 @@ describe("buildForkyMessageContent", () => {
     const content = buildForkyMessageContent("", [
       attachmentOf({ name: "roto.txt", status: "error", error: "denied" }),
     ]);
-    expect(content).toContain("ERROR: no se pudo leer el archivo (denied)");
+    expect(content).toContain("ERROR: no se pudo preparar el archivo (denied)");
   });
 
   it("works with attachments but no text", () => {
