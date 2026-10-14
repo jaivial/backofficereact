@@ -204,7 +204,6 @@ describe("ForkyWsClient", () => {
     ws.receive(helloFrame(1));
     await new Promise((r) => setTimeout(r, 0));
 
-    const sentBefore = ws.sent.length;
     ws.close();
     await new Promise((r) => setTimeout(r, 20));
     const ws2 = FakeWebSocket.instances[1];
@@ -214,8 +213,8 @@ describe("ForkyWsClient", () => {
     await turn;
 
     const resent = ws2.sent.slice(0).map((s) => JSON.parse(s) as Record<string, unknown>).filter((f) => f.type === "message");
+    // The pending message (with its refs) is re-sent on the NEW socket.
     expect(resent.some((f) => JSON.stringify(f.attachments) === JSON.stringify(refs))).toBe(true);
-    expect(ws.sent.length).toBeGreaterThan(sentBefore);
     client.dispose();
   });
 
