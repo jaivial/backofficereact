@@ -2,6 +2,7 @@ import { createContext, createElement, useContext, useEffect, useMemo, useRef, u
 
 import { addForkyTurnStep, resetForkyTurnSteps, setForkyVisualState } from "./forkyStatus";
 import type { ForkyAttachmentRef } from "./forkyAttachments";
+import { registerForkyVoiceMessage, type ForkyVoiceMessageMeta } from "./forkyVoice";
 import {
   AssistantRuntimeProvider,
   fromThreadMessageLike,
@@ -119,6 +120,10 @@ export class ForkyWsClient {
   private activeTurn: ActiveTurn | null = null;
   /** Attachment ref batches queued per send, consumed FIFO per run. */
   private pendingAttachments: ForkyAttachmentRef[][] = [];
+  /** Voice-note metas queued per send, consumed FIFO per run (F3): the clip's
+   *  Bunny URL + measured duration, registered under the user message id so
+   *  its bubble renders a player. */
+  private pendingVoice: (ForkyVoiceMessageMeta | null)[] = [];
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private keepaliveTimer: ReturnType<typeof setInterval> | null = null;
@@ -156,6 +161,17 @@ export class ForkyWsClient {
   /** Consumed once per adapter run; empty when the send had no media. */
   takePendingAttachments(): ForkyAttachmentRef[] {
     return this.pendingAttachments.shift() ?? [];
+  }
+
+  /** Queue the voice-note meta for the NEXT runTurn: one send, one entry,
+   *  null when the send carried no voice note (F3). */
+  pushPendingVoice(meta: ForkyVoiceMessageMeta | null): void {
+    this.pendingVoice.push(meta);
+  }
+
+  /** Consumed once per adapter run; null when the send had no voice note. */
+  takePendingVoice(): ForkyVoiceMessageMeta | null {
+    return this.pendingVoice.shift() ?? null;
   }
 
   /** Drive one user turn, yielding status/delta/done/error events in order. */
@@ -484,9 +500,11 @@ function lastUserText(messages: ChatModelRunOptionsMessages): string {
     .join("");
 }
 
-// `run` receives the resolved ThreadMessage list; we only need the text of the
-// final user message. Kept structurally typed to avoid importing internal types.
+// `run` receives the resolved ThreadMessage list; we need the text of the final
+// user message and its id (voice notes register their player under it, F3).
+// Kept structurally typed to avoid importing internal types.
 type ChatModelRunOptionsMessages = ReadonlyArray<{
+  id?: string;
   content: string | ReadonlyArray<{ type: string; text?: string }>;
 }>;
 
@@ -654,6 +672,14 @@ export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAda
       // One send = one queued batch (possibly empty): queued messages keep
       // their own media aligned with their turn (forky_attachments_v1).
       const attachments = client.takePendingAttachments();
+      // Voice notes: same FIFO alignment. The clip never rides the WS frame
+      // (audio is not a model media type) — its Bunny URL is registered under
+      // the user message id so the bubble renders a player (F3).
+      const voice = client.takePendingVoice();
+      if (voice && messages.length > 0) {
+        const lastId = (messages[messages.length - 1] as { id?: string }).id;
+        if (lastId) registerForkyVoiceMessage(lastId, voice);
+      }
       let raw = "";
       setForkyVisualState("think");
       let started = false;

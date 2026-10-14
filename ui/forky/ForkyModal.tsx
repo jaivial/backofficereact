@@ -21,6 +21,14 @@ import {
   validateForkyFiles,
   type ForkyAttachment,
 } from "./forkyAttachments";
+import {
+  forkyVoiceExtension,
+  forkyVoiceFileName,
+  formatForkyVoiceClock,
+  transcribeForkyAudio,
+} from "./forkyVoice";
+import { useForkyVoiceRecorder } from "./useForkyVoiceRecorder";
+import { VoiceMessageSlot } from "./VoicePlayer";
 import { ForkyDoc, ForkyWidget, stripForkyRichBlocks } from "./ForkyRichBlocks";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
@@ -232,6 +240,9 @@ function UserMessage() {
         <div data-testid="forky-user-message-text" className="text-[13px] leading-[1.4]">
           <MessagePrimitive.Parts />
         </div>
+        {/* Voice notes (F3): the clip's Bunny player when this message carries
+            a registered voice note — nothing renders for plain text turns. */}
+        <VoiceMessageSlot />
       </MessageBubble>
     </MessagePrimitive.Root>
   );
@@ -324,6 +335,11 @@ function ChatComposer() {
   const aui = useAui();
   const client = useForkyClient();
   const [attachments, setAttachments] = useState<ForkyAttachment[]>([]);
+  // F3 voice: the mic records; "processing" = uploading + transcribing before
+  // the send. voiceError is the honest failure state (never a fake transcript).
+  const [voicePhase, setVoicePhase] = useState<"idle" | "processing">("idle");
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const recorder = useForkyVoiceRecorder();
 
   const upsertAttachment = useCallback((next: ForkyAttachment) => {
     setAttachments((current) => current.map((a) => (a.id === next.id ? next : a)));
@@ -442,6 +458,60 @@ function ChatComposer() {
     [aui, attachments, client, errorAttachments, preparingCount, readyAttachments],
   );
 
+  // F3 voice send: the clip uploads to the existing Bunny endpoint (the
+  // player's URL) while the same bytes go to the STT endpoint — the transcript
+  // is the message content the text model consumes. A failure in either shows
+  // the honest error and NOTHING is sent: the model never "hears" audio it
+  // cannot read, and never sees a note of voice without a transcript.
+  const sendVoiceClip = useCallback(
+    async (clip: { blob: Blob; durationMs: number }) => {
+      setVoiceError(null);
+      setVoicePhase("processing");
+      try {
+        const recordedAt = Date.now();
+        const name = forkyVoiceFileName(recordedAt, forkyVoiceExtension(clip.blob.type));
+        const file = new File([clip.blob], name, { type: clip.blob.type });
+        const [{ url }, transcript] = await Promise.all([
+          uploadForkyAttachment(file),
+          transcribeForkyAudio(clip.blob),
+        ]);
+        // Queue BEFORE the send so the adapter run consumes this turn's meta:
+        // an empty attachment batch keeps the FIFO alignment with the refs.
+        client.pushPendingVoice({ url, durationMs: clip.durationMs });
+        client.pushPendingAttachments([]);
+        aui.composer.setText(transcript.text);
+        aui.composer.send();
+      } catch (err) {
+        setVoiceError(err instanceof Error ? err.message : "No se pudo enviar la nota de voz");
+      } finally {
+        setVoicePhase("idle");
+      }
+    },
+    [aui, client],
+  );
+
+  const handleToggleDictation = useCallback(() => {
+    if (voicePhase === "processing") return;
+    setVoiceError(null);
+    if (recorder.phase === "recording") {
+      void recorder.stop().then((clip) => {
+        if (clip) void sendVoiceClip(clip);
+      });
+      return;
+    }
+    recorder.start().catch((err: Error) => {
+      setVoiceError(err.message || "No se pudo iniciar la grabación");
+    });
+  }, [recorder, sendVoiceClip, voicePhase]);
+
+  const handleCancelDictation = useCallback(() => {
+    recorder.cancel();
+    setVoiceError(null);
+  }, [recorder]);
+
+  const recording = recorder.phase === "recording";
+  const dictating = recording || voicePhase === "processing";
+
   return (
     <div data-testid="forky-composer-root" className="shrink-0 p-1.5">
       <BuiIsland>
@@ -451,7 +521,7 @@ function ChatComposer() {
           inputAriaLabel="Prompt"
           sendLabel="Send"
           controls={false}
-          sendBlocked={readingCount > 0}
+          sendBlocked={readingCount > 0 || dictating}
           attachAccept={FORKY_ATTACH_ACCEPT}
           onAttachFiles={handleAttachFiles}
           onRemoveAttachment={removeAttachment}
@@ -464,8 +534,44 @@ function ChatComposer() {
             previewUrl: a.previewUrl,
           }))}
           onSend={handleSend}
-        />
+          dictating={dictating}
+          voiceBusy={voicePhase === "processing"}
+          onToggleDictation={handleToggleDictation}
+        >
+          {dictating && (
+            <div
+              data-testid="forky-voice-recording-chip"
+              className="flex items-center gap-2 px-1 pb-1.5 text-[11.5px] text-fui-ink-2"
+            >
+              {recording ? (
+                <>
+                  <span className="size-1.5 shrink-0 rounded-full bg-fui-red" style={{ animation: "eq-bounce 900ms ease-in-out infinite" }} />
+                  <span data-testid="forky-voice-timer" className="tabular-nums">{formatForkyVoiceClock(recorder.elapsedMs)}</span>
+                  <button
+                    type="button"
+                    data-testid="forky-voice-cancel"
+                    onClick={handleCancelDictation}
+                    className="rounded-[6px] px-1.5 py-0.5 text-[11px] text-fui-ink-3 transition-colors duration-100 hover:bg-fui-hover hover:text-fui-ink-2"
+                  >
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <span data-testid="forky-voice-processing">Transcribiendo la nota de voz…</span>
+              )}
+            </div>
+          )}
+        </PromptBar>
       </BuiIsland>
+      {voiceError && (
+        <p
+          data-testid="forky-voice-error"
+          role="alert"
+          className="mt-1 px-2 text-center text-[11.5px] text-fui-red"
+        >
+          {voiceError}
+        </p>
+      )}
       <p
         data-testid="forky-composer-disclaimer"
         className="mt-2 text-center text-[11px] text-fui-ink-3"
