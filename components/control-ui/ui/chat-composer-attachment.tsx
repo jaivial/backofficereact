@@ -6,13 +6,13 @@
 // not install the registry's `button`/`scroll-area` items (they pull in
 // @base-ui/react, a new runtime dependency the forky island does not need):
 //   1. `ChatComposerAttachmentRemove` renders a native <button> carrying the
-//      exact same data attributes (data-control-family="button",
-//      data-chat-composer-attachment-remove="true") so the recipe CSS — which
-//      styles it through those attributes and the `--cui-button-*` knobs —
-//      applies unchanged. The forky island stylesheet paints it.
+//      exact same data attributes as the registry Button (the button control
+//      family plus the remove marker) so the recipe CSS — which styles it
+//      through those attributes and the `--cui-button-*` knobs — applies
+//      unchanged. The forky island stylesheet paints it.
 //   2. `ChatComposerAttachments` wraps the rail in a plain overflow-x auto div
-//      instead of the registry ScrollArea (same data-slot="scroll").
-// Everything else is upstream verbatim; the `@/components/control-ui/…`
+//      instead of the registry ScrollArea (same scroll slot contract).
+// Everything else is upstream verbatim; the registry's `@/components/…`
 // imports are rewritten to relative paths.
 
 import { XIcon } from "lucide-react";
@@ -172,7 +172,7 @@ export function ChatComposerAttachments({
   ...props
 }: ChatComposerAttachmentsProps) {
   // HOST-EDIT(control-ui install): plain rail instead of the registry ScrollArea
-  // (scroll-area pulls in @base-ui/react). Same data-slot="scroll" contract.
+  // (scroll-area pulls in @base-ui/react). Same scroll slot contract.
   return (
     <div
       data-control-ui="chat-composer-attachments"
