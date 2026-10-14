@@ -1839,6 +1839,91 @@ body > div.fixed.z-50.w-72.overflow-hidden.rounded-\[10px\].bg-surface.shadow-ov
   user-select:none
 }
 
+/* ── HAND-MAINTAINED: scoped preflight + vendored utilities ───────── */
+/* beautifului.dev ships Tailwind v4 preflight (zero margins/paddings,
+ * `border: 0 solid` everywhere, transparent font-inheriting form controls,
+ * no focus outlines on form controls). The extractor above copies only the
+ * utility classes, so inside .bui-scope the UA defaults bleed through:
+ * gray outset-border buttons, monospace textareas, app focus rings.
+ * This section restores the site baseline, scoped to the island.
+ * Values mirror the site stylesheet (fetched 2026-10-14). */
+.bui-scope,
+.bui-scope *,
+.bui-scope ::before,
+.bui-scope ::after {
+  box-sizing: border-box;
+  border: 0 solid;
+  margin: 0;
+  padding: 0;
+}
+
+.bui-scope :is(button, input, optgroup, select, textarea) {
+  font: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  opacity: 1;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+.bui-scope :is(button, input:where([type="button"], [type="reset"], [type="submit"])) {
+  appearance: button;
+}
+
+.bui-scope textarea {
+  resize: vertical;
+}
+
+.bui-scope :is(button, input, select, textarea):focus-visible {
+  outline: none;
+}
+
+.bui-scope {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizelegibility;
+}
+
+/* Utilities the vendored PromptBar uses that the extractor's source page
+ * didn't ship (standard Tailwind values). */
+.bui-scope .border {
+  border-style: var(--tw-border-style,solid);
+  border-width: 1px;
+}
+.bui-scope .hidden {
+  display: none;
+}
+.bui-scope .opacity-60 {
+  opacity: .6;
+}
+.bui-scope .leading-6 {
+  --tw-leading: calc(var(--spacing) * 6);
+  line-height: calc(var(--spacing) * 6);
+}
+.bui-scope .text-\[16px\] {
+  font-size: 16px;
+}
+.bui-scope .-my-1 {
+  margin-block: calc(var(--spacing) * -1);
+}
+.bui-scope .\[overflow-wrap\:anywhere\] {
+  overflow-wrap: anywhere;
+}
+.bui-scope .grid-cols-\[28px_minmax\(0\,1fr\)_28px_28px\] {
+  grid-template-columns: 28px minmax(0,1fr) 28px 28px;
+}
+@media (min-width: 48rem) {
+  .bui-scope .md\:size-7 {
+    width: calc(var(--spacing) * 7);
+    height: calc(var(--spacing) * 7);
+  }
+  .bui-scope .md\:rounded-\[8px\] {
+    border-radius: 8px;
+  }
+}
+
 /* ── reduced motion ───────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .bui-scope, .bui-scope *, body > div.fixed.z-50.w-72.overflow-hidden.rounded-\[10px\].bg-surface.shadow-overlay, body > div.fixed.z-50.w-72.overflow-hidden.rounded-\[10px\].bg-surface.shadow-overlay * {
