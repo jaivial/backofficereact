@@ -2,11 +2,15 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   ForkyWsClient,
+  createForkyChatModelAdapter,
   recoverEncodedReply,
   type ForkyHistoryMessage,
   type ForkyTurnEvent,
 } from "./forkyRuntime";
+import type { ChatModelRunResult } from "@assistant-ui/react";
 import type { ForkyAttachmentRef } from "./forkyAttachments";
+import { lookupForkyVoiceMessage, registerForkyVoiceMessage } from "./forkyVoice";
+
 
 /** Minimal in-memory WebSocket stand-in for the transport tests. */
 class FakeWebSocket {
@@ -192,6 +196,16 @@ describe("ForkyWsClient", () => {
     expect(client.takePendingAttachments()).toHaveLength(1);
     expect(client.takePendingAttachments()).toHaveLength(0);
     expect(client.takePendingAttachments()).toHaveLength(0);
+    client.dispose();
+  });
+
+  it("queues voice metas FIFO, aligned one-per-send (F3)", async () => {
+    const { client } = makeClient();
+    client.pushPendingVoice({ url: "https://cdn/n1.webm", durationMs: 3200 });
+    client.pushPendingVoice(null);
+    expect(client.takePendingVoice()?.url).toBe("https://cdn/n1.webm");
+    expect(client.takePendingVoice()).toBeNull();
+    expect(client.takePendingVoice()).toBeNull();
     client.dispose();
   });
 
@@ -590,5 +604,46 @@ describe("recoverEncodedReply", () => {
     const out = recoverEncodedReply(truncated);
     expect(out).toContain("reservas");
     expect(out).not.toBe(truncated);
+  });
+});
+
+describe("createForkyChatModelAdapter — voice notes (F3)", () => {
+  it("registers the queued voice meta under the last user message id", async () => {
+    const { client } = makeClient();
+    client.pushPendingVoice({ url: "https://cdn/n1.webm", durationMs: 3200 });
+    client.pushPendingAttachments([]);
+    const adapter = createForkyChatModelAdapter(client);
+    const messages = [
+      { id: "msg-1", content: "antes" },
+      { id: "msg-voice", content: "nota de voz" },
+    ];
+    // The registration happens synchronously at the top of run(), before the
+    // socket connect awaits; kick the generator without draining it.
+    const gen = adapter.run({
+      messages: messages as never,
+      abortSignal: new AbortController().signal,
+    } as never) as AsyncGenerator<ChatModelRunResult, void, unknown>;
+    void gen.next();
+    expect(lookupForkyVoiceMessage("msg-voice")?.url).toBe("https://cdn/n1.webm");
+    expect(lookupForkyVoiceMessage("msg-voice")?.durationMs).toBe(3200);
+    expect(lookupForkyVoiceMessage("msg-1")).toBeNull();
+    client.dispose();
+  });
+
+  it("does not register anything for a plain text send", async () => {
+    const { client } = makeClient();
+    const adapter = createForkyChatModelAdapter(client);
+    const gen = adapter.run({
+      messages: [{ id: "msg-plain", content: "hola" }] as never,
+      abortSignal: new AbortController().signal,
+    } as never) as AsyncGenerator<ChatModelRunResult, void, unknown>;
+    void gen.next();
+    expect(lookupForkyVoiceMessage("msg-plain")).toBeNull();
+    client.dispose();
+  });
+
+  it("keeps pre-existing registrations readable (reload path untouched)", () => {
+    registerForkyVoiceMessage("msg-seeded", { url: "https://cdn/seed.webm", durationMs: 900 });
+    expect(lookupForkyVoiceMessage("msg-seeded")).not.toBeNull();
   });
 });
