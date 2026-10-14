@@ -71,6 +71,10 @@
   .bo-dateBtn,
   .bo-brandingLogo-uploadBtn,
   .bo-drawAccordionToggle,
+  /* Draw-panel template buttons pin 32px and the scope toggle 40px; both sit
+     in the mobile draw panel where they are primary tap targets. */
+  .bo-tableMapTemplateTopBtn,
+  .bo-tableMapDrawScopeOption,
   .bo-toastX,
   :is(.bo-app, #bo-portal) .bo-input {
     min-height: 44px;
