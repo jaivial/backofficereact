@@ -55,10 +55,21 @@ const BRANDS: Record<string, React.ReactNode> = {
   ),
 };
 
-// HOST-EDIT: the registry imports the host's attachment chip. Forky vendors a
-// minimal stand-in so the composer needs no host module: same 1:1 square chip,
-// upload state and remove button, backoffice-scoped test ids.
-import { ComposerAttachmentChip } from "./ComposerAttachmentChip";
+// HOST-EDIT: real Control UI attachment chips (control-ui.dev
+// r/chat-composer-attachment, owned source in components/control-ui/) replace
+// the old minimal stand-in (ui/forky/bui/ComposerAttachmentChip.tsx, deleted):
+// kind detection, image preview, upload/progress state, remove and honest
+// error states. Backoffice test ids are passed through unchanged.
+import {
+  ChatComposerAttachment,
+  ChatComposerAttachmentContent,
+  ChatComposerAttachmentDescription,
+  ChatComposerAttachmentPreview,
+  ChatComposerAttachmentProgress,
+  ChatComposerAttachmentRemove,
+  ChatComposerAttachmentTitle,
+  type ChatComposerAttachmentStatus,
+} from "../../../components/control-ui/ui/chat-composer-attachment";
 
 type Source = {
   key: string;
@@ -206,7 +217,7 @@ export default function PromptBar({
    *  uploads the files and owns the chips. Absent → demo chips only (gallery unchanged). */
   onAttachFiles?: (files: File[]) => void;
   /** host-owned chips; upload state lives with the host ([SAGE-MEDIA-C02:media-ready]) */
-  attachments?: { id: string; name: string; status?: "uploading" | "ready" | "error"; error?: string; previewUrl?: string; kind?: "image" | "document" }[];
+  attachments?: { id: string; name: string; mime?: string; status?: "uploading" | "ready" | "error"; error?: string; previewUrl?: string; kind?: "image" | "document" }[];
   onRemoveAttachment?: (id: string) => void;
   /** [SAGE-MEDIA-C04:model-capability] the selected model has no vision: attach renders
    *  blocked and a popover tells the user why. */
@@ -498,20 +509,44 @@ export default function PromptBar({
 
         {(attachments.length > 0 || hostChips.length > 0) && (
           <div className={`flex flex-wrap gap-1.5 pt-0.5 ${pill ? "px-1" : "px-0.5"}`}>
-            {hostChips.map((chip) => (
-              <span key={chip.id} data-testid={`prompt-bar-media-chip-wrap-${chip.id}`} style={{ animation: "pop-in 200ms cubic-bezier(0.23,1,0.32,1) both" }}>
-                <ComposerAttachmentChip
-                  id={chip.id}
-                  name={chip.name}
-                  kind={chip.kind}
-                  previewUrl={chip.previewUrl}
-                  status={chip.status}
-                  error={chip.error}
-                  onRemove={() => onRemoveAttachment?.(chip.id)}
-                  testIdPrefix="forky-prompt-bar-media-chip"
-                />
-              </span>
-            ))}
+            {/* Control UI chip rail: the li chips must sit in a ul, and the row
+                itself must keep the composer's flex-wrap layout, so the list is
+                a display:contents participant of the row. */}
+            {hostChips.length > 0 && (
+              <ul className="m-0 flex list-none flex-wrap content-start gap-1.5 p-0">
+                {hostChips.map((chip) => {
+                  const status: ChatComposerAttachmentStatus =
+                    chip.status === "uploading" ? "uploading" : chip.status === "error" ? "error" : "uploaded";
+                  const errorLabel = chip.error ?? "No se pudo adjuntar. Quita el archivo e inténtalo de nuevo.";
+                  const testIdPrefix = "forky-prompt-bar-media-chip";
+                  return (
+                    <ChatComposerAttachment
+                      key={chip.id}
+                      name={chip.name}
+                      type={chip.mime}
+                      status={status}
+                      previewUrl={chip.previewUrl}
+                      errorLabel={errorLabel}
+                      removeLabel={`Quitar ${chip.name}`}
+                      uploadedLabel={(name) => `${name} listo para enviar`}
+                      uploadFailedLabel={(name) => `${name} no se pudo adjuntar`}
+                      data-testid={`prompt-bar-media-chip-wrap-${chip.id}`}
+                      style={{ animation: "pop-in 200ms cubic-bezier(0.23,1,0.32,1) both" }}
+                    >
+                      <ChatComposerAttachmentPreview data-testid={`${testIdPrefix}-preview-${chip.id}`} />
+                      {(!chip.previewUrl || chip.status === "error") && (
+                        <ChatComposerAttachmentContent>
+                          <ChatComposerAttachmentTitle data-testid={`${testIdPrefix}-name-${chip.id}`} />
+                          <ChatComposerAttachmentDescription data-testid={`${testIdPrefix}-status-${chip.id}`} />
+                        </ChatComposerAttachmentContent>
+                      )}
+                      <ChatComposerAttachmentRemove data-testid={`${testIdPrefix}-remove-${chip.id}`} />
+                      <ChatComposerAttachmentProgress data-testid={`${testIdPrefix}-progress-${chip.id}`} />
+                    </ChatComposerAttachment>
+                  );
+                })}
+              </ul>
+            )}
             {attachments.map((file, i) => (
               <span
                 key={`${file}-${i}`}

@@ -127,6 +127,7 @@
 /* ── Features: Communication ──────────────────────────── */
 @import "./styles/features/forky/forky-bui.css";
 @import "./styles/features/forky/forky-bui-island.css";
+@import "./styles/features/forky/forky-control-ui.css";
 @import "./styles/features/communication/email-modal.css";
 @import "./styles/features/communication/batch-whatsapp-modal.css";
 @import "./styles/features/communication/attachments-modal.css";
