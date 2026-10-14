@@ -217,7 +217,7 @@ export default function PromptBar({
    *  uploads the files and owns the chips. Absent → demo chips only (gallery unchanged). */
   onAttachFiles?: (files: File[]) => void;
   /** host-owned chips; upload state lives with the host ([SAGE-MEDIA-C02:media-ready]) */
-  attachments?: { id: string; name: string; mime?: string; status?: "uploading" | "ready" | "error"; error?: string; previewUrl?: string; kind?: "image" | "document" }[];
+  attachments?: { id: string; name: string; mime?: string; status?: "uploading" | "ready" | "error"; error?: string; progress?: number; previewUrl?: string; kind?: "image" | "document" }[];
   onRemoveAttachment?: (id: string) => void;
   /** [SAGE-MEDIA-C04:model-capability] the selected model has no vision: attach renders
    *  blocked and a popover tells the user why. */
@@ -525,6 +525,7 @@ export default function PromptBar({
                       name={chip.name}
                       type={chip.mime}
                       status={status}
+                      progress={chip.progress}
                       previewUrl={chip.previewUrl}
                       errorLabel={errorLabel}
                       removeLabel={`Quitar ${chip.name}`}
