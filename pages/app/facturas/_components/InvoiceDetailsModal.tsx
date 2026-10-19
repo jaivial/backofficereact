@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { User, Mail, Phone, Calendar, FileText, Hash, Tag as TagIcon, CreditCard, MapPin, BadgeCheck, Clock, Users, ExternalLink, Download, Send, MessageCircle } from "lucide-react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { User, Mail, Phone, Calendar, FileText, Hash, Tag as TagIcon, CreditCard, MapPin, BadgeCheck, Clock, Users, ExternalLink, Download, Send, MessageCircle, Share2 } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { ScrollArea } from "../../../../ui/layout/ScrollArea";
@@ -62,6 +62,20 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
     return parts;
   }, [invoice]);
 
+  // Mobile-friendly tabs: detail / PDF / email / WhatsApp previews. Coordination id: invoice_details_tabs_v1
+  const [tab, setTab] = useState<"detalle" | "pdf" | "email" | "whatsapp">("detalle");
+  useEffect(() => { if (open) setTab("detalle"); }, [open, invoice?.id]);
+  const pdfUrl = invoice?.id ? `/api/admin/invoices/${invoice.id}/pdf` : "";
+  const shareLink = useCallback(async () => {
+    if (!pdfUrl) return;
+    const url = new URL(pdfUrl, window.location.origin).toString();
+    try {
+      if (typeof navigator.share === "function") await navigator.share({ title: invoice?.invoice_number || "Factura", url });
+      else await navigator.clipboard.writeText(url);
+    } catch { /* cancelled share */ }
+  }, [pdfUrl, invoice?.invoice_number]);
+  const msgText = `Hola ${fullName}, le enviamos la factura ${invoice?.invoice_number || invoice?.id} por importe de ${formatPrice(invoice?.total ?? invoice?.amount ?? 0, invoice?.currency)}.\n\nQuedamos a su disposición para cualquier consulta.\n\nVilla Carmen`;
+
   const totalAmount = invoice?.total ?? invoice?.amount ?? 0;
   const paidAmount = invoice?.paid_amount ?? 0;
   const remaining = totalAmount - paidAmount;
@@ -72,6 +86,38 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
   return (
     <Modal open={open} title="Detalles de factura" onClose={onClose} size="md" hideClose className="bo-invoiceDetailsModal">
       <ModalHeader title="Detalles de factura" onClose={onClose} />
+      <div className="bo-detailsTabs" role="tablist" aria-label="Vista" data-testid="details-tabs">
+        {([["detalle", "Detalle", FileText], ["pdf", "PDF", FileText], ["email", "Email", Mail], ["whatsapp", "WhatsApp", MessageCircle]] as const).map(([k, l, Icon]) => (
+          <button key={k} type="button" role="tab" aria-selected={tab === k} className={`bo-detailsTab ${tab === k ? "is-active" : ""}`} onClick={() => setTab(k)} data-testid={`details-tab-${k}`}>
+            <Icon size={14} aria-hidden="true" /> <span data-testid={`details-tab-${k}-label`}>{l}</span>
+          </button>
+        ))}
+      </div>
+      {tab === "pdf" ? (
+        <div className="bo-detailsPanel" data-testid="details-panel-pdf">
+          <div className="bo-detailsPanelBar" data-testid="details-pdf-bar">
+            <a className="bo-btn bo-btn--ghost bo-btn--sm" href={pdfUrl} target="_blank" rel="noreferrer" aria-label="Ver página completa" title="Ver página completa" data-testid="details-pdf-open"><ExternalLink size={14} aria-hidden="true" /></a>
+            <a className="bo-btn bo-btn--ghost bo-btn--sm" href={pdfUrl} download aria-label="Descargar" title="Descargar" data-testid="details-pdf-download"><Download size={14} aria-hidden="true" /></a>
+            <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => void shareLink()} aria-label="Compartir" title="Compartir" data-testid="details-pdf-share"><Share2 size={14} aria-hidden="true" /></button>
+          </div>
+          <iframe src={pdfUrl} title="Vista previa del PDF" className="bo-detailsPdfFrame" data-testid="details-pdf-frame" />
+        </div>
+      ) : null}
+      {tab === "email" ? (
+        <div className="bo-detailsPanel" data-testid="details-panel-email">
+          <p className="bo-muted" data-testid="details-email-to">Para: {invoice.customer_email || "sin email"}</p>
+          <div className="bo-detailsBubble" data-testid="details-email-preview"><b data-testid="details-email-subject">Factura {invoice.invoice_number || invoice.id} - Villa Carmen</b><p data-testid="details-email-body">{msgText}</p><small data-testid="details-email-attach">Adjunto: factura en PDF</small></div>
+          {onSendEmail && invoice.customer_email ? <button type="button" className="bo-btn bo-btn--primary" onClick={() => onSendEmail(invoice)} data-testid="details-email-send"><Send size={14} aria-hidden="true" /> Editar y enviar</button> : null}
+        </div>
+      ) : null}
+      {tab === "whatsapp" ? (
+        <div className="bo-detailsPanel" data-testid="details-panel-whatsapp">
+          <p className="bo-muted" data-testid="details-wa-to">Para: {invoice.customer_phone || "sin teléfono"}</p>
+          <div className="bo-detailsBubble bo-detailsBubble--wa" data-testid="details-wa-preview"><p data-testid="details-wa-body">{msgText}</p></div>
+          {onSendWhatsApp && invoice.customer_phone ? <button type="button" className="bo-btn bo-btn--primary" onClick={() => onSendWhatsApp(invoice)} data-testid="details-wa-send"><MessageCircle size={14} aria-hidden="true" /> Editar y enviar</button> : null}
+        </div>
+      ) : null}
+      {tab === "detalle" ? (
       <div data-testid="invoiceDetailsModal-invoiceDetails" data-slot="invoiceDetailsModal-invoiceDetails" className="bo-invoiceDetails">
         <ScrollArea dataSlot="invoice-details-body">
           <div data-testid="invoiceDetailsModal-invoiceDetailsBody" data-slot="invoiceDetailsModal-invoiceDetailsBody" className="bo-invoiceDetailsBody">
@@ -233,6 +279,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
         </div>
         </ScrollArea>
       </div>
+      ) : null}
     </Modal>
   );
 }
