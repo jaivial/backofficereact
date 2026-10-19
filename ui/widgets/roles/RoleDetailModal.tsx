@@ -131,7 +131,7 @@ export function RoleDetailModal({
   }, [onAssignRoleToMembers, role, selectedMemberIds]);
 
   return (
-    <Modal open={open} title={role?.label || "Rol"} onClose={onClose} widthPx={960} className={cn("bo-modal--roleDetail", className)}>
+    <Modal hideClose open={open} title={role?.label || "Rol"} onClose={onClose} widthPx={960} className={cn("bo-modal--roleDetail", className)}>
       {role ? (
         <>
           <div className="bo-modalHead" data-slot="roleDetailModal-modalHead">
