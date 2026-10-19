@@ -2386,7 +2386,7 @@
 }
 
 /* Invoice details tabs. invoice_details_tabs_v1 */
-.bo-detailsTabs { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 10px; scrollbar-width: none; }
+.bo-detailsTabs { display: flex; flex: none; flex-shrink: 0; min-height: 54px; gap: 6px; overflow-x: auto; overflow-y: hidden; padding: 4px 0 10px; scrollbar-width: none; }
 .bo-detailsTab { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--bo-border); background: transparent; font-weight: 600; cursor: pointer; color: var(--bo-muted); }
 .bo-detailsTab.is-active { background: var(--bo-accent); color: #fff; border-color: var(--bo-accent); }
 .bo-detailsPanel { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
