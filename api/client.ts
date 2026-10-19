@@ -2677,7 +2677,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         });
       },
 
-      async sendWithCustomization(id: number, params: { subject?: string; message?: string }): Promise<APISuccess<{ pdf_url: string; sent_at: string }> | APIError> {
+      async sendWithCustomization(id: number, params: { subject?: string; message?: string; message_html?: string }): Promise<APISuccess<{ pdf_url: string; sent_at: string }> | APIError> {
         return json(`/api/admin/invoices/${id}/send`, {
           method: "POST",
           headers: { "content-type": "application/json" },

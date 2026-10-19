@@ -1,10 +1,16 @@
-import React, { useCallback, useState, useMemo } from "react";
-import { X, Send, Loader2, Mail, User, FileText, AlertCircle, CheckCircle, MessageCircle, Phone } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Send, Loader2, Mail, MessageCircle, CheckCircle, AlertCircle, Bold, Italic, Underline, List, Link2, ExternalLink, Download, ChevronDown } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
+import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import type { Invoice } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
 
+/**
+ * Send-invoice modal: email and/or WhatsApp in a single action.
+ * Email body is an editable HTML template (sanitised again on the server),
+ * WhatsApp is an editable chat bubble. Coordination id: invoice_send_multichannel_v1
+ */
 interface SendEmailModalProps {
   open: boolean;
   invoice: Invoice | null;
@@ -12,497 +18,178 @@ interface SendEmailModalProps {
   onSent: (invoice: Invoice) => void;
 }
 
-function formatPrice(price: number): string {
-  return `${price.toFixed(2)} €`;
+type Channel = "email" | "whatsapp";
+type Result = { ok: boolean; text: string };
+
+const eur = (n: number) => `${n.toFixed(2)} €`;
+const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function fill(tpl: string, vars: Record<string, string>): string {
+  return Object.entries(vars).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(v), tpl);
 }
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
+const EMAIL_HTML = `<p>Estimado/a {customer_name},</p><p>Adjuntamos la factura <b>{invoice_number}</b> por importe de <b>{total}</b>.</p><p>Quedamos a su disposición para cualquier consulta.</p><p>Un saludo,<br>{restaurant_name}</p>`;
+const WA_TEXT = `Hola {customer_name}, le enviamos la factura {invoice_number} por importe de {total}.\n\nQuedamos a su disposición para cualquier consulta.\n\n{restaurant_name}`;
+
+function htmlToText(html: string): string {
+  const d = document.createElement("div");
+  d.innerHTML = html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|li|h2|h3)>/gi, "\n");
+  return (d.textContent || "").replace(/\n{3,}/g, "\n\n").trim();
 }
-
-// Default subject and message templates
-const DEFAULT_SUBJECT = "Factura {invoice_number} - {restaurant_name}";
-const DEFAULT_MESSAGE = `Estimado/a {customer_name},
-
-Adjuntamos la factura {invoice_number} por importe de {total}.
-
-Puede ver y descargar su factura en el siguiente enlace:
-{invoice_link}
-
-Quedamos a su disposicion para cualquier consulta.
-
-Un saludo,
-
-{restaurant_name}`;
 
 export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModalProps) {
   const { pushToast } = useToasts();
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  // Form fields
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [channels, setChannels] = useState<Record<Channel, boolean>>({ email: true, whatsapp: false });
   const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
+  const [waText, setWaText] = useState("");
+  const [showPdf, setShowPdf] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [results, setResults] = useState<Partial<Record<Channel, Result>> | null>(null);
 
-  // Vista previa del PDF de la factura dentro del propio modal (mejora UX 5):
-  // el usuario ve lo que va a mandar en vez de solo una caja de texto.
-  const [showPdf, setShowPdf] = useState(true);
-  const [pdfLoading, setPdfLoading] = useState(true);
-  const [pdfError, setPdfError] = useState(false);
-
-  // Notification method: email or whatsapp
-  const [notificationMethod, setNotificationMethod] = useState<"email" | "whatsapp">("email");
-
-  // Reset form when opening
-  const isResend = useMemo(() => invoice?.status === "enviada", [invoice?.status]);
-
-  // Generate public invoice URL
-  const publicInvoiceUrl = useMemo(() => {
-    if (!invoice) return "";
-    // In production, this would be the actual public URL
-    // The backend will replace {invoice_link} with the actual URL
-    return `[Ver factura en ligne]`;
+  const hasEmail = Boolean(invoice?.customer_email);
+  const hasPhone = Boolean(invoice?.customer_phone);
+  const vars = useMemo(() => {
+    if (!invoice) return {} as Record<string, string>;
+    return {
+      invoice_number: invoice.invoice_number || String(invoice.id),
+      customer_name: `${invoice.customer_name}${invoice.customer_surname ? ` ${invoice.customer_surname}` : ""}`,
+      total: eur(invoice.total || invoice.amount),
+      restaurant_name: "Villa Carmen",
+    };
   }, [invoice]);
+  const pdfUrl = invoice?.id ? `/api/admin/invoices/${invoice.id}/pdf` : "";
 
-  // Initialize form with defaults when modal opens
-  React.useEffect(() => {
-    if (open && invoice) {
-      // Check if invoice has been sent before (status is "enviada")
-      setSubject(DEFAULT_SUBJECT.replace("{invoice_number}", invoice.invoice_number || String(invoice.id)));
-      setMessage(DEFAULT_MESSAGE);
-      setSent(false);
-      setShowPreview(false);
-      setShowPdf(true);
-      setPdfLoading(true);
-      setPdfError(false);
-      setNotificationMethod("email");
-    }
-  }, [open, invoice]);
+  useEffect(() => {
+    if (!open || !invoice) return;
+    const safe: Record<string, string> = Object.fromEntries(Object.entries(vars).map(([k, v]) => [k, esc(v)]));
+    setSubject(fill("Factura {invoice_number} - {restaurant_name}", vars));
+    setWaText(fill(WA_TEXT, vars));
+    setChannels({ email: Boolean(invoice.customer_email), whatsapp: !invoice.customer_email && Boolean(invoice.customer_phone) });
+    setResults(null);
+    setShowPdf(false);
+    requestAnimationFrame(() => { if (editorRef.current) editorRef.current.innerHTML = fill(EMAIL_HTML, safe); });
+  }, [open, invoice, vars]);
 
-  // Generate preview with replaced variables
-  const previewContent = useMemo(() => {
-    if (!invoice) return { subject: "", message: "" };
-
-    const invoiceNumber = invoice.invoice_number || String(invoice.id);
-    const customerName = `${invoice.customer_name}${invoice.customer_surname ? ` ${invoice.customer_surname}` : ""}`;
-    const totalAmount = formatPrice(invoice.total || invoice.amount);
-
-    const subjectPreview = subject
-      .replace(/{invoice_number}/g, invoiceNumber)
-      .replace(/{customer_name}/g, customerName)
-      .replace(/{total}/g, totalAmount)
-      .replace(/{restaurant_name}/g, "Villa Carmen");
-
-    const messagePreview = message
-      .replace(/{invoice_number}/g, invoiceNumber)
-      .replace(/{customer_name}/g, customerName)
-      .replace(/{total}/g, totalAmount)
-      .replace(/{restaurant_name}/g, "Villa Carmen")
-      .replace(/{invoice_link}/g, publicInvoiceUrl);
-
-    return { subject: subjectPreview, message: messagePreview };
-  }, [invoice, subject, message, publicInvoiceUrl]);
-
-  // URL del PDF generado (mismo endpoint que la vista previa de la ficha)
-  const pdfUrl = useMemo(() => {
-    if (!invoice?.id) return "";
-    return `/api/admin/invoices/${invoice.id}/pdf`;
-  }, [invoice?.id]);
-
-  // Format phone number for WhatsApp
-  const formatPhoneForWhatsApp = (phone: string): string => {
-    let cleaned = phone.replace(/[\s\-\(\)]/g, "");
-    if (!cleaned.startsWith("+")) {
-      if (cleaned.startsWith("34")) {
-        cleaned = "+" + cleaned;
-      } else if (cleaned.length === 9) {
-        cleaned = "+34" + cleaned;
-      } else {
-        cleaned = "+" + cleaned;
-      }
-    }
-    return cleaned;
+  const exec = (cmd: string, arg?: string) => { editorRef.current?.focus(); document.execCommand(cmd, false, arg); };
+  const addLink = () => {
+    const url = window.prompt("Dirección del enlace (https://…)");
+    if (url && /^(https?:\/\/|mailto:)/i.test(url)) exec("createLink", url);
   };
 
-  // Generate WhatsApp URL
-  const whatsappUrl = useMemo(() => {
-    if (!invoice?.customer_phone) return "";
-    const phone = formatPhoneForWhatsApp(invoice.customer_phone);
-    const encodedMessage = encodeURIComponent(previewContent.message);
-    return `https://wa.me/${phone.replace(/\+/g, "")}?text=${encodedMessage}`;
-  }, [invoice, previewContent.message]);
+  const selected = (Object.keys(channels) as Channel[]).filter((c) => channels[c]);
+  const done = results != null;
 
-  const handleSend = useCallback(async () => {
-    if (!invoice) return;
-
-    if (notificationMethod === "whatsapp" && !invoice.customer_phone) {
-      pushToast({
-        kind: "error",
-        title: "Error",
-        message: "El cliente no tiene un número de teléfono registrado",
-      });
-      return;
-    }
-
+  const send = useCallback(async () => {
+    if (!invoice || sending || selected.length === 0) return;
     setSending(true);
-    try {
-      const api = createClient({ baseUrl: "" });
-
-      if (notificationMethod === "whatsapp") {
-        // Try to send via WhatsApp API first
-        const res = await api.reminders.send(invoice.id, {
-          send_via: "whatsapp",
-          custom_message: previewContent.message || undefined,
-        });
-
-        if (res.success) {
-          setSent(true);
-          pushToast({
-            kind: "success",
-            title: "WhatsApp enviado",
-            message: `El mensaje de WhatsApp ha sido enviado a ${invoice.customer_phone}`,
-          });
-          if (invoice.status !== "enviada") {
-            onSent({ ...invoice, status: "enviada" });
-          } else {
-            onSent(invoice);
-          }
-          setTimeout(() => {
-            onClose();
-          }, 1500);
-        } else {
-          // Fallback: open WhatsApp Web directly
-          if (whatsappUrl) {
-            window.open(whatsappUrl, "_blank");
-            setSent(true);
-            pushToast({
-              kind: "info",
-              title: "Abrir WhatsApp",
-              message: "Se abrira WhatsApp Web para enviar el mensaje",
-            });
-            if (invoice.status !== "enviada") {
-              onSent({ ...invoice, status: "enviada" });
-            } else {
-              onSent(invoice);
-            }
-            setTimeout(() => {
-              onClose();
-            }, 1500);
-          } else {
-            pushToast({
-              kind: "error",
-              title: "Error",
-              message: res.message || "No se pudo enviar el WhatsApp",
-            });
-          }
-        }
-      } else {
-        // Send via email
-        const res = await api.invoices.sendWithCustomization(invoice.id, {
-          subject: previewContent.subject || undefined,
-          message: previewContent.message || undefined,
-        });
-
-        if (res.success) {
-          setSent(true);
-          pushToast({
-            kind: "success",
-            title: "Email enviado",
-            message: `La factura ha sido enviada a ${invoice.customer_email}`,
-          });
-          if (invoice.status !== "enviada") {
-            onSent({ ...invoice, status: "enviada" });
-          } else {
-            onSent(invoice);
-          }
-          setTimeout(() => {
-            onClose();
-          }, 1500);
-        } else {
-          pushToast({
-            kind: "error",
-            title: "Error",
-            message: res.message || "No se pudo enviar el email",
-          });
-        }
-      }
-    } catch (e) {
-      // Fallback for WhatsApp: open WhatsApp Web
-      if (notificationMethod === "whatsapp" && whatsappUrl) {
-        window.open(whatsappUrl, "_blank");
-        setSent(true);
-        pushToast({
-          kind: "info",
-          title: "Abrir WhatsApp",
-          message: "Se abrira WhatsApp Web para enviar el mensaje",
-        });
-        if (invoice.status !== "enviada") {
-          onSent({ ...invoice, status: "enviada" });
-        } else {
-          onSent(invoice);
-        }
-        setTimeout(() => {
-          onClose();
-        }, 1500);
-      } else {
-        pushToast({
-          kind: "error",
-          title: "Error",
-          message: e instanceof Error ? e.message : "Error desconocido al enviar",
-        });
-      }
-    } finally {
-      setSending(false);
+    const api = createClient({ baseUrl: "" });
+    const out: Partial<Record<Channel, Result>> = {};
+    if (channels.email) {
+      const html = editorRef.current?.innerHTML || "";
+      try {
+        const res = await api.invoices.sendWithCustomization(invoice.id, { subject: subject || undefined, message: htmlToText(html) || undefined, message_html: html || undefined });
+        out.email = res.success ? { ok: true, text: `Email enviado a ${invoice.customer_email}` } : { ok: false, text: res.message || "No se pudo enviar el email" };
+      } catch { out.email = { ok: false, text: "No se pudo enviar el email" }; }
     }
-  }, [invoice, previewContent, onSent, onClose, pushToast, notificationMethod, whatsappUrl]);
-
-  const handleOpenWhatsApp = useCallback(() => {
-    if (whatsappUrl) {
-      window.open(whatsappUrl, "_blank");
+    if (channels.whatsapp) {
+      try {
+        const res = await api.reminders.send(invoice.id, { send_via: "whatsapp", custom_message: waText || undefined });
+        out.whatsapp = res.success ? { ok: true, text: `WhatsApp enviado a ${invoice.customer_phone}` } : { ok: false, text: res.message || "No se pudo enviar el WhatsApp" };
+      } catch { out.whatsapp = { ok: false, text: "No se pudo enviar el WhatsApp" }; }
     }
-  }, [whatsappUrl]);
+    setResults(out);
+    setSending(false);
+    const okAny = Object.values(out).some((r) => r?.ok);
+    if (okAny) onSent(invoice.status === "enviada" ? invoice : { ...invoice, status: "enviada" });
+    pushToast({ kind: okAny && Object.values(out).every((r) => r?.ok) ? "success" : "error", title: okAny ? "Envío completado" : "Error", message: Object.values(out).map((r) => r?.text).join(" · ") });
+    if (okAny && Object.values(out).every((r) => r?.ok)) setTimeout(onClose, 1800);
+  }, [invoice, sending, selected.length, channels, subject, waText, onSent, onClose, pushToast]);
 
-  const handleClose = useCallback(() => {
-    if (!sending) {
-      onClose();
-    }
-  }, [sending, onClose]);
-
+  const close = useCallback(() => { if (!sending) onClose(); }, [sending, onClose]);
   if (!invoice) return null;
-
-  const modalTitle = notificationMethod === "whatsapp"
-    ? (isResend ? "Reenviar factura por WhatsApp" : "Enviar factura por WhatsApp")
-    : (isResend ? "Reenviar factura por email" : "Enviar factura por email");
-
-  const successTitle = notificationMethod === "whatsapp" ? "WhatsApp enviado" : "Email enviado";
-  const successDestination = notificationMethod === "whatsapp" ? invoice.customer_phone : invoice.customer_email;
+  const isResend = invoice.status === "enviada";
 
   return (
-    <Modal open={open} onClose={handleClose} title={modalTitle} widthPx={550}>
-      <div data-testid="send-email-modal" className="bo-sendEmailModal" data-slot="send-email-modal">
-        {/* Success state */}
-        {sent ? (
-          <div data-testid="send-email-success" className="bo-sendEmailSuccess" data-slot="send-email-success">
-            <div data-testid="send-email-success-icon" className="bo-sendEmailSuccessIcon" data-slot="send-email-success-icon">
-              <CheckCircle size={48} />
+    <Modal open={open} onClose={close} title={isResend ? "Reenviar factura" : "Enviar factura"} widthPx={680} className="bo-sendInvoiceModal" hideClose>
+      <ModalHeader title={isResend ? "Reenviar factura" : "Enviar factura"} onClose={close} />
+      <div className="bo-sendInvoiceBody" data-testid="send-invoice-body" data-slot="send-invoice-body">
+        <div className="bo-sendInvoiceChannels" data-testid="send-invoice-channels" role="group" aria-label="Canales de envío">
+          <button type="button" className={`bo-sendNotificationTab ${channels.email ? "is-active" : ""}`} aria-pressed={channels.email} disabled={!hasEmail || sending} onClick={() => setChannels((c) => ({ ...c, email: !c.email }))} data-testid="send-invoice-channel-email">
+            <Mail size={16} aria-hidden="true" /> <span data-testid="send-invoice-channel-email-label">Email</span>
+          </button>
+          <button type="button" className={`bo-sendNotificationTab ${channels.whatsapp ? "is-active" : ""}`} aria-pressed={channels.whatsapp} disabled={!hasPhone || sending} onClick={() => setChannels((c) => ({ ...c, whatsapp: !c.whatsapp }))} data-testid="send-invoice-channel-whatsapp">
+            <MessageCircle size={16} aria-hidden="true" /> <span data-testid="send-invoice-channel-whatsapp-label">WhatsApp</span>
+          </button>
+        </div>
+
+        <div className="bo-sendInvoiceMeta" data-testid="send-invoice-meta">
+          <b data-testid="send-invoice-customer">{vars.customer_name}</b>
+          <span data-testid="send-invoice-total">{vars.total}</span>
+          {pdfUrl ? (
+            <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => setShowPdf((v) => !v)} aria-expanded={showPdf} data-testid="send-invoice-pdf-toggle">
+              PDF <ChevronDown size={14} aria-hidden="true" />
+            </button>
+          ) : null}
+        </div>
+        {showPdf && pdfUrl ? (
+          <div className="bo-sendInvoicePdf" data-testid="send-invoice-pdf">
+            <div className="bo-sendInvoicePdfActions" data-testid="send-invoice-pdf-actions">
+              <a className="bo-btn bo-btn--ghost bo-btn--sm" href={pdfUrl} target="_blank" rel="noreferrer" aria-label="Ver página completa" data-testid="send-invoice-pdf-open"><ExternalLink size={14} aria-hidden="true" /></a>
+              <a className="bo-btn bo-btn--ghost bo-btn--sm" href={pdfUrl} download aria-label="Descargar" data-testid="send-invoice-pdf-download"><Download size={14} aria-hidden="true" /></a>
             </div>
-            <h3 data-testid="send-email-success-title" data-slot="send-email-success-title">{successTitle}</h3>
-            <p data-testid="send-email-success-description" data-slot="send-email-success-description">La factura ha sido enviada correctamente a:</p>
-            <p data-testid="send-email-success-recipient" className="bo-sendEmailTo" data-slot="send-email-success-recipient">{successDestination}</p>
+            <iframe src={pdfUrl} title="Vista previa del PDF" className="bo-sendInvoicePdfFrame" data-testid="send-invoice-pdf-frame" />
           </div>
-        ) : (
-          <>
-            {/* Notification method toggle */}
-            <div data-testid="send-email-notification-toggle" className="bo-sendNotificationToggle" data-slot="send-email-notification-toggle">
-              <button
-                type="button"
-                className={`bo-sendNotificationTab ${notificationMethod === "email" ? "is-active" : ""}`}
-                onClick={() => setNotificationMethod("email")}
-                disabled={!invoice.customer_email}
-                data-testid="send-email-method-email"
-              >
-                <Mail size={16} />
-                <span data-testid="sendEmailModal-ail" data-slot="sendEmailModal-ail">Email</span>
-              </button>
-              <button
-                type="button"
-                className={`bo-sendNotificationTab ${notificationMethod === "whatsapp" ? "is-active" : ""}`}
-                onClick={() => setNotificationMethod("whatsapp")}
-                disabled={!invoice.customer_phone}
-                data-testid="send-email-method-whatsapp"
-              >
-                <MessageCircle size={16} />
-                <span data-testid="sendEmailModal-app" data-slot="sendEmailModal-app">WhatsApp</span>
-              </button>
+        ) : null}
+
+        {channels.email ? (
+          <section className="bo-sendInvoiceSection" data-testid="send-invoice-email-section" aria-label="Email">
+            <div className="bo-sendInvoiceTo" data-testid="send-invoice-email-to"><Mail size={14} aria-hidden="true" /> {invoice.customer_email}</div>
+            <label className="bo-field" data-testid="send-invoice-subject-field">
+              <span className="bo-label" data-testid="send-invoice-subject-label">Asunto</span>
+              <input className="bo-input" value={subject} onChange={(e) => setSubject(e.target.value)} disabled={sending} data-testid="send-invoice-subject" />
+            </label>
+            <div className="bo-field" data-testid="send-invoice-editor-field">
+              <span className="bo-label" data-testid="send-invoice-editor-label">Mensaje (plantilla HTML editable)</span>
+              <div className="bo-sendInvoiceToolbar" data-testid="send-invoice-toolbar" role="toolbar" aria-label="Formato">
+                <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onMouseDown={(e) => e.preventDefault()} onClick={() => exec("bold")} aria-label="Negrita" data-testid="send-invoice-fmt-bold"><Bold size={14} aria-hidden="true" /></button>
+                <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onMouseDown={(e) => e.preventDefault()} onClick={() => exec("italic")} aria-label="Cursiva" data-testid="send-invoice-fmt-italic"><Italic size={14} aria-hidden="true" /></button>
+                <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onMouseDown={(e) => e.preventDefault()} onClick={() => exec("underline")} aria-label="Subrayado" data-testid="send-invoice-fmt-underline"><Underline size={14} aria-hidden="true" /></button>
+                <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onMouseDown={(e) => e.preventDefault()} onClick={() => exec("insertUnorderedList")} aria-label="Lista" data-testid="send-invoice-fmt-list"><List size={14} aria-hidden="true" /></button>
+                <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onMouseDown={(e) => e.preventDefault()} onClick={addLink} aria-label="Enlace" data-testid="send-invoice-fmt-link"><Link2 size={14} aria-hidden="true" /></button>
+              </div>
+              <div ref={editorRef} className="bo-sendInvoiceEditor" contentEditable={!sending} suppressContentEditableWarning role="textbox" aria-multiline="true" aria-label="Mensaje del email" data-testid="send-invoice-editor" />
             </div>
+          </section>
+        ) : null}
 
-            {/* Invoice summary */}
-            <div data-testid="send-email-invoice-summary" className="bo-sendEmailSummary" data-slot="send-email-invoice-summary">
-              <div data-testid="send-email-summary-row-customer" className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-customer">
-                <User size={16} />
-                <span data-testid="send-email-customer-name" data-slot="send-email-customer-name">
-                  {invoice.customer_name} {invoice.customer_surname}
-                </span>
-              </div>
-              {notificationMethod === "email" ? (
-                <div data-testid="send-email-summary-row-email" className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-email">
-                  <Mail size={16} />
-                  <span data-testid="send-email-customer-email" data-slot="send-email-customer-email">{invoice.customer_email || "Sin email"}</span>
-                </div>
-              ) : (
-                <div data-testid="send-email-summary-row-phone" className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-phone">
-                  <Phone size={16} />
-                  <span data-testid="send-email-customer-phone" data-slot="send-email-customer-phone">{invoice.customer_phone || "Sin telefono"}</span>
-                </div>
-              )}
-              <div data-testid="send-email-summary-row-invoice" className="bo-sendEmailSummaryRow" data-slot="send-email-summary-row-invoice">
-                <FileText size={16} />
-                <span data-testid="send-email-invoice-detail" data-slot="send-email-invoice-detail">
-                  Factura {invoice.invoice_number || `#${invoice.id}`} - {formatPrice(invoice.total || invoice.amount)}
-                </span>
-              </div>
+        {channels.whatsapp ? (
+          <section className="bo-sendInvoiceSection" data-testid="send-invoice-wa-section" aria-label="WhatsApp">
+            <div className="bo-sendInvoiceTo" data-testid="send-invoice-wa-to"><MessageCircle size={14} aria-hidden="true" /> {invoice.customer_phone}</div>
+            <div className="bo-sendInvoiceWa" data-testid="send-invoice-wa-preview">
+              <textarea className="bo-sendInvoiceWaText" value={waText} onChange={(e) => setWaText(e.target.value)} rows={6} disabled={sending} aria-label="Mensaje de WhatsApp" data-testid="send-invoice-wa-text" />
+              <small className="bo-sendInvoiceWaMeta" data-testid="send-invoice-wa-meta">Vista previa del mensaje · editable</small>
             </div>
+          </section>
+        ) : null}
 
-            {/* Vista previa del PDF adjunto */}
-            {pdfUrl && (
-              <div data-testid="send-email-pdf-section" className="bo-sendEmailPdfSection" data-slot="send-email-pdf-section">
-                <div data-testid="send-email-pdf-header" className="bo-fieldHeader" data-slot="send-email-pdf-header">
-                  <label data-testid="sendEmailModal-pdfLabel" className="bo-label" data-slot="sendEmailModal-pdfLabel">Factura adjunta (PDF)</label>
-                  <button
-                    type="button"
-                    className="bo-btn bo-btn--ghost bo-btn--sm"
-                    onClick={() => setShowPdf(!showPdf)}
-                    disabled={sending}
-                    data-testid="send-email-toggle-pdf"
-                  >
-                    {showPdf ? "Ocultar" : "Ver PDF"}
-                  </button>
-                </div>
-                {showPdf && (
-                  <div data-testid="send-email-pdf-frame-wrap" className="bo-sendEmailPdfWrap" data-slot="send-email-pdf-frame-wrap">
-                    {pdfLoading && !pdfError && (
-                      <div data-testid="send-email-pdf-loading" className="bo-sendEmailPdfLoading" data-slot="send-email-pdf-loading">
-                        <Loader2 size={20} className="bo-spin" />
-                        <span>Generando vista previa...</span>
-                      </div>
-                    )}
-                    {pdfError && (
-                      <div data-testid="send-email-pdf-error" className="bo-sendEmailPdfError" data-slot="send-email-pdf-error">
-                        No se pudo cargar la vista previa del PDF.
-                      </div>
-                    )}
-                    <iframe
-                      title={`Vista previa PDF factura ${invoice.invoice_number || invoice.id}`}
-                      src={pdfUrl}
-                      className="bo-sendEmailPdfFrame"
-                      style={pdfLoading || pdfError ? { visibility: "hidden", position: "absolute" } : undefined}
-                      onLoad={() => { setPdfLoading(false); setPdfError(false); }}
-                      onError={() => { setPdfLoading(false); setPdfError(true); }}
-                      data-testid="send-email-pdf-frame"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+        {results ? (
+          <ul className="bo-sendInvoiceResults" data-testid="send-invoice-results">
+            {(Object.entries(results) as [Channel, Result][]).map(([k, r]) => (
+              <li key={k} className={r.ok ? "is-ok" : "is-error"} data-testid={`send-invoice-result-${k}`}>
+                {r.ok ? <CheckCircle size={16} aria-hidden="true" /> : <AlertCircle size={16} aria-hidden="true" />} {r.text}
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
-            {/* Resend warning */}
-            {isResend && (
-              <div data-testid="send-email-resend-warning" className="bo-sendEmailWarning" data-slot="send-email-resend-warning">
-                <AlertCircle size={16} />
-                <span data-testid="send-email-resend-text" data-slot="send-email-resend-text">Esta factura ya ha sido enviada anteriormente. Se reenviara al mismo email.</span>
-              </div>
-            )}
-
-            {/* Email form */}
-            <div data-testid="send-email-form" className="bo-sendEmailForm" data-slot="send-email-form">
-              <div data-testid="send-email-field-subject" className="bo-field" data-slot="send-email-field-subject">
-                <label data-testid="sendEmailModal-label" className="bo-label" data-slot="sendEmailModal-label">Asunto</label>
-                <input
-                  className="bo-input"
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Asunto del email"
-                  disabled={sending}
-                  data-testid="send-email-subject-input"
-                />
-                <span data-testid="sendEmailModal-fieldHint" className="bo-fieldHint" data-slot="sendEmailModal-fieldHint">
-                  Variables: {"{invoice_number}"}, {"{customer_name}"}, {"{total}"}, {"{restaurant_name}"}, {"{invoice_link}"}
-                </span>
-              </div>
-
-              <div data-testid="send-email-field-message" className="bo-field" data-slot="send-email-field-message">
-                <div data-testid="send-email-message-header" className="bo-fieldHeader" data-slot="send-email-message-header">
-                  <label data-testid="sendEmailModal-label-2" className="bo-label" data-slot="sendEmailModal-label">Mensaje</label>
-                  <button
-                    type="button"
-                    className="bo-btn bo-btn--ghost bo-btn--sm"
-                    onClick={() => setShowPreview(!showPreview)}
-                    disabled={sending}
-                    data-testid="send-email-toggle-preview"
-                  >
-                    {showPreview ? "Editar" : "Vista previa"}
-                  </button>
-                </div>
-                {showPreview ? (
-                  <div data-testid="send-email-message-preview" className="bo-sendEmailPreview" data-slot="send-email-message-preview">{previewContent.message}</div>
-                ) : (
-                  <textarea
-                    className="bo-textarea"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    rows={8}
-                    placeholder="Cuerpo del mensaje..."
-                    disabled={sending}
-                    data-testid="send-email-message-textarea"
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div data-testid="send-email-actions" className="bo-sendEmailActions" data-slot="send-email-actions">
-              <button type="button" className="bo-btn bo-btn--secondary" onClick={handleClose} disabled={sending} data-testid="send-email-cancel">
-                Cancelar
-              </button>
-              {notificationMethod === "whatsapp" && invoice.customer_phone ? (
-                <>
-                  <button
-                    type="button"
-                    className="bo-btn bo-btn--secondary"
-                    onClick={handleOpenWhatsApp}
-                    disabled={sending || !whatsappUrl}
-                    data-testid="send-email-open-whatsapp"
-                  >
-                    <MessageCircle size={16} />
-                    Abrir WhatsApp
-                  </button>
-                  <button
-                    type="button"
-                    className="bo-btn bo-btn--primary"
-                    onClick={handleSend}
-                    disabled={sending}
-                    data-testid="send-email-submit"
-                  >
-                    {sending ? (
-                      <>
-                        <Loader2 size={16} className="bo-spin" />
-                        Enviando...
-                      </>
-                    ) : (
-                      <>
-                        <Send size={16} />
-                        {isResend ? "Reenviar WhatsApp" : "Enviar WhatsApp"}
-                      </>
-                    )}
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="bo-btn bo-btn--primary"
-                  onClick={handleSend}
-                  disabled={sending || (notificationMethod === "email" && !invoice.customer_email)}
-                  data-testid="send-email-submit-2"
-                >
-                  {sending ? (
-                    <>
-                      <Loader2 size={16} className="bo-spin" />
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Send size={16} />
-                      {isResend ? "Reenviar email" : "Enviar email"}
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </>
-        )}
+        <div className="bo-sendInvoiceFooter" data-testid="send-invoice-footer">
+          <button type="button" className="bo-btn bo-btn--secondary" onClick={close} disabled={sending} data-testid="send-invoice-cancel">{done ? "Cerrar" : "Cancelar"}</button>
+          <button type="button" className="bo-btn bo-btn--primary" onClick={() => void send()} disabled={sending || selected.length === 0} data-testid="send-invoice-submit">
+            {sending ? <Loader2 size={16} className="bo-spinner" aria-hidden="true" /> : <Send size={16} aria-hidden="true" />}
+            {sending ? "Enviando…" : selected.length === 2 ? "Enviar por email y WhatsApp" : selected[0] === "whatsapp" ? "Enviar por WhatsApp" : "Enviar por email"}
+          </button>
+        </div>
       </div>
     </Modal>
   );
