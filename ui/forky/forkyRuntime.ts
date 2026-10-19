@@ -1,6 +1,8 @@
-import { createElement, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, createElement, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { addForkyTurnStep, resetForkyTurnSteps, setForkyVisualState } from "./forkyStatus";
+import type { ForkyAttachmentRef } from "./forkyAttachments";
+import { registerForkyVoiceMessage, type ForkyVoiceMessageMeta } from "./forkyVoice";
 import {
   AssistantRuntimeProvider,
   fromThreadMessageLike,
@@ -88,6 +90,8 @@ class AsyncQueue<T> {
 type ActiveTurn = {
   queue: AsyncQueue<InternalTurnEvent>;
   content: string;
+  /** Uploaded media references riding this turn's frame (forky_attachments_v1). */
+  attachments: ForkyAttachmentRef[];
   acked: boolean;
   /** Watchdog: fails the turn when the server goes silent (never fires after done/error). */
   idleTimer: ReturnType<typeof setTimeout> | null;
@@ -114,6 +118,12 @@ export class ForkyWsClient {
   private disposed = false;
   private busy = false;
   private activeTurn: ActiveTurn | null = null;
+  /** Attachment ref batches queued per send, consumed FIFO per run. */
+  private pendingAttachments: ForkyAttachmentRef[][] = [];
+  /** Voice-note metas queued per send, consumed FIFO per run (F3): the clip's
+   *  Bunny URL + measured duration, registered under the user message id so
+   *  its bubble renders a player. */
+  private pendingVoice: (ForkyVoiceMessageMeta | null)[] = [];
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private keepaliveTimer: ReturnType<typeof setInterval> | null = null;
@@ -141,8 +151,33 @@ export class ForkyWsClient {
     return this.connecting;
   }
 
+  /** Queue the attachment refs for the NEXT runTurn: one send, one batch,
+   *  consumed FIFO by the model adapter so queued messages keep their own
+   *  attachments aligned (forky_attachments_v1). */
+  pushPendingAttachments(refs: ForkyAttachmentRef[]): void {
+    this.pendingAttachments.push(refs);
+  }
+
+  /** Consumed once per adapter run; empty when the send had no media. */
+  takePendingAttachments(): ForkyAttachmentRef[] {
+    return this.pendingAttachments.shift() ?? [];
+  }
+
+  /** Queue the voice-note meta for the NEXT runTurn: one send, one entry,
+   *  null when the send carried no voice note (F3). */
+  pushPendingVoice(meta: ForkyVoiceMessageMeta | null): void {
+    this.pendingVoice.push(meta);
+  }
+
+  /** Consumed once per adapter run; null when the send had no voice note. */
+  takePendingVoice(): ForkyVoiceMessageMeta | null {
+    return this.pendingVoice.shift() ?? null;
+  }
+
   /** Drive one user turn, yielding status/delta/done/error events in order. */
-  async *runTurn(content: string, abortSignal?: AbortSignal): AsyncGenerator<ForkyTurnEvent, void> {
+  async *runTurn(content: string, options?: { attachments?: ForkyAttachmentRef[]; abortSignal?: AbortSignal }): AsyncGenerator<ForkyTurnEvent, void> {
+    const abortSignal = options?.abortSignal;
+    const attachments = options?.attachments ?? [];
     if (abortSignal?.aborted) return;
     if (this.busy) {
       yield { type: "error", message: "busy" };
@@ -158,7 +193,7 @@ export class ForkyWsClient {
 
     this.busy = true;
     const queue = new AsyncQueue<InternalTurnEvent>();
-    const turn: ActiveTurn = { queue, content, acked: false, idleTimer: null };
+    const turn: ActiveTurn = { queue, content, attachments, acked: false, idleTimer: null };
     this.activeTurn = turn;
     this.armTurnIdleTimer(turn);
 
@@ -168,7 +203,7 @@ export class ForkyWsClient {
     };
     abortSignal?.addEventListener("abort", onAbort);
 
-    this.rawSend({ type: "message", content });
+    this.rawSend({ type: "message", content, ...(attachments.length > 0 ? { attachments } : {}) });
 
     try {
       while (true) {
@@ -275,7 +310,8 @@ export class ForkyWsClient {
         // Reconnected mid-turn: re-send the pending user message (deduped by the
         // one-in-flight guard; the UI already holds the user message).
         if (this.activeTurn && !this.activeTurn.acked) {
-          this.rawSend({ type: "message", content: this.activeTurn.content });
+          const turnAttachments = this.activeTurn.attachments;
+          this.rawSend({ type: "message", content: this.activeTurn.content, ...(turnAttachments.length > 0 ? { attachments: turnAttachments } : {}) });
         }
         break;
       }
@@ -464,9 +500,11 @@ function lastUserText(messages: ChatModelRunOptionsMessages): string {
     .join("");
 }
 
-// `run` receives the resolved ThreadMessage list; we only need the text of the
-// final user message. Kept structurally typed to avoid importing internal types.
+// `run` receives the resolved ThreadMessage list; we need the text of the final
+// user message and its id (voice notes register their player under it, F3).
+// Kept structurally typed to avoid importing internal types.
 type ChatModelRunOptionsMessages = ReadonlyArray<{
+  id?: string;
   content: string | ReadonlyArray<{ type: string; text?: string }>;
 }>;
 
@@ -631,11 +669,22 @@ export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAda
   return {
     async *run({ messages, abortSignal }) {
       const content = lastUserText(messages as unknown as ChatModelRunOptionsMessages);
+      // One send = one queued batch (possibly empty): queued messages keep
+      // their own media aligned with their turn (forky_attachments_v1).
+      const attachments = client.takePendingAttachments();
+      // Voice notes: same FIFO alignment. The clip never rides the WS frame
+      // (audio is not a model media type) — its Bunny URL is registered under
+      // the user message id so the bubble renders a player (F3).
+      const voice = client.takePendingVoice();
+      if (voice && messages.length > 0) {
+        const lastId = (messages[messages.length - 1] as { id?: string }).id;
+        if (lastId) registerForkyVoiceMessage(lastId, voice);
+      }
       let raw = "";
       setForkyVisualState("think");
       let started = false;
       const display = () => recoverEncodedReply(raw);
-      for await (const event of client.runTurn(content, abortSignal)) {
+      for await (const event of client.runTurn(content, { attachments, abortSignal })) {
         if (event.type === "status") {
           if (!started) {
             started = true;
@@ -702,9 +751,19 @@ function seedHistory(runtime: AssistantRuntime, history: ForkyHistoryMessage[]):
  * Provider wrapping AssistantRuntimeProvider with a local runtime backed by the
  * Forky WS transport. Mount it around the chat chrome; on unmount the socket is
  * disposed. History is seeded from the hello frame once the socket connects.
- * 
+ *
  * NOTE: Uses useState to ensure a fresh client on each mount (StrictMode-safe).
  */
+const ForkyClientContext = createContext<ForkyWsClient | null>(null);
+
+/** The transport behind the mounted runtime; lets the composer queue
+ *  attachment refs for its next send (forky_attachments_v1). */
+export function useForkyClient(): ForkyWsClient {
+  const client = useContext(ForkyClientContext);
+  if (!client) throw new Error("useForkyClient must be used inside <ForkyRuntimeProvider>");
+  return client;
+}
+
 export function ForkyRuntimeProvider({ children }: { children: ReactNode }) {
   // useState ensures a new client is created on each mount (StrictMode remounts)
   const [client] = useState(() => new ForkyWsClient({ url: forkyWsURL() }));
@@ -719,5 +778,9 @@ export function ForkyRuntimeProvider({ children }: { children: ReactNode }) {
     return () => client.dispose();
   }, [client, runtime]);
 
-  return createElement(AssistantRuntimeProvider, { runtime }, children);
+  return createElement(
+    ForkyClientContext.Provider,
+    { value: client },
+    createElement(AssistantRuntimeProvider, { runtime }, children),
+  );
 }

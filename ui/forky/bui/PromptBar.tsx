@@ -1,26 +1,12 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createShader, playSweep, accentChain, ACCENTS } from "glimm";
 import TextareaAutosize from "react-textarea-autosize";
-
-/* The built-in "prism" palette is only cyan→indigo→magenta, so a sweep
- * reads as blue/purple. Build a true full-spectrum rainbow instead. */
-const RAINBOW = accentChain([
-  ACCENTS.red,
-  ACCENTS.orange,
-  ACCENTS.yellow,
-  ACCENTS.green,
-  ACCENTS.cyan,
-  ACCENTS.blue,
-  ACCENTS.purple,
-]);
 
 /* ─────────────────────────────────────────────────────────
  * PROMPT BAR
  * A composer with real controls: attach, @ data sources,
- * / commands, a model picker, dictation, and send.
- * Type @ or / to open the menus; ↑↓ + Enter to pick.
+ * / commands, and dictation. Type @ or / to open the menus; ↑↓ + Enter to pick.
  * Variants: Rounded (card radius) · Pill (full radius).
  * ───────────────────────────────────────────────────────── */
 
@@ -69,10 +55,21 @@ const BRANDS: Record<string, React.ReactNode> = {
   ),
 };
 
-// HOST-EDIT: the registry imports the host's attachment chip. Forky vendors a
-// minimal stand-in so the composer needs no host module: same 1:1 square chip,
-// upload state and remove button, backoffice-scoped test ids.
-import { ComposerAttachmentChip } from "./ComposerAttachmentChip";
+// HOST-EDIT: real Control UI attachment chips (control-ui.dev
+// r/chat-composer-attachment, owned source in components/control-ui/) replace
+// the old minimal stand-in (ui/forky/bui/ComposerAttachmentChip.tsx, deleted):
+// kind detection, image preview, upload/progress state, remove and honest
+// error states. Backoffice test ids are passed through unchanged.
+import {
+  ChatComposerAttachment,
+  ChatComposerAttachmentContent,
+  ChatComposerAttachmentDescription,
+  ChatComposerAttachmentPreview,
+  ChatComposerAttachmentProgress,
+  ChatComposerAttachmentRemove,
+  ChatComposerAttachmentTitle,
+  type ChatComposerAttachmentStatus,
+} from "../../../components/control-ui/ui/chat-composer-attachment";
 
 type Source = {
   key: string;
@@ -102,12 +99,6 @@ const COMMANDS = [
   { key: "summarize", name: "/summarize", desc: "Digest the thread so far" },
 ];
 
-const MODELS = [
-  { key: "sprinkles-5", name: "Sprinkles 5", tag: "Flagship" },
-  { key: "vanilla-1", name: "Vanilla 1", tag: "Basic" },
-  { key: "freezer-burn", name: "Freezer Burn 0.4", tag: "Stale" },
-];
-
 const FILES = ["flavor-chart.png", "summer-menu.pdf", "pos-export.csv"];
 
 /* self-running demo: walk the @ menu, then the / menu, and repeat.
@@ -116,11 +107,9 @@ const AUTO_STEPS: {
   draft: string;
   active?: number;
   connect?: boolean;
-  modelOpen?: boolean;
-  model?: string;
   hold: number;
 }[] = [
-  { draft: "", connect: false, model: "vanilla-1", hold: 1100 },
+  { draft: "", connect: false, hold: 1100 },
   { draft: "@", active: 0, hold: 900 },
   { draft: "@", active: 1, hold: 620 },
   { draft: "@", active: 4, hold: 620 },
@@ -131,10 +120,6 @@ const AUTO_STEPS: {
   { draft: "/", active: 1, hold: 620 },
   { draft: "/", active: 3, hold: 1000 },
   { draft: "", hold: 800 },
-  // open the model picker and upgrade to the flagship → rainbow sweep
-  { draft: "", modelOpen: true, hold: 1200 },
-  { draft: "", model: "sprinkles-5", hold: 2400 },
-  { draft: "", hold: 900 },
 ];
 
 /* the last @word or /word being typed, if any */
@@ -198,7 +183,7 @@ export default function PromptBar({
   maxLength?: number;
   /** built-in @ / slash menus; off when the host runs its own picker on the same sigils */
   menus?: boolean;
-  /** attach / model / dictation controls; off for a narrow, single-row composer */
+  /** attach / dictation controls; off for a narrow, single-row composer */
   controls?: boolean;
   /** locks the whole composer (read-only draft) */
   disabled?: boolean;
@@ -211,7 +196,7 @@ export default function PromptBar({
   /** the host is uploading the clip and waiting for the transcript: the mic waits too */
   voiceBusy?: boolean;
   /** real dictation toggle. Passing it renders the mic even when `controls` is off (a host
-   *  that runs its own attach/model chrome still dictates). */
+   *  that runs its own attach chrome still dictates). */
   onToggleDictation?: () => void;
   /** exposes the textarea so the host can read the caret and re-focus after a pick */
   textareaRef?: React.Ref<HTMLTextAreaElement>;
@@ -232,7 +217,7 @@ export default function PromptBar({
    *  uploads the files and owns the chips. Absent → demo chips only (gallery unchanged). */
   onAttachFiles?: (files: File[]) => void;
   /** host-owned chips; upload state lives with the host ([SAGE-MEDIA-C02:media-ready]) */
-  attachments?: { id: string; name: string; status?: "uploading" | "ready" | "error"; error?: string; previewUrl?: string; kind?: "image" | "document" }[];
+  attachments?: { id: string; name: string; mime?: string; status?: "uploading" | "ready" | "error"; error?: string; progress?: number; previewUrl?: string; kind?: "image" | "document" }[];
   onRemoveAttachment?: (id: string) => void;
   /** [SAGE-MEDIA-C04:model-capability] the selected model has no vision: attach renders
    *  blocked and a popover tells the user why. */
@@ -251,8 +236,6 @@ export default function PromptBar({
   };
   const [dismissed, setDismissed] = useState(false);
   const [plusOpen, setPlusOpen] = useState(false);
-  const [modelOpen, setModelOpen] = useState(false);
-  const [model, setModel] = useState(MODELS[1]);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [attachBlockedOpen, setAttachBlockedOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -276,25 +259,16 @@ export default function PromptBar({
   const mic = controls || !!onToggleDictation;
   const [rowBox, setRowBox] = useState<{ top: number; height: number } | null>(null);
   const [engaged, setEngaged] = useState(false);
-  const [modelBox, setModelBox] = useState<{ top: number; height: number } | null>(null);
-  const [modelHovered, setModelHovered] = useState<number | null>(null);
-  const [modelMenuLeft, setModelMenuLeft] = useState(0);
-  const [modelMenuBottom, setModelMenuBottom] = useState(0);
   const composerAnchorRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
-  const modelRef = useRef<HTMLButtonElement>(null);
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const modelRowRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const holdInputElement = (element: HTMLTextAreaElement | null) => {
     inputRef.current = element;
     if (typeof textareaRef === "function") textareaRef(element);
     else if (textareaRef) (textareaRef as { current: HTMLTextAreaElement | null }).current = element;
   };
-  const glimmRef = useRef<HTMLCanvasElement>(null);
-  const shaderRef = useRef<ReturnType<typeof createShader> | null>(null);
-  const sweepingRef = useRef(false);
 
   /* hand control to the user: stop the demo loop, and when they aim at
    * the input itself, clear the demo's leftover draft for a clean start */
@@ -326,97 +300,6 @@ export default function PromptBar({
     if (target) setRowBox({ top: target.offsetTop, height: target.offsetHeight });
   }, [menu, query, active, connected, rows.length]);
 
-  /* same gliding highlight in the model menu — floats to the hovered
-   * row, falling back to the currently-selected model */
-  const modelIndex = MODELS.findIndex((m) => m.key === model.key);
-  useLayoutEffect(() => {
-    if (!modelOpen) return;
-    const target = modelRowRefs.current[modelHovered ?? modelIndex];
-    if (target) setModelBox({ top: target.offsetTop, height: target.offsetHeight });
-  }, [modelOpen, modelHovered, modelIndex]);
-
-  /* The menu is outside the clipped composer, so align it to the model
-   * trigger by measurement instead of pinning it to the far-right edge. */
-  useLayoutEffect(() => {
-    if (!modelOpen || !composerAnchorRef.current || !modelRef.current) return;
-    const anchorRect = composerAnchorRef.current.getBoundingClientRect();
-    const triggerRect = modelRef.current.getBoundingClientRect();
-    setModelMenuLeft(Math.max(0, Math.min(triggerRect.left - anchorRect.left, anchorRect.width - 176)));
-    setModelMenuBottom(anchorRect.bottom - triggerRect.top + 8);
-  }, [modelOpen, wide, model.name]);
-
-  useEffect(() => {
-    if (!modelOpen) setModelHovered(null);
-  }, [modelOpen]);
-
-  /* Build the shader with a pinned hue phase. createShader seeds its
-   * internal hueShift from Math.random(), which made the sweep a different
-   * colour on every reload — pin it so the rainbow is identical each time. */
-  const makeShader = () => {
-    const canvas = glimmRef.current;
-    if (!canvas) return null;
-    const random = Math.random;
-    Math.random = () => 0;
-    try {
-      return createShader({
-        canvas,
-        palette: RAINBOW,
-        direction: "ltr",
-        bandTight: 10,
-        swellAmount: 0.85,
-      });
-    } finally {
-      Math.random = random;
-    }
-  };
-
-  /* Glimm shader lives inside the composer, invisible at rest. Selecting
-   * the flagship model fires a one-shot rainbow sweep across the interior. */
-  useEffect(() => {
-    /* Only the demo's model picker can trigger a sweep, so a host that hides the
-     * controls never celebrates - and never needs the WebGL context either. */
-    if (!controls) return;
-    shaderRef.current = makeShader();
-    return () => {
-      shaderRef.current?.destroy();
-      shaderRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [controls]);
-
-  const celebrate = () => {
-    if (sweepingRef.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // Recreate the shader per sweep so uTime restarts at 0 — the hue phase
-    // (which drifts with time) is then identical on every trigger.
-    shaderRef.current?.destroy();
-    const shader = makeShader();
-    shaderRef.current = shader;
-    if (!shader) return;
-    sweepingRef.current = true;
-    const sweep = playSweep(shader, {
-      palette: RAINBOW,
-      direction: "ltr",
-      sweepMs: 570,
-      outroMs: 80,
-      peakAlpha: 1.3,
-      bandTight: 10,
-      brightness: 1.4,
-      swellAmount: 1,
-      waveSpeed: 1.8,
-      easing: "easeOutExpo",
-    });
-    sweep.done.finally(() => {
-      sweepingRef.current = false;
-    });
-  };
-
-  const selectModel = (next: (typeof MODELS)[number]) => {
-    setModel(next);
-    setModelOpen(false);
-    if (next.key === "sprinkles-5") celebrate();
-  };
-
   /* autoplay: apply the current step, then advance after its hold */
   useEffect(() => {
     if (!auto) return;
@@ -424,11 +307,6 @@ export default function PromptBar({
     setDraft(step.draft);
     if (step.active !== undefined) setActive(step.active);
     if (step.connect !== undefined) setConnected(step.connect);
-    if (step.modelOpen !== undefined) setModelOpen(step.modelOpen);
-    if (step.model) {
-      const next = MODELS.find((m) => m.key === step.model);
-      if (next) selectModel(next);
-    }
     const t = setTimeout(() => setAutoStep((s) => s + 1), step.hold);
     return () => clearTimeout(t);
   }, [auto, autoStep]);
@@ -438,11 +316,11 @@ export default function PromptBar({
     const input = inputRef.current;
     const controls = controlsRef.current;
     const measure = measureRef.current;
-    const modelButton = modelRef.current;
-    if (!input || !controls || !measure || !modelButton) return;
+    if (!input || !controls || !measure) return;
 
-    const fixedControlsWidth = 28 * 3 + modelButton.offsetWidth;
-    const inlineGaps = 4 * 4;
+    /* plus, mic and send take a fixed 28px square; three inline gaps of 4px */
+    const fixedControlsWidth = 28 * 3;
+    const inlineGaps = 4 * 3;
     const inlineInputWidth = controls.clientWidth - fixedControlsWidth - inlineGaps;
     const needsFullWidth = draft.includes("\n") || measure.offsetWidth + 8 > inlineInputWidth;
     if (needsFullWidth !== expanded) {
@@ -452,20 +330,18 @@ export default function PromptBar({
 
   /* clicking anywhere outside the composer closes the open menus */
   useEffect(() => {
-    if (!modelOpen && !plusOpen) return;
+    if (!plusOpen) return;
     const close = (event: PointerEvent) => {
       if (!(event.target as Element).closest("[data-promptbar]")) {
-        setModelOpen(false);
         setPlusOpen(false);
       }
     };
     document.addEventListener("pointerdown", close);
     return () => document.removeEventListener("pointerdown", close);
-  }, [modelOpen, plusOpen]);
+  }, [plusOpen]);
 
   const closeMenus = () => {
     setPlusOpen(false);
-    setModelOpen(false);
     setAttachBlockedOpen(false);
   };
 
@@ -615,50 +491,6 @@ export default function PromptBar({
         </div>
       )}
 
-      {/* ── model menu ─────────────────────────────────── */}
-      {modelOpen && (
-        <div
-          onMouseLeave={() => setModelHovered(null)}
-          className="absolute z-10 w-44 rounded-[10px] bg-surface p-1 shadow-raised"
-          style={{ left: modelMenuLeft, bottom: modelMenuBottom, animation: "pop-in 180ms cubic-bezier(0.23,1,0.32,1) both", transformOrigin: "bottom left" }}
-        >
-          {/* single gliding highlight — floats to the hovered / selected row */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-x-1 rounded-[6px] bg-hover"
-            style={{
-              top: modelBox?.top ?? 0,
-              height: modelBox?.height ?? 0,
-              opacity: modelBox && modelHovered !== null ? 1 : 0,
-              transition:
-                "top 220ms cubic-bezier(0.23,1,0.32,1), height 220ms cubic-bezier(0.23,1,0.32,1), opacity 150ms ease",
-            }}
-          />
-          {MODELS.map((m, i) => (
-            <button
-              key={m.key}
-              type="button"
-              ref={(el) => {
-                modelRowRefs.current[i] = el;
-              }}
-              onMouseDown={(event) => event.preventDefault()}
-              onMouseEnter={() => setModelHovered(i)}
-              onClick={() => {
-                selectModel(m);
-                inputRef.current?.focus();
-              }}
-              className="relative z-10 flex h-7.5 w-full items-center gap-2 rounded-[6px] px-2 text-left"
-            >
-              <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-ink">{m.name}</span>
-              <span className="shrink-0 text-[11px] text-ink-3">{m.tag}</span>
-              <span className={`shrink-0 text-ink ${m.key === model.key ? "" : "invisible"}`}>
-                <Icon size={13} strokeWidth={2.5}><path d="M20 6L9 17l-5-5" /></Icon>
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* ── composer ───────────────────────────────────── */}
       <div
         className={`relative isolate flex flex-col overflow-hidden border border-line bg-surface shadow-card transition-[border-color,border-radius] duration-150 focus-within:border-line-strong ${
@@ -667,15 +499,6 @@ export default function PromptBar({
           pill ? (attachments.length > 0 || wide ? "rounded-[24px]" : "rounded-full") : tall ? "rounded-[22px]" : "rounded-[14px]"
         }`}
       >
-        {/* rainbow glimm sweep — plays across the interior on model change.
-            explicit w/h: a <canvas> is a replaced element and won't stretch
-            to inset-0 alone, which feeds back into the shader's ResizeObserver. */}
-        <canvas
-          ref={glimmRef}
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 h-full w-full"
-          style={{ borderRadius: "inherit" }}
-        />
         <span
           ref={measureRef}
           aria-hidden="true"
@@ -686,20 +509,46 @@ export default function PromptBar({
 
         {(attachments.length > 0 || hostChips.length > 0) && (
           <div className={`flex flex-wrap gap-1.5 pt-0.5 ${pill ? "px-1" : "px-0.5"}`}>
-            {hostChips.map((chip) => (
-              <span key={chip.id} data-testid={`prompt-bar-media-chip-wrap-${chip.id}`} style={{ animation: "pop-in 200ms cubic-bezier(0.23,1,0.32,1) both" }}>
-                <ComposerAttachmentChip
-                  id={chip.id}
-                  name={chip.name}
-                  kind={chip.kind}
-                  previewUrl={chip.previewUrl}
-                  status={chip.status}
-                  error={chip.error}
-                  onRemove={() => onRemoveAttachment?.(chip.id)}
-                  testIdPrefix="forky-prompt-bar-media-chip"
-                />
-              </span>
-            ))}
+            {/* Control UI chip rail: the li chips must sit in a ul, and the row
+                itself must keep the composer's flex-wrap layout, so the list is
+                a display:contents participant of the row. */}
+            {hostChips.length > 0 && (
+              <ul className="m-0 flex list-none flex-wrap content-start gap-1.5 p-0">
+                {hostChips.map((chip) => {
+                  const status: ChatComposerAttachmentStatus =
+                    chip.status === "uploading" ? "uploading" : chip.status === "error" ? "error" : "uploaded";
+                  const errorLabel = chip.error ?? "No se pudo adjuntar. Quita el archivo e inténtalo de nuevo.";
+                  const testIdPrefix = "forky-prompt-bar-media-chip";
+                  return (
+                    <ChatComposerAttachment
+                      key={chip.id}
+                      name={chip.name}
+                      type={chip.mime}
+                      status={status}
+                      progress={chip.progress}
+                      previewUrl={chip.previewUrl}
+                      errorLabel={errorLabel}
+                      onRemove={onRemoveAttachment ? () => onRemoveAttachment(chip.id) : undefined}
+                      removeLabel={`Quitar ${chip.name}`}
+                      uploadedLabel={(name) => `${name} listo para enviar`}
+                      uploadFailedLabel={(name) => `${name} no se pudo adjuntar`}
+                      data-testid={`prompt-bar-media-chip-wrap-${chip.id}`}
+                      style={{ animation: "pop-in 200ms cubic-bezier(0.23,1,0.32,1) both" }}
+                    >
+                      <ChatComposerAttachmentPreview data-testid={`${testIdPrefix}-preview-${chip.id}`} />
+                      {(!chip.previewUrl || chip.status === "error") && (
+                        <ChatComposerAttachmentContent>
+                          <ChatComposerAttachmentTitle data-testid={`${testIdPrefix}-name-${chip.id}`} />
+                          <ChatComposerAttachmentDescription data-testid={`${testIdPrefix}-status-${chip.id}`} />
+                        </ChatComposerAttachmentContent>
+                      )}
+                      <ChatComposerAttachmentRemove data-testid={`${testIdPrefix}-remove-${chip.id}`} />
+                      <ChatComposerAttachmentProgress data-testid={`${testIdPrefix}-progress-${chip.id}`} />
+                    </ChatComposerAttachment>
+                  );
+                })}
+              </ul>
+            )}
             {attachments.map((file, i) => (
               <span
                 key={`${file}-${i}`}
@@ -736,9 +585,7 @@ export default function PromptBar({
                 : mic
                   ? "grid-cols-[minmax(0,1fr)_28px_28px]"
                   : "grid-cols-[minmax(0,1fr)_auto]"
-              : wide
-                ? "grid-cols-[28px_auto_minmax(0,1fr)_28px_28px]"
-                : "grid-cols-[28px_minmax(0,1fr)_auto_28px_28px]"
+              : "grid-cols-[28px_minmax(0,1fr)_28px_28px]"
           }`}
         >
           {controls && (
@@ -747,7 +594,6 @@ export default function PromptBar({
             aria-label="Add attachments and sources"
             aria-expanded={plusOpen}
             onClick={() => {
-              setModelOpen(false);
               setPlusOpen((current) => !current);
               inputRef.current?.focus();
             }}
@@ -816,30 +662,8 @@ export default function PromptBar({
             }`}
           />
 
-          {/* model picker */}
-          {controls && (
-          <button
-            ref={modelRef}
-            type="button"
-            aria-expanded={modelOpen}
-            aria-label="Choose model"
-            onClick={() => {
-              setPlusOpen(false);
-              setModelOpen((current) => !current);
-            }}
-            className={`flex h-7 shrink-0 items-center gap-1 px-1.5 text-[12px] font-medium text-ink-2 transition-colors duration-150 hover:bg-hover hover:text-ink ${
-              pill ? "rounded-full" : "rounded-[8px]"
-            } ${wide ? "col-start-2 row-start-2 justify-self-start" : "col-start-3 row-start-1"}`}
-          >
-            {model.name}
-            <span className="text-ink-3">
-              <Icon size={11} strokeWidth={2.4}><path d="M6 9l6 6 6-6" /></Icon>
-            </span>
-          </button>
-          )}
-
           {/* attach — real picker when the host handles uploads ([SAGE-MEDIA-C01:upload]); blocked
-              with a popover when the selected model has no vision ([SAGE-MEDIA-C04:model-capability]) */}
+              with a popover when the host marks the attach capability off ([SAGE-MEDIA-C04:model-capability]) */}
           {attachColumn && (
             <div className={`relative flex shrink-0 items-center justify-self-start col-start-2 row-start-1`}>
               <input
@@ -889,7 +713,7 @@ export default function PromptBar({
             onClick={() => onToggleDictation?.()}
             className={`flex size-7 shrink-0 items-center justify-center transition-[background-color,color,transform] duration-150 active:scale-[0.94] disabled:opacity-60 ${
               pill ? "rounded-full" : "rounded-[8px]"
-            } ${dictating ? "bg-accent-tint text-accent-ink" : "text-ink-3 hover:bg-hover hover:text-ink"} ${wide ? "col-start-4 row-start-2" : !controls ? (attachColumn ? "col-start-3 row-start-1" : "col-start-2 row-start-1") : "col-start-4 row-start-1"}`}
+            } ${dictating ? "bg-accent-tint text-accent-ink" : "text-ink-3 hover:bg-hover hover:text-ink"} ${wide ? "col-start-3 row-start-2" : !controls ? (attachColumn ? "col-start-3 row-start-1" : "col-start-2 row-start-1") : "col-start-3 row-start-1"}`}
           >
             {dictating ? (
               <span className="flex h-3.5 items-center gap-[2.5px]">
@@ -920,7 +744,7 @@ export default function PromptBar({
               !controls ? "size-9 md:size-7" : "size-7"
             } ${
               pill ? "rounded-full" : "rounded-[10px] md:rounded-[8px]"
-            } ${!controls ? (attachColumn ? (mic ? "col-start-4 row-start-1" : "col-start-3 row-start-1") : mic ? "col-start-3 row-start-1" : "col-start-2 row-start-1") : wide ? "col-start-5 row-start-2" : "col-start-5 row-start-1"}`}
+            } ${!controls ? (attachColumn ? (mic ? "col-start-4 row-start-1" : "col-start-3 row-start-1") : mic ? "col-start-3 row-start-1" : "col-start-2 row-start-1") : wide ? "col-start-4 row-start-2" : "col-start-4 row-start-1"}`}
             style={{
               background: canSend ? "var(--ink)" : "var(--line-strong)",
               color: canSend ? "var(--surface)" : "var(--ink-2)",

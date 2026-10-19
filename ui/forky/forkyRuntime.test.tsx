@@ -2,10 +2,15 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   ForkyWsClient,
+  createForkyChatModelAdapter,
   recoverEncodedReply,
   type ForkyHistoryMessage,
   type ForkyTurnEvent,
 } from "./forkyRuntime";
+import type { ChatModelRunResult } from "@assistant-ui/react";
+import type { ForkyAttachmentRef } from "./forkyAttachments";
+import { lookupForkyVoiceMessage, registerForkyVoiceMessage } from "./forkyVoice";
+
 
 /** Minimal in-memory WebSocket stand-in for the transport tests. */
 class FakeWebSocket {
@@ -73,10 +78,11 @@ function helloFrame(sessionId: number | null, history: ForkyHistoryMessage[] = [
 async function collectTurn(
   client: ForkyWsClient,
   content: string,
-  abort?: AbortSignal
+  abort?: AbortSignal,
+  attachments?: ForkyAttachmentRef[]
 ): Promise<ForkyTurnEvent[]> {
   const events: ForkyTurnEvent[] = [];
-  for await (const event of client.runTurn(content, abort)) {
+  for await (const event of client.runTurn(content, { attachments, abortSignal: abort })) {
     events.push(event);
   }
   return events;
@@ -149,6 +155,80 @@ describe("ForkyWsClient", () => {
       type: "message",
       content: "hola",
     });
+    client.dispose();
+  });
+
+  it("rides attachment refs in the message frame (forky_attachments_v1)", async () => {
+    const { client } = makeClient();
+    const refs = [{ name: "doc.pdf", media_type: "application/pdf", size: 4096, url: "https://cdn.example/forky/1/doc.pdf", path: "forky/1/doc.pdf" }];
+    const turn = collectTurn(client, "mira", undefined, refs);
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+    ws.receive({ type: "done" });
+    await turn;
+
+    const frame = JSON.parse(ws.sent.find((s) => JSON.parse(s).type === "message")!);
+    expect(frame).toMatchObject({ type: "message", content: "mira", attachments: refs });
+    client.dispose();
+  });
+
+  it("omits the attachments key when the turn has no media", async () => {
+    const { client } = makeClient();
+    const turn = collectTurn(client, "hola");
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+    ws.receive({ type: "done" });
+    await turn;
+
+    const frame = JSON.parse(ws.sent.find((s) => JSON.parse(s).type === "message")!);
+    expect(frame).toEqual({ type: "message", content: "hola" });
+    client.dispose();
+  });
+
+  it("consumes queued attachment batches FIFO (one send = one batch)", async () => {
+    const { client } = makeClient();
+    client.pushPendingAttachments([{ name: "a.png", media_type: "image/png", size: 1, url: "u1", path: "p1" }]);
+    client.pushPendingAttachments([]);
+    expect(client.takePendingAttachments()).toHaveLength(1);
+    expect(client.takePendingAttachments()).toHaveLength(0);
+    expect(client.takePendingAttachments()).toHaveLength(0);
+    client.dispose();
+  });
+
+  it("queues voice metas FIFO, aligned one-per-send (F3)", async () => {
+    const { client } = makeClient();
+    client.pushPendingVoice({ url: "https://cdn/n1.webm", durationMs: 3200 });
+    client.pushPendingVoice(null);
+    expect(client.takePendingVoice()?.url).toBe("https://cdn/n1.webm");
+    expect(client.takePendingVoice()).toBeNull();
+    expect(client.takePendingVoice()).toBeNull();
+    client.dispose();
+  });
+
+  it("re-sends attachment refs with the message after a mid-turn reconnect", async () => {
+    const { client } = makeClient({ maxReconnectAttempts: 3 });
+    const refs = [{ name: "f.png", media_type: "image/png", size: 10, url: "u", path: "p" }];
+    const turn = collectTurn(client, "hola", undefined, refs);
+    const ws = FakeWebSocket.instances[0];
+    ws.open();
+    ws.receive(helloFrame(1));
+    await new Promise((r) => setTimeout(r, 0));
+
+    ws.close();
+    await new Promise((r) => setTimeout(r, 20));
+    const ws2 = FakeWebSocket.instances[1];
+    ws2.open();
+    ws2.receive(helloFrame(1));
+    ws2.receive({ type: "done" });
+    await turn;
+
+    const resent = ws2.sent.slice(0).map((s) => JSON.parse(s) as Record<string, unknown>).filter((f) => f.type === "message");
+    // The pending message (with its refs) is re-sent on the NEW socket.
+    expect(resent.some((f) => JSON.stringify(f.attachments) === JSON.stringify(refs))).toBe(true);
     client.dispose();
   });
 
@@ -524,5 +604,46 @@ describe("recoverEncodedReply", () => {
     const out = recoverEncodedReply(truncated);
     expect(out).toContain("reservas");
     expect(out).not.toBe(truncated);
+  });
+});
+
+describe("createForkyChatModelAdapter — voice notes (F3)", () => {
+  it("registers the queued voice meta under the last user message id", async () => {
+    const { client } = makeClient();
+    client.pushPendingVoice({ url: "https://cdn/n1.webm", durationMs: 3200 });
+    client.pushPendingAttachments([]);
+    const adapter = createForkyChatModelAdapter(client);
+    const messages = [
+      { id: "msg-1", content: "antes" },
+      { id: "msg-voice", content: "nota de voz" },
+    ];
+    // The registration happens synchronously at the top of run(), before the
+    // socket connect awaits; kick the generator without draining it.
+    const gen = adapter.run({
+      messages: messages as never,
+      abortSignal: new AbortController().signal,
+    } as never) as AsyncGenerator<ChatModelRunResult, void, unknown>;
+    void gen.next();
+    expect(lookupForkyVoiceMessage("msg-voice")?.url).toBe("https://cdn/n1.webm");
+    expect(lookupForkyVoiceMessage("msg-voice")?.durationMs).toBe(3200);
+    expect(lookupForkyVoiceMessage("msg-1")).toBeNull();
+    client.dispose();
+  });
+
+  it("does not register anything for a plain text send", async () => {
+    const { client } = makeClient();
+    const adapter = createForkyChatModelAdapter(client);
+    const gen = adapter.run({
+      messages: [{ id: "msg-plain", content: "hola" }] as never,
+      abortSignal: new AbortController().signal,
+    } as never) as AsyncGenerator<ChatModelRunResult, void, unknown>;
+    void gen.next();
+    expect(lookupForkyVoiceMessage("msg-plain")).toBeNull();
+    client.dispose();
+  });
+
+  it("keeps pre-existing registrations readable (reload path untouched)", () => {
+    registerForkyVoiceMessage("msg-seeded", { url: "https://cdn/seed.webm", durationMs: 900 });
+    expect(lookupForkyVoiceMessage("msg-seeded")).not.toBeNull();
   });
 });

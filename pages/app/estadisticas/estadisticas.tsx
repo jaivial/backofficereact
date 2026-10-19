@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { TrendingUp, Users } from "lucide-react";
+import { MessageCircle, TrendingUp, Users } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { AnalyticsOverview, AnalyticsOverviewParams } from "../../../api/types";
@@ -8,9 +8,10 @@ import { SimpleTabs } from "../../../ui/nav/SimpleTabs";
 import type { Data } from "./+data";
 import { AffluenceDashboard } from "./functionalComponents/AffluenceDashboard/AffluenceDashboard";
 import { AnalyticsDashboard } from "./functionalComponents/AnalyticsDashboard/AnalyticsDashboard";
+import { MessagingDashboard } from "./functionalComponents/MessagingDashboard/MessagingDashboard";
 
-/** Afluencia (client flow, full booking history) and Ventas (financial analytics). */
-type EstadisticasTab = "afluencia" | "ventas";
+/** Afluencia (client flow, full booking history), Ventas and IA/WhatsApp ledgers. */
+type EstadisticasTab = "afluencia" | "ventas" | "mensajeria";
 
 const EMPTY_DATA: Data = {
   params: { from: "", to: "", granularity: "day", compare: "previous" },
@@ -82,6 +83,7 @@ export default function Page() {
           items={[
             { id: "afluencia", label: "Afluencia", title: "Afluencia de clientes", icon: <Users size={17} strokeWidth={1.8} /> },
             { id: "ventas", label: "Ventas", title: "Estadísticas de ventas", icon: <TrendingUp size={17} strokeWidth={1.8} /> },
+            { id: "mensajeria", label: "IA y WhatsApp", title: "Consumo de IA y registro de mensajes WhatsApp", icon: <MessageCircle size={17} strokeWidth={1.8} /> },
           ]}
           activeId={activeTab}
           onChange={(id) => setActiveTab(id as EstadisticasTab)}
@@ -90,7 +92,7 @@ export default function Page() {
       </div>
       {activeTab === "afluencia" ? (
         <AffluenceDashboard data-ui="estadisticas-page-affluence" />
-      ) : (
+      ) : activeTab === "ventas" ? (
         <AnalyticsDashboard
           overview={overview}
           params={params}
@@ -100,6 +102,8 @@ export default function Page() {
           onRefresh={handleRefresh}
           data-ui="estadisticas-page-dashboard"
         />
+      ) : (
+        <MessagingDashboard data-ui="estadisticas-page-messaging" />
       )}
     </div>
   );
