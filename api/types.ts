@@ -335,6 +335,108 @@ export type AnalyticsRefreshPayload = {
 
 export type AnalyticsRefreshResponse = APISuccess<AnalyticsRefreshPayload> | APIError;
 
+/** AI usage + WhatsApp ledger — tags `ai_usage_stats_api_v1`, `whatsapp_message_logs_api_v1`. */
+export type MessagingGranularity = "week" | "month" | "year";
+
+export type AIUsageSummary = {
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  costUsd: number;
+  unpricedCalls: number;
+};
+
+export type AIUsagePeriod = {
+  period: string;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  costUsd: number;
+};
+
+export type AIUsageModelRow = AIUsagePeriod & {
+  provider: string;
+  model: string;
+  priced: boolean;
+};
+
+export type AIUsageFeatureRow = AIUsagePeriod & {
+  feature: string;
+};
+
+export type AIUsagePricing = {
+  provider: string;
+  model: string;
+  flat: boolean;
+  peak: {
+    inputUsdPerMillion: number;
+    outputUsdPerMillion: number;
+    cacheReadUsdPerMillion: number;
+    cacheWriteUsdPerMillion: number;
+  };
+  offPeak: {
+    inputUsdPerMillion: number;
+    outputUsdPerMillion: number;
+    cacheReadUsdPerMillion: number;
+    cacheWriteUsdPerMillion: number;
+  };
+};
+
+export type AIUsagePayload = {
+  from: string;
+  to: string;
+  granularity: MessagingGranularity;
+  summary: AIUsageSummary;
+  series: AIUsagePeriod[];
+  byModel: AIUsageModelRow[];
+  byFeature: AIUsageFeatureRow[];
+  pricing: AIUsagePricing[];
+};
+
+export type AIUsageResponse = APISuccess<AIUsagePayload> | APIError;
+
+export type WhatsAppLogRow = {
+  id: number;
+  direction: "inbound" | "outbound";
+  messageType: string;
+  userPhone: string;
+  content: string;
+  source: string;
+  status: "received" | "sent" | "failed";
+  toolName: string;
+  createdAt: string;
+};
+
+export type WhatsAppLogPeriod = {
+  period: string;
+  inbound: number;
+  outbound: number;
+  total: number;
+};
+
+export type WhatsAppLogSummary = {
+  total: number;
+  inbound: number;
+  outbound: number;
+  failed: number;
+};
+
+export type WhatsAppLogPayload = {
+  from: string;
+  to: string;
+  granularity: MessagingGranularity;
+  summary: WhatsAppLogSummary;
+  series: WhatsAppLogPeriod[];
+  logs: WhatsAppLogRow[];
+  page: number;
+  limit: number;
+  hasMore: boolean;
+};
+
+export type WhatsAppLogResponse = APISuccess<WhatsAppLogPayload> | APIError;
+
 /** Affluence (client flow) analytics — tag `affluence_stats_v1`. */
 export type AffluenceBucket = "day" | "week" | "month" | "year";
 
