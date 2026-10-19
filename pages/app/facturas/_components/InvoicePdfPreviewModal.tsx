@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Eye, Send, Edit3, Loader2, AlertCircle, Download, FileText } from "lucide-react";
+import { Send, Edit3, Loader2, Download, FileText, ExternalLink, Share2 } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
 
 type InvoicePdfPreviewModalProps = {
@@ -81,6 +81,19 @@ export function InvoicePdfPreviewModal({
     setPdfUrl(`${backendOrigin}/api/admin/invoices/${invoiceData.id}/pdf?t=${Date.now()}`);
   }, [invoiceData.id, backendOrigin]);
 
+  // Share the PDF link (native sheet when available, clipboard otherwise).
+  // Coordination id: invoice_pdf_preview_actions_v1
+  const share = useCallback(async () => {
+    if (!pdfUrl) return;
+    const url = new URL(pdfUrl, window.location.origin).toString();
+    try {
+      if (typeof navigator.share === "function") await navigator.share({ title: invoiceData.invoice_number || "Factura", url });
+      else await navigator.clipboard.writeText(url);
+    } catch (e) {
+      if (!(e instanceof Error && e.name === "AbortError")) setError("No se pudo compartir la factura");
+    }
+  }, [pdfUrl, invoiceData.invoice_number]);
+
   // Format currency for display
   const formatPrice = (price: number, currency: string = "EUR") => {
     return new Intl.NumberFormat("es-ES", {
@@ -104,27 +117,28 @@ export function InvoicePdfPreviewModal({
           </div>
           <div data-testid="pdf-preview-actions" className="bo-pdf-preview-actions" data-slot="pdf-preview-actions">
             {pdfReady && pdfUrl && (
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bo-btn bo-btn--secondary bo-btn--sm"
-                download
-                data-testid="pdf-preview-download-btn"
-              >
-                <Download size={14} />
-                Descargar
-              </a>
+              <>
+                <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="bo-btn bo-btn--ghost bo-btn--sm" title="Ver página completa" aria-label="Ver página completa" data-testid="pdf-preview-open-btn">
+                  <ExternalLink size={14} strokeWidth={1.8} aria-hidden="true" /> <span className="bo-pdf-preview-lbl">Ver página completa</span>
+                </a>
+                <a href={pdfUrl} download className="bo-btn bo-btn--ghost bo-btn--sm" title="Descargar" aria-label="Descargar" data-testid="pdf-preview-download-btn">
+                  <Download size={14} strokeWidth={1.8} aria-hidden="true" /> <span className="bo-pdf-preview-lbl">Descargar</span>
+                </a>
+                <button type="button" className="bo-btn bo-btn--ghost bo-btn--sm" onClick={() => void share()} title="Compartir" aria-label="Compartir" data-testid="pdf-preview-share-btn">
+                  <Share2 size={14} strokeWidth={1.8} aria-hidden="true" /> <span className="bo-pdf-preview-lbl">Compartir</span>
+                </button>
+              </>
             )}
             <button
               type="button"
-              className="bo-btn bo-btn--secondary bo-btn--sm"
+              className="bo-btn bo-btn--ghost bo-btn--sm"
               onClick={onEdit}
               disabled={isSending}
+              title="Editar"
+              aria-label="Editar"
               data-testid="pdf-preview-edit-btn"
             >
-              <Edit3 size={14} />
-              Editar
+              <Edit3 size={14} strokeWidth={1.8} aria-hidden="true" /> <span className="bo-pdf-preview-lbl">Editar</span>
             </button>
           </div>
         </div>
