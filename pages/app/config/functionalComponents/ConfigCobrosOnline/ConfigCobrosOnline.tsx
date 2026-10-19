@@ -569,7 +569,7 @@ function DeleteBlockedModal({
   const checkouts = blockers?.find((b) => b.code === "CHECKOUTS_OPEN");
   const unknown = blockers?.find((b) => b.code === "BALANCE_UNKNOWN");
   return (
-    <Modal open={open} title="Todavía no puedes eliminar la cuenta" onClose={onClose} className="bo-modal--confirm bo-cobrosBlocked">
+    <Modal hideClose open={open} title="Todavía no puedes eliminar la cuenta" onClose={onClose} className="bo-modal--confirm bo-cobrosBlocked">
       <div data-slot="modal-head" className="bo-modalHead" data-testid="config-cobros-blocked-head">
         <div data-ui="modal-title" className="bo-modalTitle flex items-center gap-2" data-testid="config-cobros-blocked-title">
           <Ban size={18} className="text-[var(--bo-on-surface-danger)]" aria-hidden="true" /> Todavía no puedes eliminar la cuenta

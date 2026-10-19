@@ -36,7 +36,7 @@ export const MenuTypeChangeModal = React.memo(function MenuTypeChangeModal({
   const disableConfirm = saving || nextType === currentType;
 
   return (
-    <Modal open={open} title={title} onClose={onClose} widthPx={520} className={className}>
+    <Modal hideClose open={open} title={title} onClose={onClose} widthPx={520} className={className}>
       <div className="bo-modalHead" data-slot="menu-type-change-modal-header">
         <div className="bo-modalTitle" data-slot="menu-type-change-modal-title">{title}</div>
         <button className="bo-modalX" type="button" onClick={onClose} aria-label="Cerrar" data-testid="menu-type-change-modal-close">
