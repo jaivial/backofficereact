@@ -2528,6 +2528,18 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // Privileged conversations of the connected WhatsApp: the ones that may
+      // run the full backoffice catalogue (wa_bot_privileged_contacts_v1).
+      async getBotPrivilegedContacts(restaurantId: number): Promise<(APISuccess<import("./types").BotPrivilegedContactsResponse>) | APIError> {
+        return json(`/api/admin/bot/ai/${restaurantId}/privileged-contacts`, { method: "GET" });
+      },
+      async setBotPrivilegedContacts(restaurantId: number, contacts: import("./types").BotPrivilegedContact[]): Promise<(APISuccess<import("./types").BotPrivilegedContactsResponse>) | APIError> {
+        return json(`/api/admin/bot/ai/${restaurantId}/privileged-contacts`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ contacts }),
+        });
+      },
       // DSPy decision pipeline graph + recent decisions (wa_bot_dspy_pipeline_v1).
       async getBotPipeline(restaurantId: number): Promise<(APISuccess<import("./types").BotPipelineResponse>) | APIError> {
         return json(`/api/admin/bot/pipeline/${restaurantId}`, { method: "GET" });
