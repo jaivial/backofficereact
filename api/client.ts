@@ -93,6 +93,9 @@ import type {
   AnalyticsOverviewParams,
   AnalyticsRefreshRequest,
   AnalyticsRefreshResponse,
+  AIUsageResponse,
+  WhatsAppLogResponse,
+  MessagingGranularity,
   AffluenceBucket,
   AffluenceResponse,
   AffluenceSeasonalResponse,
@@ -893,6 +896,28 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           headers: { "content-type": "application/json" },
           body: JSON.stringify(params),
         });
+      },
+      /** AI call/token/cost ledger. Tag `ai_usage_stats_api_v1`. */
+      async getAIUsage(params: { from: string; to: string; granularity: MessagingGranularity }): Promise<AIUsageResponse> {
+        const q = new URLSearchParams({ from: params.from, to: params.to, granularity: params.granularity });
+        return json(`/api/admin/analytics/ai-usage?${q.toString()}`, { method: "GET" });
+      },
+      /** WhatsApp inbound/outbound message ledger. Tag `whatsapp_message_logs_api_v1`. */
+      async getWhatsAppMessages(params: {
+        from: string;
+        to: string;
+        granularity: MessagingGranularity;
+        direction?: "inbound" | "outbound";
+        search?: string;
+        page?: number;
+        limit?: number;
+      }): Promise<WhatsAppLogResponse> {
+        const q = new URLSearchParams({ from: params.from, to: params.to, granularity: params.granularity });
+        if (params.direction) q.set("direction", params.direction);
+        if (params.search) q.set("search", params.search);
+        if (params.page) q.set("page", String(params.page));
+        if (params.limit) q.set("limit", String(params.limit));
+        return json(`/api/admin/analytics/whatsapp-messages?${q.toString()}`, { method: "GET" });
       },
     },
     calendar: {
