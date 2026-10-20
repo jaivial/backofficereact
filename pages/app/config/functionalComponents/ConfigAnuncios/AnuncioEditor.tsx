@@ -66,6 +66,7 @@ import {
   updateStep,
   WHATSAPP_DEFAULT_MESSAGE,
   type ButtonAction,
+  adPreviewOrigin,
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
 import { AdVisualStudio } from "./AdVisualStudio";
@@ -207,7 +208,7 @@ type AdPreviewDevice = (typeof AD_PREVIEW_DEVICES)[number]["id"];
 function AdSitePreview({ adId, name, website, stepId }: { adId: number; name: string; website: string; stepId?: string }) {
   const [device, setDevice] = useState<AdPreviewDevice>("movil");
   const [size, setSize] = useState<{ width: number; height: number }>({ width: AD_PREVIEW_DEVICES[0].width, height: AD_PREVIEW_DEVICES[0].height });
-  const base = website.replace(/\/+$/, "");
+  const base = adPreviewOrigin(website);
   const previewURL = `${base}/?vc_ad=${adId}&vc_preview=1${stepId ? `&vc_step=${encodeURIComponent(stepId)}` : ""}`;
   const applyDevice = (id: AdPreviewDevice) => {
     const next = AD_PREVIEW_DEVICES.find((entry) => entry.id === id) ?? AD_PREVIEW_DEVICES[0];

@@ -589,3 +589,14 @@ export function duplicateBlock(content: RestaurantAdContentElement[], buttons: R
 export function buttonLimit(): number {
   return MAX_BUTTONS;
 }
+
+/**
+ * Origin of the public site rendered inside the ad editor preview. By default
+ * it is the restaurant's own website. A non-production build can set
+ * VITE_AD_PREVIEW_ORIGIN so the editor previews against its matching public
+ * renderer without editing the restaurant's website setting.
+ */
+export function adPreviewOrigin(website: string): string {
+  const override = String(import.meta.env.VITE_AD_PREVIEW_ORIGIN ?? "").trim();
+  return (override || website).replace(/\/+$/, "");
+}

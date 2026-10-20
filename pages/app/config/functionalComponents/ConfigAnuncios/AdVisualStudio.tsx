@@ -7,6 +7,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Monitor, RotateCw, Smartphone, Tablet } from "lucide-react";
 import type { RestaurantAdCanvas, RestaurantAdCanvasBackground, RestaurantAdCanvasElement, RestaurantAdCanvasVariant } from "../../../../../api/types";
+import { adPreviewOrigin } from "./lib/adEditor";
 
 type Props = {
   canvas: RestaurantAdCanvas;
@@ -403,7 +404,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
     [fit],
   );
 
-  const siteURL = website && adId > 0 ? `${website.replace(/\/+$/, "")}/?vc_ad=${adId}&vc_preview=1${stepId ? `&vc_step=${encodeURIComponent(stepId)}` : ""}&_r=${reloadKey}` : "";
+  const siteURL = website && adId > 0 ? `${adPreviewOrigin(website)}/?vc_ad=${adId}&vc_preview=1${stepId ? `&vc_step=${encodeURIComponent(stepId)}` : ""}&_r=${reloadKey}` : "";
 
   return (
     <div className="bo-adstudioRoot" data-testid="ad-visual-studio" data-coord-id="ads_visual_studio_v1">
