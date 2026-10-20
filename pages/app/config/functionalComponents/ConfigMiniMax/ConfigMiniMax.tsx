@@ -6,9 +6,7 @@ import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { useMiniMaxConfig, DEFAULT_MODEL } from "./hooks/useMiniMaxConfig";
 
 const MINIMAX_MODELS = [
-  { value: "MiniMax-M3", label: "MiniMax-M3" },
-  { value: "MiniMax-M2", label: "MiniMax-M2" },
-  { value: "MiniMax-Text-01", label: "MiniMax-Text-01" },
+  { value: "MiniMax-M3.1-Flash", label: "MiniMax-M3.1-Flash" },
 ];
 
 export function ConfigMiniMax() {

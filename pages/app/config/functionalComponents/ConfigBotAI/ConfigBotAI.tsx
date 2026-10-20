@@ -8,11 +8,10 @@ import { useBotAIConfig } from "./hooks/useBotAIConfig";
 import { ConfigBotPrivilegedContacts } from "./ConfigBotPrivilegedContacts";
 
 // Coordination id: wa_bot_ai_providers_v1 / wa_bot_rag_fts_v1
-// WhatsApp bot model routing (primary + automatic fallback), encrypted
-// provider API keys (OpenCode Go, MiniMax, Jev) and the RAG knowledge chunks.
+// WhatsApp bot model (MiniMax-M3.1-Flash only), encrypted provider API keys
+// (MiniMax, Jev) and the RAG knowledge chunks.
 
 const KEY_PROVIDERS: { id: string; label: string; hint: string }[] = [
-  { id: "opencode-go", label: "OpenCode Go", hint: "oc_sk_…" },
   { id: "minimax", label: "MiniMax (Coding Plan)", hint: "Clave de MiniMax" },
   { id: "jev", label: "Jev · TypeSafe AI", hint: "apikey_…" },
 ];
@@ -54,8 +53,8 @@ export function ConfigBotAI({ restaurants, activeRestaurantId }: { restaurants: 
           IA del bot de WhatsApp
         </div>
         <div className="bo-panelMeta" data-testid="config-bot-ai-meta">
-          Modelo principal y de respaldo: si el principal falla, se queda sin tokens o alcanza su límite, el bot responde
-          automáticamente con el de respaldo. Las claves se guardan cifradas (AES-256-GCM) y no se vuelven a mostrar.
+          MiniMax-M3.1-Flash es el único modelo del bot. Las claves se guardan cifradas (AES-256-GCM) y no se
+          vuelven a mostrar.
         </div>
       </div>
 
@@ -73,11 +72,6 @@ export function ConfigBotAI({ restaurants, activeRestaurantId }: { restaurants: 
             <span className="bo-label" data-testid="config-bot-ai-primary-label">Modelo principal</span>
             <SearchableSelect value={config.primaryModel} onChange={(v) => v && setModel("primaryModel", v)} options={modelOptions}
               ariaLabel="Modelo principal del bot" searchPlaceholder="Buscar modelo..." data-testid="config-bot-ai-primary-select" disabled={saving} />
-          </div>
-          <div className="bo-field" data-testid="config-bot-ai-fallback-field">
-            <span className="bo-label" data-testid="config-bot-ai-fallback-label">Modelo de respaldo</span>
-            <SearchableSelect value={config.fallbackModel} onChange={(v) => v && setModel("fallbackModel", v)} options={modelOptions}
-              ariaLabel="Modelo de respaldo del bot" searchPlaceholder="Buscar modelo..." data-testid="config-bot-ai-fallback-select" disabled={saving} />
           </div>
         </div>
 

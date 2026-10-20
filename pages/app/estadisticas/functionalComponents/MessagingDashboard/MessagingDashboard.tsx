@@ -407,7 +407,7 @@ export function MessagingDashboard({ className, ...props }: MessagingDashboardPr
         <div className="border-b border-[var(--bo-border)] px-4 py-3" data-testid="messaging-pricing-head">
           <h2 className="text-sm font-semibold" data-testid="messaging-pricing-title">Tarifas aplicadas (USD / 1M tokens)</h2>
           <p className="mt-0.5 text-[11px] text-[var(--bo-muted)]" data-testid="messaging-pricing-note">
-            DeepSeek V4.1 Flash: peak L-V 01:00-04:00 y 06:00-10:00 UTC; off-peak es la mitad. MiniMax-M3.1-Flash: tarifa plana.
+            MiniMax-M3.1-Flash: tarifa plana ($0.15/1M entrada, $0.60/1M salida, $0.015/1M caché leída).
           </p>
         </div>
         <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2" data-testid="messaging-pricing-grid">
