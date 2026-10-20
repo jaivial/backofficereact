@@ -285,7 +285,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
       <Tabs
         mode="button"
-        className="mx-auto max-w-full [&_.bo-tabLabel]:inline"
+        className="mx-auto w-full max-w-full justify-between [&_.bo-tabLabel]:inline [&_.bo-tabLabel]:text-xs min-[896px]:[&_.bo-tabLabel]:text-sm [&_.bo-tab]:min-w-0 [&_.bo-tab]:px-2 [&_.bo-tabIcon]:hidden min-[896px]:[&_.bo-tabIcon]:inline-flex"
         ariaLabel="Secciones de la campaña"
         layoutId="campaignEditorTabs"
         activeId={tab}
