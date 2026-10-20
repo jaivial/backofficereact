@@ -180,18 +180,18 @@ export function CampaignsUnsubscribed() {
                       <CampaignUnsubscribedChannel channel={row.channel} />
                     </div>
                     <span className="min-w-0 break-all text-bo-muted" data-testid={`campaigns-unsubscribed-card-contact-${row.booking_id}`}>{row.contact || "\u2014"}</span>
-                    <dl className="grid grid-cols-3 gap-2 text-xs">
+                    <dl className="m-0 grid grid-cols-3 gap-2 text-xs">
                       <div className="grid gap-0.5" data-testid={`campaigns-unsubscribed-card-reserved-${row.booking_id}`}>
                         <dt className="text-bo-faint">Reserva</dt>
-                        <dd className="font-medium">{row.reservation_date || "\u2014"}</dd>
+                        <dd className="m-0 font-medium">{row.reservation_date || "\u2014"}</dd>
                       </div>
                       <div className="grid gap-0.5" data-testid={`campaigns-unsubscribed-card-party-${row.booking_id}`}>
                         <dt className="text-bo-faint">Comensales</dt>
-                        <dd className="font-medium">{row.party_size || "\u2014"}</dd>
+                        <dd className="m-0 font-medium">{row.party_size || "\u2014"}</dd>
                       </div>
                       <div className="grid gap-0.5" data-testid={`campaigns-unsubscribed-card-since-${row.booking_id}`}>
                         <dt className="text-bo-faint">Baja</dt>
-                        <dd className="font-medium">{row.since}</dd>
+                        <dd className="m-0 font-medium">{row.since}</dd>
                       </div>
                     </dl>
                     {row.reason ? (

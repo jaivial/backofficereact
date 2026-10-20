@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -9,6 +9,7 @@ import ReactFlow, {
   type Edge,
   type Node,
   type NodeProps,
+  type ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { FileText, Gauge, Mail, MessageCircle, Palette, PenLine, Send, Users } from "lucide-react";
@@ -98,6 +99,17 @@ export type CampaignFlowCanvasProps = {
 };
 
 export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignFlowCanvasProps) {
+  const flowRef = useRef<ReactFlowInstance | null>(null);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  // fitView only runs on mount: refit when the canvas box changes (rotation, PWA resize).
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => { flowRef.current?.fitView({ padding: 0.25, maxZoom: 1 }); });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const { nodes, edges } = useMemo(() => {
     const nodes: Node<CampaignNodeData>[] = [];
     const edges: Edge[] = [];
@@ -249,12 +261,13 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
           </span>
         ))}
       </div>
-      <div className="campaign-flowCanvas">
+      <div className="campaign-flowCanvas" ref={canvasRef}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
+        onInit={(instance) => { flowRef.current = instance; }}
         fitViewOptions={{ padding: 0.25, maxZoom: 1 }}
         nodesDraggable={false}
         nodesConnectable={false}
