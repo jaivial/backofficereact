@@ -264,7 +264,7 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
         proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="var(--bo-canvas-dot)" />
-        <Controls showInteractive={false} position="bottom-right" />
+        <Controls showInteractive={false} position="bottom-left" />
       </ReactFlow>
       </div>
     </div>

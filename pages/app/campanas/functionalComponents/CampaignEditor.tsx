@@ -231,7 +231,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   ] as const;
 
   return (
-    <section className="grid gap-4" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
+    <section className="grid gap-4 pb-24 sm:pb-0" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
       <h2 className="sr-only">Editor de campaña</h2>
 
       {/* Header: identity on the left, status + actions on the right. Sticky on

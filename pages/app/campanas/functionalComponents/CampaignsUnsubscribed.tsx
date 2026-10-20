@@ -77,7 +77,7 @@ export function CampaignsUnsubscribed() {
   const go = useCallback((target: number) => setPage(target), []);
 
   return (
-    <section className="grid gap-4" aria-label="Bajas de campañas" data-testid="campaigns-unsubscribed-page">
+    <section className="grid gap-4 pb-24 sm:pb-0" aria-label="Bajas de campañas" data-testid="campaigns-unsubscribed-page">
       <div className="grid content-start gap-3" data-testid="campaigns-unsubscribed-panel">
         <PageToolbar
           className="mb-0 items-end"

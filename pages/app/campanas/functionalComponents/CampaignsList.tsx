@@ -176,7 +176,7 @@ export function CampaignsList() {
   }, [api, load]);
 
   return (
-    <section className="grid gap-4" aria-label="Campañas" data-testid="campaigns-list-page">
+    <section className="grid gap-4 pb-24 sm:pb-0" aria-label="Campañas" data-testid="campaigns-list-page">
       <div className="grid content-start gap-3" data-testid="campaigns-list-panel">
         <PageToolbar
           className="mb-0 items-end"
