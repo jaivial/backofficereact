@@ -101,7 +101,7 @@ function CampaignCard({ campaign, busy, onDelete }: CampaignCardProps) {
               Creada {campaignRelativeDate(campaign.created_at)}
               {campaign.updated_at ? ` \u00b7 editada ${campaignRelativeDate(campaign.updated_at)}` : ""}
             </span>
-            <div className="flex w-full items-center gap-2 sm:w-auto">
+            <div className="flex w-full items-center gap-2 max-sm:pr-12 sm:w-auto">
               <Button variant="primary" size="sm" className="min-h-11 flex-1 sm:min-h-0 sm:flex-none" onClick={() => void navigate(`/app/campanas/${campaign.id}`)} data-testid={`campaign-item-edit-${campaign.id}`}>
                 <Pencil size={14} aria-hidden="true" /> Editar
               </Button>
