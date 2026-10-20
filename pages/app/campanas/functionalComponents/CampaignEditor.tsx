@@ -568,16 +568,16 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             <div className="grid content-start gap-3">
               {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campaña para poder probar y enviar." />}
               <div className="grid gap-3 md:grid-cols-2">
-                <div className="flex flex-wrap gap-2">
+                <div className="grid gap-2 sm:flex sm:flex-wrap">
                   <input
-                    className="bo-input min-w-0 flex-1"
+                    className="bo-input min-w-0 sm:flex-1"
                     placeholder="email o teléfono de prueba"
                     aria-label="Destino de la prueba"
                     value={testTarget}
                     onChange={(e) => setTestTarget(e.currentTarget.value)}
                     data-testid="campaign-test-input"
                   />
-                  <Button variant="ghost" onClick={() => void sendTest()} disabled={!campaign || !testTarget.trim()} data-testid="campaign-test-btn">Probar</Button>
+                  <Button variant="ghost" className="min-h-11 w-full justify-center sm:min-h-0 sm:w-auto" onClick={() => void sendTest()} disabled={!campaign || !testTarget.trim()} data-testid="campaign-test-btn">Probar</Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   {campaign ? (
