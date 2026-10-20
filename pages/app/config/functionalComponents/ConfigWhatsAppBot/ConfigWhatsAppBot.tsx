@@ -8,10 +8,8 @@ import { Switch } from "../../../../../ui/shadcn/Switch";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 
 const BOT_MODELS = [
-  { value: "", label: "Por defecto del sistema" },
-  { value: "MiniMax-M3", label: "MiniMax-M3" },
-  { value: "MiniMax-M2", label: "MiniMax-M2" },
-  { value: "MiniMax-Text-01", label: "MiniMax-Text-01" },
+  { value: "", label: "Por defecto (MiniMax-M3.1-Flash)" },
+  { value: "MiniMax-M3.1-Flash", label: "MiniMax-M3.1-Flash" },
 ];
 
 function emptyConfig(): BotTenantConfig {

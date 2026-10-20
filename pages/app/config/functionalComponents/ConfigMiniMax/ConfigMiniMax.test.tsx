@@ -25,8 +25,8 @@ describe("ConfigMiniMax", () => {
   beforeEach(() => {
     mGet.mockReset();
     mSet.mockReset();
-    mGet.mockResolvedValue({ success: true, config: { hasApiKey: true, model: "MiniMax-M2" } });
-    mSet.mockResolvedValue({ success: true, config: { hasApiKey: true, model: "MiniMax-M3" } });
+    mGet.mockResolvedValue({ success: true, config: { hasApiKey: true, model: "MiniMax-M3.1-Flash" } });
+    mSet.mockResolvedValue({ success: true, config: { hasApiKey: true, model: "MiniMax-M3.1-Flash" } });
   });
 
   it("loads and shows saved state (masked key + model)", async () => {
@@ -48,7 +48,7 @@ describe("ConfigMiniMax", () => {
     await user.click(screen.getByTestId("config-minimax-save-btn"));
 
     await waitFor(() => {
-      expect(mSet).toHaveBeenCalledWith({ apiKey: "sk-test-123", model: "MiniMax-M2" });
+      expect(mSet).toHaveBeenCalledWith({ apiKey: "sk-test-123", model: "MiniMax-M3.1-Flash" });
     });
   });
 
@@ -60,7 +60,7 @@ describe("ConfigMiniMax", () => {
     await user.click(screen.getByTestId("config-minimax-save-btn"));
 
     await waitFor(() => {
-      expect(mSet).toHaveBeenCalledWith({ apiKey: undefined, model: "MiniMax-M2" });
+      expect(mSet).toHaveBeenCalledWith({ apiKey: undefined, model: "MiniMax-M3.1-Flash" });
     });
   });
 });
