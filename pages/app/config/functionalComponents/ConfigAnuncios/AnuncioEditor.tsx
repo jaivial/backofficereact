@@ -326,6 +326,26 @@ function defaultCanvasFromAd(source: RestaurantAd): RestaurantAdCanvas {
   return { version: 1, width: 800, height: Math.min(4096, Math.max(500, y + 32)), background: { type: "color", value: "#ffffff" }, elements };
 }
 
+// Coordination id: ads_step_card_canvas_v1 - starting point for the free-form
+// card face of a wizard step. Built only when the operator opens it; it never
+// replaces a saved card_canvas or the opened announcement canvas.
+function defaultCardCanvas(step: RestaurantAdStep): RestaurantAdCanvas {
+  const elements: RestaurantAdCanvas["elements"] = [];
+  let y = 24;
+  if (step.title) {
+    elements.push({ id: `card-title-${step.id}`, type: "text", x: 24, y, w: 512, h: 56, z: 1, props: { text: step.title, fontSize: 30, color: step.background_mode === "color" ? "#ffffff" : "#111111", align: "left", bold: true } });
+    y += 68;
+  }
+  if (step.description) {
+    elements.push({ id: `card-desc-${step.id}`, type: "text", x: 24, y, w: 512, h: 72, z: elements.length + 1, props: { text: step.description, fontSize: 18, color: step.background_mode === "color" ? "#ffffff" : "#111111", align: "left" } });
+    y += 84;
+  }
+  const background: RestaurantAdCanvas["background"] = step.background_mode === "image" && step.background_image
+    ? { type: "image", value: step.background_image }
+    : { type: "color", value: step.background_mode === "color" && step.background_color ? step.background_color : "#ffffff" };
+  return { version: 1, width: 560, height: Math.min(4096, Math.max(220, y + 24)), background, elements };
+}
+
 export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notify = NOOP_NOTIFY, mode, adId, initialAd, onSaved, onDeleted, wsStatusRef, sendAdSave, subscribeAdEvents, autosaveDelayMs, sendAdScheduleCheck }: AnuncioEditorProps) {
   const [ad, setAd] = useState<RestaurantAd | null>(initialAd ?? null);
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
@@ -337,6 +357,8 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
 
   const [wizardStep, setWizardStep] = useState(0);
   const [wizardCards, setWizardCards] = useState(false);
+  // ads_step_card_canvas_v1: which face of the active step the visual studio edits.
+  const [canvasSurface, setCanvasSurface] = useState<"detail" | "card">("detail");
   /** Where the shared upload flow writes (coord id ads_image_target_v2):
    * the announcement image, a step content image, the card background or the
    * detail background of a step. */
@@ -624,13 +646,14 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   );
   // Entering visual mode never overwrites saved content. A missing step canvas
   // is converted only when the operator edits it, and every step stays separate.
-  const savedCanvas = isMultiple ? activeStep?.canvas : ad?.canvas;
+  const cardSurface = isMultiple && canvasSurface === "card";
+  const savedCanvas = isMultiple ? (cardSurface ? activeStep?.card_canvas : activeStep?.canvas) : ad?.canvas;
   const visualStep = isMultiple && !wizardCards && (!previewOpen || savedCanvas != null);
   const editedCanvas = visualStep && activeStep && ad
-    ? savedCanvas ?? defaultCanvasFromAd({ ...ad, content: activeStep.content, ctas: ad.ctas })
+    ? savedCanvas ?? (cardSurface ? defaultCardCanvas(activeStep) : defaultCanvasFromAd({ ...ad, content: activeStep.content, ctas: ad.ctas }))
     : savedCanvas;
   const isCanvas = isMultiple ? visualStep : editedCanvas != null;
-  const changeCanvas = (canvas: RestaurantAdCanvas) => setAd((current) => current ? (isMultiple && activeStep ? updateStep(current, activeStep.id, { canvas }) : { ...current, canvas }) : current);
+  const changeCanvas = (canvas: RestaurantAdCanvas) => setAd((current) => current ? (isMultiple && activeStep ? updateStep(current, activeStep.id, cardSurface ? { card_canvas: canvas } : { canvas }) : { ...current, canvas }) : current);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const routeOptions = useMenuRouteOptions();
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -1045,6 +1068,10 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
             </div> : null}
             {isCanvas && editedCanvas ? (
               <div className="bo-anunciosCanvasCol" data-slot="ads-canvas-column" data-testid="ad-canvas-mode">
+                {isMultiple ? <div className="bo-anunciosPreviewSwitch" role="group" aria-label="Superficie del paso" data-testid="ad-canvas-surface" data-coord-id="ads_step_card_canvas_v1">
+                  <button type="button" className={`bo-anunciosPreviewSwitchBtn ${!cardSurface ? "is-active" : ""}`} aria-pressed={!cardSurface} onClick={() => { setCanvasSurface("detail"); setSelectedId(null); }}>Anuncio abierto</button>
+                  <button type="button" className={`bo-anunciosPreviewSwitchBtn ${cardSurface ? "is-active" : ""}`} aria-pressed={cardSurface} onClick={() => { setCanvasSurface("card"); setSelectedId(null); }}>Tarjeta inicial</button>
+                </div> : null}
                 {previewOpen && ad.id > 0 ? (
                   website ? (
                     <AdSitePreview adId={ad.id} name={ad.name} website={website} stepId={isMultiple ? activeStep?.id : undefined} />
@@ -1055,7 +1082,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                         style={{ aspectRatio: `${editedCanvas.width} / ${editedCanvas.height}`, width: "100%", maxWidth: 720 }}
                       >
                         <iframe
-                          src={`/api/public/ads/${ad.id}/render?src=backoffice-preview${isMultiple && activeStep ? `&step=${encodeURIComponent(activeStep.id)}` : ""}`}
+                          src={`/api/public/ads/${ad.id}/render?src=backoffice-preview${isMultiple && activeStep ? `&step=${encodeURIComponent(activeStep.id)}${cardSurface ? "&card=1" : ""}` : ""}`}
                           title={ad.name || "Anuncio"}
                           style={{ width: "100%", height: "100%", border: 0, display: "block", borderRadius: 10 }}
                         />
@@ -1067,11 +1094,11 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   <p className="bo-adcanvasHint">Guarda el anuncio una vez para ver la preview 1-1.</p>
                 ) : (
                   <AdVisualStudio
-                    key={isMultiple ? activeStep?.id : "single"}
+                    key={isMultiple ? `${activeStep?.id}-${canvasSurface}` : "single"}
                     canvas={editedCanvas}
                     adId={ad.id}
                     adName={activeStep?.title || ad.name}
-                    stepId={isMultiple ? activeStep?.id : undefined}
+                    stepId={isMultiple && !cardSurface ? activeStep?.id : undefined}
                     website={website}
                     onChange={changeCanvas}
                   />
