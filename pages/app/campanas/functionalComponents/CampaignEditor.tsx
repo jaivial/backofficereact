@@ -231,24 +231,24 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   ] as const;
 
   return (
-    <section className="grid gap-4" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
+    <section className="grid gap-4 pb-24 sm:pb-0" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
       <h2 className="sr-only">Editor de campaña</h2>
 
       {/* Header: identity on the left, status + actions on the right. Sticky on
           desktop so Guardar is always one click away while scrolling. */}
       <div
-        className="grid content-start gap-3 rounded-bo-lg border border-bo-border bg-bo-shell p-3 shadow-[var(--bo-shadow-soft)] md:sticky md:top-0 md:z-30 md:flex md:items-center md:justify-between md:gap-4"
+        className="grid content-start gap-2 rounded-bo-lg border border-bo-border bg-bo-shell p-3 shadow-[var(--bo-shadow-soft)] md:sticky md:top-0 md:z-30 md:flex md:items-center md:justify-between md:gap-4"
         data-testid="campaign-editor-header"
         data-observe="campaign-editor-header"
       >
         <div className="grid min-w-0 gap-1.5" data-testid="campaign-editor-title">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-faint">
+          <span className="hidden text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-faint sm:block">
             {mode === "create" ? "Nueva campaña" : "Editar campaña"}
           </span>
-          <span className="truncate text-lg font-semibold" data-testid="campaign-name-field" data-observe="campaign-editor-name">
+          <span className="truncate text-base font-semibold sm:text-lg" data-testid="campaign-name-field" data-observe="campaign-editor-name">
             {form.name || "Campaña sin nombre"}
           </span>
-          <span className="truncate text-sm text-bo-muted" data-testid="campaign-subject-field" data-observe="campaign-editor-subject">
+          <span className="hidden truncate text-sm text-bo-muted sm:block" data-testid="campaign-subject-field" data-observe="campaign-editor-subject">
             {form.subject || "Sin asunto"}
           </span>
         </div>
@@ -260,12 +260,13 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               {campaign ? `${campaign.stats?.sent ?? 0}/${campaign.stats?.total ?? 0} enviados` : "Borrador sin guardar"}
             </span>
           </span>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="primary" onClick={() => void save()} disabled={busy} data-testid="campaign-save-btn">
+          <div className="grid w-full grid-cols-[1fr_1fr_auto] items-center gap-2 sm:flex sm:w-auto sm:flex-wrap" data-testid="campaign-editor-actions">
+            <Button variant="primary" className="min-h-11 justify-center sm:min-h-0" onClick={() => void save()} disabled={busy} data-testid="campaign-save-btn">
               <PenLine size={16} aria-hidden="true" /> Guardar
             </Button>
             <Button
               variant="secondary"
+              className="min-h-11 justify-center sm:min-h-0"
               onClick={() => void sendAll()}
               disabled={!campaign || busy || hasUnsavedChanges}
               title={hasUnsavedChanges ? "Guarda los cambios antes de enviar" : undefined}
@@ -274,7 +275,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               <Send size={16} aria-hidden="true" /> Enviar
             </Button>
             {campaign && (
-              <Button variant="danger" aria-label="Eliminar campana" title="Eliminar campana" onClick={() => void remove()} data-testid="campaign-delete-btn">
+              <Button variant="danger" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0" aria-label="Eliminar campana" title="Eliminar campana" onClick={() => void remove()} data-testid="campaign-delete-btn">
                 <Trash2 size={16} aria-hidden="true" />
               </Button>
             )}
@@ -284,7 +285,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
       <Tabs
         mode="button"
-        className="mx-auto"
+        className="mx-auto max-w-full [&_.bo-tabLabel]:inline"
         ariaLabel="Secciones de la campaña"
         layoutId="campaignEditorTabs"
         activeId={tab}
