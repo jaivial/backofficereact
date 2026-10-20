@@ -244,11 +244,15 @@ export function CampaignsList() {
             </Button>
           </EmptyState>
         ) : (
+          visible.length === 0 ? (
+            <p className="py-6 text-center text-sm text-bo-muted" data-testid="campaigns-list-filter-empty">No hay campañas con este estado.</p>
+          ) : (
           <ul className={CAMPAIGNS_GRID_CLASS} data-testid="campaigns-list-items">
             {visible.map((campaign) => (
               <CampaignCard key={campaign.id} campaign={campaign} busy={removingId === campaign.id} onDelete={(item) => void remove(item)} />
             ))}
           </ul>
+          )
         )}
       </div>
     </section>
