@@ -14,6 +14,7 @@ import {
   campaignRelativeDate,
   campaignShortDate,
   CAMPAIGN_CHANNEL_UI,
+  CAMPAIGN_STATUS_UI,
 } from "./campaignUi";
 
 /** One responsive column on phones, two from md, three from xl. */
@@ -93,15 +94,15 @@ function CampaignCard({ campaign, busy, onDelete }: CampaignCardProps) {
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-bo-border pt-2.5">
             <span
-              className="text-[11px] text-bo-faint"
+              className="text-xs text-bo-faint"
               title={campaign.created_at ? `Creada el ${campaignShortDate(campaign.created_at)}` : undefined}
               data-testid={`campaign-item-dates-${campaign.id}`}
             >
               Creada {campaignRelativeDate(campaign.created_at)}
               {campaign.updated_at ? ` \u00b7 editada ${campaignRelativeDate(campaign.updated_at)}` : ""}
             </span>
-            <div className="flex items-center gap-1.5">
-              <Button variant="primary" size="sm" onClick={() => void navigate(`/app/campanas/${campaign.id}`)} data-testid={`campaign-item-edit-${campaign.id}`}>
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <Button variant="primary" size="sm" className="min-h-11 flex-1 sm:min-h-0 sm:flex-none" onClick={() => void navigate(`/app/campanas/${campaign.id}`)} data-testid={`campaign-item-edit-${campaign.id}`}>
                 <Pencil size={14} aria-hidden="true" /> Editar
               </Button>
               <Button
@@ -110,7 +111,7 @@ function CampaignCard({ campaign, busy, onDelete }: CampaignCardProps) {
                 aria-label={`Eliminar ${campaign.name || "la campaña"}`}
                 title="Eliminar campaña"
                 disabled={busy}
-                className="opacity-60 transition hover:text-[var(--bo-on-surface-danger)] hover:opacity-100 focus-visible:opacity-100"
+                className="min-h-11 min-w-11 opacity-80 transition hover:text-[var(--bo-on-surface-danger)] hover:opacity-100 focus-visible:opacity-100 sm:min-h-0 sm:min-w-0 sm:opacity-60"
                 onClick={() => onDelete(campaign)}
                 data-testid={`campaign-item-delete-${campaign.id}`}
               >
@@ -120,9 +121,22 @@ function CampaignCard({ campaign, busy, onDelete }: CampaignCardProps) {
           </div>
 
           {total > 0 ? (
-            <p className="text-[11px] text-bo-faint" data-testid={`campaign-item-stats-${campaign.id}`}>
-              {campaign.stats?.sent ?? 0} enviados &middot; {campaign.stats?.pending ?? 0} pendientes &middot; {campaign.stats?.failed ?? 0} fallidos
-            </p>
+            <div className="grid gap-1.5" data-testid={`campaign-item-progress-${campaign.id}`}>
+              <div
+                className="h-1.5 overflow-hidden rounded-bo-full bg-bo-surface-2"
+                role="progressbar"
+                aria-label="Progreso de envío"
+                aria-valuemin={0}
+                aria-valuemax={total}
+                aria-valuenow={campaign.stats?.sent ?? 0}
+                data-testid={`campaign-item-progress-bar-${campaign.id}`}
+              >
+                <div className="h-full bg-bo-accent" style={{ width: `${Math.min(100, Math.round(((campaign.stats?.sent ?? 0) / total) * 100))}%` }} />
+              </div>
+              <p className="text-xs text-bo-muted" data-testid={`campaign-item-stats-${campaign.id}`}>
+                {campaign.stats?.sent ?? 0} enviados &middot; {campaign.stats?.pending ?? 0} pendientes &middot; {campaign.stats?.failed ?? 0} fallidos
+              </p>
+            </div>
           ) : null}
         </div>
       </Card>
@@ -135,6 +149,8 @@ export function CampaignsList() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<number | null>(null);
+  const [statusFilter, setStatusFilter] = useState<Campaign["status"] | "all">("all");
+  const visible = useMemo(() => (statusFilter === "all" ? campaigns : campaigns.filter((c) => c.status === statusFilter)), [campaigns, statusFilter]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -149,6 +165,7 @@ export function CampaignsList() {
   useEffect(() => { void load(); }, [load]);
 
   const remove = useCallback(async (campaign: Campaign) => {
+    if (!window.confirm(`¿Eliminar la campaña "${campaign.name || "sin nombre"}"? No se puede deshacer.`)) return;
     setRemovingId(campaign.id);
     try {
       await api.remove(campaign.id);
@@ -178,17 +195,34 @@ export function CampaignsList() {
             </div>
           }
           right={
-            <div className="flex flex-wrap items-center gap-2">
-              <Button variant="ghost" onClick={() => void navigate("/app/campanas/unsubscribed")} data-testid="campaign-unsubscribed-nav-btn">
+            <div className="grid w-full grid-cols-2 items-center gap-2 sm:flex sm:w-auto" data-testid="campaigns-list-actions">
+              <Button variant="ghost" className="min-h-11" onClick={() => void navigate("/app/campanas/unsubscribed")} data-testid="campaign-unsubscribed-nav-btn">
                 <UserX size={16} aria-hidden="true" /> Bajas
               </Button>
-              <Button variant="primary" onClick={() => void navigate("/app/campanas/nueva")} data-testid="campaign-create-btn">
+              <Button variant="primary" className="min-h-11" onClick={() => void navigate("/app/campanas/nueva")} data-testid="campaign-create-btn">
                 <Plus size={16} aria-hidden="true" /> Nueva campaña
               </Button>
             </div>
           }
           data-testid="campaigns-list-toolbar"
         />
+
+        {!loading && campaigns.length > 0 ? (
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Filtrar por estado" data-testid="campaigns-list-filters">
+            {(["all", "draft", "sending", "sent"] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                className={`min-h-11 shrink-0 rounded-bo-full border px-4 text-sm font-medium transition sm:min-h-9 ${statusFilter === key ? "border-bo-accent bg-bo-surface-2 text-bo-text" : "border-bo-border text-bo-muted"}`}
+                aria-pressed={statusFilter === key}
+                onClick={() => setStatusFilter(key)}
+                data-testid={`campaigns-list-filter-${key}`}
+              >
+                {key === "all" ? "Todas" : CAMPAIGN_STATUS_UI[key].label}
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="grid content-start gap-3" data-testid="campaigns-list-loading">
@@ -211,7 +245,7 @@ export function CampaignsList() {
           </EmptyState>
         ) : (
           <ul className={CAMPAIGNS_GRID_CLASS} data-testid="campaigns-list-items">
-            {campaigns.map((campaign) => (
+            {visible.map((campaign) => (
               <CampaignCard key={campaign.id} campaign={campaign} busy={removingId === campaign.id} onDelete={(item) => void remove(item)} />
             ))}
           </ul>

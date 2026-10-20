@@ -3075,6 +3075,8 @@ export type CampaignInput = Pick<
   Campaign,
   "name" | "subject" | "body_markdown" | "theme" | "channels" | "audience" | "audience_days" | "manual_recipients" | "email_per_minute" | "whatsapp_per_minute"
 >;
+export type CampaignUnsubscribedKind = "baja" | "email_invalido" | "whatsapp_invalido" | "pendiente_verificar";
+export type CampaignUnsubscribedCounts = Partial<Record<CampaignUnsubscribedKind, number>>;
 export type CampaignUnsubscribed = {
   booking_id: number;
   customer_name: string;
