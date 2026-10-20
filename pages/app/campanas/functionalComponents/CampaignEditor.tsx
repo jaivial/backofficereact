@@ -602,7 +602,19 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             {recipients.length === 0 ? (
               <p className="text-xs text-bo-faint" data-testid="campaign-recipients-empty">Sin envios registrados todavia.</p>
             ) : (
-              <div className="overflow-x-auto rounded-bo-md border border-bo-border">
+              <>
+              <ul className="m-0 grid list-none gap-2 p-0 md:hidden" data-testid="campaign-recipients-cards">
+                {recipients.map((row) => (
+                  <li key={row.id} className="grid gap-1 rounded-bo-md border border-bo-border bg-bo-surface-2 p-3 text-sm" title={row.error || undefined} data-testid={`campaign-recipient-card-${row.id}`}>
+                    <span className="break-all font-medium">{row.target}</span>
+                    <span className="flex flex-wrap items-center justify-between gap-2 text-xs text-bo-muted">
+                      <span>{row.channel === "whatsapp" ? "WhatsApp" : "Email"} &middot; {row.status === "sent" ? "Enviado" : row.status === "failed" ? "Fallido" : "Pendiente"}</span>
+                      <span>{row.sent_at || "Sin enviar"}{row.booking_id ? ` \u00b7 Reserva ${row.booking_id}` : ""}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden overflow-x-auto rounded-bo-md border border-bo-border md:block">
                 <table className="bo-table w-full" data-testid="campaign-recipients-table">
                   <thead>
                     <tr>
@@ -626,6 +638,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </CampaignSection>
         </div>
