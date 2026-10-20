@@ -272,6 +272,11 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
     [patch],
   );
 
+  // Coordination id: guest_count_flags_v1
+  const handleAskAdultsToggle = useCallback((checked: boolean) => patch({ ask_adults: checked }), [patch]);
+  const handleAskHighChairsToggle = useCallback((checked: boolean) => patch({ ask_high_chairs: checked }), [patch]);
+  const handleAskBabyStrollersToggle = useCallback((checked: boolean) => patch({ ask_baby_strollers: checked }), [patch]);
+
   const handlePrereservaToggle = useCallback(
     (checked: boolean) => {
       patch({
@@ -1063,6 +1068,42 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
             ariaLabel="Permitir que el cliente modifique su reserva en esta fecha"
             testId="special-date-allow-customer-modification-row"
           />
+
+          <FadeSeparator testId="special-date-sep-selfmodify-guestcounts" />
+
+          {/* Contadores de comensales — decide qué preguntas de adultos,
+              tronas y carros de bebé hace el wizard público en esta fecha.
+              Si las tres están desactivadas, el paso de datos no aparece.
+              Coordination id: guest_count_flags_v1 */}
+          <div className="grid gap-2" data-ui="special-date-guest-counts" data-testid="special-date-guest-counts-section">
+            <div className="bo-label text-left" data-testid="special-date-guest-counts-label">
+              Preguntas de comensales en la reserva online
+            </div>
+            <ToggleRow
+              title="Preguntar nº de adultos"
+              desc="El wizard pedirá cuántos adultos (y por diferencia, niños) vienen"
+              checked={draft.ask_adults}
+              onToggle={handleAskAdultsToggle}
+              ariaLabel="Preguntar número de adultos"
+              testId="special-date-ask-adults-row"
+            />
+            <ToggleRow
+              title="Preguntar nº de tronas"
+              desc="El wizard pedirá cuántas tronas se necesitan"
+              checked={draft.ask_high_chairs}
+              onToggle={handleAskHighChairsToggle}
+              ariaLabel="Preguntar número de tronas"
+              testId="special-date-ask-high-chairs-row"
+            />
+            <ToggleRow
+              title="Preguntar nº de carros de bebé"
+              desc="El wizard pedirá cuántos carros de bebé traerán"
+              checked={draft.ask_baby_strollers}
+              onToggle={handleAskBabyStrollersToggle}
+              ariaLabel="Preguntar número de carros de bebé"
+              testId="special-date-ask-baby-strollers-row"
+            />
+          </div>
 
           {/* Save row — last child of the form body. It is a plain sibling
               of the fields above (never inside an AnimatePresence subtree),

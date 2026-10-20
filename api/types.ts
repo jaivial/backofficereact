@@ -2558,6 +2558,15 @@ export type SpecialDateSettings = {
    */
   mobility_enabled: boolean;
   /**
+   * Guest-count questions on this date's public wizard: ask for the number
+   * of adults / high chairs (tronas) / baby strollers (carros de bebé).
+   * Default true so existing dates keep asking.
+   * Coordination id: guest_count_flags_v1
+   */
+  ask_adults: boolean;
+  ask_high_chairs: boolean;
+  ask_baby_strollers: boolean;
+  /**
    * Allow the guest to self-modify a booking that already exists on this
    * special date (the public duplicate guard offers "modify instead of
    * rebook"). Off by default: pre-reserva menus make edits risky.
