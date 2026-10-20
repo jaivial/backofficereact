@@ -3169,6 +3169,35 @@ export type BotAIConfigInput = {
   apiKeys: Record<string, string>;
 };
 
+/**
+ * A conversation of the connected WhatsApp that the operator selected as
+ * privileged: the bot answers there with the full backoffice catalogue.
+ * (wa_bot_privileged_contacts_v1)
+ */
+export type BotPrivilegedContact = {
+  /** Addresses the conversation: a group id (@g.us) or a contact (@s.whatsapp.net). */
+  jid: string;
+  /** Group subject or contact name, for display only. */
+  name: string;
+  /** True for a group, false for a one-to-one chat. */
+  isGroup: boolean;
+};
+
+/** A conversation of the connected WhatsApp, offered for selection. */
+export type BotWhatsAppChat = {
+  jid: string;
+  name: string;
+  kind: "group" | "contact";
+  isGroup: boolean;
+};
+
+export type BotPrivilegedContactsResponse = {
+  success: boolean;
+  message?: string;
+  chats: BotWhatsAppChat[];
+  selected: BotPrivilegedContact[];
+};
+
 // DSPy decision pipeline graph + stored decisions (wa_bot_dspy_pipeline_v1).
 export type BotPipelineNode = {
   id: string;

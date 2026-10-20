@@ -1,14 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, Bot, ChevronLeft, ChevronRight, MessageCircle, RefreshCcw, Send, Wallet } from "lucide-react";
+import { Activity, Bot, Calendar, CalendarDays, CalendarRange, ChevronLeft, ChevronRight, MessageCircle, RefreshCcw, Send, Wallet } from "lucide-react";
 
 import { createClient } from "../../../../../api/client";
 import type {
   AIUsagePayload,
-  AIUsagePeriod,
   MessagingGranularity,
   WhatsAppLogPayload,
   WhatsAppLogRow,
 } from "../../../../../api/types";
+import { Button } from "../../../../../ui/actions/Button";
+import { DateRangePicker } from "../../../../../ui/inputs/DateRangePicker";
+import { Select } from "../../../../../ui/inputs/Select";
+import { SimpleTabs } from "../../../../../ui/nav/SimpleTabs";
 import { useGlobalSocketTopic } from "../../../../../ui/realtime/GlobalSocketProvider";
 import { cn } from "../../../../../ui/shadcn/utils";
 
@@ -16,10 +19,16 @@ const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD",
 const NUMBER = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 });
 const COMPACT = new Intl.NumberFormat("es-ES", { notation: "compact", maximumFractionDigits: 1 });
 
-const GRANULARITIES: Array<{ value: MessagingGranularity; label: string }> = [
-  { value: "week", label: "Semana" },
-  { value: "month", label: "Mes" },
-  { value: "year", label: "Año" },
+const GRANULARITY_TABS = [
+  { id: "week", label: "Semana", title: "Agrupar por semana", icon: <CalendarDays size={16} strokeWidth={1.8} /> },
+  { id: "month", label: "Mes", title: "Agrupar por mes", icon: <Calendar size={16} strokeWidth={1.8} /> },
+  { id: "year", label: "Año", title: "Agrupar por año", icon: <CalendarRange size={16} strokeWidth={1.8} /> },
+];
+
+const DIRECTION_OPTIONS = [
+  { value: "", label: "Todos" },
+  { value: "inbound", label: "Entrantes" },
+  { value: "outbound", label: "Salientes" },
 ];
 
 const PRESETS = [
@@ -176,64 +185,49 @@ export function MessagingDashboard({ className, ...props }: MessagingDashboardPr
         </div>
         <div className="flex flex-wrap items-center gap-2" data-testid="messaging-dashboard-controls">
           {PRESETS.map((preset) => (
-            <button
+            <Button
               key={preset.id}
-              type="button"
-              className="rounded-lg border border-[var(--bo-border)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--bo-surface-2)]"
+              variant="secondary"
+              size="sm"
               onClick={() => applyPreset(preset.days)}
               data-testid={`messaging-preset-${preset.id}`}
             >
               {preset.label}
-            </button>
+            </Button>
           ))}
-          <input
-            type="date"
-            value={from}
-            onChange={(event) => { setFrom(event.target.value); setPage(1); }}
-            className="rounded-lg border border-[var(--bo-border)] bg-transparent px-2 py-1.5 text-xs"
-            aria-label="Desde"
-            data-testid="messaging-date-from"
+          <DateRangePicker
+            from={from}
+            to={to}
+            onChange={({ from: nextFrom, to: nextTo }) => {
+              const next = nextFrom && nextTo ? { from: nextFrom, to: nextTo } : defaultRange(30);
+              setFrom(next.from);
+              setTo(next.to);
+              setPage(1);
+            }}
+            buttonLabel="Rango personalizado"
+            ariaLabel="Seleccionar rango de fechas"
           />
-          <input
-            type="date"
-            value={to}
-            onChange={(event) => { setTo(event.target.value); setPage(1); }}
-            className="rounded-lg border border-[var(--bo-border)] bg-transparent px-2 py-1.5 text-xs"
-            aria-label="Hasta"
-            data-testid="messaging-date-to"
-          />
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => void load()}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--bo-accent)] px-3 py-1.5 text-xs font-semibold text-[var(--bo-accent-contrast,#0b0b0b)] disabled:opacity-60"
             data-testid="messaging-refresh-button"
           >
             <RefreshCcw size={14} className={loading ? "animate-spin" : undefined} data-testid="messaging-refresh-icon" />
             Actualizar
-          </button>
+          </Button>
         </div>
       </header>
 
-      <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Agrupación temporal" data-testid="messaging-granularity-tabs">
-        {GRANULARITIES.map((item) => (
-          <button
-            key={item.value}
-            type="button"
-            role="tab"
-            aria-selected={granularity === item.value}
-            onClick={() => setGranularity(item.value)}
-            className={cn(
-              "rounded-lg border px-3 py-1.5 text-xs font-medium",
-              granularity === item.value
-                ? "border-[var(--bo-accent)] bg-[var(--bo-accent)]/12 text-[var(--bo-text)]"
-                : "border-[var(--bo-border)] text-[var(--bo-muted)] hover:text-[var(--bo-text)]",
-            )}
-            data-testid={`messaging-granularity-${item.value}`}
-          >
-            {item.label}
-          </button>
-        ))}
+      <div className="w-full" data-testid="messaging-granularity-tabs">
+        <SimpleTabs
+          items={GRANULARITY_TABS}
+          activeId={granularity}
+          onChange={(value) => setGranularity(value as MessagingGranularity)}
+          aria-label="Agrupación temporal"
+          className="w-fit"
+        />
       </div>
 
       {error ? (
@@ -346,22 +340,19 @@ export function MessagingDashboard({ className, ...props }: MessagingDashboardPr
         <div className="flex flex-col gap-2 border-b border-[var(--bo-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between" data-testid="messaging-wa-head">
           <h2 className="text-sm font-semibold" data-testid="messaging-wa-title">Registro de mensajes WhatsApp</h2>
           <div className="flex flex-wrap items-center gap-2" data-testid="messaging-wa-filters">
-            <select
+            <Select
               value={direction}
-              onChange={(event) => { setDirection(event.target.value as "" | "inbound" | "outbound"); setPage(1); }}
-              className="rounded-lg border border-[var(--bo-border)] bg-transparent px-2 py-1.5 text-xs"
-              aria-label="Dirección"
+              onChange={(value) => { setDirection(value as "" | "inbound" | "outbound"); setPage(1); }}
+              options={DIRECTION_OPTIONS}
+              size="sm"
+              ariaLabel="Dirección"
               data-testid="messaging-wa-direction-select"
-            >
-              <option value="" data-testid="messaging-wa-direction-all">Todos</option>
-              <option value="inbound" data-testid="messaging-wa-direction-inbound">Entrantes</option>
-              <option value="outbound" data-testid="messaging-wa-direction-outbound">Salientes</option>
-            </select>
+            />
             <input
               value={search}
               onChange={(event) => { setSearch(event.target.value); setPage(1); }}
               placeholder="Teléfono o texto"
-              className="w-44 rounded-lg border border-[var(--bo-border)] bg-transparent px-2 py-1.5 text-xs"
+              className="bo-input w-44"
               aria-label="Buscar"
               data-testid="messaging-wa-search-input"
             />
@@ -402,12 +393,12 @@ export function MessagingDashboard({ className, ...props }: MessagingDashboardPr
         <div className="flex items-center justify-between border-t border-[var(--bo-border)] px-4 py-2" data-testid="messaging-wa-pagination">
           <span className="text-[11px] text-[var(--bo-muted)]" data-testid="messaging-wa-page-label">Página {wa?.page ?? page}</span>
           <div className="flex gap-1" data-testid="messaging-wa-page-buttons">
-            <button type="button" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} className="rounded border border-[var(--bo-border)] p-1 disabled:opacity-40" aria-label="Página anterior" data-testid="messaging-wa-prev-page">
+            <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} aria-label="Página anterior" data-testid="messaging-wa-prev-page">
               <ChevronLeft size={14} data-testid="messaging-wa-prev-icon" />
-            </button>
-            <button type="button" disabled={!wa?.hasMore} onClick={() => setPage((value) => value + 1)} className="rounded border border-[var(--bo-border)] p-1 disabled:opacity-40" aria-label="Página siguiente" data-testid="messaging-wa-next-page">
+            </Button>
+            <Button variant="secondary" size="sm" disabled={!wa?.hasMore} onClick={() => setPage((value) => value + 1)} aria-label="Página siguiente" data-testid="messaging-wa-next-page">
               <ChevronRight size={14} data-testid="messaging-wa-next-icon" />
-            </button>
+            </Button>
           </div>
         </div>
       </section>

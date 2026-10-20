@@ -5,6 +5,7 @@ import type { BORestaurant, BotKnowledgeChunk } from "../../../../../api/types";
 import { SearchableSelect } from "../../../../../ui/inputs/SearchableSelect";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { useBotAIConfig } from "./hooks/useBotAIConfig";
+import { ConfigBotPrivilegedContacts } from "./ConfigBotPrivilegedContacts";
 
 // Coordination id: wa_bot_ai_providers_v1 / wa_bot_rag_fts_v1
 // WhatsApp bot model routing (primary + automatic fallback), encrypted
@@ -140,6 +141,8 @@ export function ConfigBotAI({ restaurants, activeRestaurantId }: { restaurants: 
             </div>
           ))}
         </div>
+
+        <ConfigBotPrivilegedContacts restaurantId={restaurantId} />
       </div>
 
       <div className="bo-foodDetailEditorActions" data-testid="config-bot-ai-actions">

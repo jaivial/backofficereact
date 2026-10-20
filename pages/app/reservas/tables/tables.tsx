@@ -7141,6 +7141,7 @@ export default function TableManagerPage() {
 								onClose={() => setSelectedBooking(null)}
 								widthPx={760}
 								className="bo-tableBookingModal"
+								hideClose
 							>
 								{selectedBooking ? (
 									<div

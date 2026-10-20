@@ -89,7 +89,7 @@ export function RoleCreateModal({
   }, [importance, label, maxAllowed, permissions.length]);
 
   return (
-    <Modal open={open} title="Crear rol" onClose={onClose} widthPx={680}>
+    <Modal hideClose open={open} title="Crear rol" onClose={onClose} widthPx={680}>
       <div className="bo-modalHead" data-slot="roleCreateModal-modalHead">
         <div className="bo-modalTitle" data-slot="roleCreateModal-modalTitle">Crear rol</div>
         <button className="bo-modalX" type="button" onClick={onClose} aria-label="Close" data-testid="role-create-close">
