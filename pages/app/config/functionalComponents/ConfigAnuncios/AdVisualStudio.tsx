@@ -116,14 +116,14 @@ function scaleDocToWidth(base: RestaurantAdCanvas, targetWidth: number): Restaur
   };
 }
 
-function defaultElement(type: RestaurantAdCanvasElement["type"], doc: ResolvedDoc, z: number): RestaurantAdCanvasElement {
+function defaultElement(type: RestaurantAdCanvasElement["type"], doc: ResolvedDoc, z: number, src = ""): RestaurantAdCanvasElement {
   const cx = doc.width / 2;
   const cy = doc.height / 2;
   if (type === "text") {
     return { id: nextId("txt"), type, x: cx - 200, y: cy - 40, w: 400, h: 80, z, props: { text: "Nuevo texto", fontSize: 36, color: "#111111", align: "center", bold: false, italic: false } };
   }
   if (type === "image") {
-    return { id: nextId("img"), type, x: cx - 150, y: cy - 100, w: 300, h: 200, z, props: { src: "", fit: "cover", radius: 0, alt: "" } };
+    return { id: nextId("img"), type, x: cx - 150, y: cy - 100, w: 300, h: 200, z, props: { src, fit: "cover", radius: 0, alt: "" } };
   }
   if (type === "button") {
     return { id: nextId("btn"), type, x: cx - 100, y: cy - 28, w: 200, h: 56, z, props: { text: "Reservar", href: "/", bg: "#c9a86a", color: "#1a2e22", radius: 28, fontSize: 20, bold: true, newTab: false } };
@@ -136,6 +136,9 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
   const [viewport, setViewport] = useState<{ width: number; height: number }>({ width: DEVICES[2].width, height: DEVICES[2].height });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  // +Imagen collects a valid URL first; an image without src is rejected by the API and would block every autosave.
+  const [imgDraft, setImgDraft] = useState<string | null>(null);
+  const imgDraftValid = imgDraft !== null && /^https?:\/\/\S+$/i.test(imgDraft.trim());
   const dragRef = useRef<DragState | null>(null);
   const widthDragRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -313,11 +316,11 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
   }, []);
 
   const addElement = useCallback(
-    (type: RestaurantAdCanvasElement["type"]) => {
+    (type: RestaurantAdCanvasElement["type"], src = "") => {
       const z = view.elements.reduce((acc, el) => Math.max(acc, el.z || 0), 0) + 1;
       let id = "";
       updateDoc((doc) => {
-        const el = defaultElement(type, doc, z);
+        const el = defaultElement(type, doc, z, src);
         const k = Math.min(1, (doc.width - 24) / el.w, (doc.height - 24) / el.h);
         const sized = scaleElement(el, Math.max(0.1, k));
         sized.x = Math.max(0, (doc.width - sized.w) / 2);
@@ -409,7 +412,25 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
     <div className="bo-adstudioRoot" data-testid="ad-visual-studio" data-coord-id="ads_visual_studio_v1">
       <div className="bo-adstudioToolbar" role="toolbar" aria-label="Herramientas del estudio visual" data-testid="ad-studio-toolbar">
         <button type="button" disabled={disabled} onClick={() => addElement("text")} data-testid="ad-studio-add-text">+ Texto</button>
-        <button type="button" disabled={disabled} onClick={() => addElement("image")} data-testid="ad-studio-add-image">+ Imagen</button>
+        <button type="button" disabled={disabled} onClick={() => setImgDraft(imgDraft === null ? "" : null)} data-testid="ad-studio-add-image">+ Imagen</button>
+        {imgDraft !== null ? (
+          <span className="bo-adstudioField" data-testid="ad-studio-image-draft">
+            <input
+              type="url"
+              autoFocus
+              disabled={disabled}
+              value={imgDraft}
+              onChange={(e) => setImgDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && imgDraftValid) { addElement("image", imgDraft.trim()); setImgDraft(null); } }}
+              placeholder="https://cdn.../imagen.webp"
+              aria-label="URL de la imagen"
+              data-testid="ad-studio-image-url"
+              style={{ fontSize: 16 }}
+            />
+            <button type="button" disabled={disabled || !imgDraftValid} onClick={() => { addElement("image", imgDraft.trim()); setImgDraft(null); }} data-testid="ad-studio-image-insert">Insertar</button>
+            <button type="button" onClick={() => setImgDraft(null)} data-testid="ad-studio-image-cancel">Cancelar</button>
+          </span>
+        ) : null}
         <button type="button" disabled={disabled} onClick={() => addElement("button")} data-testid="ad-studio-add-button">+ Botón</button>
         <button type="button" disabled={disabled} onClick={() => addElement("shape")} data-testid="ad-studio-add-shape">+ Forma</button>
         <span className="bo-adcanvasSpacer" />
@@ -758,7 +779,7 @@ function ElementInspector({ el, disabled, onPatch }: { el: RestaurantAdCanvasEle
   if (el.type === "image") {
     return (
       <div className="bo-adcanvasFields">
-        <label>URL imagen<input disabled={disabled} type="text" value={String(p.src || "")} onChange={(e) => onPatch({ src: e.target.value })} placeholder="https://cdn.../imagen.webp" /></label>
+        <label>URL imagen<input disabled={disabled} type="text" value={String(p.src || "")} onChange={(e) => onPatch({ src: e.target.value })} placeholder="https://cdn.../imagen.webp" />{/^https?:\/\/\S+$/i.test(String(p.src || "").trim()) ? null : <small role="alert" data-testid="ad-studio-image-src-warning">Hace falta una URL http(s) válida: mientras tanto el anuncio no se guarda.</small>}</label>
         <label>Ajuste
           <select disabled={disabled} value={String(p.fit || "cover")} onChange={(e) => onPatch({ fit: e.target.value })}>
             <option value="cover">Cubrir</option><option value="contain">Contener</option>
