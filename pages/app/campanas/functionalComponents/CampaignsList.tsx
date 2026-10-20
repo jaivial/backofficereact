@@ -179,7 +179,7 @@ export function CampaignsList() {
     <section className="grid gap-4 pb-24 sm:pb-0" aria-label="Campañas" data-testid="campaigns-list-page">
       <div className="grid content-start gap-3" data-testid="campaigns-list-panel">
         <PageToolbar
-          className="mb-0 items-end"
+          className="mb-0 items-end max-sm:flex-col max-sm:items-stretch [&_.bo-toolbarRight]:max-sm:w-full"
           left={
             <div className="grid gap-1">
               <h1 className="flex flex-wrap items-center gap-2 text-xl font-bold tracking-tight">
