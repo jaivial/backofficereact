@@ -98,7 +98,13 @@
     return alias || raw.toLowerCase();
   }
 
+  // The host posts the numeric menu_type code (menu_type_codes_v1); the
+  // templates are keyed by name, so map the code (or its numeric string) first.
+  var MENU_TYPE_NAME_BY_CODE = { 1: "closed_conventional", 2: "closed_group", 3: "a_la_carte", 4: "a_la_carte_group", 5: "a_la_carte", 6: "special" };
   function safeType(menuType) {
+    if (typeof menuType === "number" || (typeof menuType === "string" && /^[0-9]+$/.test(menuType))) {
+      menuType = MENU_TYPE_NAME_BY_CODE[Number(menuType)] || menuType;
+    }
     return MENU_TYPES.includes(menuType) ? menuType : "closed_conventional";
   }
 
@@ -1296,7 +1302,7 @@
     if (!msg || typeof msg !== "object") return;
 
     if (msg.type === "vc_preview:init") {
-      const signature = previewSignature(msg.theme_id || "villa-carmen", msg.menu_type || "closed_conventional", msg.menu);
+      const signature = previewSignature(msg.theme_id || "villa-carmen", safeType(msg.menu_type || "closed_conventional"), msg.menu);
       if (signature && signature === lastPreviewSignature) return;
       lastPreviewSignature = signature;
       state.menu = msg.menu || state.menu;
@@ -1305,7 +1311,7 @@
     }
 
     if (msg.type === "vc_preview:update") {
-      const signature = previewSignature(msg.theme_id || state.themeId, msg.menu_type || state.menuType, msg.menu || state.menu);
+      const signature = previewSignature(msg.theme_id || state.themeId, safeType(msg.menu_type || state.menuType), msg.menu || state.menu);
       if (signature && signature === lastPreviewSignature) return;
       lastPreviewSignature = signature;
       state.menu = msg.menu || state.menu;
@@ -1316,7 +1322,7 @@
         });
         return;
       }
-      if (msg.menu_type && msg.menu_type !== state.menuType) {
+      if (msg.menu_type && safeType(msg.menu_type) !== state.menuType) {
         applyTheme(state.themeId, msg.menu_type).then(function () {
           state.menu = msg.menu || state.menu;
           render();
