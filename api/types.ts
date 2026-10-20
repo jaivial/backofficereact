@@ -2518,6 +2518,9 @@ export type SpecialDateMenu = {
   adelanto_amount?: number | null;
   price?: number | null;
   position?: number;
+  // Coordination id: special_menu_completo_v1 - red "COMPLETO" ribbon on the
+  // public site; persisted on the catalogue menu (menus.completo).
+  completo?: boolean;
   // Coordination id: special_date_section_menus_v1 - set when menu_id is a
   // special-type menu: it is priced and charged per image section.
   is_special_menu?: boolean;

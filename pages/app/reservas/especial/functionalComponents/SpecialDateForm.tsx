@@ -429,6 +429,9 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
         custom_image_url: m.custom_image_url ?? null,
         adelanto_amount: m.adelanto_amount ?? null,
         price: isSpecialMenuId(m.menu_id) ? null : m.price ?? null,
+        // Coordination id: special_menu_completo_v1 - explicit boolean so the
+        // backend can unset it; custom menus (no menu_id) skip the field.
+        completo: m.menu_id != null ? m.completo === true : undefined,
         position: idx,
         // Coordination id: special_date_section_menus_v1
         // (lean shape: the endpoint rejects unknown fields)
@@ -726,6 +729,21 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
                         />
                       </div>
                     )}
+                    {/* Coordination id: special_menu_completo_v1 - flags the
+                        catalogue menu as COMPLETO; the public site renders a
+                        red ribbon (menu page, home card, burger nav). Only
+                        catalogue menus: custom rows have no public page. */}
+                    {!isCustom ? (
+                      <ToggleRow
+                        title="COMPLETO"
+                        desc="Marca el menú como completo y muestra una banda roja en la web"
+                        checked={m.completo === true}
+                        onToggle={(v) => updateMenuRow(m._key, { completo: v })}
+                        ariaLabel={`Marcar ${selectedLabel} como completo`}
+                        testId={`special-date-menu-row-${idx + 1}-completo-row`}
+                        variant="plain"
+                      />
+                    ) : null}
                   </div>
                 );
               })}
