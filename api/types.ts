@@ -2518,6 +2518,9 @@ export type SpecialDateMenu = {
   adelanto_amount?: number | null;
   price?: number | null;
   position?: number;
+  // Coordination id: special_menu_completo_v1 - red "COMPLETO" ribbon on the
+  // public site; persisted on the catalogue menu (menus.completo).
+  completo?: boolean;
   // Coordination id: special_date_section_menus_v1 - set when menu_id is a
   // special-type menu: it is priced and charged per image section.
   is_special_menu?: boolean;
@@ -2557,6 +2560,15 @@ export type SpecialDateSettings = {
    * Coordination id: mobility_issues_v1
    */
   mobility_enabled: boolean;
+  /**
+   * Guest-count questions on this date's public wizard: ask for the number
+   * of adults / high chairs (tronas) / baby strollers (carros de bebé).
+   * Default true so existing dates keep asking.
+   * Coordination id: guest_count_flags_v1
+   */
+  ask_adults: boolean;
+  ask_high_chairs: boolean;
+  ask_baby_strollers: boolean;
   /**
    * Allow the guest to self-modify a booking that already exists on this
    * special date (the public duplicate guard offers "modify instead of
@@ -3075,6 +3087,8 @@ export type CampaignInput = Pick<
   Campaign,
   "name" | "subject" | "body_markdown" | "theme" | "channels" | "audience" | "audience_days" | "manual_recipients" | "email_per_minute" | "whatsapp_per_minute"
 >;
+export type CampaignUnsubscribedKind = "baja" | "email_invalido" | "whatsapp_invalido" | "pendiente_verificar";
+export type CampaignUnsubscribedCounts = Partial<Record<CampaignUnsubscribedKind, number>>;
 export type CampaignUnsubscribed = {
   booking_id: number;
   customer_name: string;

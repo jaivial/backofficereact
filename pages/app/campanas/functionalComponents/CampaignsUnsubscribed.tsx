@@ -1,14 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { navigate } from "vike/client/router";
 import { ArrowLeft, ChevronLeft, ChevronRight, Mail, MessageCircle, UserX } from "lucide-react";
-import type { CampaignUnsubscribed } from "../../../../api/types";
+import type { CampaignUnsubscribed, CampaignUnsubscribedCounts, CampaignUnsubscribedKind } from "../../../../api/types";
 import { Button } from "../../../../ui/actions/Button";
 import { EmptyState } from "../../../../ui/feedback/EmptyState";
 import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { PageToolbar } from "../../../../ui/shell/PageToolbar";
 import { createCampaignsAPI } from "./campaignsApi";
 
-const PAGE_SIZE = 10;
+const KIND_TABS: { id: CampaignUnsubscribedKind; label: string; hint: string }[] = [
+  { id: "baja", label: "Bajas", hint: "Pidieron no recibir más campañas: no se les envía por ningún canal." },
+  { id: "email_invalido", label: "Email no válido", hint: "No se les envía email, pero sí WhatsApp." },
+  { id: "whatsapp_invalido", label: "WhatsApp no válido", hint: "No se les envía WhatsApp, pero sí email." },
+  { id: "pendiente_verificar", label: "Pendientes", hint: "Sin verificar: bloqueados hasta comprobarlos, no se consideran inválidos." },
+];
+
+/** Legacy reasons arrive in English from the unsubscribe page. */
+function reasonLabel(reason: string): string {
+  return reason === "Opted out of marketing" ? "Se dio de baja del marketing" : reason;
+}
 
 const CHANNEL_UI: Record<string, { label: string; Icon: typeof Mail }> = {
   email: { label: "Email", Icon: Mail },
@@ -28,20 +38,24 @@ type UnsubscribedPage = {
 export function CampaignsUnsubscribed() {
   const api = useMemo(() => createCampaignsAPI(), []);
   const [page, setPage] = useState(1);
+  const [kind, setKind] = useState<CampaignUnsubscribedKind>("baja");
+  const [counts, setCounts] = useState<CampaignUnsubscribedCounts | null>(null);
   const [data, setData] = useState<UnsubscribedPage>({ items: [], page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async (target: number) => {
     setLoading(true);
     try {
-      const result = await api.unsubscribed(target);
+      const result = await api.unsubscribed(target, kind);
       if (!result.success) {
         setData({ items: [], page: target, totalPages: 1, total: 0 });
         return;
       }
       // Rows can disappear while browsing (recipients re-subscribing), so an
       // out-of-range page would come back empty: fall back to the last one.
-      const totalPages = Math.max(result.total_pages, 1);
+      // Old backends send no counts and always list bajas only: no tabs then.
+      setCounts(result.counts ?? null);
+      const totalPages = Math.max(result.total_pages ?? Math.ceil(result.total / Math.max(result.page_size || 10, 1)), 1);
       const effectivePage = result.items.length === 0 && target > totalPages ? totalPages : result.page;
       if (effectivePage !== result.page) {
         await load(effectivePage);
@@ -50,20 +64,20 @@ export function CampaignsUnsubscribed() {
       setData({
         items: result.items.map((item, index) => ({ ...item, key: `${item.booking_id}-${item.channel}-${item.contact}-${index}` })),
         page: result.page,
-        totalPages: Math.max(result.total_pages, 1),
+        totalPages,
         total: result.total,
       });
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, [api, kind]);
 
   useEffect(() => { void load(page); }, [page, load]);
 
   const go = useCallback((target: number) => setPage(target), []);
 
   return (
-    <section className="grid gap-4" aria-label="Bajas de campañas" data-testid="campaigns-unsubscribed-page">
+    <section className="grid gap-4 pb-24 sm:pb-0" aria-label="Bajas de campañas" data-testid="campaigns-unsubscribed-page">
       <div className="grid content-start gap-3" data-testid="campaigns-unsubscribed-panel">
         <PageToolbar
           className="mb-0 items-end"
@@ -88,6 +102,27 @@ export function CampaignsUnsubscribed() {
           }
           data-testid="campaigns-unsubscribed-toolbar"
         />
+
+        {counts ? (
+          <div className="-mx-1 grid gap-2 px-1" data-testid="campaigns-unsubscribed-kinds">
+            <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Tipo de exclusión">
+              {KIND_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={kind === tab.id}
+                  className={`min-h-11 shrink-0 rounded-bo-full border px-4 text-sm font-medium transition sm:min-h-9 ${kind === tab.id ? "border-bo-accent bg-bo-surface-2 text-bo-text" : "border-bo-border text-bo-muted"}`}
+                  onClick={() => { setKind(tab.id); setPage(1); }}
+                  data-testid={`campaigns-unsubscribed-kind-${tab.id}`}
+                >
+                  {tab.label} <span className="ml-1 text-xs text-bo-faint">{counts[tab.id] ?? 0}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-bo-muted" data-testid="campaigns-unsubscribed-kind-hint">{KIND_TABS.find((tab) => tab.id === kind)?.hint}</p>
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="grid content-start gap-3" data-testid="campaigns-unsubscribed-loading">
@@ -125,7 +160,7 @@ export function CampaignsUnsubscribed() {
                       <td className="px-4 py-2.5"><CampaignUnsubscribedChannel channel={row.channel} /></td>
                       <td className="px-4 py-2.5 text-bo-muted">{row.reservation_date || "\u2014"}</td>
                       <td className="px-4 py-2.5 text-center">{row.party_size || "\u2014"}</td>
-                      <td className="px-4 py-2.5 text-bo-muted">{row.reason || "\u2014"}</td>
+                      <td className="px-4 py-2.5 text-bo-muted">{row.reason ? reasonLabel(row.reason) : "\u2014"}</td>
                       <td className="px-4 py-2.5 text-bo-muted">{row.since}</td>
                     </tr>
                   ))}
@@ -145,23 +180,23 @@ export function CampaignsUnsubscribed() {
                       <CampaignUnsubscribedChannel channel={row.channel} />
                     </div>
                     <span className="min-w-0 break-all text-bo-muted" data-testid={`campaigns-unsubscribed-card-contact-${row.booking_id}`}>{row.contact || "\u2014"}</span>
-                    <dl className="grid grid-cols-3 gap-2 text-xs">
+                    <dl className="m-0 grid grid-cols-3 gap-2 text-xs">
                       <div className="grid gap-0.5" data-testid={`campaigns-unsubscribed-card-reserved-${row.booking_id}`}>
                         <dt className="text-bo-faint">Reserva</dt>
-                        <dd className="font-medium">{row.reservation_date || "\u2014"}</dd>
+                        <dd className="m-0 font-medium">{row.reservation_date || "\u2014"}</dd>
                       </div>
                       <div className="grid gap-0.5" data-testid={`campaigns-unsubscribed-card-party-${row.booking_id}`}>
                         <dt className="text-bo-faint">Comensales</dt>
-                        <dd className="font-medium">{row.party_size || "\u2014"}</dd>
+                        <dd className="m-0 font-medium">{row.party_size || "\u2014"}</dd>
                       </div>
                       <div className="grid gap-0.5" data-testid={`campaigns-unsubscribed-card-since-${row.booking_id}`}>
                         <dt className="text-bo-faint">Baja</dt>
-                        <dd className="font-medium">{row.since}</dd>
+                        <dd className="m-0 font-medium">{row.since}</dd>
                       </div>
                     </dl>
                     {row.reason ? (
                       <span className="min-w-0 break-words rounded-bo-sm border border-bo-border bg-bo-surface-2 px-2 py-1 text-[11px] text-bo-muted" data-testid={`campaigns-unsubscribed-card-reason-${row.booking_id}`}>
-                        {row.reason}
+                        {reasonLabel(row.reason)}
                       </span>
                     ) : null}
                   </div>
