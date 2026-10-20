@@ -402,6 +402,7 @@ export function normalizeLayout(layout: RestaurantAd["layout"]): RestaurantAdLay
     background_color: step.background_color ?? "",
     background_image: step.background_image ?? "",
     canvas: step.canvas,
+    card_canvas: step.card_canvas,
     detail_background_mode: step.detail_background_mode,
     detail_background_color: step.detail_background_color,
     detail_background_image: step.detail_background_image,
