@@ -2974,6 +2974,8 @@ export type RestaurantAdLayoutMode = "unico" | "multiple";
 export type RestaurantAdStepBackground = "image" | "color" | "transparent";
 export type RestaurantAdStep = {
   canvas?: RestaurantAdCanvas | null;
+  /** Free-form canvas for the wizard CARD face, shown before "Ver más" (ads_step_card_canvas_v1). Absent = classic card. */
+  card_canvas?: RestaurantAdCanvas | null;
   id: string;
   title: string;
   description: string;
