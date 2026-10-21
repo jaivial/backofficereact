@@ -6,6 +6,7 @@ import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { Invoice, InvoiceStatus } from "../../../../api/types";
 import { CURRENCY_SYMBOLS } from "../../../../api/types";
 import { INVOICE_STATUS_CONFIG } from "../types/invoice";
+import { invoiceTotal, moneyEs } from "../utils";
 
 interface InvoiceDetailsModalProps {
   open: boolean;
@@ -74,7 +75,9 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
       else await navigator.clipboard.writeText(url);
     } catch { /* cancelled share */ }
   }, [pdfUrl, invoice?.invoice_number]);
-  const msgText = `Hola ${fullName}, le enviamos la factura ${invoice?.invoice_number || invoice?.id} por importe de ${formatPrice(invoice?.total ?? invoice?.amount ?? 0, invoice?.currency)}.\n\nQuedamos a su disposición para cualquier consulta.\n\nVilla Carmen`;
+  // invoice_amount_consistency_v1: same canonical total + PDF money style as
+  // the send modal, so this preview reads exactly what will be sent.
+  const msgText = `Hola ${fullName}, le enviamos la factura ${invoice?.invoice_number || invoice?.id} por importe de ${invoice ? moneyEs(invoiceTotal(invoice), invoice.currency) : ""}.\n\nQuedamos a su disposición para cualquier consulta.\n\nVilla Carmen`;
 
   const totalAmount = invoice?.total ?? invoice?.amount ?? 0;
   const paidAmount = invoice?.paid_amount ?? 0;

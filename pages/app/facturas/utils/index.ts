@@ -12,6 +12,30 @@ export function formatPrice(price: number, currency: string = "EUR"): string {
 }
 
 /**
+ * Canonical invoice total for every message template (email, WhatsApp, batch)
+ * and preview: mirrors the PDF rule (buildInvoiceRenderData: total ?? amount),
+ * so a stored total — including a legitimate 0 — stays authoritative and only
+ * legacy rows without total fall back to amount.
+ * Coordination id: invoice_amount_consistency_v1
+ */
+export function invoiceTotal(invoice: { total?: number | null; amount: number }): number {
+  return invoice.total ?? invoice.amount;
+}
+
+const moneyEsFmt = new Intl.NumberFormat("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/**
+ * Spanish money style identical to the invoice PDF (backend formatMoney):
+ * "1.234,56 €". Message bodies read the same number as the document attached
+ * to them instead of three different renderings (184.80 € / €184.80 / 184.80 EUR).
+ * Coordination id: invoice_amount_consistency_v1
+ */
+export function moneyEs(amount: number, currency: string = "EUR"): string {
+  const symbol = currency === "USD" ? "$" : currency === "GBP" ? "£" : "€";
+  return `${moneyEsFmt.format(amount)} ${symbol}`;
+}
+
+/**
  * Formats an ISO date string as dd/mm/yyyy (es-ES)
  */
 export function formatDate(dateStr: string): string {

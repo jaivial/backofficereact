@@ -5,6 +5,7 @@ import { useToasts } from "../../../../ui/feedback/useToasts";
 import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { Invoice } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
+import { invoiceTotal, moneyEs } from "../utils";
 
 interface BatchSendModalProps {
   open: boolean;
@@ -80,7 +81,9 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
     const sampleInvoice = validInvoices[0];
     const invoiceNumber = sampleInvoice.invoice_number || String(sampleInvoice.id);
     const customerName = `${sampleInvoice.customer_name}${sampleInvoice.customer_surname ? ` ${sampleInvoice.customer_surname}` : ""}`;
-    const totalAmount = `${(sampleInvoice.total || sampleInvoice.amount).toFixed(2)} €`;
+    // invoice_amount_consistency_v1: canonical total + PDF money style, same
+    // as the multichannel modal, so the batch preview cites the real number.
+    const totalAmount = moneyEs(invoiceTotal(sampleInvoice));
 
     const subjectPreview = subject
       .replace(/{invoice_number}/g, invoiceNumber)
