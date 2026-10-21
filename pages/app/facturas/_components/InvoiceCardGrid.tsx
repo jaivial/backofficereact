@@ -117,7 +117,8 @@ export function InvoiceCardGrid({
                 ) : null}
                 {showAmount ? (
                   <div className="bo-invoiceCardAmount" data-testid={`facturas-invoice-card-amount-${invoice.id}`} data-slot="facturas-invoice-card-amount">
-                    {formatPrice(invoice.amount, invoice.currency)}
+                    {/* invoice_amount_consistency_v1: same canonical total as the modal/PDF (total ?? amount, a stored 0 stays authoritative) */}
+                    {formatPrice(total, invoice.currency)}
                   </div>
                 ) : null}
               </div>

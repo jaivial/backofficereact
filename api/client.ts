@@ -2697,6 +2697,19 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         });
       },
 
+      async sendWhatsApp(id: number, params: { message?: string; idempotency_key: string; confirm_phone?: boolean; retry_stage?: "text" | "pdf" }): Promise<APISuccess<{ text_sent?: boolean; pdf_attached?: boolean; pdf_uncertain?: boolean; pdf_url?: string; phone_normalized?: string; text_status?: string; pdf_status?: string }> | (APIError & { phone_normalized?: string; attempt_phone?: string; stage?: string; stage_status?: string; text_status?: string; pdf_status?: string })> {
+        return json(`/api/admin/invoices/${id}/send-whatsapp`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(params),
+        });
+      },
+      // invoice_send_whatsapp_v1: recover the latest durable send attempt so a
+      // fresh browser (or post-logout session) resumes the same intent.
+      async getWhatsAppAttempt(id: number): Promise<APISuccess<{ attempt: { idempotency_key: string; text_status: string; pdf_status: string; phone: string; pdf_url?: string; stage_error?: string } | null }> | APIError> {
+        return json(`/api/admin/invoices/${id}/send-whatsapp/attempt`, { method: "GET" });
+      },
+
       async searchReservations(params: {
         date_from?: string;
         date_to?: string;
