@@ -22,17 +22,20 @@ export function invoiceTotal(invoice: { total?: number | null; amount: number })
   return invoice.total ?? invoice.amount;
 }
 
-const moneyEsFmt = new Intl.NumberFormat("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 /**
  * Spanish money style identical to the invoice PDF (backend formatMoney):
- * "1.234,56 €". Message bodies read the same number as the document attached
+ * "1.419,00 €". Message bodies read the same number as the document attached
  * to them instead of three different renderings (184.80 € / €184.80 / 184.80 EUR).
+ * Reproduces the backend algorithm rather than Intl es-ES, which skips the
+ * thousands separator for 4-digit amounts (1419 → "1419,00") while the PDF
+ * always groups (1419 → "1.419,00 €").
  * Coordination id: invoice_amount_consistency_v1
  */
 export function moneyEs(amount: number, currency: string = "EUR"): string {
   const symbol = currency === "USD" ? "$" : currency === "GBP" ? "£" : "€";
-  return `${moneyEsFmt.format(amount)} ${symbol}`;
+  const [intPart, decPart = "00"] = Math.abs(amount).toFixed(2).split(".");
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${amount < 0 ? "-" : ""}${grouped},${decPart} ${symbol}`;
 }
 
 /**
