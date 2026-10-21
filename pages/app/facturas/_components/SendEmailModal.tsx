@@ -79,7 +79,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
       // invoice_amount_consistency_v1: canonical total (total ?? amount) and
       // Spanish style identical to the attached PDF, so the email/WhatsApp
       // body reads the same number as the document it cites (184,80 €).
-      total: moneyEs(invoiceTotal(invoice)),
+      total: moneyEs(invoiceTotal(invoice), invoice.currency),
       restaurant_name:
         session?.restaurants.find((r) => r.id === session?.activeRestaurantId)?.name ??
         "Restaurante",

@@ -83,7 +83,7 @@ export function BatchSendModal({ open, invoices, onClose, onSent }: BatchSendMod
     const customerName = `${sampleInvoice.customer_name}${sampleInvoice.customer_surname ? ` ${sampleInvoice.customer_surname}` : ""}`;
     // invoice_amount_consistency_v1: canonical total + PDF money style, same
     // as the multichannel modal, so the batch preview cites the real number.
-    const totalAmount = moneyEs(invoiceTotal(sampleInvoice));
+    const totalAmount = moneyEs(invoiceTotal(sampleInvoice), sampleInvoice.currency);
 
     const subjectPreview = subject
       .replace(/{invoice_number}/g, invoiceNumber)

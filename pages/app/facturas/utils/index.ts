@@ -3,6 +3,8 @@
  * Utility functions for the facturas (invoices) page
  */
 
+import { CURRENCY_SYMBOLS } from "../../../../api/types";
+
 /**
  * Formats an amount with its currency symbol (e.g. "€120.50")
  */
@@ -29,10 +31,15 @@ export function invoiceTotal(invoice: { total?: number | null; amount: number })
  * Reproduces the backend algorithm rather than Intl es-ES, which skips the
  * thousands separator for 4-digit amounts (1419 → "1419,00") while the PDF
  * always groups (1419 → "1.419,00 €").
- * Coordination id: invoice_amount_consistency_v1
+ *
+ * Currency is a REQUIRED argument (Invoice.currency is mandatory, so every
+ * caller has it): EUR/USD/GBP render their symbol, and any other code renders
+ * itself — exactly like the backend's currencySymbol — so an unknown currency
+ * is never silently relabelled as "€". Coordination id: invoice_amount_consistency_v1
  */
-export function moneyEs(amount: number, currency: string = "EUR"): string {
-  const symbol = currency === "USD" ? "$" : currency === "GBP" ? "£" : "€";
+export function moneyEs(amount: number, currency: string): string {
+  const code = currency.trim().toUpperCase();
+  const symbol = (CURRENCY_SYMBOLS as Record<string, string>)[code] ?? code;
   const [intPart, decPart = "00"] = Math.abs(amount).toFixed(2).split(".");
   const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `${amount < 0 ? "-" : ""}${grouped},${decPart} ${symbol}`;
