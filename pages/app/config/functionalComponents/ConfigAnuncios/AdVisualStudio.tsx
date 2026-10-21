@@ -1,13 +1,20 @@
-// Coordination id: ads_visual_studio_v1
-// Chrome-devtools-like responsive studio for canvas ads. The ad is edited on
-// top of the REAL website iframe (the plugin/popover production context) inside
-// a device viewport whose width can be preset or dragged: crossing the shared
-// breakpoints (ads_canvas_breakpoints_v1) switches the edited variant live,
-// exactly like the public popover resolves it for a visitor.
+// Coordination id: ads_visual_studio_v1 - Chrome-devtools-like responsive
+// studio for canvas ads. The ad is edited on top of the REAL website iframe
+// (the plugin/popover production context) inside a device viewport whose width
+// can be preset or dragged: crossing the shared breakpoints
+// (ads_canvas_breakpoints_v1) switches the edited variant live, exactly like
+// the public popover resolves it for a visitor.
+// Coordination id: ads_canvas_safezone_v1 - the edit overlay draws the public
+// popover chips (Cerrar / Volver) where the visitor sees them, so a title or
+// image is never placed under them.
+// Coordination id: ads_canvas_handles_v1 - the selected element gets 8 resize
+// handles whose hit area stays constant on screen whatever the canvas zoom.
+// Coordination id: ads_preview_live_v1 - the background site iframe reloads
+// only after a save lands (refreshToken), never on every keystroke.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Monitor, RotateCw, Smartphone, Tablet } from "lucide-react";
 import type { RestaurantAdCanvas, RestaurantAdCanvasBackground, RestaurantAdCanvasElement, RestaurantAdCanvasVariant } from "../../../../../api/types";
-import { adPreviewOrigin } from "./lib/adEditor";
+import { adPreviewOrigin, canvasElementDraftReason, isCanvasHttpURL } from "./lib/adEditor";
 
 type Props = {
   canvas: RestaurantAdCanvas;
@@ -15,18 +22,26 @@ type Props = {
   stepId?: string;
   adName: string;
   website: string;
+  /** Which public face this document renders: the wizard card or the open ad. */
+  surface?: "card" | "detail";
+  /** Bumped by the editor after each successful save: refreshes the site iframe. */
+  refreshToken?: number;
   disabled?: boolean;
   onChange: (canvas: RestaurantAdCanvas) => void;
 };
 
 type VariantName = "desktop" | "tablet" | "mobile";
 
+type HandleDir = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
+
 type DragState =
   | { kind: "move"; id: string; startX: number; startY: number; origX: number; origY: number }
   | { kind: "container"; startX: number; startY: number; origW: number; origH: number; scale: number }
-  | { kind: "resize"; id: string; startX: number; startY: number; origW: number; origH: number };
+  | { kind: "resize"; id: string; dir: HandleDir; startX: number; startY: number; origX: number; origY: number; origW: number; origH: number };
 
 const MIN_SIZE = 12;
+
+const HANDLE_DIRS: HandleDir[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 
 // Responsive breakpoints (coord id ads_canvas_breakpoints_v1) - mirror of the
 // backend resolver (internal/api/ads_canvas.go) and the preact popover.
@@ -46,6 +61,14 @@ function variantForWidth(vw: number): VariantName {
 const POPOVER = {
   overlayPad: 20,
   modalPadX: 0,
+  modalPadY: 0,
+  // The wizard card face renders INSIDE the classic modal: 24/22px modal
+  // padding plus the 16px inline card padding the public list adds per card.
+  cardModalPadX: 22,
+  cardModalPadY: 24,
+  cardPad: 16,
+  // Modal default width of the public list view (no --vc-ad-modal-max there).
+  cardModalMax: 560,
   modalDefaultRadius: 24,
   modalMaxHeightPct: 0.8,
   frameRadius: 0,
@@ -132,12 +155,26 @@ function defaultElement(type: RestaurantAdCanvasElement["type"], doc: ResolvedDo
   return { id: nextId("shp"), type, x: cx - 120, y: cy - 80, w: 240, h: 160, z, props: { shape: "rect", fill: "#f0e6d2", stroke: "", strokeWidth: 0, radius: 12, opacity: 1 } };
 }
 
-export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled, onChange }: Props) {
+/** Short layers-list label: the text itself or the element kind. */
+function elementLayerName(el: RestaurantAdCanvasElement): string {
+  const props = (el.props ?? {}) as Record<string, unknown>;
+  if (el.type === "text" || el.type === "button") {
+    const text = String(props.text ?? "").replace(/\s+/g, " ").trim();
+    return text.length > 20 ? `${text.slice(0, 20)}...` : text || "(sin texto)";
+  }
+  if (el.type === "image") return isCanvasHttpURL(props.src) ? "Imagen" : "Imagen en borrador";
+  return String(props.shape) === "ellipse" ? "Elipse" : "Rectángulo";
+}
+
+export function AdVisualStudio({ canvas, adId, adName, website, stepId, surface = "detail", refreshToken = 0, disabled, onChange }: Props) {
   const [device, setDevice] = useState<DeviceId>("mobile");
   const [viewport, setViewport] = useState<{ width: number; height: number }>({ width: DEVICES[2].width, height: DEVICES[2].height });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Inline text editing (double click): the caret lives on the element itself.
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  // +Imagen collects a valid URL first; an image without src is rejected by the API and would block every autosave.
+  // +Imagen collects a valid URL first; an image without src is rejected by the
+  // API, so it would be kept as a draft (ads_draft_image_guard_v1) instead.
   const [imgDraft, setImgDraft] = useState<string | null>(null);
   const imgDraftValid = imgDraft !== null && /^https?:\/\/\S+$/i.test(imgDraft.trim());
   const dragRef = useRef<DragState | null>(null);
@@ -151,11 +188,17 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
   const view = useMemo(() => resolveDoc(canvas, activeVariant), [canvas, activeVariant]);
   const container = { ...canvas.container, ...variant?.container };
   // ads_container_geometry_v1 - by default the popover hugs the edited canvas
-  // (1 canvas px = 1 screen px); an explicit container.maxWidth caps it.
-  const modalMax = container.maxWidth || view.width + 2 * POPOVER.modalPadX;
+  // (1 canvas px = 1 screen px); an explicit container.maxWidth caps it. The
+  // wizard card face renders inside the classic modal, so its frame is inset
+  // by the modal and card paddings and shows at public scale.
+  const isCardSurface = surface === "card";
+  const frameInsetX = isCardSurface ? POPOVER.cardModalPadX + POPOVER.cardPad : POPOVER.modalPadX;
+  const modalMax = isCardSurface
+    ? Math.min(POPOVER.cardModalMax, container.maxWidth || POPOVER.cardModalMax)
+    : container.maxWidth || view.width + 2 * POPOVER.modalPadX;
   const frameWidth = Math.max(
     100,
-    Math.min(modalMax, viewport.width - 2 * POPOVER.overlayPad) - 2 * POPOVER.modalPadX,
+    Math.min(modalMax, viewport.width - 2 * POPOVER.overlayPad) - 2 * frameInsetX,
   );
   const canvasScale = frameWidth / view.width;
   const selected = useMemo(() => view.elements.find((el) => el.id === selectedId) || null, [view.elements, selectedId]);
@@ -176,15 +219,17 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
     return Math.min(1, (wrapSize.width - 24) / viewport.width, (wrapSize.height - 24) / viewport.height);
   }, [viewport, wrapSize]);
 
-  // Live site iframe refresh: debounced after the last edit so the production
-  // context below the edit overlay always reflects the autosaved canvas.
-  const lastCanvasRef = useRef(canvas);
+  // Live site iframe (ads_preview_live_v1): refreshes ONLY after a save lands,
+  // so editing never unloads the production context mid-work and the popover
+  // state inside the iframe survives the whole edit.
+  const mountedRef = useRef(false);
   useEffect(() => {
-    if (lastCanvasRef.current === canvas) return;
-    lastCanvasRef.current = canvas;
-    const timer = setTimeout(() => setReloadKey((key) => key + 1), 2500);
-    return () => clearTimeout(timer);
-  }, [canvas]);
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+    setReloadKey((key) => key + 1);
+  }, [refreshToken]);
 
   const update = useCallback(
     (mutate: (draft: RestaurantAdCanvas) => void) => {
@@ -268,6 +313,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
   const onElementPointerDown = useCallback(
     (event: React.PointerEvent, el: RestaurantAdCanvasElement) => {
       if (disabled) return;
+      if (editingId === el.id) return; // the inline editor owns the pointer
       event.stopPropagation();
       event.preventDefault();
       setSelectedId(el.id);
@@ -275,16 +321,16 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
       dragRef.current = { kind: "move", id: el.id, startX: pt.x, startY: pt.y, origX: el.x, origY: el.y };
       (event.target as HTMLElement).setPointerCapture(event.pointerId);
     },
-    [disabled, toCanvasPoint],
+    [disabled, editingId, toCanvasPoint],
   );
 
   const onResizePointerDown = useCallback(
-    (event: React.PointerEvent, el: RestaurantAdCanvasElement) => {
+    (event: React.PointerEvent, el: RestaurantAdCanvasElement, dir: HandleDir) => {
       if (disabled) return;
       event.stopPropagation();
       event.preventDefault();
       const pt = toCanvasPoint(event.clientX, event.clientY);
-      dragRef.current = { kind: "resize", id: el.id, startX: pt.x, startY: pt.y, origW: el.w, origH: el.h };
+      dragRef.current = { kind: "resize", id: el.id, dir, startX: pt.x, startY: pt.y, origX: el.x, origY: el.y, origW: el.w, origH: el.h };
       (event.target as HTMLElement).setPointerCapture(event.pointerId);
     },
     [disabled, toCanvasPoint],
@@ -303,10 +349,18 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
           y: Math.round(drag.origY + (pt.y - drag.startY)),
         });
       } else {
-        updateElement(drag.id, {
-          w: Math.max(MIN_SIZE, Math.round(drag.origW + (pt.x - drag.startX))),
-          h: Math.max(MIN_SIZE, Math.round(drag.origH + (pt.y - drag.startY))),
-        });
+        // ads_canvas_handles_v1: every handle grows from the opposite corner
+        // or edge, clamped to the minimum size without drifting.
+        const dx = pt.x - drag.startX;
+        const dy = pt.y - drag.startY;
+        let { origX: x, origY: y, origW: w, origH: h } = drag;
+        if (drag.dir.includes("e")) w = drag.origW + dx;
+        if (drag.dir.includes("s")) h = drag.origH + dy;
+        if (drag.dir.includes("w")) { w = drag.origW - dx; x = drag.origX + dx; }
+        if (drag.dir.includes("n")) { h = drag.origH - dy; y = drag.origY + dy; }
+        if (w < MIN_SIZE) { if (drag.dir.includes("w")) x = drag.origX + drag.origW - MIN_SIZE; w = MIN_SIZE; }
+        if (h < MIN_SIZE) { if (drag.dir.includes("n")) y = drag.origY + drag.origH - MIN_SIZE; h = MIN_SIZE; }
+        updateElement(drag.id, { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) });
       }
     },
     [toCanvasPoint, updateElement, updateDoc],
@@ -340,6 +394,29 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
         doc.elements = doc.elements.filter((el) => el.id !== id);
       });
       setSelectedId(null);
+      setEditingId(null);
+    },
+    [updateDoc],
+  );
+
+  const duplicateElement = useCallback(
+    (id: string) => {
+      let copyId = "";
+      updateDoc((doc) => {
+        const index = doc.elements.findIndex((el) => el.id === id);
+        if (index < 0) return;
+        const source = doc.elements[index];
+        const copy: RestaurantAdCanvasElement = {
+          ...JSON.parse(JSON.stringify(source)),
+          id: nextId(source.type.slice(0, 3)),
+          x: source.x + 16,
+          y: source.y + 16,
+          z: doc.elements.reduce((acc, el) => Math.max(acc, el.z || 0), 0) + 1,
+        };
+        doc.elements.push(copy);
+        copyId = copy.id;
+      });
+      if (copyId) setSelectedId(copyId);
     },
     [updateDoc],
   );
@@ -368,6 +445,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (!selectedId || disabled) return;
+      if (event.key === "Escape") { setEditingId(null); return; }
       if (event.key !== "Delete" && event.key !== "Backspace") return;
       const target = event.target as HTMLElement | null;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
@@ -579,6 +657,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
             style={{ padding: POPOVER.overlayPad, background: container.overlay || undefined }}
             onPointerDown={() => setSelectedId(null)}
             data-testid="ad-studio-popover-mock"
+            data-surface={surface}
           >
             <div
               className="bo-adstudioModalMock"
@@ -586,56 +665,87 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
                 width: `min(100%, ${modalMax}px)`,
                 maxHeight: `${POPOVER.modalMaxHeightPct * 100}%`,
                 borderRadius: container.radius ?? POPOVER.modalDefaultRadius,
-                padding: 0,
+                padding: isCardSurface ? `${POPOVER.cardModalPadY}px ${POPOVER.cardModalPadX}px` : 0,
               }}
+              data-testid="ad-studio-modal-mock"
             >
-              <span className="bo-adstudioCloseMock" aria-hidden="true">×</span>
+              {/* ads_canvas_safezone_v1: the public popover chips, drawn where
+                  the visitor sees them so nothing is placed underneath. */}
+              <span className="bo-adstudioCloseMock" aria-hidden="true" title="El popover público reserva esta esquina para Cerrar" data-testid="ad-studio-close-mock">×</span>
+              {!isCardSurface ? (
+                <span className="bo-adstudioBackMock" aria-hidden="true" title="El popover público reserva esta esquina para Volver" data-testid="ad-studio-back-mock" data-coord-id="ads_canvas_safezone_v1">
+                  ‹ Volver
+                </span>
+              ) : null}
               <div
-                className="bo-adstudioFrameMock"
-                style={{ aspectRatio: `${view.width} / ${view.height}`, borderRadius: POPOVER.frameRadius }}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                data-testid="ad-studio-frame-mock"
-                data-canvas-scale={round1(canvasScale * 100)}
+                className={isCardSurface ? "bo-adstudioCardMock" : undefined}
+                data-testid={isCardSurface ? "ad-studio-card-mock" : undefined}
               >
                 <div
-                  ref={stageRef}
-                  className="bo-adcanvasStage"
-                  style={{
-                    width: view.width,
-                    height: view.height,
-                    transform: `scale(${canvasScale})`,
-                    background:
-                      view.background.type === "image" && view.background.value
-                        ? `url(${view.background.value}) center/cover`
-                        : view.background.value || "#ffffff",
-                  }}
+                  className="bo-adstudioFrameMock"
+                  style={{ aspectRatio: `${view.width} / ${view.height}`, borderRadius: POPOVER.frameRadius }}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUp}
+                  data-testid="ad-studio-frame-mock"
+                  data-canvas-scale={round1(canvasScale * 100)}
                 >
-                  <button type="button" aria-label="Redimensionar contenedor" disabled={disabled}
-                    style={{ position: "absolute", bottom: 0, right: 0, zIndex: 10000, width: 24, height: 24, cursor: "nwse-resize", touchAction: "none" }}
-                    onPointerDown={(event) => { event.stopPropagation(); event.preventDefault(); dragRef.current = { kind: "container", startX: event.clientX, startY: event.clientY, origW: view.width, origH: view.height, scale: stageRef.current ? stageRef.current.getBoundingClientRect().width / view.width : 1 }; event.currentTarget.setPointerCapture(event.pointerId); }}>↘</button>
-                  {sorted.map((el) => {
-                    const isSel = el.id === selectedId;
-                    return (
-                      <div
-                        key={el.id}
-                        className={`bo-adcanvasEl${isSel ? " is-selected" : ""}`}
-                        style={{
-                          left: el.x,
-                          top: el.y,
-                          width: el.w,
-                          height: el.h,
-                          transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-                        }}
-                        onPointerDown={(event) => onElementPointerDown(event, el)}
-                      >
-                        <CanvasElementPreview el={el} />
-                        {isSel && !disabled ? (
-                          <span className="bo-adcanvasHandle" onPointerDown={(event) => onResizePointerDown(event, el)} />
-                        ) : null}
-                      </div>
-                    );
-                  })}
+                  <div
+                    ref={stageRef}
+                    className="bo-adcanvasStage"
+                    style={{
+                      width: view.width,
+                      height: view.height,
+                      transform: `scale(${canvasScale})`,
+                      ["--bo-adcanvas-scale" as string]: String(canvasScale || 1),
+                      background:
+                        view.background.type === "image" && view.background.value
+                          ? `url(${view.background.value}) center/cover`
+                          : view.background.value || "#ffffff",
+                    }}
+                  >
+                    <button type="button" aria-label="Redimensionar lienzo" disabled={disabled} data-testid="ad-studio-doc-resize"
+                      className="bo-adcanvasDocHandle"
+                      onPointerDown={(event) => { event.stopPropagation(); event.preventDefault(); dragRef.current = { kind: "container", startX: event.clientX, startY: event.clientY, origW: view.width, origH: view.height, scale: stageRef.current ? stageRef.current.getBoundingClientRect().width / view.width : 1 }; event.currentTarget.setPointerCapture(event.pointerId); }}>↘</button>
+                    {sorted.map((el) => {
+                      const isSel = el.id === selectedId;
+                      const isEditing = el.id === editingId;
+                      return (
+                        <div
+                          key={el.id}
+                          className={`bo-adcanvasEl${isSel ? " is-selected" : ""}${isEditing ? " is-editing" : ""}`}
+                          style={{
+                            left: el.x,
+                            top: el.y,
+                            width: el.w,
+                            height: el.h,
+                            transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                          }}
+                          role={isEditing ? undefined : "button"}
+                          aria-label={isEditing ? undefined : `${TYPE_LABEL[el.type]}: ${elementLayerName(el)}`}
+                          aria-pressed={isEditing ? undefined : isSel}
+                          data-node-id={el.id}
+                          onPointerDown={(event) => onElementPointerDown(event, el)}
+                          onDoubleClick={() => { if (disabled) return; if (el.type === "text" || el.type === "button") { setSelectedId(el.id); setEditingId(el.id); } }}
+                        >
+                          <CanvasElementPreview el={el} />
+                          {isEditing ? (
+                            <CanvasInlineEdit el={el} disabled={disabled} onPatch={(text) => updateElement(el.id, { props: { text } })} onDone={() => setEditingId(null)} />
+                          ) : null}
+                          {isSel && !disabled && !isEditing ? (
+                            HANDLE_DIRS.map((dir) => (
+                              <span
+                                key={dir}
+                                className={`bo-adcanvasHandle is-${dir}`}
+                                data-testid={`ad-studio-handle-${dir}`}
+                                aria-label={`Redimensionar ${dir}`}
+                                onPointerDown={(event) => onResizePointerDown(event, el, dir)}
+                              />
+                            ))
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -662,11 +772,40 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
               <span className="bo-adcanvasSpacer" />
               <button type="button" disabled={disabled} onClick={() => reorder(selected.id, 1)} data-testid="ad-studio-layer-up">Subir capa</button>
               <button type="button" disabled={disabled} onClick={() => reorder(selected.id, -1)} data-testid="ad-studio-layer-down">Bajar capa</button>
+              <button type="button" disabled={disabled} onClick={() => duplicateElement(selected.id)} data-testid="ad-studio-duplicate">Duplicar</button>
               <button type="button" disabled={disabled} onClick={() => removeElement(selected.id)} data-tone="danger" data-testid="ad-studio-delete">Eliminar</button>
             </div>
             <ElementInspector el={selected} disabled={disabled} onPatch={(props) => updateElement(selected.id, { props })} />
+            {(selected.type === "text" || selected.type === "button") && !disabled ? (
+              <p className="bo-adcanvasHint" data-testid="ad-studio-inline-edit-hint">Doble clic sobre el elemento en el lienzo para editar su texto directamente.</p>
+            ) : null}
           </div>
         ) : null}
+        <div className="bo-adcanvasPanel" data-testid="ad-studio-layers-panel" data-coord-id="ads_canvas_layers_v1">
+          <div className="bo-adcanvasPanelHead">
+            <strong>Capas</strong>
+            <span className="bo-adcanvasSpacer" />
+            <span className="bo-adcanvasHint" data-testid="ad-studio-layers-count">{sorted.length} elementos · el primero pinta encima</span>
+          </div>
+          <ul className="bo-adcanvasLayerList" data-testid="ad-studio-layers-list">
+            {[...sorted].reverse().map((el) => (
+              <li key={el.id}>
+                <button
+                  type="button"
+                  className={`bo-adcanvasLayerRow ${el.id === selectedId ? "is-selected" : ""}`}
+                  onClick={() => setSelectedId(el.id === selectedId ? null : el.id)}
+                  data-testid={`ad-studio-layer-row-${el.id}`}
+                  data-layer-id={el.id}
+                >
+                  <span className="bo-adcanvasLayerType">{TYPE_LABEL[el.type]}</span>
+                  <span className="bo-adcanvasLayerName">{elementLayerName(el)}</span>
+                  <span className="bo-adcanvasLayerPos">{`${Math.round(el.x)},${Math.round(el.y)}`}</span>
+                </button>
+              </li>
+            ))}
+            {!sorted.length ? <li className="bo-adcanvasHint" data-testid="ad-studio-layers-empty">Sin elementos: añade texto, imagen o botón desde la barra superior.</li> : null}
+          </ul>
+        </div>
         <div className="bo-adcanvasPanel" data-testid="ad-studio-container-panel">
           <div className="bo-adcanvasPanelHead">
             <strong>Contenedor del anuncio · {DEVICES.find((item) => item.id === device)?.label}</strong>
@@ -685,6 +824,8 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, disabled
     </div>
   );
 }
+
+/** Local copy of adPreviewOrigin lives in lib/adEditor (VITE_AD_PREVIEW_ORIGIN). */
 
 function CanvasElementPreview({ el }: { el: RestaurantAdCanvasElement }) {
   const p = el.props as Record<string, unknown>;
@@ -721,7 +862,7 @@ function CanvasElementPreview({ el }: { el: RestaurantAdCanvasElement }) {
         style={{ width: "100%", height: "100%", objectFit: p.fit === "contain" ? "contain" : "cover", borderRadius: Number(p.radius) || 0, pointerEvents: "none" }}
       />
     ) : (
-      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.08)", color: "#666", fontSize: 14 }}>Sin imagen</div>
+      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.08)", color: "#666", fontSize: 14 }}>Sin imagen (borrador)</div>
     );
   }
   if (el.type === "button") {
@@ -759,63 +900,104 @@ function CanvasElementPreview({ el }: { el: RestaurantAdCanvasElement }) {
   );
 }
 
+/** Inline text editing on the canvas itself (double click, ads_canvas_inline_edit_v1). */
+function CanvasInlineEdit({
+  el,
+  disabled,
+  onPatch,
+  onDone,
+}: {
+  el: RestaurantAdCanvasElement;
+  disabled?: boolean;
+  onPatch: (text: string) => void;
+  onDone: () => void;
+}) {
+  const p = el.props as Record<string, unknown>;
+  const isButton = el.type === "button";
+  return (
+    <textarea
+      autoFocus
+      readOnly={disabled}
+      defaultValue={String(p.text ?? "")}
+      onChange={(event) => onPatch(event.target.value)}
+      onBlur={onDone}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") { event.preventDefault(); (event.currentTarget as HTMLTextAreaElement).blur(); }
+      }}
+      onPointerDown={(event) => event.stopPropagation()}
+      aria-label={isButton ? "Texto del botón" : "Texto del elemento"}
+      data-testid={`ad-studio-inline-edit-${el.id}`}
+      className="bo-adcanvasInlineEdit"
+      style={{
+        fontSize: Number(p.fontSize) || 16,
+        color: String(p.color || "#111"),
+        textAlign: (p.align as "left" | "center" | "right") || "center",
+        fontWeight: p.bold ? 700 : 400,
+        fontStyle: p.italic ? "italic" : "normal",
+      }}
+    />
+  );
+}
+
 function ElementInspector({ el, disabled, onPatch }: { el: RestaurantAdCanvasElement; disabled?: boolean; onPatch: (props: Record<string, unknown>) => void }) {
   const p = el.props as Record<string, unknown>;
   if (el.type === "text") {
     return (
       <div className="bo-adcanvasFields">
-        <label>Texto<textarea disabled={disabled} rows={2} value={String(p.text || "")} onChange={(e) => onPatch({ text: e.target.value })} /></label>
-        <label>Tamaño<input disabled={disabled} type="number" min={4} max={400} value={Number(p.fontSize) || 16} onChange={(e) => onPatch({ fontSize: Number(e.target.value) })} /></label>
-        <label>Color<input disabled={disabled} type="color" value={String(p.color || "#111111")} onChange={(e) => onPatch({ color: e.target.value })} /></label>
+        <label>Texto<textarea disabled={disabled} rows={2} value={String(p.text || "")} onChange={(e) => onPatch({ text: e.target.value })} data-testid="ad-studio-inspector-text" /></label>
+        <label>Tamaño<input disabled={disabled} type="number" min={4} max={400} value={Number(p.fontSize) || 16} onChange={(e) => onPatch({ fontSize: Number(e.target.value) })} data-testid="ad-studio-inspector-font-size" /></label>
+        <label>Color<input disabled={disabled} type="color" value={String(p.color || "#111111")} onChange={(e) => onPatch({ color: e.target.value })} data-testid="ad-studio-inspector-color" /></label>
         <label>Alinear
-          <select disabled={disabled} value={String(p.align || "left")} onChange={(e) => onPatch({ align: e.target.value })}>
+          <select disabled={disabled} value={String(p.align || "left")} onChange={(e) => onPatch({ align: e.target.value })} data-testid="ad-studio-inspector-align">
             <option value="left">Izquierda</option><option value="center">Centro</option><option value="right">Derecha</option>
           </select>
         </label>
-        <label><input disabled={disabled} type="checkbox" checked={Boolean(p.bold)} onChange={(e) => onPatch({ bold: e.target.checked })} /> Negrita</label>
-        <label><input disabled={disabled} type="checkbox" checked={Boolean(p.italic)} onChange={(e) => onPatch({ italic: e.target.checked })} /> Cursiva</label>
+        <label><input disabled={disabled} type="checkbox" checked={Boolean(p.bold)} onChange={(e) => onPatch({ bold: e.target.checked })} data-testid="ad-studio-inspector-bold" /> Negrita</label>
+        <label><input disabled={disabled} type="checkbox" checked={Boolean(p.italic)} onChange={(e) => onPatch({ italic: e.target.checked })} data-testid="ad-studio-inspector-italic" /> Cursiva</label>
       </div>
     );
   }
   if (el.type === "image") {
+    const draftReason = canvasElementDraftReason(el);
     return (
       <div className="bo-adcanvasFields">
-        <label>URL imagen<input disabled={disabled} type="text" value={String(p.src || "")} onChange={(e) => onPatch({ src: e.target.value })} placeholder="https://cdn.../imagen.webp" />{/^https?:\/\/\S+$/i.test(String(p.src || "").trim()) ? null : <small role="alert" data-testid="ad-studio-image-src-warning">Hace falta una URL http(s) válida: mientras tanto el anuncio no se guarda.</small>}</label>
+        <label>URL imagen<input disabled={disabled} type="text" value={String(p.src || "")} onChange={(e) => onPatch({ src: e.target.value })} placeholder="https://cdn.../imagen.webp" data-testid="ad-studio-inspector-src" />{draftReason ? <small role="alert" data-testid="ad-studio-image-src-warning">Esta imagen queda en borrador (sin URL http(s) válida): no se envía al servidor, pero el resto de cambios sí se guardan.</small> : null}</label>
         <label>Ajuste
-          <select disabled={disabled} value={String(p.fit || "cover")} onChange={(e) => onPatch({ fit: e.target.value })}>
-            <option value="cover">Cubrir</option><option value="contain">Contener</option>
+          <select disabled={disabled} value={String(p.fit || "cover")} onChange={(e) => onPatch({ fit: e.target.value })} data-testid="ad-studio-inspector-fit">
+            <option value="cover">Cubrir</option>
+            <option value="contain">Contener</option>
           </select>
         </label>
-        <label>Radio<input disabled={disabled} type="number" min={0} max={400} value={Number(p.radius) || 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} /></label>
-        <label>Alt<input disabled={disabled} type="text" value={String(p.alt || "")} onChange={(e) => onPatch({ alt: e.target.value })} /></label>
+        <label>Radio<input disabled={disabled} type="number" min={0} max={400} value={Number(p.radius) || 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} data-testid="ad-studio-inspector-radius" /></label>
+        <label>Alt<input disabled={disabled} type="text" value={String(p.alt || "")} onChange={(e) => onPatch({ alt: e.target.value })} data-testid="ad-studio-inspector-alt" /></label>
       </div>
     );
   }
   if (el.type === "button") {
     return (
       <div className="bo-adcanvasFields">
-        <label>Texto<input disabled={disabled} type="text" value={String(p.text || "")} onChange={(e) => onPatch({ text: e.target.value })} /></label>
-        <label>Enlace<input disabled={disabled} type="text" value={String(p.href || "")} onChange={(e) => onPatch({ href: e.target.value })} placeholder="/reservas o https://..." /></label>
-        <label>Fondo<input disabled={disabled} type="color" value={String(p.bg || "#111111")} onChange={(e) => onPatch({ bg: e.target.value })} /></label>
-        <label>Texto color<input disabled={disabled} type="color" value={String(p.color || "#ffffff")} onChange={(e) => onPatch({ color: e.target.value })} /></label>
-        <label>Radio<input disabled={disabled} type="number" min={0} max={200} value={Number(p.radius) || 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} /></label>
-        <label>Tamaño<input disabled={disabled} type="number" min={4} max={200} value={Number(p.fontSize) || 16} onChange={(e) => onPatch({ fontSize: Number(e.target.value) })} /></label>
-        <label><input disabled={disabled} type="checkbox" checked={Boolean(p.bold)} onChange={(e) => onPatch({ bold: e.target.checked })} /> Negrita</label>
-        <label><input disabled={disabled} type="checkbox" checked={Boolean(p.newTab)} onChange={(e) => onPatch({ newTab: e.target.checked })} /> Abrir en pestaña nueva</label>
+        <label>Texto<input disabled={disabled} type="text" value={String(p.text || "")} onChange={(e) => onPatch({ text: e.target.value })} data-testid="ad-studio-inspector-button-text" />{canvasElementDraftReason(el) ? <small role="alert" data-testid="ad-studio-button-text-warning">Botón en borrador: necesita texto para guardarse.</small> : null}</label>
+        <label>Enlace<input disabled={disabled} type="text" value={String(p.href || "")} onChange={(e) => onPatch({ href: e.target.value })} placeholder="/reservas o https://..." data-testid="ad-studio-inspector-href" /></label>
+        <label>Fondo<input disabled={disabled} type="color" value={String(p.bg || "#111111")} onChange={(e) => onPatch({ bg: e.target.value })} data-testid="ad-studio-inspector-bg" /></label>
+        <label>Texto color<input disabled={disabled} type="color" value={String(p.color || "#ffffff")} onChange={(e) => onPatch({ color: e.target.value })} data-testid="ad-studio-inspector-button-color" /></label>
+        <label>Radio<input disabled={disabled} type="number" min={0} max={200} value={Number(p.radius) || 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} data-testid="ad-studio-inspector-button-radius" /></label>
+        <label>Tamaño<input disabled={disabled} type="number" min={4} max={200} value={Number(p.fontSize) || 16} onChange={(e) => onPatch({ fontSize: Number(e.target.value) })} data-testid="ad-studio-inspector-button-font-size" /></label>
+        <label><input disabled={disabled} type="checkbox" checked={Boolean(p.bold)} onChange={(e) => onPatch({ bold: e.target.checked })} data-testid="ad-studio-inspector-button-bold" /> Negrita</label>
+        <label><input disabled={disabled} type="checkbox" checked={Boolean(p.newTab)} onChange={(e) => onPatch({ newTab: e.target.checked })} data-testid="ad-studio-inspector-newtab" /> Abrir en pestaña nueva</label>
       </div>
     );
   }
   return (
     <div className="bo-adcanvasFields">
       <label>Forma
-        <select disabled={disabled} value={String(p.shape || "rect")} onChange={(e) => onPatch({ shape: e.target.value })}>
+        <select disabled={disabled} value={String(p.shape || "rect")} onChange={(e) => onPatch({ shape: e.target.value })} data-testid="ad-studio-inspector-shape">
           <option value="rect">Rectángulo</option><option value="ellipse">Elipse</option>
         </select>
       </label>
-      <label>Relleno<input disabled={disabled} type="color" value={String(p.fill || "#f0e6d2")} onChange={(e) => onPatch({ fill: e.target.value })} /></label>
-      <label>Borde color<input disabled={disabled} type="color" value={String(p.stroke || "#000000")} onChange={(e) => onPatch({ stroke: e.target.value })} /></label>
-      <label>Borde ancho<input disabled={disabled} type="number" min={0} max={40} value={Number(p.strokeWidth) || 0} onChange={(e) => onPatch({ strokeWidth: Number(e.target.value) })} /></label>
-      <label>Radio<input disabled={disabled} type="number" min={0} max={400} value={Number(p.radius) || 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} /></label>
+      <label>Relleno<input disabled={disabled} type="color" value={String(p.fill || "#f0e6d2")} onChange={(e) => onPatch({ fill: e.target.value })} data-testid="ad-studio-inspector-fill" /></label>
+      <label>Borde color<input disabled={disabled} type="color" value={String(p.stroke || "#000000")} onChange={(e) => onPatch({ stroke: e.target.value })} data-testid="ad-studio-inspector-stroke" /></label>
+      <label>Borde ancho<input disabled={disabled} type="number" min={0} max={40} value={Number(p.strokeWidth) || 0} onChange={(e) => onPatch({ strokeWidth: Number(e.target.value) })} data-testid="ad-studio-inspector-stroke-width" /></label>
+      <label>Radio<input disabled={disabled} type="number" min={0} max={400} value={Number(p.radius) || 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} data-testid="ad-studio-inspector-shape-radius" /></label>
     </div>
   );
 }
