@@ -25,6 +25,20 @@ export async function readJSON(res: Response): Promise<any> {
 }
 
 /**
+ * The Go backend answers unknown `/admin/*` routes with the SPA shell (200 +
+ * text/html) instead of a 404, so readJSON would silently resolve to null and
+ * every caller doing `res.success` would throw a raw TypeError. Turn that case
+ * into a controlled error carrying the path that has no JSON endpoint.
+ * Coord id: admin_html_fallback_guard_v1
+ */
+export function assertJsonResponse(res: Response, path: string): void {
+  const contentType = (res.headers.get("content-type") ?? "").toLowerCase();
+  if (res.ok && contentType.includes("text/html")) {
+    throw new Error(`Respuesta no válida del servidor (no JSON) en ${path}`);
+  }
+}
+
+/**
  * Normalize admin API paths to include /api prefix
  */
 export function normalizeAdminPath(path: string): string {
@@ -108,6 +122,7 @@ export function createApiFetch(normalizedOpts: NormalizedClientOpts) {
 export function createJsonRequest(apiFetch: ReturnType<typeof createApiFetch>) {
   return async function json<T>(path: string, init: RequestInit): Promise<T> {
     const res = await apiFetch(path, init);
+    assertJsonResponse(res, path);
     const data = await readJSON(res);
     emitSessionExpirationUpdate(
       (data as any)?.moving_expiration_date ?? res.headers.get("x-moving-expiration-date")
