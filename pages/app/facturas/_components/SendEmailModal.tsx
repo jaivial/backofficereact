@@ -81,9 +81,11 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
       // total/iva all NULL, so amount is the right fallback; a stored total
       // (including a legitimate 0) is authoritative, as in the PDF.
       total: eur(invoice.total ?? invoice.amount),
-      restaurant_name: "Villa Carmen",
+      restaurant_name:
+        session?.restaurants.find((r) => r.id === session?.activeRestaurantId)?.name ??
+        "Restaurante",
     };
-  }, [invoice]);
+  }, [invoice, session]);
   const pdfUrl = invoice?.id ? `/api/admin/invoices/${invoice.id}/pdf` : "";
   const invoicePDFFileName = invoice?.id ? `factura-${invoice.invoice_number || invoice.id}.pdf` : "";
 
