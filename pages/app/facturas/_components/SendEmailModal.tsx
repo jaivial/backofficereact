@@ -8,6 +8,7 @@ import { createClient } from "../../../../api/client";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "../../../../state/atoms";
 import { InvoiceWhatsAppChatPreview } from "./InvoiceWhatsAppChatPreview";
+import { invoiceTotal, moneyEs } from "../utils";
 
 /**
  * Send-invoice modal: email and/or WhatsApp in a single action.
@@ -26,7 +27,6 @@ interface SendEmailModalProps {
 type Channel = "email" | "whatsapp";
 type Result = { ok: boolean; text: string };
 
-const eur = (n: number) => `${n.toFixed(2)} €`;
 const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 function fill(tpl: string, vars: Record<string, string>): string {
@@ -76,11 +76,10 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
     return {
       invoice_number: invoice.invoice_number || String(invoice.id),
       customer_name: `${invoice.customer_name}${invoice.customer_surname ? ` ${invoice.customer_surname}` : ""}`,
-      // invoice_amount_consistency_v1: mirror the PDF rule exactly
-      // (buildInvoiceRenderData: total ?? amount). Legacy pre-057 rows have
-      // total/iva all NULL, so amount is the right fallback; a stored total
-      // (including a legitimate 0) is authoritative, as in the PDF.
-      total: eur(invoice.total ?? invoice.amount),
+      // invoice_amount_consistency_v1: canonical total (total ?? amount) and
+      // Spanish style identical to the attached PDF, so the email/WhatsApp
+      // body reads the same number as the document it cites (184,80 €).
+      total: moneyEs(invoiceTotal(invoice), invoice.currency),
       restaurant_name:
         session?.restaurants.find((r) => r.id === session?.activeRestaurantId)?.name ??
         "Restaurante",

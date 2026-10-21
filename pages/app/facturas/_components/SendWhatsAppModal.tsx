@@ -4,16 +4,13 @@ import { Modal } from "../../../../ui/overlays/Modal";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import type { Invoice } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
+import { invoiceTotal, moneyEs } from "../utils";
 
 interface SendWhatsAppModalProps {
   open: boolean;
   invoice: Invoice | null;
   onClose: () => void;
   onSent: (invoice: Invoice) => void;
-}
-
-function formatPrice(price: number): string {
-  return `${price.toFixed(2)} EUR`;
 }
 
 function formatDate(dateStr: string): string {
@@ -85,7 +82,8 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
 
     const invoiceNumber = invoice.invoice_number || String(invoice.id);
     const customerName = `${invoice.customer_name}${invoice.customer_surname ? ` ${invoice.customer_surname}` : ""}`;
-    const totalAmount = formatPrice(invoice.total || invoice.amount);
+    // invoice_amount_consistency_v1: canonical total + PDF money style.
+    const totalAmount = moneyEs(invoiceTotal(invoice), invoice.currency);
 
     const messagePreview = message
       .replace(/{invoice_number}/g, invoiceNumber)
@@ -255,7 +253,7 @@ export function SendWhatsAppModal({ open, invoice, onClose, onSent }: SendWhatsA
               <div data-testid="send-whatsapp-summary-row-invoice" className="bo-sendWhatsAppSummaryRow" data-slot="send-whatsapp-summary-row-invoice">
                 <FileText size={16} />
                 <span data-testid="send-whatsapp-invoice-detail" data-slot="send-whatsapp-invoice-detail">
-                  Factura {invoice.invoice_number || `#${invoice.id}`} - {formatPrice(invoice.total || invoice.amount)}
+                  Factura {invoice.invoice_number || `#${invoice.id}`} - {moneyEs(invoiceTotal(invoice), invoice.currency)}
                 </span>
               </div>
             </div>
