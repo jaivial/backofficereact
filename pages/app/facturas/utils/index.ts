@@ -32,13 +32,15 @@ export function invoiceTotal(invoice: { total?: number | null; amount: number })
  * thousands separator for 4-digit amounts (1419 → "1419,00") while the PDF
  * always groups (1419 → "1.419,00 €").
  *
- * Currency is a REQUIRED argument (Invoice.currency is mandatory, so every
- * caller has it): EUR/USD/GBP render their symbol, and any other code renders
- * itself — exactly like the backend's currencySymbol — so an unknown currency
- * is never silently relabelled as "€". Coordination id: invoice_amount_consistency_v1
+ * Currency contract (backend migración 057): `invoices.currency CHAR(3)
+ * NOT NULL DEFAULT 'EUR'`. A blank/missing value therefore means a serializer
+ * gap, never a non-EUR invoice, so the fallback to EUR is explicit and always
+ * renders a symbol (never an empty one); this also keeps `currency.trim()` from
+ * throwing when a payload arrives null/undefined. An unknown code is printed
+ * as-is and never re-labelled as "€". Coordination id: invoice_amount_consistency_v1
  */
-export function moneyEs(amount: number, currency: string): string {
-  const code = currency.trim().toUpperCase();
+export function moneyEs(amount: number, currency?: string | null): string {
+  const code = (currency ?? "").trim().toUpperCase() || "EUR";
   const symbol = (CURRENCY_SYMBOLS as Record<string, string>)[code] ?? code;
   const [intPart, decPart = "00"] = Math.abs(amount).toFixed(2).split(".");
   const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
