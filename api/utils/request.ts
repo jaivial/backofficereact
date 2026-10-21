@@ -34,7 +34,9 @@ export async function readJSON(res: Response): Promise<any> {
 export function assertJsonResponse(res: Response, path: string): void {
   const contentType = (res.headers.get("content-type") ?? "").toLowerCase();
   if (res.ok && contentType.includes("text/html")) {
-    throw new Error(`Respuesta no válida del servidor (no JSON) en ${path}`);
+    // Solo la ruta: la query puede llevar terminos de busqueda o tokens de acceso
+    // (p. ej. /api/public/invoices/{id}?token=...) que no deben pintarse en la UI.
+    throw new Error(`Respuesta no válida del servidor (no JSON) en ${path.split("?")[0]}`);
   }
 }
 

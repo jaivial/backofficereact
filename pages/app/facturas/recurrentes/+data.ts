@@ -35,16 +35,18 @@ export async function data(pageContext: PageContextServer) {
     // Sin filtro is_active: la página pinta activas y pausadas (badge "Pausada",
     // acción reanudar y la stat "Pausadas") y sale de esta misma lista.
     // coord: recurring_list_v1 (FE -> GET /api/admin/recurring-invoices)
-    const res: any = await api.recurringInvoices.list({ limit });
-    if (res?.success) {
+    const res = await api.recurringInvoices.list({ limit });
+    // res puede ser null en runtime (readJSON devuelve null con cuerpos vacíos).
+    if (res && res.success) {
       recurringInvoices = res.recurringInvoices;
       total = res.total;
       page = res.page;
       limit = res.limit;
-      activeCount = res.recurringInvoices.filter((r: { is_active: boolean }) => r.is_active).length;
-      pausedCount = res.recurringInvoices.filter((r: { is_active: boolean }) => !r.is_active).length;
+      activeCount = res.recurringInvoices.filter((r: RecurringInvoice) => r.is_active).length;
+      pausedCount = res.recurringInvoices.filter((r: RecurringInvoice) => !r.is_active).length;
     } else {
-      error = res?.message || "No se pudo cargar la facturación recurrente";
+      const message = res && !res.success ? res.message : null;
+      error = message || "No se pudo cargar la facturación recurrente";
     }
   } catch (e) {
     error = e instanceof Error ? e.message : "Error cargando facturas recurrentes";
