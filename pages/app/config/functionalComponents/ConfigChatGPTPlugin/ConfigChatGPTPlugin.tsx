@@ -10,7 +10,12 @@ import { useChatGPTPluginTokens } from "./hooks/useChatGPTPluginTokens";
  * the active restaurant. The token inherits the signed-in user's own role, so
  * a token issued here can never reach further than the person who made it.
  */
-export function ConfigChatGPTPlugin() {
+// Coordination id: config_ia_accordions_v1 — meta shown in the panel head and,
+// when embedded (accordion owns the title), as the first line of the body.
+const PANEL_META =
+  "Crea una credencial para que ChatGPT pueda consultar y gestionar este restaurante con tus mismos permisos.";
+
+export function ConfigChatGPTPlugin({ embedded = false }: { embedded?: boolean }) {
   const { pushToast } = useToasts();
   const {
     tokens, manifestUrl, label, setLabel, issuedToken, clearIssuedToken,
@@ -51,17 +56,20 @@ export function ConfigChatGPTPlugin() {
 
   return (
     <div className="bo-panel" data-ui="config-chatgpt-plugin" data-testid="config-chatgpt-plugin">
-      <div data-slot="configChatGPTPlugin-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
-        <div data-slot="configChatGPTPlugin-gap-2" className="bo-panelTitle flex items-center gap-2">
-          <Bot size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
-          Conectar ChatGPT
+      {!embedded ? (
+        <div data-slot="configChatGPTPlugin-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
+          <div data-slot="configChatGPTPlugin-gap-2" className="bo-panelTitle flex items-center gap-2">
+            <Bot size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
+            Conectar ChatGPT
+          </div>
+          <div data-slot="configChatGPTPlugin-panelMeta" className="bo-panelMeta">{PANEL_META}</div>
         </div>
-        <div data-slot="configChatGPTPlugin-panelMeta" className="bo-panelMeta">
-          Crea una credencial para que ChatGPT pueda consultar y gestionar este restaurante con tus mismos permisos.
-        </div>
-      </div>
+      ) : null}
 
       <div data-slot="configChatGPTPlugin-gap-5" className="bo-panelBody flex flex-col gap-5">
+        {embedded ? (
+          <p className="bo-panelMeta" data-testid="config-chatgpt-meta-embedded">{PANEL_META}</p>
+        ) : null}
         {error ? <InlineAlert kind="error" title="Error" message={error} testId="config-chatgpt-error" /> : null}
 
         {issuedToken ? (

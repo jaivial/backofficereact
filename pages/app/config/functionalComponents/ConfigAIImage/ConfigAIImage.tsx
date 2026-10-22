@@ -6,7 +6,11 @@ import { Switch } from "../../../../../ui/shadcn/Switch";
 import { useToasts } from "../../../../../ui/feedback/useToasts";
 import { useAIImageConfig } from "./hooks/useAIImageConfig";
 
-export function ConfigAIImage() {
+// Coordination id: config_ia_accordions_v1 — meta shown in the panel head and,
+// when embedded (accordion owns the title), as the first line of the body.
+const PANEL_META = "Configura el proveedor y los modelos usados para generar imagenes de la carta.";
+
+export function ConfigAIImage({ embedded = false }: { embedded?: boolean }) {
   const { pushToast } = useToasts();
   const {
     config, providers, models, apiKeyInput, setApiKeyInput, setField, load, save, loaded, saving,
@@ -44,15 +48,20 @@ export function ConfigAIImage() {
 
   return (
     <div className="bo-panel" data-ui="config-ai-image" data-testid="config-ai-image">
-      <div data-slot="configAIImage-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
-        <div data-slot="configAIImage-gap-2" className="bo-panelTitle flex items-center gap-2">
-          <Sparkles size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
-          Generacion de imagenes con IA
+      {!embedded ? (
+        <div data-slot="configAIImage-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
+          <div data-slot="configAIImage-gap-2" className="bo-panelTitle flex items-center gap-2">
+            <Sparkles size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
+            Generacion de imagenes con IA
+          </div>
+          <div data-slot="configAIImage-panelMeta" className="bo-panelMeta">{PANEL_META}</div>
         </div>
-        <div data-slot="configAIImage-panelMeta" className="bo-panelMeta">Configura el proveedor y los modelos usados para generar imagenes de la carta.</div>
-      </div>
+      ) : null}
 
       <div data-slot="configAIImage-gap-5" className="bo-panelBody flex flex-col gap-5">
+        {embedded ? (
+          <p className="bo-panelMeta" data-testid="config-ai-image-meta-embedded">{PANEL_META}</p>
+        ) : null}
         {/* Provider */}
         <label className="bo-field" data-slot="config-ai-provider-field">
           <span data-slot="configAIImage-label" className="bo-label">Proveedor</span>

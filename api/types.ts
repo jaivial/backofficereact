@@ -3212,6 +3212,18 @@ export type BotPrivilegedContactsResponse = {
   message?: string;
   chats: BotWhatsAppChat[];
   selected: BotPrivilegedContact[];
+  /** wa_bot_privileged_contacts_v2: server-side search + pagination (additive). */
+  total?: number;
+  page?: number;
+  count?: number;
+  has_more?: boolean;
+};
+
+/** wa_bot_privileged_contacts_v2: POST manual phone high. */
+export type BotPrivilegedContactAddResponse = {
+  success: boolean;
+  message?: string;
+  selected: BotPrivilegedContact[];
 };
 
 // DSPy decision pipeline graph + stored decisions (wa_bot_dspy_pipeline_v1).
