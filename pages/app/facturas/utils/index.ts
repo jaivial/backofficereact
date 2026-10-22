@@ -3,12 +3,48 @@
  * Utility functions for the facturas (invoices) page
  */
 
+import { CURRENCY_SYMBOLS } from "../../../../api/types";
+
 /**
  * Formats an amount with its currency symbol (e.g. "€120.50")
  */
 export function formatPrice(price: number, currency: string = "EUR"): string {
   const symbol = currency === "USD" ? "$" : currency === "GBP" ? "£" : "€";
   return `${symbol}${price.toFixed(2)}`;
+}
+
+/**
+ * Canonical invoice total for every message template (email, WhatsApp, batch)
+ * and preview: mirrors the PDF rule (buildInvoiceRenderData: total ?? amount),
+ * so a stored total — including a legitimate 0 — stays authoritative and only
+ * legacy rows without total fall back to amount.
+ * Coordination id: invoice_amount_consistency_v1
+ */
+export function invoiceTotal(invoice: { total?: number | null; amount: number }): number {
+  return invoice.total ?? invoice.amount;
+}
+
+/**
+ * Spanish money style identical to the invoice PDF (backend formatMoney):
+ * "1.419,00 €". Message bodies read the same number as the document attached
+ * to them instead of three different renderings (184.80 € / €184.80 / 184.80 EUR).
+ * Reproduces the backend algorithm rather than Intl es-ES, which skips the
+ * thousands separator for 4-digit amounts (1419 → "1419,00") while the PDF
+ * always groups (1419 → "1.419,00 €").
+ *
+ * Currency contract (backend migración 057): `invoices.currency CHAR(3)
+ * NOT NULL DEFAULT 'EUR'`. A blank/missing value therefore means a serializer
+ * gap, never a non-EUR invoice, so the fallback to EUR is explicit and always
+ * renders a symbol (never an empty one); this also keeps `currency.trim()` from
+ * throwing when a payload arrives null/undefined. An unknown code is printed
+ * as-is and never re-labelled as "€". Coordination id: invoice_amount_consistency_v1
+ */
+export function moneyEs(amount: number, currency?: string | null): string {
+  const code = (currency ?? "").trim().toUpperCase() || "EUR";
+  const symbol = (CURRENCY_SYMBOLS as Record<string, string>)[code] ?? code;
+  const [intPart, decPart = "00"] = Math.abs(amount).toFixed(2).split(".");
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${amount < 0 ? "-" : ""}${grouped},${decPart} ${symbol}`;
 }
 
 /**
