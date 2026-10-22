@@ -15,6 +15,7 @@ import { Select } from "../../../ui/inputs/Select";
 import { Switch } from "../../../ui/shadcn/Switch";
 import { PlusMinusCounter } from "../../../ui/widgets/PlusMinusCounter";
 import { Tabs, type TabItem } from "../../../ui/nav/Tabs";
+import { Accordion } from "../../../ui/overlays/Accordion";
 import { ConfigRestauranteContent as ConfigRestaurante } from "./functionalComponents/ConfigRestaurante/ConfigRestaurante";
 import { ConfigContactoContent as ConfigContacto } from "./functionalComponents/ConfigContacto/ConfigContacto";
 import { BookingManager } from "./booking/BookingManager";
@@ -347,17 +348,32 @@ export default function Page() {
           {contentTab === "ia" ? (
             isRoot ? (
               <>
-                <ConfigBotAI
-                  restaurants={pageContext.bo?.session?.restaurants ?? []}
-                  activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
-                />
-                <ConfigAIImage />
-                <ConfigChatGPTPlugin />
-                <ConfigMiniMax />
-				<ConfigWhatsAppBot
-                  restaurants={pageContext.bo?.session?.restaurants ?? []}
-                  activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
-                />
+                {/* Coordination id: config_ia_accordions_v1 — each IA section
+                    collapses; `embedded` hides the section's own title head so
+                    the accordion trigger is the single section header. */}
+                <Accordion title="IA del bot de WhatsApp" testId="config-ia-accordion-bot" defaultOpen>
+                  <ConfigBotAI
+                    restaurants={pageContext.bo?.session?.restaurants ?? []}
+                    activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
+                    embedded
+                  />
+                </Accordion>
+                <Accordion title="Generación de imágenes IA" testId="config-ia-accordion-image">
+                  <ConfigAIImage embedded />
+                </Accordion>
+                <Accordion title="Plugin ChatGPT" testId="config-ia-accordion-chatgpt">
+                  <ConfigChatGPTPlugin embedded />
+                </Accordion>
+                <Accordion title="MiniMax" testId="config-ia-accordion-minimax">
+                  <ConfigMiniMax embedded />
+                </Accordion>
+                <Accordion title="Bot de WhatsApp" testId="config-ia-accordion-wa-bot">
+                  <ConfigWhatsAppBot
+                    restaurants={pageContext.bo?.session?.restaurants ?? []}
+                    activeRestaurantId={pageContext.bo?.session?.activeRestaurantId ?? 0}
+                    embedded
+                  />
+                </Accordion>
               </>
             ) : null
           ) : contentTab === "pipeline" ? (

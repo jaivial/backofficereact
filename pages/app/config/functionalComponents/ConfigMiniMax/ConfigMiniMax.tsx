@@ -9,7 +9,14 @@ const MINIMAX_MODELS = [
   { value: "MiniMax-M3.1-Flash", label: "MiniMax-M3.1-Flash" },
 ];
 
-export function ConfigMiniMax() {
+// Coordination id: config_ia_accordions_v1 — meta shown in the panel head and,
+// when embedded (accordion owns the title), as the first line of the body.
+const PANEL_META =
+  "Clave de API y modelo de MiniMax de este restaurante. Se usan para ForKy (asistente IA), las " +
+  "traducciones de la carta y las funciones de IA de stock. La clave se guarda cifrada (AES-256-GCM) " +
+  "en la base de datos y no se vuelve a mostrar.";
+
+export function ConfigMiniMax({ embedded = false }: { embedded?: boolean }) {
   const { config, apiKey, setApiKey, setModel, load, save, loaded, saving } = useMiniMaxConfig();
   const { pushToast } = useToasts();
 
@@ -28,19 +35,20 @@ export function ConfigMiniMax() {
 
   return (
     <div className="bo-panel" data-ui="config-minimax" data-testid="config-minimax">
-      <div data-slot="configMiniMax-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
-        <div data-slot="configMiniMax-gap-2" className="bo-panelTitle flex items-center gap-2">
-          <Bot size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
-          MiniMax (IA)
+      {!embedded ? (
+        <div data-slot="configMiniMax-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
+          <div data-slot="configMiniMax-gap-2" className="bo-panelTitle flex items-center gap-2">
+            <Bot size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
+            MiniMax (IA)
+          </div>
+          <div data-slot="configMiniMax-panelMeta" className="bo-panelMeta">{PANEL_META}</div>
         </div>
-        <div data-slot="configMiniMax-panelMeta" className="bo-panelMeta">
-          Clave de API y modelo de MiniMax de este restaurante. Se usan para ForKy (asistente IA), las
-          traducciones de la carta y las funciones de IA de stock. La clave se guarda cifrada (AES-256-GCM)
-          en la base de datos y no se vuelve a mostrar.
-        </div>
-      </div>
+      ) : null}
 
       <div data-slot="configMiniMax-gap-5" className="bo-panelBody flex flex-col gap-5">
+        {embedded ? (
+          <p className="bo-panelMeta" data-testid="config-minimax-meta-embedded">{PANEL_META}</p>
+        ) : null}
         <div className="bo-field" data-slot="config-minimax-key-field">
           <span data-slot="configMiniMax-gap-1.5" className="bo-label flex items-center gap-1.5">
             <label data-slot="configMiniMax-label" htmlFor="minimax-key">API Key</label>

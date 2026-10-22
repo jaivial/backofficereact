@@ -16,7 +16,12 @@ const KEY_PROVIDERS: { id: string; label: string; hint: string }[] = [
   { id: "jev", label: "Jev · TypeSafe AI", hint: "apikey_…" },
 ];
 
-export function ConfigBotAI({ restaurants, activeRestaurantId }: { restaurants: BORestaurant[]; activeRestaurantId: number }) {
+// Coordination id: config_ia_accordions_v1 — shown in the accordion trigger and,
+// when embedded (accordion owns the title), as the first line of the body.
+const PANEL_META =
+  "MiniMax-M3.1-Flash es el único modelo del bot. Las claves se guardan cifradas (AES-256-GCM) y no se vuelven a mostrar.";
+
+export function ConfigBotAI({ restaurants, activeRestaurantId, embedded = false }: { restaurants: BORestaurant[]; activeRestaurantId: number; embedded?: boolean }) {
   const [restaurantId, setRestaurantId] = useState<number>(activeRestaurantId || restaurants[0]?.id || 0);
   const { config, apiKeys, setApiKey, setModel, setKnowledge, load, save, loading, saving } = useBotAIConfig(restaurantId);
   const { pushToast } = useToasts();
@@ -47,18 +52,20 @@ export function ConfigBotAI({ restaurants, activeRestaurantId }: { restaurants: 
 
   return (
     <div className="bo-panel" data-ui="config-bot-ai" data-testid="config-bot-ai">
-      <div className="bo-panelHead flex-col items-stretch gap-1" data-testid="config-bot-ai-head">
-        <div className="bo-panelTitle flex items-center gap-2" data-testid="config-bot-ai-title">
-          <Route size={18} strokeWidth={2} className="text-[var(--bo-accent)]" aria-hidden="true" />
-          IA del bot de WhatsApp
+      {!embedded ? (
+        <div className="bo-panelHead flex-col items-stretch gap-1" data-testid="config-bot-ai-head">
+          <div className="bo-panelTitle flex items-center gap-2" data-testid="config-bot-ai-title">
+            <Route size={18} strokeWidth={2} className="text-[var(--bo-accent)]" aria-hidden="true" />
+            IA del bot de WhatsApp
+          </div>
+          <div className="bo-panelMeta" data-testid="config-bot-ai-meta">{PANEL_META}</div>
         </div>
-        <div className="bo-panelMeta" data-testid="config-bot-ai-meta">
-          MiniMax-M3.1-Flash es el único modelo del bot. Las claves se guardan cifradas (AES-256-GCM) y no se
-          vuelven a mostrar.
-        </div>
-      </div>
+      ) : null}
 
       <div className="bo-panelBody flex flex-col gap-5" data-testid="config-bot-ai-body">
+        {embedded ? (
+          <p className="bo-panelMeta" data-testid="config-bot-ai-meta-embedded">{PANEL_META}</p>
+        ) : null}
         {restaurants.length > 1 ? (
           <div className="bo-field" data-testid="config-bot-ai-restaurant-field">
             <span className="bo-label" data-testid="config-bot-ai-restaurant-label">Restaurante</span>

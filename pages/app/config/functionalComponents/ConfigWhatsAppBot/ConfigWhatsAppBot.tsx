@@ -25,7 +25,12 @@ function emptyConfig(): BotTenantConfig {
   };
 }
 
-export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaurants: BORestaurant[]; activeRestaurantId: number }) {
+// Coordination id: config_ia_accordions_v1 — meta shown in the panel head and,
+// when embedded (accordion owns the title), as the first line of the body.
+const PANEL_META =
+  "Configura el modelo LLM y la personalidad del bot para cada restaurante, y previsualiza su system prompt.";
+
+export function ConfigWhatsAppBot({ restaurants, activeRestaurantId, embedded = false }: { restaurants: BORestaurant[]; activeRestaurantId: number; embedded?: boolean }) {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const { pushToast } = useToasts();
 
@@ -133,15 +138,20 @@ export function ConfigWhatsAppBot({ restaurants, activeRestaurantId }: { restaur
 
   return (
     <div className="bo-panel" data-ui="config-whatsapp-bot" data-testid="config-whatsapp-bot">
-      <div data-slot="configWhatsAppBot-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
-        <div data-slot="configWhatsAppBot-gap-2" className="bo-panelTitle flex items-center gap-2">
-          <Bot size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
-          Bot de reservas por WhatsApp
+      {!embedded ? (
+        <div data-slot="configWhatsAppBot-gap-1" className="bo-panelHead flex-col items-stretch gap-1">
+          <div data-slot="configWhatsAppBot-gap-2" className="bo-panelTitle flex items-center gap-2">
+            <Bot size={18} className="text-[var(--bo-accent)]" aria-hidden="true" />
+            Bot de reservas por WhatsApp
+          </div>
+          <div data-slot="configWhatsAppBot-panelMeta" className="bo-panelMeta">{PANEL_META}</div>
         </div>
-        <div data-slot="configWhatsAppBot-panelMeta" className="bo-panelMeta">Configura el modelo LLM y la personalidad del bot para cada restaurante, y previsualiza su system prompt.</div>
-      </div>
+      ) : null}
 
       <div data-slot="configWhatsAppBot-gap-5" className="bo-panelBody flex flex-col gap-5">
+        {embedded ? (
+          <p className="bo-panelMeta" data-testid="config-whatsapp-bot-meta-embedded">{PANEL_META}</p>
+        ) : null}
         {/* Restaurant selector */}
         <label className="bo-field" data-slot="config-bot-restaurant-field">
           <span data-slot="configWhatsAppBot-label" className="bo-label">Restaurante</span>
