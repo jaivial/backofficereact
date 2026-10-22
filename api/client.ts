@@ -1,6 +1,7 @@
 import { createPOSModule } from "./modules/pos";
 import { adminApiAuthHeaders } from "./adminApiAuth";
 import { prepareFormImages } from "../lib/imageUpload";
+import { assertJsonResponse } from "./utils/request";
 import type {
   APIError,
   APISuccess,
@@ -188,6 +189,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       init = { ...init, body: await prepareFormImages(init.body) };
     }
     const res = await apiFetch(path, init);
+    assertJsonResponse(res, path);
     const data = await readJSON(res);
     emitSessionExpirationUpdate((data as any)?.moving_expiration_date ?? res.headers.get("x-moving-expiration-date"));
     if (res.status === 401) {
