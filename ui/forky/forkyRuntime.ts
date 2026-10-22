@@ -706,10 +706,23 @@ export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAda
             status: { type: "running" },
           } satisfies ChatModelRunResult;
         } else if (event.type === "done") {
+          const text = display();
+          // A done with no visible text must NOT settle as an empty bubble:
+          // the local runtime creates the assistant message at run start, so
+          // completing with empty content leaves a blank Forky turn on screen.
+          // This fires when the turn streamed no text at all, or when
+          // recovery/cleanse reduced whatever was streamed to "" — it cannot
+          // fire once an opener delta landed (raw stays non-empty then).
+          // Fail the run instead: the thread shows the honest error chip
+          // ("No he podido responder...") rather than a void.
+          if (text.trim() === "") {
+            setForkyVisualState("idle");
+            throw new Error("empty_reply");
+          }
           setForkyVisualState("happy");
           window.setTimeout(() => setForkyVisualState("idle"), 1200);
           yield {
-            content: [{ type: "text", text: display() }],
+            content: [{ type: "text", text }],
             status: { type: "complete", reason: "stop" },
           } satisfies ChatModelRunResult;
           return;

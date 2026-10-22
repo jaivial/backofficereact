@@ -73,6 +73,28 @@
     color-mix(in srgb, var(--bo-surface) 92%, rgba(255, 255, 255, 0.96));
 }
 
+/* modal_390_transparent QA fix: the shared glass stack is only ~80% opaque
+   by design and depends on backdrop-filter blur for readability; where the
+   blur does not render (headless/software GPU) page content bleeds crisply
+   through dialogs. Modals carry forms and actions, so they get a solid
+   surface floor while keeping the glass gradients, border and shadow. If
+   color-mix is unsupported the whole declaration is dropped and the base
+   .bo-modal background (opaque) applies, so both paths stay readable.
+   Cards/toasts keep the translucent glass. */
+.bo-modal--glass {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.18)),
+    var(--bo-surface-2, #2a2b34);
+}
+
+:root[data-theme="light"] .bo-modal--glass {
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--bo-accent) 9%, white), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 248, 255, 0.84)),
+    var(--bo-surface, #ffffff);
+}
+
 :root[data-theme="light"] .bo-menuGlassPanel,
 :root[data-theme="light"] .bo-menuV2Card.bo-menuGlassPanel,
 :root[data-theme="light"] .bo-menuTypePanel.bo-menuGlassPanel {

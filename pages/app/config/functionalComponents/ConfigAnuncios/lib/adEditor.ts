@@ -1,6 +1,11 @@
 import type { CSSProperties } from "react";
 import type {
   RestaurantAd,
+  RestaurantAdCanvas,
+  RestaurantAdCanvasBackground,
+  RestaurantAdCanvasContainer,
+  RestaurantAdCanvasElement,
+  RestaurantAdCanvasVariant,
   RestaurantAdContentElement,
   RestaurantAdElementSize,
   RestaurantAdElementStyle,
@@ -134,19 +139,190 @@ export function buildCTAURL(website: string, cta: Pick<RestaurantAdCTA, "navigat
  * or "/oferta" no longer reach the backend and come back as a 400.
  */
 export function adSavePayload(ad: RestaurantAd, website = "") {
+  // Coordination id: ads_draft_image_guard_v1 - incomplete canvas elements are
+  // held back instead of rejecting the payload that carries every other edit.
+  const clean = sanitizeAdForSave(ad).ad;
   const ctas = (list: RestaurantAdCTA[] = []) =>
     list.map((cta) => (asText(cta.navigation_mode) === "custom" ? { ...cta, custom_url: normalizeButtonURL(cta.custom_url, website) } : cta));
-  const layout = adLayout(ad);
+  const layout = adLayout(clean);
   return {
-    name: ad.name,
-    active: ad.active,
-    content: ad.content,
-    ctas: ctas(ad.ctas),
+    name: clean.name,
+    active: clean.active,
+    content: clean.content,
+    ctas: ctas(clean.ctas),
     layout: layout.mode === "multiple" ? { ...layout, steps: layout.steps.map((step) => ({ ...step, buttons: ctas(step.buttons) })) } : layout,
-    starts_at: ad.starts_at ?? null,
-    ends_at: ad.ends_at ?? null,
-    ...(ad.canvas ? { canvas: ad.canvas } : {}),
+    starts_at: clean.starts_at ?? null,
+    ends_at: clean.ends_at ?? null,
+    ...(clean.canvas ? { canvas: clean.canvas } : {}),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Canvas save guard (coord id ads_draft_image_guard_v1) - client mirror of
+// validateBOAdCanvas (backend internal/api/ads_canvas.go). One incomplete
+// element used to 400 the whole payload and silently block every other edit;
+// now the payload is sanitized instead: unfixable elements (an image without
+// a usable URL) stay in the editor as an explicit draft and only they are
+// left out of the request, so the rest of the work always lands.
+// ---------------------------------------------------------------------------
+
+const CANVAS_TEXT_FONT_MIN = 4;
+const CANVAS_TEXT_FONT_MAX = 400;
+
+/** True for the absolute http(s) URLs the backend accepts as an image src. */
+export function isCanvasHttpURL(value: unknown): boolean {
+  return /^https?:\/\/\S+$/i.test(asText(value).trim());
+}
+
+/** Backend mirror of adCanvasSafeColor (hex, rgb()/hsl() families, named). */
+export function isCanvasSafeColor(value: unknown): boolean {
+  const raw = asText(value).trim();
+  if (!raw || raw.length > 64) return false;
+  if (raw.startsWith("#")) return raw.length >= 4 && raw.length <= 9 && /^#[0-9a-fA-F]+$/.test(raw);
+  const lower = raw.toLowerCase();
+  if (/^(rgb|rgba|hsl|hsla)\([\s\S]*\)$/.test(lower)) return true;
+  return /^[a-z]{3,}$/.test(lower);
+}
+
+function clampCanvasNumber(value: number, min: number, max: number, fallback: number): number {
+  return Number.isFinite(value) ? Math.min(Math.max(value, min), max) : fallback;
+}
+
+/** Why the backend would reject this element; "" when it can be persisted. */
+export function canvasElementDraftReason(el: RestaurantAdCanvasElement): string {
+  if (el.w <= 0 || el.h <= 0) return "Tamaño inválido";
+  const props = (el.props ?? {}) as Record<string, unknown>;
+  if (el.type === "image") return isCanvasHttpURL(props.src) ? "" : "Imagen sin URL http(s)";
+  if (el.type === "button") return asText(props.text).trim() ? "" : "Botón sin texto";
+  if (el.type === "text") {
+    const size = Number(props.fontSize);
+    return size >= CANVAS_TEXT_FONT_MIN && size <= CANVAS_TEXT_FONT_MAX ? "" : "Texto con tamaño fuera de rango";
+  }
+  return "";
+}
+
+/** Fixes what can be fixed in place and holds back what cannot (counts drafts). */
+function sanitizeCanvasElements(elements: RestaurantAdCanvasElement[], onDraft: () => void): RestaurantAdCanvasElement[] {
+  const out: RestaurantAdCanvasElement[] = [];
+  for (const el of elements) {
+    const reason = canvasElementDraftReason(el);
+    if (!reason) {
+      out.push(el);
+      continue;
+    }
+    // No size or no usable image src: the element stays locally as a draft.
+    if (el.w <= 0 || el.h <= 0 || el.type === "image") {
+      onDraft();
+      continue;
+    }
+    const props = { ...(el.props as Record<string, unknown>) };
+    if (el.type === "button") props.text = "Botón";
+    if (el.type === "text") props.fontSize = clampCanvasNumber(Number(props.fontSize), CANVAS_TEXT_FONT_MIN, CANVAS_TEXT_FONT_MAX, 16);
+    out.push({ ...el, props });
+    onDraft();
+  }
+  return out;
+}
+
+function sanitizeCanvasBackground(bg: RestaurantAdCanvasBackground | undefined, onDraft: () => void): RestaurantAdCanvasBackground {
+  const base = bg ?? { type: "color" as const, value: "" };
+  if (base.type === "image" && !isCanvasHttpURL(base.value)) {
+    onDraft();
+    return { type: "color", value: "" };
+  }
+  if (base.type === "color" && base.value && !isCanvasSafeColor(base.value)) {
+    onDraft();
+    return { type: "color", value: "" };
+  }
+  return base;
+}
+
+function sanitizeCanvasContainer(c: RestaurantAdCanvasContainer | null | undefined, onDraft: () => void): RestaurantAdCanvasContainer | null | undefined {
+  if (!c) return c;
+  const out: RestaurantAdCanvasContainer = { ...c };
+  if (typeof out.maxWidth === "number" && (out.maxWidth < 240 || out.maxWidth > 2000)) {
+    out.maxWidth = clampCanvasNumber(out.maxWidth, 240, 2000, 240);
+    onDraft();
+  }
+  if (typeof out.radius === "number" && (out.radius < 0 || out.radius > 96)) {
+    out.radius = clampCanvasNumber(out.radius, 0, 96, 0);
+    onDraft();
+  }
+  if (out.overlay && !isCanvasSafeColor(out.overlay)) {
+    delete out.overlay;
+    onDraft();
+  }
+  return out;
+}
+
+function sanitizeCanvasVariant(v: RestaurantAdCanvasVariant, onDraft: () => void): RestaurantAdCanvasVariant {
+  return {
+    ...v,
+    width: v.width ? clampCanvasNumber(v.width, 100, 4096, 100) : v.width,
+    height: v.height ? clampCanvasNumber(v.height, 100, 4096, 100) : v.height,
+    elements: sanitizeCanvasElements(v.elements ?? [], onDraft),
+    background: v.background ? sanitizeCanvasBackground(v.background, onDraft) : v.background,
+    container: sanitizeCanvasContainer(v.container, onDraft),
+  };
+}
+
+function sanitizeCanvasDoc(doc: RestaurantAdCanvas, onDraft: () => void): RestaurantAdCanvas {
+  const variants = doc.variants
+    ? {
+        ...(doc.variants.tablet ? { tablet: sanitizeCanvasVariant(doc.variants.tablet, onDraft) } : {}),
+        ...(doc.variants.mobile ? { mobile: sanitizeCanvasVariant(doc.variants.mobile, onDraft) } : {}),
+      }
+    : undefined;
+  return {
+    ...doc,
+    width: clampCanvasNumber(doc.width, 100, 4096, 800),
+    height: clampCanvasNumber(doc.height, 100, 4096, 600),
+    background: sanitizeCanvasBackground(doc.background, onDraft),
+    elements: sanitizeCanvasElements(doc.elements ?? [], onDraft),
+    variants,
+    container: sanitizeCanvasContainer(doc.container, onDraft),
+  };
+}
+
+/** Sanitized copy of every canvas an ad persists, plus the draft count. */
+export function sanitizeAdForSave(ad: RestaurantAd): { ad: RestaurantAd; drafts: number } {
+  let drafts = 0;
+  const onDraft = () => { drafts += 1; };
+  const layout = adLayout(ad);
+  const nextLayout: RestaurantAdLayout = layout.mode === "multiple"
+    ? {
+        ...layout,
+        steps: layout.steps.map((step) => ({
+          ...step,
+          canvas: step.canvas ? sanitizeCanvasDoc(step.canvas, onDraft) : step.canvas,
+          card_canvas: step.card_canvas ? sanitizeCanvasDoc(step.card_canvas, onDraft) : step.card_canvas,
+        })),
+      }
+    : layout;
+  const canvas = ad.canvas ? sanitizeCanvasDoc(ad.canvas, onDraft) : ad.canvas;
+  return { ad: { ...ad, layout: nextLayout, canvas }, drafts };
+}
+
+export function canvasDocDraftCount(doc: RestaurantAdCanvas | null | undefined): number {
+  if (!doc) return 0;
+  let count = (doc.elements ?? []).filter((el) => canvasElementDraftReason(el) !== "").length;
+  if (doc.background?.type === "image" && !isCanvasHttpURL(doc.background.value)) count += 1;
+  if (doc.variants?.tablet) count += canvasDocDraftCount({ ...doc, ...doc.variants.tablet, variants: undefined });
+  if (doc.variants?.mobile) count += canvasDocDraftCount({ ...doc, ...doc.variants.mobile, variants: undefined });
+  return count;
+}
+
+/** Draft elements of a wizard layout (every step canvas and card canvas). */
+export function layoutCanvasDraftCount(layout: RestaurantAd["layout"]): number {
+  const normalized = normalizeLayout(layout);
+  if (normalized.mode !== "multiple") return 0;
+  return normalized.steps.reduce((total, step) => total + canvasDocDraftCount(step.canvas) + canvasDocDraftCount(step.card_canvas), 0);
+}
+
+/** Draft elements of the whole ad: shown in the save badge (ads_draft_image_guard_v1). */
+export function adCanvasDraftCount(ad: RestaurantAd | null | undefined): number {
+  if (!ad) return 0;
+  return canvasDocDraftCount(ad.canvas ?? null) + layoutCanvasDraftCount(ad?.layout);
 }
 
 export function createCTA(): RestaurantAdCTA {
@@ -588,4 +764,15 @@ export function duplicateBlock(content: RestaurantAdContentElement[], buttons: R
 
 export function buttonLimit(): number {
   return MAX_BUTTONS;
+}
+
+/**
+ * Origin of the public site rendered inside the ad editor preview. By default
+ * it is the restaurant's own website. A non-production build can set
+ * VITE_AD_PREVIEW_ORIGIN so the editor previews against its matching public
+ * renderer without editing the restaurant's website setting.
+ */
+export function adPreviewOrigin(website: string): string {
+  const override = String(import.meta.env.VITE_AD_PREVIEW_ORIGIN ?? "").trim();
+  return (override || website).replace(/\/+$/, "");
 }

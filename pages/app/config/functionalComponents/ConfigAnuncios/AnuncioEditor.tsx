@@ -42,14 +42,17 @@ import {
   asText,
   addContentItem,
   addStep,
+  adCanvasDraftCount,
   adLayout,
   buttonAction,
   buildCTAURL,
   buildWhatsAppURL,
+  canvasDocDraftCount,
   createCTA,
   createClientID,
   createDraftAd,
   duplicateBlock,
+  layoutCanvasDraftCount,
   moveBlock,
   removeBlock,
   normalizeButtonURL,
@@ -66,6 +69,7 @@ import {
   updateStep,
   WHATSAPP_DEFAULT_MESSAGE,
   type ButtonAction,
+  adPreviewOrigin,
 } from "./lib/adEditor";
 import { AdSurface, AdWizard } from "./AdTemplate";
 import { AdVisualStudio } from "./AdVisualStudio";
@@ -166,7 +170,10 @@ type AnuncioEditorProps = {
 
 // Coordination id: autosave_three_way_merge_v1 - keep operator edits made after
 // the snapshot; adopt the server value for everything untouched. Empty values are
-// valid edits and are never replaced by a stale server value.
+// valid edits and are never replaced by a stale server value. A canvas element
+// held as a local draft (ads_draft_image_guard_v1) never reached the server, so
+// the local layout/canvas wins while any draft exists instead of vanishing on
+// the echo.
 function mergeAdEcho(base: RestaurantAd, local: RestaurantAd, server: RestaurantAd): RestaurantAd {
   return {
     ...server,
@@ -177,9 +184,9 @@ function mergeAdEcho(base: RestaurantAd, local: RestaurantAd, server: Restaurant
     content: mergeIdList(base.content, local.content, server.content),
     ctas: mergeIdList(base.ctas, local.ctas, server.ctas),
     // Reference equality is enough: every layout edit produces a new object.
-    layout: Object.is(base.layout, local.layout) ? server.layout : local.layout,
+    layout: Object.is(base.layout, local.layout) && layoutCanvasDraftCount(local.layout) === 0 ? server.layout : local.layout,
     // Same for the canvas document (ads_canvas_v1): every canvas edit is a new object.
-    canvas: Object.is(base.canvas, local.canvas) ? server.canvas : local.canvas,
+    canvas: Object.is(base.canvas, local.canvas) && canvasDocDraftCount(local.canvas) === 0 ? server.canvas : local.canvas,
   };
 }
 
@@ -201,14 +208,23 @@ type AdPreviewDevice = (typeof AD_PREVIEW_DEVICES)[number]["id"];
  * `${website}/?vc_ad=<id>&vc_preview=1` at a real device width (editable, so
  * any width between the presets can be checked). The site then forces that ad
  * in the popover (vc_preview=1 -> show it even if already seen or not in the
- * active list). Falls back to the 1-1 canvas render when no website is
- * configured (handled by the caller).
+ * active list). The "Lienzo 1-1" origin (ads_preview_render_v1) previews the
+ * canvas document through the same-origin render endpoint instead — it needs
+ * no external site, resolves the breakpoint from the device width (vw) and
+ * works even while the ad is inactive. `refreshToken` (ads_preview_live_v1)
+ * remounts only this iframe after a save lands: the editor page, the selection
+ * and the pending edits are untouched.
  */
-function AdSitePreview({ adId, name, website, stepId }: { adId: number; name: string; website: string; stepId?: string }) {
+function AdSitePreview({ adId, name, website, stepId, surface = "detail", refreshToken = 0 }: { adId: number; name: string; website: string; stepId?: string; surface?: "card" | "detail"; refreshToken?: number }) {
   const [device, setDevice] = useState<AdPreviewDevice>("movil");
   const [size, setSize] = useState<{ width: number; height: number }>({ width: AD_PREVIEW_DEVICES[0].width, height: AD_PREVIEW_DEVICES[0].height });
-  const base = website.replace(/\/+$/, "");
-  const previewURL = `${base}/?vc_ad=${adId}&vc_preview=1${stepId ? `&vc_step=${encodeURIComponent(stepId)}` : ""}`;
+  const [origin, setOrigin] = useState<"site" | "canvas">("site");
+  const [manualTick, setManualTick] = useState(0);
+  const base = adPreviewOrigin(website);
+  const stepQuery = stepId ? `&step=${encodeURIComponent(stepId)}${surface === "card" ? "&card=1" : ""}` : "";
+  const siteURL = `${base}/?vc_ad=${adId}&vc_preview=1${stepId && surface !== "card" ? `&vc_step=${encodeURIComponent(stepId)}` : ""}&_r=${refreshToken + manualTick}`;
+  const renderURL = `/api/public/ads/${adId}/render?src=backoffice-preview${stepQuery}&vw=${size.width}`;
+  const previewURL = origin === "site" ? siteURL : renderURL;
   const applyDevice = (id: AdPreviewDevice) => {
     const next = AD_PREVIEW_DEVICES.find((entry) => entry.id === id) ?? AD_PREVIEW_DEVICES[0];
     setDevice(id);
@@ -241,16 +257,50 @@ function AdSitePreview({ adId, name, website, stepId }: { adId: number; name: st
             onChange={(event) => setSize((current) => ({ ...current, width: Math.max(240, Math.min(1920, Number(event.target.value) || current.width)) }))}
           />
         </label>
+        <div className="bo-anunciosPreviewSwitch" role="group" aria-label="Origen de la preview" data-testid="ad-preview-origin">
+          <button
+            type="button"
+            className={`bo-anunciosPreviewSwitchBtn ${origin === "site" ? "is-active" : ""}`}
+            aria-pressed={origin === "site"}
+            onClick={() => setOrigin("site")}
+            data-testid="ad-preview-origin-site"
+            title="La web real del restaurante con el popover del anuncio"
+          >
+            Sitio real
+          </button>
+          <button
+            type="button"
+            className={`bo-anunciosPreviewSwitchBtn ${origin === "canvas" ? "is-active" : ""}`}
+            aria-pressed={origin === "canvas"}
+            onClick={() => setOrigin("canvas")}
+            data-testid="ad-preview-origin-canvas"
+            data-coord-id="ads_preview_render_v1"
+            title="Render 1-1 del lienzo (mismo origen, se actualiza con cada guardado)"
+          >
+            Lienzo 1-1
+          </button>
+        </div>
         <a className="bo-adSitePreviewOpen" href={previewURL} target="_blank" rel="noreferrer" data-testid="ad-preview-open">
           Abrir en pestaña nueva
         </a>
+        <button
+          type="button"
+          className="bo-adstudioDeviceBtn"
+          onClick={() => setManualTick((tick) => tick + 1)}
+          title="Recargar la preview"
+          data-testid="ad-preview-reload"
+        >
+          Recargar
+        </button>
       </div>
       <div
         className="bo-adSitePreviewDevice"
         style={{ width: size.width, maxWidth: "100%", height: size.height }}
         data-testid="ad-preview-frame-wrap"
+        data-preview-origin={origin}
       >
         <iframe
+          key={`${origin}-${refreshToken}-${manualTick}`}
           src={previewURL}
           title={name || "Anuncio"}
           style={{ width: "100%", height: "100%", border: 0, display: "block" }}
@@ -351,7 +401,12 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   const [loading, setLoading] = useState(mode === "edit" && !initialAd);
   const [busy, setBusy] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  // autosave_state_v1: idle | pending (dirty, waiting for the debounce) |
+  // saving | saved | error, so the badge always tells which one is happening.
+  const [saveState, setSaveState] = useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
+  // Bumped on every successful save: the preview iframes refresh from it
+  // without remounting the editor or losing the selection (ads_preview_live_v1).
+  const [previewRefresh, setPreviewRefresh] = useState(0);
   const [scheduleError, setScheduleError] = useState("");
   const scheduleCheckReqRef = useRef<string | null>(null);
 
@@ -424,6 +479,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
       if (result.ad) setAd((current) => current ? mergeAdEcho(source, current, result.ad as RestaurantAd) : (result.ad as RestaurantAd));
       if (result.ad && onSaved) onSaved(result.ad);
       setSaveState("saved");
+      setPreviewRefresh((key) => key + 1);
       return result.ad ?? null;
     } catch (error) {
       notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio");
@@ -465,6 +521,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
         pendingSavesRef.current.delete(event.reqId!);
         pending.resolve(event.ad as RestaurantAd);
         setSaveState("saved");
+        setPreviewRefresh((key) => key + 1);
       }
       if (event.type === "ad_schedule_conflict" && event.reqId === scheduleCheckReqRef.current) {
         if (event.conflict) {
@@ -489,6 +546,8 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
     const json = adAutosaveFingerprint(ad);
     if (baselineRef.current === null) { baselineRef.current = json; return; }
     if (json === baselineRef.current) return;
+    // Dirty right now: say so before the debounce elapses (autosave_state_v1).
+    setSaveState((current) => (current === "saving" ? current : "pending"));
     const timer = setTimeout(() => {
       setSaveState("saving");
       const snapshot = ad;
@@ -497,7 +556,10 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
           // Merge every typable field against the snapshot so a keystroke made
           // during the request survives the echo, and clearing a field sticks.
           setAd((current) => current ? mergeAdEcho(snapshot, current, saved) : saved);
-          baselineRef.current = adAutosaveFingerprint(saved);
+          // Baseline of the SNAPSHOT merged with the echo: a draft element that
+          // never reached the server stays local (ads_draft_image_guard_v1), so
+          // fingerprinting the raw server ad would loop the autosave forever.
+          baselineRef.current = adAutosaveFingerprint(mergeAdEcho(snapshot, snapshot, saved));
         }
       }).catch((error) => notify("error", "Anuncios", error instanceof Error ? error.message : "No se pudo guardar el anuncio"));
     }, autosaveDelayMs ?? 1000);
@@ -637,6 +699,9 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
   // target (the single announcement or the active wizard step) so the canvas and
   // the inspector always write the same shape.
   const layout = useMemo(() => adLayout(ad), [ad]);
+  // ads_draft_image_guard_v1: canvas elements the backend would reject (an
+  // image without URL) that stay local as an explicit draft.
+  const draftCount = useMemo(() => adCanvasDraftCount(ad), [ad]);
   const isMultiple = layout.mode === "multiple";
 
   const [activeStepId, setActiveStepId] = useState<string>("");
@@ -932,7 +997,18 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
               <span className="bo-anunciosPreviewSwitchLabel">Preview</span>
             </button>
           </div>
-          <SaveStatusBadge state={saveState} neverSaved={mode === "create"} />
+          <SaveStatusBadge state={saveState} neverSaved={mode === "create"} onRetry={() => void persistAd(ad)} />
+          {draftCount > 0 ? (
+            <span
+              className="bo-anunciosDraftChip"
+              data-state="draft"
+              data-testid="ad-draft-chip"
+              data-coord-id="ads_draft_image_guard_v1"
+              title="Elementos que quedan en el editor y no se envían al servidor hasta tener datos válidos."
+            >
+              {draftCount === 1 ? "1 elemento en borrador" : `${draftCount} elementos en borrador`}
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -1074,7 +1150,14 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                 </div> : null}
                 {previewOpen && ad.id > 0 ? (
                   website ? (
-                    <AdSitePreview adId={ad.id} name={ad.name} website={website} stepId={isMultiple ? activeStep?.id : undefined} />
+                    <AdSitePreview
+                      adId={ad.id}
+                      name={ad.name}
+                      website={website}
+                      stepId={isMultiple ? activeStep?.id : undefined}
+                      surface={cardSurface ? "card" : "detail"}
+                      refreshToken={previewRefresh}
+                    />
                   ) : (
                     <>
                       <div
@@ -1082,6 +1165,7 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                         style={{ aspectRatio: `${editedCanvas.width} / ${editedCanvas.height}`, width: "100%", maxWidth: 720 }}
                       >
                         <iframe
+                          key={previewRefresh}
                           src={`/api/public/ads/${ad.id}/render?src=backoffice-preview${isMultiple && activeStep ? `&step=${encodeURIComponent(activeStep.id)}${cardSurface ? "&card=1" : ""}` : ""}`}
                           title={ad.name || "Anuncio"}
                           style={{ width: "100%", height: "100%", border: 0, display: "block", borderRadius: 10 }}
@@ -1099,6 +1183,8 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                     adId={ad.id}
                     adName={activeStep?.title || ad.name}
                     stepId={isMultiple && !cardSurface ? activeStep?.id : undefined}
+                    surface={cardSurface ? "card" : "detail"}
+                    refreshToken={previewRefresh}
                     website={website}
                     onChange={changeCanvas}
                   />
@@ -1368,7 +1454,7 @@ function StepLayers({
   );
 }
 
-function SaveStatusBadge({ state, neverSaved = false }: { state: "idle" | "saving" | "saved" | "error"; neverSaved?: boolean }) {
+function SaveStatusBadge({ state, neverSaved = false, onRetry }: { state: "idle" | "pending" | "saving" | "saved" | "error"; neverSaved?: boolean; onRetry?: () => void }) {
   if (state === "idle") {
     return (
       <span
@@ -1379,6 +1465,21 @@ function SaveStatusBadge({ state, neverSaved = false }: { state: "idle" | "savin
         data-slot="ad-save-status"
       >
         <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">{neverSaved ? "Sin guardar" : "Guardado"}</span>
+      </span>
+    );
+  }
+  if (state === "pending") {
+    return (
+      <span
+        className="bo-anunciosSaveStatus"
+        data-state="pending"
+        data-testid="ad-save-status"
+        aria-live="polite"
+        data-coord-id="autosave_state_v1"
+        data-slot="ad-save-status"
+      >
+        <span className="bo-anunciosSaveDot" aria-hidden="true" />
+        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Pendiente de guardar</span>
       </span>
     );
   }
@@ -1407,7 +1508,12 @@ function SaveStatusBadge({ state, neverSaved = false }: { state: "idle" | "savin
         data-slot="ad-save-status"
       >
         <CircleAlert size={14} aria-hidden="true" />
-        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Error</span>
+        <span data-slot="anuncioEditor-anunciosSaveLabel" className="bo-anunciosSaveLabel">Error al guardar</span>
+        {onRetry ? (
+          <button type="button" className="bo-anunciosSaveRetry" onClick={onRetry} data-testid="ad-save-retry">
+            Reintentar
+          </button>
+        ) : null}
       </span>
     );
   }

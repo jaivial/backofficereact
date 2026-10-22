@@ -492,8 +492,11 @@ export default function PromptBar({
       )}
 
       {/* ── composer ───────────────────────────────────── */}
+      {/* HOST-EDIT (forky prompt bar QA 20261021): the composer is an inset field,
+       * not a bordered card — the border-line frame (and its focus ring) is gone and
+       * the surface drops to bg-inset so the field reads against the panel without one. */}
       <div
-        className={`relative isolate flex flex-col overflow-hidden border border-line bg-surface shadow-card transition-[border-color,border-radius] duration-150 focus-within:border-line-strong ${
+        className={`relative isolate flex flex-col overflow-hidden bg-inset transition-[border-radius] duration-150 ${
           tall ? "gap-2.5 p-3.5" : "gap-1.5 p-1.5"
         } ${
           pill ? (attachments.length > 0 || wide ? "rounded-[24px]" : "rounded-full") : tall ? "rounded-[22px]" : "rounded-[14px]"
@@ -605,6 +608,8 @@ export default function PromptBar({
           </button>
           )}
 
+          {/* HOST-EDIT (forky prompt bar QA 20261021): taller single-line input —
+           * min-h-9/py-2 (40px) instead of min-h-7/py-[5px] (34px). */}
           <TextareaAutosize
             ref={holdInputElement}
             minRows={1}
@@ -653,7 +658,7 @@ export default function PromptBar({
               transition: "opacity 220ms cubic-bezier(0.23,1,0.32,1)",
               opacity: dictationFade ? 0.55 : 1,
             }}
-            className={`${tall ? "min-h-[68px] px-2 py-2 text-[16px] leading-6" : "min-h-7 px-1 py-[5px] text-[16px] leading-6"} min-w-0 w-full resize-none overflow-y-auto bg-transparent text-ink outline-none [overflow-wrap:anywhere] placeholder:text-ink-3 ${
+            className={`${tall ? "min-h-[68px] px-2 py-2 text-[16px] leading-6" : "min-h-9 px-1 py-2 text-[16px] leading-6"} min-w-0 w-full resize-none overflow-y-auto bg-transparent text-ink outline-none [overflow-wrap:anywhere] placeholder:text-ink-3 ${
               !controls
                 ? "col-start-1 row-start-1"
                 : wide
@@ -709,6 +714,7 @@ export default function PromptBar({
             type="button"
             aria-label={dictating ? "Stop dictation" : "Start dictation"}
             aria-pressed={dictating}
+            data-testid="forky-prompt-bar-mic"
             disabled={voiceBusy}
             onClick={() => onToggleDictation?.()}
             className={`flex size-7 shrink-0 items-center justify-center transition-[background-color,color,transform] duration-150 active:scale-[0.94] disabled:opacity-60 ${
@@ -735,7 +741,7 @@ export default function PromptBar({
           <button
             type="button"
             aria-label={sendLabel ?? "Send"}
-            data-testid={sendTestId}
+            data-testid={sendTestId ?? "forky-prompt-bar-send"}
             disabled={!canSend}
             onClick={send}
             className={`flex shrink-0 items-center justify-center transition-[background-color,color,transform] duration-200 enabled:active:scale-[0.94] ${
@@ -746,8 +752,13 @@ export default function PromptBar({
               pill ? "rounded-full" : "rounded-[10px] md:rounded-[8px]"
             } ${!controls ? (attachColumn ? (mic ? "col-start-4 row-start-1" : "col-start-3 row-start-1") : mic ? "col-start-3 row-start-1" : "col-start-2 row-start-1") : wide ? "col-start-4 row-start-2" : "col-start-4 row-start-1"}`}
             style={{
-              background: canSend ? "var(--ink)" : "var(--line-strong)",
-              color: canSend ? "var(--surface)" : "var(--ink-2)",
+              /* HOST-EDIT (forky prompt bar QA 20261021): dark-theme send. The old
+               * enabled fill was var(--ink) — the light ink token — which rendered a
+               * stark WHITE button on the dark prompt bar. The accent fill keeps the
+               * primary action obvious without leaving the dark palette; disabled
+               * recedes to the field level with a muted icon. */
+              background: canSend ? "var(--accent)" : "var(--field)",
+              color: canSend ? "var(--ink)" : "var(--ink-3)",
             }}
           >
             <Icon size={16} strokeWidth={2.4}><path d="M12 19V5M5 12l7-7 7 7" /></Icon>

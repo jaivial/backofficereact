@@ -154,7 +154,7 @@ function TagsList({ tags }: { tags?: string[] }) {
 }
 
 function PaymentProgressCell({ invoice }: { invoice: Invoice }) {
-  const totalAmount = invoice.total || invoice.amount;
+  const totalAmount = invoice.total ?? invoice.amount;
   const paidAmount = invoice.paid_amount || 0;
   const remaining = totalAmount - paidAmount;
   const percentPaid = totalAmount > 0 ? (paidAmount / totalAmount) * 100 : 0;
@@ -488,7 +488,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
   // Calculate totals for the footer
   const totals = useMemo(() => {
     const displayedCount = invoices.length;
-    const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+    const totalAmount = invoices.reduce((sum, invoice) => sum + (invoice.total ?? invoice.amount), 0);
     return { displayedCount, totalAmount };
   }, [invoices]);
 
@@ -762,7 +762,7 @@ export function InvoiceTable({ invoices, visibleColumns, loading, page, totalPag
                 <td data-testid="invoice-table-cell-15" className={`col-customer_email`} data-label="Email" data-slot="invoice-table-cell">{invoice.customer_email}</td>
                 )}
                 {visibleSet.has("amount") && (
-                <td data-testid="invoice-table-cell-16" className={`col-amount`} data-label="Importe" data-slot="invoice-table-cell">{formatPrice(invoice.amount, invoice.currency)}</td>
+                <td data-testid="invoice-table-cell-16" className={`col-amount`} data-label="Importe" data-slot="invoice-table-cell">{formatPrice(invoice.total ?? invoice.amount, invoice.currency)}</td>
                 )}
                 {visibleSet.has("currency") && (
                 <td data-testid="invoice-table-cell-17" className={`col-currency`} data-label="Moneda" data-slot="invoice-table-cell">

@@ -65,6 +65,14 @@ export function Topbar({
           sectionAccess: Array.isArray(res.sectionAccess) ? res.sectionAccess.filter((value): value is BOSection => isBOSection(value)) : session.user.sectionAccess,
         },
       });
+      // restaurant_switch_stale_data_v1: every page renders route data fetched
+      // for the PREVIOUS active restaurant, and the +Layout reload watcher
+      // observes pageContext.bo.session (SSR), which does not change on this
+      // atom update; without this line the UI kept showing (and acting on)
+      // the old restaurant's data until a manual hard navigation. The
+      // server-side session row is already rebound (POST /active-restaurant),
+      // so a full reload re-fetches everything for the new restaurant.
+      window.location.reload();
     },
     [api, pushToast, session, setSession],
   );

@@ -568,16 +568,16 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             <div className="grid content-start gap-3">
               {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campaña para poder probar y enviar." />}
               <div className="grid gap-3 md:grid-cols-2">
-                <div className="flex flex-wrap gap-2">
+                <div className="grid gap-2 sm:flex sm:flex-wrap">
                   <input
-                    className="bo-input min-w-0 flex-1"
+                    className="bo-input min-w-0 sm:flex-1"
                     placeholder="email o teléfono de prueba"
                     aria-label="Destino de la prueba"
                     value={testTarget}
                     onChange={(e) => setTestTarget(e.currentTarget.value)}
                     data-testid="campaign-test-input"
                   />
-                  <Button variant="ghost" onClick={() => void sendTest()} disabled={!campaign || !testTarget.trim()} data-testid="campaign-test-btn">Probar</Button>
+                  <Button variant="ghost" className="min-h-11 w-full justify-center sm:min-h-0 sm:w-auto" onClick={() => void sendTest()} disabled={!campaign || !testTarget.trim()} data-testid="campaign-test-btn">Probar</Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   {campaign ? (
@@ -602,7 +602,19 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             {recipients.length === 0 ? (
               <p className="text-xs text-bo-faint" data-testid="campaign-recipients-empty">Sin envios registrados todavia.</p>
             ) : (
-              <div className="overflow-x-auto rounded-bo-md border border-bo-border">
+              <>
+              <ul className="m-0 grid list-none gap-2 p-0 md:hidden" data-testid="campaign-recipients-cards">
+                {recipients.map((row) => (
+                  <li key={row.id} className="grid gap-1 rounded-bo-md border border-bo-border bg-bo-surface-2 p-3 text-sm" title={row.error || undefined} data-testid={`campaign-recipient-card-${row.id}`}>
+                    <span className="break-all font-medium">{row.target}</span>
+                    <span className="flex flex-wrap items-center justify-between gap-2 text-xs text-bo-muted">
+                      <span>{row.channel === "whatsapp" ? "WhatsApp" : "Email"} &middot; {row.status === "sent" ? "Enviado" : row.status === "failed" ? "Fallido" : "Pendiente"}</span>
+                      <span>{row.sent_at || "Sin enviar"}{row.booking_id ? ` \u00b7 Reserva ${row.booking_id}` : ""}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden overflow-x-auto rounded-bo-md border border-bo-border md:block">
                 <table className="bo-table w-full" data-testid="campaign-recipients-table">
                   <thead>
                     <tr>
@@ -626,6 +638,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </CampaignSection>
         </div>
