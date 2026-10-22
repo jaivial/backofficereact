@@ -18,9 +18,11 @@ import {
 //
 // Wire protocol (JSON text frames), per the shared contract v1:
 //   client -> server: {type:"hello", session_id:<int|null>}
-//                     {type:"message", content:"..."}
+//                     {type:"message", content:"...", attachments?:[...],
+//                      audio?:{url, duration_ms}}
 //                     {type:"ping"}
-//   server -> client: {type:"hello", session_id:<int>, history:[{role,content}]}
+//   server -> client: {type:"hello", session_id:<int>,
+//                      history:[{role,content,audio_url?,audio_duration_ms?}]}
 //                     {type:"status", state:"thinking"|"streaming"}
 //                     {type:"delta", text:"..."}
 //                     {type:"done"}
@@ -30,7 +32,14 @@ import {
 
 const SESSION_STORAGE_KEY = "forky_session_id";
 
-export type ForkyHistoryMessage = { role: "user" | "assistant"; content: string };
+export type ForkyHistoryMessage = {
+  role: "user" | "assistant";
+  content: string;
+  /** Bunny pull URL of the clip this row was recorded as (voice turns only). */
+  audio_url?: string | null;
+  /** Measured length of that clip in ms; the player's honest fallback. */
+  audio_duration_ms?: number | null;
+};
 
 /** Public events surfaced by a single conversational turn. */
 export type ForkyTurnEvent =
@@ -92,6 +101,8 @@ type ActiveTurn = {
   content: string;
   /** Uploaded media references riding this turn's frame (forky_attachments_v1). */
   attachments: ForkyAttachmentRef[];
+  /** Voice note riding this turn's frame (forky_media_transcribe_v1). */
+  audio?: { url: string; duration_ms: number };
   acked: boolean;
   /** Watchdog: fails the turn when the server goes silent (never fires after done/error). */
   idleTimer: ReturnType<typeof setTimeout> | null;
@@ -175,9 +186,18 @@ export class ForkyWsClient {
   }
 
   /** Drive one user turn, yielding status/delta/done/error events in order. */
-  async *runTurn(content: string, options?: { attachments?: ForkyAttachmentRef[]; abortSignal?: AbortSignal }): AsyncGenerator<ForkyTurnEvent, void> {
+  async *runTurn(
+    content: string,
+    options?: {
+      attachments?: ForkyAttachmentRef[];
+      /** Voice note the row carries: Bunny URL + measured duration (F3). */
+      audio?: { url: string; duration_ms: number };
+      abortSignal?: AbortSignal;
+    },
+  ): AsyncGenerator<ForkyTurnEvent, void> {
     const abortSignal = options?.abortSignal;
     const attachments = options?.attachments ?? [];
+    const audio = options?.audio;
     if (abortSignal?.aborted) return;
     if (this.busy) {
       yield { type: "error", message: "busy" };
@@ -193,7 +213,7 @@ export class ForkyWsClient {
 
     this.busy = true;
     const queue = new AsyncQueue<InternalTurnEvent>();
-    const turn: ActiveTurn = { queue, content, attachments, acked: false, idleTimer: null };
+    const turn: ActiveTurn = { queue, content, attachments, audio, acked: false, idleTimer: null };
     this.activeTurn = turn;
     this.armTurnIdleTimer(turn);
 
@@ -203,7 +223,7 @@ export class ForkyWsClient {
     };
     abortSignal?.addEventListener("abort", onAbort);
 
-    this.rawSend({ type: "message", content, ...(attachments.length > 0 ? { attachments } : {}) });
+    this.sendTurnFrame(turn);
 
     try {
       while (true) {
@@ -310,8 +330,7 @@ export class ForkyWsClient {
         // Reconnected mid-turn: re-send the pending user message (deduped by the
         // one-in-flight guard; the UI already holds the user message).
         if (this.activeTurn && !this.activeTurn.acked) {
-          const turnAttachments = this.activeTurn.attachments;
-          this.rawSend({ type: "message", content: this.activeTurn.content, ...(turnAttachments.length > 0 ? { attachments: turnAttachments } : {}) });
+          this.sendTurnFrame(this.activeTurn);
         }
         break;
       }
@@ -452,6 +471,16 @@ export class ForkyWsClient {
     if (this.ws && this.ws.readyState === WS_OPEN) {
       this.ws.send(JSON.stringify(frame));
     }
+  }
+
+  /** The one message frame for a turn: content + any media it carries. */
+  private sendTurnFrame(turn: ActiveTurn): void {
+    this.rawSend({
+      type: "message",
+      content: turn.content,
+      ...(turn.attachments.length > 0 ? { attachments: turn.attachments } : {}),
+      ...(turn.audio ? { audio: turn.audio } : {}),
+    });
   }
 
   private readSessionId(): number | null {
@@ -672,9 +701,11 @@ export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAda
       // One send = one queued batch (possibly empty): queued messages keep
       // their own media aligned with their turn (forky_attachments_v1).
       const attachments = client.takePendingAttachments();
-      // Voice notes: same FIFO alignment. The clip never rides the WS frame
-      // (audio is not a model media type) — its Bunny URL is registered under
-      // the user message id so the bubble renders a player (F3).
+      // Voice notes: same FIFO alignment. The bytes never ride the WS frame (the
+      // model is text-only and never "hears" audio) — the clip's Bunny URL and
+      // duration DO ride it, so the backend stores them on the message row, and
+      // the meta is registered under the user message id so the bubble renders
+      // a player right away (forky_media_transcribe_v1).
       const voice = client.takePendingVoice();
       if (voice && messages.length > 0) {
         const lastId = (messages[messages.length - 1] as { id?: string }).id;
@@ -684,7 +715,11 @@ export function createForkyChatModelAdapter(client: ForkyWsClient): ChatModelAda
       setForkyVisualState("think");
       let started = false;
       const display = () => recoverEncodedReply(raw);
-      for await (const event of client.runTurn(content, { attachments, abortSignal })) {
+      for await (const event of client.runTurn(content, {
+        attachments,
+        audio: voice ? { url: voice.url, duration_ms: voice.durationMs } : undefined,
+        abortSignal,
+      })) {
         if (event.type === "status") {
           if (!started) {
             started = true;
@@ -749,9 +784,21 @@ function seedHistory(runtime: AssistantRuntime, history: ForkyHistoryMessage[]):
     // as readable text when replayed from history.
     const content =
       item.role === "assistant" ? recoverEncodedReply(item.content) : item.content;
+    const id = generateId();
+    // A voice row carries its clip on the row itself (assistant_messages
+    // .audio_url), so the player survives a reload. Register BEFORE the import:
+    // the first paint already shows the note instead of text-then-player.
+    const audioURL = (item.audio_url ?? "").trim();
+    if (item.role === "user" && audioURL) {
+      const parsed = Number(item.audio_duration_ms ?? 0);
+      registerForkyVoiceMessage(id, {
+        url: audioURL,
+        durationMs: Number.isFinite(parsed) && parsed > 0 ? parsed : 0,
+      });
+    }
     const message = fromThreadMessageLike(
       { role: item.role, content },
-      generateId(),
+      id,
       { type: "complete", reason: "unknown" },
     );
     messages.push({ message, parentId });

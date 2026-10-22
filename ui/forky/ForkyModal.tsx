@@ -28,7 +28,7 @@ import {
   transcribeForkyAudio,
 } from "./forkyVoice";
 import { useForkyVoiceRecorder } from "./useForkyVoiceRecorder";
-import { VoiceMessageSlot } from "./VoicePlayer";
+import { useForkyVoiceMessage, VoicePlayer } from "./VoicePlayer";
 import { ForkyDoc, ForkyWidget, stripForkyRichBlocks } from "./ForkyRichBlocks";
 import { repairGfmTables } from "./repairGfmTables";
 import { MarkdownText } from "../assistant-ui/markdown-text";
@@ -237,14 +237,39 @@ function UserMessage() {
         bubbleTestId="forky-bubble-user"
         avatarTestId="forky-avatar-user"
       >
-        <div data-testid="forky-user-message-text" className="text-[13px] leading-[1.4]">
-          <MessagePrimitive.Parts />
-        </div>
-        {/* Voice notes (F3): the clip's Bunny player when this message carries
-            a registered voice note — nothing renders for plain text turns. */}
-        <VoiceMessageSlot />
+        <UserMessageContent />
       </MessageBubble>
     </MessagePrimitive.Root>
+  );
+}
+
+// Reads the message id from the provider, so it must render INSIDE
+// MessagePrimitive.Root (the hook is what decides voice vs plain text turn).
+function UserMessageContent() {
+  // A voice turn renders as a note: the player first, then the whisper
+  // transcript muted underneath — what Forky understood, readable without
+  // looking like something the user typed. A reloaded row replays the exact
+  // same shape (audio_url comes back on the message itself).
+  const voice = useForkyVoiceMessage();
+  if (voice) {
+    return (
+      <>
+        <div data-testid="forky-voice-message" className="mb-1.5">
+          <VoicePlayer url={voice.url} durationMs={voice.durationMs} />
+        </div>
+        <div
+          data-testid="forky-user-message-text"
+          className="whitespace-pre-wrap break-words text-[12px] leading-snug text-fui-ink-3"
+        >
+          <MessagePrimitive.Parts />
+        </div>
+      </>
+    );
+  }
+  return (
+    <div data-testid="forky-user-message-text" className="text-[13px] leading-[1.4]">
+      <MessagePrimitive.Parts />
+    </div>
   );
 }
 
@@ -330,13 +355,23 @@ function EmptyState() {
 // hands the model real image/document blocks. The demo @ /sources menu is
 // demo-only chrome; a real surface passes controls={false}, which also gives
 // the clip its own column.
+//
+// F3 voice (coord forky_media_transcribe_v1): the mic records, then TWO calls
+// run IN PARALLEL — POST media/upload to Bunny and POST transcribe to the
+// backend, where the local whisper model transcribes while the upload is
+// still in flight. The turn then leaves as ONE frame: content = transcript
+// (the model's prompt, and the muted caption under the player) and
+// `audio` = {url, duration_ms}, which the backend stores on the
+// assistant_messages row so the note replays at its own timestamp after a
+// reload. The transcript never travels through the visible input.
 // ---------------------------------------------------------------------------
 function ChatComposer() {
   const aui = useAui();
   const client = useForkyClient();
   const [attachments, setAttachments] = useState<ForkyAttachment[]>([]);
-  // F3 voice: the mic records; "processing" = uploading + transcribing before
-  // the send. voiceError is the honest failure state (never a fake transcript).
+  // F3 voice: the mic records; "processing" = the parallel upload + transcription
+  // and the send that follows them. voiceError is the honest failure state
+  // (never a fake transcript).
   const [voicePhase, setVoicePhase] = useState<"idle" | "processing">("idle");
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const recorder = useForkyVoiceRecorder();
@@ -458,11 +493,15 @@ function ChatComposer() {
     [aui, attachments, client, errorAttachments, preparingCount, readyAttachments],
   );
 
-  // F3 voice send: the clip uploads to the existing Bunny endpoint (the
-  // player's URL) while the same bytes go to the STT endpoint — the transcript
-  // is the message content the text model consumes. A failure in either shows
-  // the honest error and NOTHING is sent: the model never "hears" audio it
-  // cannot read, and never sees a note of voice without a transcript.
+  // F3 voice send. Two things run IN PARALLEL the moment recording stops:
+  // the clip uploads to Bunny (the player's URL) and the SAME bytes go to the
+  // backend's STT endpoint, where the local whisper model transcribes while
+  // that upload is still in flight. Only when both land does the turn go out:
+  // ONE frame carrying the transcript (what the model reads as the prompt) and
+  // the clip's URL (what the row stores, so a reload replays the note).
+  // The visible PromptBar keeps its own draft: aui.composer is the adapter
+  // bridge only, so the transcript never appears in the input box. A failure in
+  // either leg shows the honest error and NOTHING is sent — no half a note.
   const sendVoiceClip = useCallback(
     async (clip: { blob: Blob; durationMs: number }) => {
       setVoiceError(null);
@@ -476,9 +515,13 @@ function ChatComposer() {
           transcribeForkyAudio(clip.blob),
         ]);
         // Queue BEFORE the send so the adapter run consumes this turn's meta:
-        // an empty attachment batch keeps the FIFO alignment with the refs.
+        // an empty attachment batch keeps the FIFO alignment with the refs. The
+        // meta becomes the frame's `audio` field AND the player under the bubble.
         client.pushPendingVoice({ url, durationMs: clip.durationMs });
         client.pushPendingAttachments([]);
+        // Bridge straight to the adapter: the transcript is the model's prompt,
+        // and it is what the bubble shows muted under the player (the visible
+        // PromptBar owns a different draft, so its input stays untouched).
         aui.composer.setText(transcript.text);
         aui.composer.send();
       } catch (err) {
@@ -557,7 +600,7 @@ function ChatComposer() {
                   </button>
                 </>
               ) : (
-                <span data-testid="forky-voice-processing">Transcribiendo la nota de voz…</span>
+                <span data-testid="forky-voice-processing">Enviando la nota de voz…</span>
               )}
             </div>
           )}

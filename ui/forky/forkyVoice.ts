@@ -121,9 +121,11 @@ export async function transcribeForkyAudio(
 
 // ---------------------------------------------------------------------------
 // Voice-message registry — maps an appended user message id to the clip that
-// produced it, so the bubble can render a player. The WS history only persists
-// role+content, so (like every media in this chat) players do not survive a
-// reload; the map is session-scoped and pruned to the last MAX entries.
+// produced it, so the bubble can render a player. The live turn fills it from
+// the queued meta; after a reload the hello frame replays audio_url +
+// audio_duration_ms off the assistant_messages row and seedHistory registers
+// the same map under the seeded ids — one lookup either way. Entries are
+// session-scoped and pruned to the last MAX entries.
 // ---------------------------------------------------------------------------
 
 export type ForkyVoiceMessageMeta = {
@@ -133,6 +135,41 @@ export type ForkyVoiceMessageMeta = {
    *  reports Infinity; the measured value is the honest fallback). */
   durationMs: number;
 };
+
+/** How many bars the player draws; fixed so a clip's waveform never resizes. */
+export const FORKY_VOICE_WAVE_BARS = 34;
+
+/**
+ * Deterministic pseudo-waveform for a clip: bars seeded by the clip's own URL
+ * (FNV-1a → mulberry32), so the same message draws the same shape on every
+ * render and after every reload, and two notes never look identical. The shape
+ * is decoration — heights come from the seed, NOT from decoding the audio
+ * (a Bunny cross-origin fetch would need CORS) — while progress and timing are
+ * always read from the real element.
+ */
+export function forkyVoiceWaveform(seed: string, points: number = FORKY_VOICE_WAVE_BARS): number[] {
+  let hash = 2166136261;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash ^= seed.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  let state = hash >>> 0;
+  const random = () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const last = Math.max(1, points - 1);
+  const bars: number[] = [];
+  for (let i = 0; i < points; i += 1) {
+    // Speech-shaped envelope: louder through the middle of the note.
+    const envelope = 0.5 + 0.5 * Math.sin((i / last) * Math.PI);
+    bars.push(Math.min(1, Math.max(0.18, (0.3 + 0.7 * random()) * envelope)));
+  }
+  return bars;
+}
 
 const VOICE_MESSAGES_MAX = 60;
 const voiceMessages = new Map<string, ForkyVoiceMessageMeta>();

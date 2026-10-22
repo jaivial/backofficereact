@@ -148,6 +148,12 @@ function proxyTimeoutForPath(pathname: string): number {
   const path = pathname.toLowerCase();
   if (path.includes("/ai") || path.includes("/generate")) return 10 * 60_000;
   if (path.includes("/image") || path.includes("/import") || path.includes("/documents")) return 2 * 60_000;
+  // Voice notes: the sidecar's local whisper answers in ~4 s, but a cold model
+  // load plus a 60 s clip can take longer than the default 30 s — aborting here
+  // cancelled the backend's context mid-transcription and the prompt bar showed
+  // "Sin conexión con el servicio de transcripción". The Go handler already caps
+  // itself at 60 s, so this only stops US from hanging up first.
+  if (path.includes("/transcribe")) return 90 * 1000;
   return 30_000;
 }
 
