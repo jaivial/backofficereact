@@ -86,19 +86,21 @@ export function VoicePlayer({ url, durationMs }: { url: string; durationMs: numb
     [seekTo],
   );
 
-  // Focusable slider: arrows step 5 s, Home/End jump to the ends.
+  // Focusable slider: arrows step 5 s, Home/End jump to the ends. A Map keeps
+  // prototype keys ("constructor", "toString", …) out of the lookup: an
+  // inherited function would compute a NaN position for currentTime.
   const seekByKey = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       const step = 5000;
-      const positions: Record<string, number> = {
-        ArrowLeft: currentMs - step,
-        ArrowDown: currentMs - step,
-        ArrowRight: currentMs + step,
-        ArrowUp: currentMs + step,
-        Home: 0,
-        End: totalMs,
-      };
-      const next = positions[event.key];
+      const positions = new Map<string, number>([
+        ["ArrowLeft", currentMs - step],
+        ["ArrowDown", currentMs - step],
+        ["ArrowRight", currentMs + step],
+        ["ArrowUp", currentMs + step],
+        ["Home", 0],
+        ["End", totalMs],
+      ]);
+      const next = positions.get(event.key);
       if (next === undefined) return;
       event.preventDefault();
       seekTo(totalMs > 0 ? next / totalMs : 0);
@@ -150,8 +152,20 @@ export function VoicePlayer({ url, durationMs }: { url: string; durationMs: numb
           tabIndex={0}
           className="relative h-7 w-full cursor-pointer overflow-hidden rounded-[6px] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fui-ink-2"
         >
-          <div className="absolute inset-0" style={{ maskImage: mask, WebkitMaskImage: mask }}>
-            <AudioVisualizer levels={levels} active className="h-full w-full" />
+          <div
+            className="absolute inset-0"
+            style={{
+              maskImage: mask,
+              WebkitMaskImage: mask,
+              // Pin the gradient to the box: the default `auto` would otherwise
+              // stretch with the bar when the layout reflows.
+              maskSize: "100% 100%",
+              WebkitMaskSize: "100% 100%",
+            }}
+          >
+            {/* points=levels.length: audioVisualizerPointCount defaults to 28 and
+                would silently drop the first bars of a longer seed. */}
+            <AudioVisualizer levels={levels} points={levels.length} active className="h-full w-full" />
           </div>
         </div>
         <div className="mt-0.5 flex items-center justify-between text-[10px] tabular-nums text-fui-ink-3">
