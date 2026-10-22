@@ -49,8 +49,17 @@ export function usePrivilegedContacts(restaurantId: number): UsePrivilegedContac
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
 
+  // Last-write-wins: every request carries a sequence token and only the most
+  // recent one may touch the state, so a slow provider answer can never
+  // overwrite a newer page/search result (PR review 685, blocker 1).
+  const seqRef = useRef(0);
+  const inflightRef = useRef(0);
+
   const readChats = useCallback(async (nextPage: number, q: string, withSelected: boolean) => {
     if (!restaurantId) return;
+    const seq = ++seqRef.current;
+    inflightRef.current += 1;
+    setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams({ page: String(nextPage), count: String(PAGE_SIZE) });
@@ -59,6 +68,7 @@ export function usePrivilegedContacts(restaurantId: number): UsePrivilegedContac
         headers: { accept: "application/json" },
       });
       const data = await res.json().catch(() => null);
+      if (seq !== seqRef.current) return;
       if (!data) {
         setError("No se pudo leer el WhatsApp conectado");
         return;
@@ -72,36 +82,35 @@ export function usePrivilegedContacts(restaurantId: number): UsePrivilegedContac
       if (withSelected && Array.isArray(data.selected)) setSelected(data.selected);
       if (data.message) setError(data.message);
     } catch {
+      if (seq !== seqRef.current) return;
       setError("No se pudo leer el WhatsApp conectado");
+    } finally {
+      inflightRef.current -= 1;
+      // The counter is the source of truth for the spinner: even a superseded
+      // response must clear it when it is the last one in flight.
+      setLoading(inflightRef.current > 0);
     }
   }, [restaurantId]);
 
-  const loadingRef = useRef(false);
   const fetchPage = useCallback(async (nextPage: number, q: string) => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-    setLoading(true);
     await readChats(nextPage, q, false);
-    loadingRef.current = false;
-    setLoading(false);
   }, [readChats]);
 
   const load = useCallback(async () => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-    setLoading(true);
     await readChats(page, search, true);
-    loadingRef.current = false;
-    setLoading(false);
   }, [readChats, page, search]);
 
-  useEffect(() => { void (async () => {
-    loadingRef.current = true;
-    setLoading(true);
-    await readChats(1, "", true);
-    loadingRef.current = false;
-    setLoading(false);
-  })(); }, [readChats]);
+  useEffect(() => { void readChats(1, "", true); }, [readChats]);
+
+  // A different restaurant starts from a clean search/page slate, otherwise
+  // the previous tenant's query would filter the new one's list invisibly
+  // (PR review 685, blocker 2).
+  useEffect(() => {
+    setSearch("");
+    setPage(1);
+    setTotal(0);
+    setHasMore(false);
+  }, [restaurantId]);
 
   const applySearch = useCallback((q: string) => {
     setSearch(q);
@@ -167,14 +176,14 @@ export function usePrivilegedContacts(restaurantId: number): UsePrivilegedContac
         for (const c of Array.isArray(data.selected) ? data.selected : []) byJid.set(c.jid, c);
         return [...byJid.values()];
       });
-      await readChats(page, search, false);
+      await fetchPage(page, search);
       return { ok: true };
     } catch {
       return { ok: false, message: "No se pudo añadir el número" };
     } finally {
       setAdding(false);
     }
-  }, [restaurantId, page, search, readChats]);
+  }, [restaurantId, page, search, fetchPage]);
 
   return {
     chats, selected, search, applySearch, page, total, hasMore, goToPage,
@@ -199,6 +208,10 @@ export function ConfigBotPrivilegedContacts({ restaurantId }: { restaurantId: nu
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [searchInput, search, applySearch]);
+
+  // Keep the visible search text in sync with the hook's slate when the
+  // restaurant changes (PR review 685, blocker 2).
+  useEffect(() => { setSearchInput(""); }, [restaurantId]);
 
   const groups = useMemo(() => chats.filter((c) => c.isGroup), [chats]);
   const contacts = useMemo(() => chats.filter((c) => !c.isGroup), [chats]);
