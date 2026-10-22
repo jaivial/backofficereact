@@ -751,6 +751,22 @@ function WizardCanvasPreview({ adId, step }: { adId: number; step: RestaurantAdS
   const width = useViewportWidth();
   const canvas = step.canvas!;
   const variant = canvasDimsForWidth(canvas, width);
+  // ads_card_canvas_preview_v1 guard (BIZ-80): an unsaved ad has no render
+  // endpoint (id 0 => 404 => the browser's broken-image glyph), same as the
+  // card face. Keep the step ratio and say why instead of a red broken frame.
+  if (adId <= 0) {
+    return (
+      <span
+        className="publicAdCanvasFrame bo-adWizardCardCanvasPending"
+        style={{ aspectRatio: `${variant.width} / ${variant.height}`, width: "100%", display: "block" }}
+        role="img"
+        aria-label="Guarda el anuncio para previsualizar este paso"
+        data-testid={`ad-wizard-step-${step.id}-canvas-pending`}
+      >
+        <span className="bo-adWizardCanvasPendingLabel">Guarda el anuncio para ver este anuncio</span>
+      </span>
+    );
+  }
   return <iframe title={step.title || "Anuncio"}
     src={`/api/public/ads/${adId}/render?src=backoffice-preview&step=${encodeURIComponent(step.id)}&vw=${width}`}
     style={{ width: "100%", aspectRatio: `${variant.width} / ${variant.height}`, border: 0, display: "block" }} />;

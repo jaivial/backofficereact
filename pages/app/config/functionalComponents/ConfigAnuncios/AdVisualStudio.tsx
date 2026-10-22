@@ -71,7 +71,6 @@ const POPOVER = {
   cardModalMax: 560,
   modalDefaultRadius: 24,
   modalMaxHeightPct: 0.8,
-  frameRadius: 0,
 } as const;
 
 const DEVICES = [
@@ -200,7 +199,19 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, surface 
     100,
     Math.min(modalMax, viewport.width - 2 * POPOVER.overlayPad) - 2 * frameInsetX,
   );
-  const canvasScale = frameWidth / view.width;
+  // ads_canvas_handles_v1 (BIZ-79.1, H1): FRAME_BREATHE is the gutter the frame
+  // keeps around the stage so the -8px edge handles render inside the frame's
+  // own (clean) border-box clip. The stage is scaled to FIT that content box on
+  // both axes and centred by the frame's flex, so the canvas never overruns it.
+  const FRAME_BREATHE = 14;
+  const frameHeight = (frameWidth * view.height) / view.width;
+  const canvasScale = Math.max(
+    0.05,
+    Math.min(
+      (frameWidth - 2 * FRAME_BREATHE) / view.width,
+      (frameHeight - 2 * FRAME_BREATHE) / view.height,
+    ),
+  );
   const selected = useMemo(() => view.elements.find((el) => el.id === selectedId) || null, [view.elements, selectedId]);
   const sorted = useMemo(() => [...view.elements].sort((a, b) => (a.z || 0) - (b.z || 0)), [view.elements]);
 
@@ -344,9 +355,17 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, surface 
       if (drag.kind === "container") {
         updateDoc((doc) => { doc.width = Math.max(100, Math.min(4096, Math.round(drag.origW + (event.clientX - drag.startX) / drag.scale))); doc.height = Math.max(100, Math.min(4096, Math.round(drag.origH + (event.clientY - drag.startY) / drag.scale))); });
       } else if (drag.kind === "move") {
+        // ads_canvas_handles_v1: clamp x/y to the document so the clip-margin
+        // that keeps the edge handles visible can't let CONTENT be dragged
+        // outside the canvas (the -8px handles may still overhang by design).
+        const target = view.elements.find((item) => item.id === drag.id);
+        const maxX = target ? Math.max(0, view.width - target.w) : view.width;
+        const maxY = target ? Math.max(0, view.height - target.h) : view.height;
+        const nextX = drag.origX + (pt.x - drag.startX);
+        const nextY = drag.origY + (pt.y - drag.startY);
         updateElement(drag.id, {
-          x: Math.round(drag.origX + (pt.x - drag.startX)),
-          y: Math.round(drag.origY + (pt.y - drag.startY)),
+          x: Math.round(Math.min(Math.max(0, nextX), maxX)),
+          y: Math.round(Math.min(Math.max(0, nextY), maxY)),
         });
       } else {
         // ads_canvas_handles_v1: every handle grows from the opposite corner
@@ -363,7 +382,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, surface 
         updateElement(drag.id, { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) });
       }
     },
-    [toCanvasPoint, updateElement, updateDoc],
+    [toCanvasPoint, updateElement, updateDoc, view],
   );
 
   const onPointerUp = useCallback(() => {
@@ -683,7 +702,7 @@ export function AdVisualStudio({ canvas, adId, adName, website, stepId, surface 
               >
                 <div
                   className="bo-adstudioFrameMock"
-                  style={{ aspectRatio: `${view.width} / ${view.height}`, borderRadius: POPOVER.frameRadius }}
+                  style={{ aspectRatio: `${view.width} / ${view.height}` }}
                   onPointerMove={onPointerMove}
                   onPointerUp={onPointerUp}
                   data-testid="ad-studio-frame-mock"
