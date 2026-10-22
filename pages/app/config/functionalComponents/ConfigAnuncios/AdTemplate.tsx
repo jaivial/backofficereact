@@ -597,7 +597,7 @@ function WizardCard({
               <iframe
                 title={step.title || "Tarjeta del anuncio"}
                 src={`/api/public/ads/${adId}/render?src=backoffice-preview&variant=${cardDims.variant}&step=${encodeURIComponent(step.id)}&card=1`}
-                style={{ width: "100%", height: "100%", border: 0, display: "block", pointerEvents: editable ? "none" : undefined }}
+                style={{ width: "100%", height: "100%", border: 0, display: "block", pointerEvents: "none" }}
                 data-testid={`ad-wizard-card-${step.id}-canvas-frame`}
               />
             </span>
