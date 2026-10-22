@@ -2270,31 +2270,124 @@ button.bg-bo-accent { color: var(--bo-bg); }
      to the column so the ResizeObserver fits the stage instead of clipping. */
   min-width: 0;
 }
-.bo-adcanvasStage { position: relative; transform-origin: top left; box-shadow: 0 2px 12px var(--bo-shadow-soft, rgba(0, 0, 0, 0.18)); }
+/* ads_canvas_handles_v1 (BIZ-79.1): the stage clips the canvas content to the
+   document, but `overflow: hidden` also cut the resize handles of an element
+   flush with an edge in half. `overflow: clip` + a scale-compensated
+   clip-margin keeps that clip while letting the 16px handles (offset -8px in
+   canvas units) breathe past the border at any zoom. */
+.bo-adcanvasStage { position: relative; transform-origin: top left; box-shadow: 0 2px 12px var(--bo-shadow-soft, rgba(0, 0, 0, 0.18)); overflow: clip; overflow-clip-margin: calc(16px / var(--bo-adcanvas-scale, 1)); }
 .bo-adcanvasEl { position: absolute; box-sizing: border-box; cursor: grab; touch-action: none; }
-.bo-adcanvasEl.is-selected { outline: 2px solid var(--bo-accent); outline-offset: 1px; }
+/* Outline compensates the stage zoom so the selection reads at any scale. */
+.bo-adcanvasEl.is-selected { outline: calc(2px / var(--bo-adcanvas-scale, 1)) solid var(--bo-accent); outline-offset: calc(1px / var(--bo-adcanvas-scale, 1)); }
+.bo-adcanvasEl.is-editing { cursor: text; }
+/* ads_canvas_handles_v1: 8 handles sized in SCREEN px (divided by the stage
+   scale), so the hit area stays grabbable at any zoom level. */
 .bo-adcanvasHandle {
-  /* 24px hit area, 12px visual dot (44px is unreachable on-canvas; this is the
-     largest affordance that stays inside the selected element's corner). */
   position: absolute;
-  right: -12px;
-  bottom: -12px;
-  width: 24px;
-  height: 24px;
+  width: calc(16px / var(--bo-adcanvas-scale, 1));
+  height: calc(16px / var(--bo-adcanvas-scale, 1));
   border: 0;
   border-radius: 50%;
   background: transparent;
   cursor: nwse-resize;
   padding: 0;
+  touch-action: none;
+  z-index: 2;
 }
 .bo-adcanvasHandle::after {
   content: "";
   position: absolute;
-  inset: 6px;
+  inset: calc(3px / var(--bo-adcanvas-scale, 1));
   border-radius: 50%;
   background: var(--bo-accent);
-  border: 2px solid var(--bo-surface);
+  border: calc(1.5px / var(--bo-adcanvas-scale, 1)) solid var(--bo-surface);
 }
+.bo-adcanvasHandle.is-nw { left: calc(-8px / var(--bo-adcanvas-scale, 1)); top: calc(-8px / var(--bo-adcanvas-scale, 1)); cursor: nwse-resize; }
+.bo-adcanvasHandle.is-n  { left: 50%; top: calc(-8px / var(--bo-adcanvas-scale, 1)); margin-left: calc(-8px / var(--bo-adcanvas-scale, 1)); cursor: ns-resize; }
+.bo-adcanvasHandle.is-ne { right: calc(-8px / var(--bo-adcanvas-scale, 1)); top: calc(-8px / var(--bo-adcanvas-scale, 1)); cursor: nesw-resize; }
+.bo-adcanvasHandle.is-e  { right: calc(-8px / var(--bo-adcanvas-scale, 1)); top: 50%; margin-top: calc(-8px / var(--bo-adcanvas-scale, 1)); cursor: ew-resize; }
+.bo-adcanvasHandle.is-se { right: calc(-8px / var(--bo-adcanvas-scale, 1)); bottom: calc(-8px / var(--bo-adcanvas-scale, 1)); cursor: nwse-resize; }
+.bo-adcanvasHandle.is-s  { left: 50%; bottom: calc(-8px / var(--bo-adcanvas-scale, 1)); margin-left: calc(-8px / var(--bo-adcanvas-scale, 1)); cursor: ns-resize; }
+.bo-adcanvasHandle.is-sw { left: calc(-8px / var(--bo-adcanvas-scale, 1)); bottom: calc(-8px / var(--bo-adcanvas-scale, 1)); cursor: nesw-resize; }
+.bo-adcanvasHandle.is-w  { left: calc(-8px / var(--bo-adcanvas-scale, 1)); top: 50%; margin-top: calc(-8px / var(--bo-adcanvas-scale, 1)); cursor: ew-resize; }
+/* ads_canvas_inline_edit_v1: the caret lives on the element itself. */
+.bo-adcanvasInlineEdit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 2px 4px;
+  border: calc(2px / var(--bo-adcanvas-scale, 1)) solid var(--bo-accent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--bo-surface) 88%, transparent);
+  font-family: inherit;
+  line-height: 1.25;
+  resize: none;
+  outline: none;
+  touch-action: none;
+}
+/* Canvas document resize corner (bottom-right of the whole stage). */
+.bo-adcanvasDocHandle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 10000;
+  width: calc(26px / var(--bo-adcanvas-scale, 1));
+  height: calc(26px / var(--bo-adcanvas-scale, 1));
+  border: 0;
+  padding: 0;
+  background: var(--bo-accent);
+  color: var(--bo-surface);
+  border-radius: 8px 0 0 0;
+  cursor: nwse-resize;
+  font-size: calc(14px / var(--bo-adcanvas-scale, 1));
+  line-height: 1;
+  touch-action: none;
+  opacity: 0.9;
+}
+/* ads_canvas_layers_v1: z-ordered layer list inside the studio. */
+.bo-adcanvasLayerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 280px;
+  overflow: auto;
+}
+.bo-adcanvasLayerRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bo-text);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+.bo-adcanvasLayerRow:hover { background: var(--bo-bg-hover); }
+.bo-adcanvasLayerRow.is-selected {
+  border-color: var(--bo-accent);
+  background: color-mix(in srgb, var(--bo-accent) 12%, transparent);
+}
+.bo-adcanvasLayerType {
+  flex: none;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--bo-muted);
+  min-width: 54px;
+}
+.bo-adcanvasLayerName { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bo-adcanvasLayerPos { flex: none; font-size: 11px; color: var(--bo-muted); }
 .bo-adcanvasPanel { border: 1px solid var(--bo-border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bo-surface); }
 .bo-adcanvasPanelHead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .bo-adcanvasPanelHead strong { color: var(--bo-text); font-size: 13px; text-transform: capitalize; }
@@ -2546,6 +2639,8 @@ button.bg-bo-accent { color: var(--bo-bg); }
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
   box-sizing: border-box;
 }
+/* ads_canvas_safezone_v1: both public popover chips, at the exact coordinates
+   the visitor sees (index.css .publicAdClose / .publicAdBack--overlay). */
 .bo-adstudioCloseMock {
   position: absolute;
   top: 12px;
@@ -2553,8 +2648,8 @@ button.bg-bo-accent { color: var(--bo-bg); }
   width: 36px;
   height: 36px;
   border-radius: 999px;
-  background: rgba(36, 52, 43, 0.08);
-  color: inherit;
+  background: rgba(255, 253, 248, 0.92);
+  color: #24342b;
   font-size: 26px;
   line-height: 1;
   display: flex;
@@ -2562,8 +2657,38 @@ button.bg-bo-accent { color: var(--bo-bg); }
   justify-content: center;
   z-index: 3;
   pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
-.bo-adstudioFrameMock { position: relative; width: 100%; overflow: hidden; border-radius: 10px; }
+.bo-adstudioBackMock {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.92);
+  color: #24342b;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+/* Card-face mock: the classic modal padding plus the per-card padding the
+   public list adds around a card_canvas (index.css .publicAdModal + card div). */
+.bo-adstudioCardMock {
+  display: block;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 253, 248, 0.55);
+}
+/* ads_canvas_handles_v1 (BIZ-79.1): this frame used `overflow: hidden`, which
+   clipped the edge handles of an element flush with the canvas border in half.
+   `overflow: clip` + a small clip-margin keeps the rounded-corner clip while
+   letting the screen-px handles (offset -8px) render fully at the border. */
+.bo-adstudioFrameMock { position: relative; width: 100%; overflow: clip; overflow-clip-margin: 12px; border-radius: 10px; }
 .bo-adstudioWidthHandle {
   position: absolute;
   top: 0;
@@ -2599,3 +2724,79 @@ button.bg-bo-accent { color: var(--bo-bg); }
 .bo-adWizardVisualGuide .bo-anunciosPreviewSwitchBtn { justify-content: flex-start; height: auto; min-height: 36px; text-align: left; overflow-wrap: anywhere; }
 /* Keep wizard navigation before the visual canvas on small screens too. */
 .bo-adStudioStage > .bo-anunciosCanvasCol { order: 0; }
+
+/* ==========================================================================
+   autosave_state_v1 + ads_draft_image_guard_v1: pending/draft/retry chrome.
+   ========================================================================== */
+.bo-anunciosSaveStatus[data-state="pending"] {
+  color: var(--bo-accent-2);
+}
+.bo-anunciosSaveDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bo-accent-2);
+  flex: 0 0 auto;
+}
+.bo-anunciosSaveRetry {
+  min-height: 26px;
+  padding: 2px 10px;
+  border: 1px solid color-mix(in srgb, var(--bo-text-danger) 45%, var(--bo-border));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bo-text-danger);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.bo-anunciosSaveRetry:hover {
+  background: color-mix(in srgb, var(--bo-text-danger) 12%, var(--bo-surface-2));
+}
+.bo-anunciosDraftChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--bo-accent-2) 45%, var(--bo-border));
+  background: color-mix(in srgb, var(--bo-accent-2) 10%, transparent);
+  color: var(--bo-text);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ads_card_canvas_preview_v1: the wizard card shows its saved canvas, so the
+   classic face is replaced the same way the public popover does. */
+.bo-adWizardCardCanvas {
+  display: grid;
+  gap: 8px;
+}
+.bo-adWizardCardCanvas .publicAdCanvasFrame {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fffdf8;
+}
+/* Unsaved ad (no render endpoint yet): ratio-locked placeholder instead of
+   the browser's broken-image glyph inside the card frame. */
+.bo-adWizardCardCanvasPending {
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bo-surface-2, #e9e4d8) 80%, transparent);
+  border: 1px dashed var(--bo-border-2, rgba(36, 52, 43, 0.18));
+}
+.bo-adWizardCanvasPendingLabel {
+  padding: 10px 14px;
+  color: var(--bo-muted, #6b7a71);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+.bo-adWizardCanvasHint {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.8;
+}

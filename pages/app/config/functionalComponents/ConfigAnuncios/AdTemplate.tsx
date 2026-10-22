@@ -3,6 +3,7 @@ import { Reorder, useDragControls } from "motion/react";
 import { ChevronLeft, GripVertical, ImagePlus } from "lucide-react";
 import type {
   RestaurantAd,
+  RestaurantAdCanvas,
   RestaurantAdContentElement,
   RestaurantAdContentType,
   RestaurantAdCTA,
@@ -510,36 +511,68 @@ export function AdSurface({
   );
 }
 
+/** Site viewport width, so canvas frames resolve the same variant as the public popover. */
+function useViewportWidth(): number {
+  const [width, setWidth] = React.useState(1280);
+  React.useEffect(() => {
+    const sync = () => setWidth(window.innerWidth);
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
+  }, []);
+  return width;
+}
+
+/** Breakpoint dims of a canvas doc at a viewport width (ads_canvas_breakpoints_v1). */
+function canvasDimsForWidth(canvas: RestaurantAdCanvas, vw: number): { width: number; height: number; variant: string } {
+  const variant = vw < 768 ? "mobile" : vw < 1024 ? "tablet" : "desktop";
+  const dims = variant === "desktop" ? null : canvas.variants?.[variant];
+  return dims ? { width: dims.width, height: dims.height, variant } : { width: canvas.width, height: canvas.height, variant };
+}
+
 function WizardCard({
   step,
   index,
   total,
+  adId,
   website,
   editable,
   selectedId,
   onSelect,
   onOpen,
+  onOpenCard,
   onStepChange,
   onCardButtonsChange,
 }: {
   step: RestaurantAdStep;
   index: number;
   total: number;
+  adId: number;
   website: string;
   editable: boolean;
   selectedId?: string | null;
   onSelect?: (id: string) => void;
   onOpen: () => void;
+  /** Opens this card FACE in the visual studio (surface="card", coord id
+   * ads_step_card_canvas_v1), i.e. the same Figma editor + website iframe the
+   * simple ad uses, scoped to the wizard's initial card. */
+  onOpenCard?: () => void;
   onStepChange?: (stepId: string, patch: Partial<RestaurantAdStep>) => void;
   /** Reorders the buttons inside this card (coord id ads_card_buttons_order_v1). */
   onCardButtonsChange?: (stepId: string, buttons: RestaurantAdCTA[]) => void;
 }) {
   const controls = useDragControls();
+  const viewportWidth = useViewportWidth();
   const startDrag = useCallback((event: React.PointerEvent) => {
     event.preventDefault();
     event.stopPropagation();
     controls.start(event);
   }, [controls]);
+  // ads_card_canvas_preview_v1: a saved card canvas REPLACES the classic face,
+  // exactly like the public popover does, so what the operator sees here is
+  // what the visitor gets. The canvas itself is edited in Visual → Tarjeta.
+  const cardCanvas = step.card_canvas ?? null;
+  const cardDims = cardCanvas ? canvasDimsForWidth(cardCanvas, viewportWidth) : null;
   const card = (
     <div
       className="bo-adWizardCard"
@@ -556,9 +589,45 @@ function WizardCard({
       }}
       data-testid={`ad-wizard-card-${step.id}`}
       data-slot="ad-wizard-card"
+      data-has-canvas={cardCanvas ? "true" : "false"}
       aria-label={editable ? undefined : `Abrir anuncio ${index + 1} de ${total}`}
     >
       <span className="bo-adWizardCardBody" data-slot={`ad-wizard-card-${step.id}-body`}>
+        {cardCanvas && cardDims && adId <= 0 ? (
+          /* ads_card_canvas_preview_v1: an unsaved ad has no render endpoint
+             (id 0 => 404 => the browser's broken-image glyph). Keep the card
+             ratio and say why, instead of a red broken frame. */
+          <span className="bo-adWizardCardCanvas" data-coord-id="ads_card_canvas_preview_v1" data-testid={`ad-wizard-card-${step.id}-canvas`}>
+            <span
+              className="publicAdCanvasFrame bo-adWizardCardCanvasPending"
+              style={{ aspectRatio: `${cardDims.width} / ${cardDims.height}`, width: "100%", display: "block" }}
+              role="img"
+              aria-label="Guarda el anuncio para previsualizar la tarjeta"
+            >
+              <span className="bo-adWizardCanvasPendingLabel">Guarda el anuncio para ver la tarjeta</span>
+            </span>
+          </span>
+        ) : cardCanvas && cardDims ? (
+          <span className="bo-adWizardCardCanvas" data-coord-id="ads_card_canvas_preview_v1" data-testid={`ad-wizard-card-${step.id}-canvas`}>
+            <span
+              className="publicAdCanvasFrame"
+              style={{ aspectRatio: `${cardDims.width} / ${cardDims.height}`, width: "100%", display: "block" }}
+            >
+              <iframe
+                title={step.title || "Tarjeta del anuncio"}
+                src={`/api/public/ads/${adId}/render?src=backoffice-preview&variant=${cardDims.variant}&step=${encodeURIComponent(step.id)}&card=1`}
+                style={{ width: "100%", height: "100%", border: 0, display: "block", pointerEvents: "none" }}
+                data-testid={`ad-wizard-card-${step.id}-canvas-frame`}
+              />
+            </span>
+            {editable ? (
+              <span className="bo-adWizardCanvasHint" data-testid={`ad-wizard-card-${step.id}-canvas-hint`}>
+                Tarjeta con lienzo propio: edítala en Visual → Tarjeta inicial.
+              </span>
+            ) : null}
+          </span>
+        ) : (
+          <>
         {editable ? (
           <EditableText
             value={step.title}
@@ -584,6 +653,8 @@ function WizardCard({
         ) : step.description ? (
           <span className="bo-adWizardCardDesc">{step.description}</span>
         ) : null}
+          </>
+        )}
         <span className="bo-adWizardCardActions" data-slot={`ad-wizard-card-${step.id}-actions`}>
           {editable ? (
             <AdButtons
@@ -628,6 +699,19 @@ function WizardCard({
               Editar anuncio
             </button>
           ) : null}
+          {editable && onOpenCard ? (
+            <button
+              type="button"
+              className="bo-adModalCta bo-adWizardEdit"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => { event.stopPropagation(); onOpenCard(); }}
+              data-testid={`ad-wizard-card-${step.id}-edit-card`}
+              data-coord-id="ads_step_card_canvas_v1"
+              title="Editar esta tarjeta inicial en el estudio visual (lienzo sobre la web real)"
+            >
+              Editar tarjeta (lienzo)
+            </button>
+          ) : null}
         </span>
       </span>
       {editable ? (
@@ -664,18 +748,12 @@ function WizardCard({
 /** Multiple layout: step 0 is the cards column, any other index renders that
  * announcement. Clicking a card (not one of its action buttons) advances. */
 function WizardCanvasPreview({ adId, step }: { adId: number; step: RestaurantAdStep }) {
-  const [width, setWidth] = React.useState(1280);
-  React.useEffect(() => {
-    const sync = () => setWidth(window.innerWidth);
-    sync();
-    window.addEventListener("resize", sync);
-    return () => window.removeEventListener("resize", sync);
-  }, []);
+  const width = useViewportWidth();
   const canvas = step.canvas!;
-  const variant = width < 768 ? canvas.variants?.mobile : width < 1024 ? canvas.variants?.tablet : undefined;
+  const variant = canvasDimsForWidth(canvas, width);
   return <iframe title={step.title || "Anuncio"}
     src={`/api/public/ads/${adId}/render?src=backoffice-preview&step=${encodeURIComponent(step.id)}&vw=${width}`}
-    style={{ width: "100%", aspectRatio: `${variant?.width || canvas.width} / ${variant?.height || canvas.height}`, border: 0, display: "block" }} />;
+    style={{ width: "100%", aspectRatio: `${variant.width} / ${variant.height}`, border: 0, display: "block" }} />;
 }
 
 export function AdWizard({
@@ -692,6 +770,7 @@ export function AdWizard({
   onCardButtonsChange,
   onButtonsChange,
   onImagePick,
+  onOpenCardSurface,
   testId = "ad-wizard",
 }: {
   ad: RestaurantAd;
@@ -709,6 +788,10 @@ export function AdWizard({
   /** Wizard-wide buttons: the same set under every announcement. */
   onButtonsChange?: (buttons: RestaurantAdCTA[]) => void;
   onImagePick?: (item: RestaurantAdContentElement) => void;
+  /** Opens one card face in the visual studio (surface="card"), so the wizard's
+   * initial card is edited with the same Figma editor + website iframe (coord
+   * id ads_step_card_canvas_v1). */
+  onOpenCardSurface?: (stepId: string, index: number) => void;
   testId?: string;
 }) {
   const go = useCallback((index: number) => onStepIndex?.(Math.min(Math.max(index, 0), steps.length)), [onStepIndex, steps.length]);
@@ -766,11 +849,13 @@ export function AdWizard({
             step={step}
             index={index}
             total={steps.length}
+            adId={ad.id}
             website={website}
             editable={editable}
             selectedId={selectedId}
             onSelect={onSelect}
             onOpen={() => go(index + 1)}
+            onOpenCard={onOpenCardSurface ? () => onOpenCardSurface(step.id, index) : undefined}
             onStepChange={onStepChange}
             onCardButtonsChange={onCardButtonsChange}
           />
