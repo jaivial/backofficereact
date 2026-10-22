@@ -1,8 +1,9 @@
 /* Forky island — Control UI (control-ui.dev) owned-source styles.
  *
- * Installed components: r/chat-composer-attachment + r/spinner (+ r/core lib,
- * knob contracts). Component sources live in components/control-ui/; this file
- * holds their recipe stylesheets, prefixed with .bui-scope (same convention as
+ * Installed components: r/chat-composer-attachment + r/audio-visualizer
+ * (alternative=bars) + r/spinner (+ r/core lib, knob contracts). Component
+ * sources live in components/control-ui/; this file holds their recipe
+ * stylesheets, prefixed with .bui-scope (same convention as
  * forky-bui-island.css, which is AUTO-GENERATED from beautifului.dev and must
  * NOT be edited) so nothing leaks in or out of the <BuiIsland>.
  *
@@ -12,8 +13,8 @@
  * maps those tokens onto the island's beautifului.dev palette. The shim only
  * references island tokens, so dark/light both follow the app theme.
  *
- * Regenerate on a control-ui update: re-fetch the two registry items, re-prefix
- * the recipe css with .bui-scope, refresh the shim.
+ * Regenerate on a control-ui update: re-fetch the registry items, re-prefix the
+ * recipe css with .bui-scope, refresh the shim.
  */
 
 /* ── Control UI theme token shim (island palette) ────────── */
@@ -38,10 +39,16 @@
   --text-micro: 11px;
   --text-caption: 12px;
   --text-label: 12.5px;
+  /* durations/eases follow the control-ui core theme scale (fast < base < slow) */
+  --duration-fast: 100ms;
   --duration-base: 150ms;
   --duration-slow: 300ms;
   --duration-loop: 1s;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  /* audio-visualizer extras: baseline stroke colour + entrance blur */
+  --border: var(--line);
+  --blur-xs: 4px;
 }
 
 /* ── Button paint shim (attachment remove control) ──────────
@@ -336,4 +343,210 @@
   .bui-scope :where([data-control-family="spinner"] [data-slot="indicator"]) {
     animation: none;
   }
+}
+
+/* ── r/audio-visualizer recipe (alternative=bars, scoped) ────
+ * Installed for the Forky voice note (forky F3): the player feeds it the
+ * seeded bar levels of the clip and dims the unplayed tail through a mask,
+ * so the waveform reads as progress while the audio plays. ─────────── */
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant]) {
+    --cui-audio-visualizer-radius: var(--radius-control);
+    --cui-audio-visualizer-bar-background: oklch(from var(--primary) l c h / 0.8);
+    --cui-audio-visualizer-bar-radius: var(--radius-control);
+    --cui-audio-visualizer-bar-size: calc(var(--spacing) * 1);
+    --cui-audio-visualizer-bar-gap: 1px;
+    --cui-audio-visualizer-line-fill: oklch(from var(--primary) l c h / 0.18);
+    --cui-audio-visualizer-line-stroke: oklch(from var(--primary) l c h / 0.8);
+    --cui-audio-visualizer-baseline-stroke: oklch(from var(--border) l c h / 0.55);
+    --_audio-visualizer-inline-sign: 1;
+  }
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant]:dir(rtl)) {
+    --_audio-visualizer-inline-sign: -1;
+  }
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="root"][data-variant]) {
+    block-size: calc(var(--spacing) * 7);
+    inline-size: calc(var(--spacing) * 44);
+    padding-inline: calc(var(--spacing) * 1.5);
+    --_audio-visualizer-bar-track-filter: none;
+    border-radius: var(--cui-audio-visualizer-radius);
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="root"][data-variant="bars"]) {
+    padding-block: calc(var(--spacing) * 1.5);
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="track"]) {
+    gap: var(--cui-audio-visualizer-bar-gap);
+    opacity: 0.55;
+    transition: opacity var(--duration-base) var(--ease-standard);
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="track"][data-active="true"]) {
+    opacity: 1;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="bar-track"]) {
+    inline-size: var(--cui-audio-visualizer-bar-size);
+    min-inline-size: 0;
+    flex-shrink: 1;
+    transition:
+      opacity var(--duration-base) var(--ease-emphasized),
+      filter var(--duration-base) var(--ease-emphasized),
+      translate var(--duration-base) var(--ease-emphasized);
+    filter: var(--_audio-visualizer-bar-track-filter);
+  }
+
+  @starting-style {
+    .bui-scope :where([data-control-family="audio-visualizer"][data-slot="bar-track"]) {
+      opacity: 0;
+      --_audio-visualizer-bar-track-filter: blur(var(--blur-xs));
+      filter: var(--_audio-visualizer-bar-track-filter);
+      translate: calc(var(--spacing) * var(--_audio-visualizer-inline-sign)) 0;
+    }
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="bar"]) {
+    background: var(--cui-audio-visualizer-bar-background);
+    border-radius: var(--cui-audio-visualizer-bar-radius);
+    opacity: var(--_audio-visualizer-level-opacity);
+    transition:
+      clip-path var(--duration-base) var(--ease-standard),
+      opacity var(--duration-base) var(--ease-standard);
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="baseline"]) {
+    stroke: var(--cui-audio-visualizer-baseline-stroke);
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="waveform"]) {
+    fill: var(--cui-audio-visualizer-line-fill);
+    stroke: var(--cui-audio-visualizer-line-stroke);
+    transition: d var(--duration-base) var(--ease-standard);
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bars"][data-active="true"] [data-slot="bar"]) {
+    transition: none;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="line"]:not([data-active="true"]) [data-slot="waveform"]) {
+    opacity: 0;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="line"]:not([data-active="true"]) [data-slot="baseline"]) {
+    stroke-dasharray: 1 4;
+    stroke-linecap: round;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-slot="root"][data-variant="bar"]) {
+    --cui-audio-visualizer-bar-size: calc(var(--spacing) * 1.5);
+    --cui-audio-visualizer-bar-gap: calc(var(--spacing) * 0.75);
+    padding-block: calc(var(--spacing) * 1);
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"] [data-slot="track"]) {
+    display: flex;
+    block-size: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"][data-align="start"] [data-slot="track"]) {
+    align-items: flex-start;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"][data-align="end"] [data-slot="track"]) {
+    align-items: flex-end;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"] [data-slot="bar"]) {
+    min-inline-size: 0;
+    max-inline-size: var(--cui-audio-visualizer-bar-size);
+    flex: 1;
+    transform-origin: center;
+    transition:
+      height var(--duration-fast) var(--ease-standard),
+      opacity var(--duration-fast) var(--ease-standard);
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"][data-align="start"] [data-slot="bar"]) {
+    transform-origin: top;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"][data-align="end"] [data-slot="bar"]) {
+    transform-origin: bottom;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"][data-idle="pulse"]:not([data-active="true"]) [data-slot="bar"]) {
+    animation: cui-audio-bar-pulse calc(var(--duration-slow) * 4) var(--ease-standard) infinite;
+  }
+
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"][data-idle="wave"]:not([data-active="true"]) [data-slot="bar"]),
+  .bui-scope :where([data-control-family="audio-visualizer"][data-variant="bar"][data-loading="true"] [data-slot="bar"]) {
+    animation: cui-audio-bar-pulse calc(var(--duration-slow) * 4) var(--ease-standard) infinite;
+    animation-delay: var(--_audio-visualizer-delay);
+  }
+
+  @keyframes cui-audio-bar-pulse {
+    0%,
+    100% {
+      transform: scaleY(1);
+    }
+    50% {
+      transform: scaleY(4);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bui-scope :where([data-control-family="audio-visualizer"] [data-slot]) {
+      animation: none;
+      transition: none;
+    }
+  }
+
+@property --cui-audio-visualizer-bar-size {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cui-audio-visualizer-bar-gap {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cui-audio-visualizer-radius {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cui-audio-visualizer-bar-radius {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cui-audio-visualizer-bar-background {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --cui-audio-visualizer-line-fill {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --cui-audio-visualizer-line-stroke {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --cui-audio-visualizer-baseline-stroke {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
 }
