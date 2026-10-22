@@ -1902,6 +1902,10 @@ body > div.fixed.z-50.w-72.overflow-hidden.rounded-\[10px\].bg-surface.shadow-ov
   --tw-leading: calc(var(--spacing) * 6);
   line-height: calc(var(--spacing) * 6);
 }
+/* HOST-EDIT (forky prompt bar QA 20261021): taller single-line input height. */
+.bui-scope .min-h-9 {
+  min-height: calc(var(--spacing) * 9);
+}
 .bui-scope .text-\[16px\] {
   font-size: 16px;
 }
