@@ -201,6 +201,23 @@ export function canvasElementDraftReason(el: RestaurantAdCanvasElement): string 
   return "";
 }
 
+/**
+ * What the backend HELD BACK rather than fixed (BIZ-79.3). The save chip used
+ * to count an empty-button or an out-of-range font size as a draft, but the
+ * backend sanitizes those in place and persists them, so the badge stayed at
+ * "N en borrador" after everything actually saved. Only a draft the backend
+ * drops (no size, image with no http(s) src, unusable background image) counts
+ * here; the inspector keeps `canvasElementDraftReason` for its per-field hint.
+ */
+export function canvasElementHardDraftReason(el: RestaurantAdCanvasElement): string {
+  if (el.w <= 0 || el.h <= 0) return "Tamaño inválido";
+  if (el.type === "image") {
+    const props = (el.props ?? {}) as Record<string, unknown>;
+    return isCanvasHttpURL(props.src) ? "" : "Imagen sin URL http(s)";
+  }
+  return "";
+}
+
 /** Fixes what can be fixed in place and holds back what cannot (counts drafts). */
 function sanitizeCanvasElements(elements: RestaurantAdCanvasElement[], onDraft: () => void): RestaurantAdCanvasElement[] {
   const out: RestaurantAdCanvasElement[] = [];
@@ -305,7 +322,7 @@ export function sanitizeAdForSave(ad: RestaurantAd): { ad: RestaurantAd; drafts:
 
 export function canvasDocDraftCount(doc: RestaurantAdCanvas | null | undefined): number {
   if (!doc) return 0;
-  let count = (doc.elements ?? []).filter((el) => canvasElementDraftReason(el) !== "").length;
+  let count = (doc.elements ?? []).filter((el) => canvasElementHardDraftReason(el) !== "").length;
   if (doc.background?.type === "image" && !isCanvasHttpURL(doc.background.value)) count += 1;
   if (doc.variants?.tablet) count += canvasDocDraftCount({ ...doc, ...doc.variants.tablet, variants: undefined });
   if (doc.variants?.mobile) count += canvasDocDraftCount({ ...doc, ...doc.variants.mobile, variants: undefined });
