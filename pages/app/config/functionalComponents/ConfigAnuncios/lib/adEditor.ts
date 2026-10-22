@@ -159,19 +159,59 @@ export function adSavePayload(ad: RestaurantAd, website = "") {
 
 // ---------------------------------------------------------------------------
 // Canvas save guard (coord id ads_draft_image_guard_v1) - client mirror of
-// validateBOAdCanvas (backend internal/api/ads_canvas.go). One incomplete
-// element used to 400 the whole payload and silently block every other edit;
-// now the payload is sanitized instead: unfixable elements (an image without
-// a usable URL) stay in the editor as an explicit draft and only they are
-// left out of the request, so the rest of the work always lands.
+// validateBOAdCanvas + validateAdCanvasElements (backend internal/api/
+// ads_canvas.go). One incomplete element used to 400 the whole payload and
+// silently block every other edit; now the payload is sanitized instead:
+// unfixable elements (an image without a usable URL, a button whose href is
+// not a safeURL, oversized props, elements past the 200 cap, unknown types)
+// stay in the editor as an explicit draft and only they are left out of the
+// request, while everything the backend tolerates is adjusted in place
+// (text limits, enums, colors, id and size bounds), so the rest of the work
+// always lands (BIZ-79.2).
 // ---------------------------------------------------------------------------
 
 const CANVAS_TEXT_FONT_MIN = 4;
 const CANVAS_TEXT_FONT_MAX = 400;
+const CANVAS_BUTTON_FONT_MIN = 4;
+const CANVAS_BUTTON_FONT_MAX = 200;
+// Backend caps mirrored one-to-one from internal/api/ads_canvas.go so a value
+// the API would reject is caught (fixed or held back) before the save.
+const CANVAS_MAX_ELEMENTS = 200; // adCanvasMaxElements, per doc and per variant
+const CANVAS_MAX_TEXT_LENGTH = 2000; // adCanvasMaxTextLength
+const CANVAS_BUTTON_TEXT_MAX_LENGTH = 120;
+const CANVAS_MAX_URL_LENGTH = 2048; // adCanvasMaxURLLength
+const CANVAS_MAX_PROPS_BYTES = 32 * 1024; // element props budget
+const CANVAS_MAX_ELEMENT_DIM = 4096 * 2; // element w/h upper bound
+const CANVAS_MAX_FONT_FAMILY_LENGTH = 120;
+const CANVAS_IMAGE_MAX_ALT_LENGTH = 200;
 
 /** True for the absolute http(s) URLs the backend accepts as an image src. */
 export function isCanvasHttpURL(value: unknown): boolean {
-  return /^https?:\/\/\S+$/i.test(asText(value).trim());
+  const raw = asText(value).trim();
+  return raw.length <= CANVAS_MAX_URL_LENGTH && /^https?:\/\/\S+$/i.test(raw);
+}
+
+/** Exact mirror of adCanvasSafeURL (backend ads_canvas.go): http(s), mailto,
+ * tel and root-relative links only, at most 2048 chars. This is what the
+ * backend demands from a canvas button href. */
+export function isCanvasSafeURL(value: unknown): boolean {
+  const raw = asText(value).trim();
+  if (!raw || raw.length > CANVAS_MAX_URL_LENGTH) return false;
+  if (raw.startsWith("/") && !raw.startsWith("//")) return true;
+  try {
+    return ["http:", "https:", "mailto:", "tel:"].includes(new URL(raw).protocol);
+  } catch {
+    return false;
+  }
+}
+
+/** Byte length of a props object the way the backend receives it (JSON). */
+function canvasPropsByteLength(props: unknown): number {
+  try {
+    return new TextEncoder().encode(JSON.stringify(props ?? {})).length;
+  } catch {
+    return Number.POSITIVE_INFINITY; // unserializable props would fail the backend decode too
+  }
 }
 
 /** Backend mirror of adCanvasSafeColor (hex, rgb()/hsl() families, named). */
@@ -206,43 +246,86 @@ export function canvasElementDraftReason(el: RestaurantAdCanvasElement): string 
  * to count an empty-button or an out-of-range font size as a draft, but the
  * backend sanitizes those in place and persists them, so the badge stayed at
  * "N en borrador" after everything actually saved. Only a draft the backend
- * drops (no size, image with no http(s) src, unusable background image) counts
- * here; the inspector keeps `canvasElementDraftReason` for its per-field hint.
+ * drops (no size, image with no http(s) src, unusable background image,
+ * button href that is not a safeURL, props over the 32KB budget, unknown
+ * element type, elements past the 200 cap) counts here; the inspector keeps
+ * `canvasElementDraftReason` for its per-field hint.
  */
 export function canvasElementHardDraftReason(el: RestaurantAdCanvasElement): string {
-  if (el.w <= 0 || el.h <= 0) return "Tamaño inválido";
+  if (!Number.isFinite(el.w) || !Number.isFinite(el.h) || el.w <= 0 || el.h <= 0) return "Tamaño inválido";
+  const props = (el.props ?? {}) as Record<string, unknown>;
+  if (canvasPropsByteLength(props) > CANVAS_MAX_PROPS_BYTES) return "Propiedades demasiado grandes";
+  if (el.type !== "text" && el.type !== "image" && el.type !== "button" && el.type !== "shape") return "Tipo de elemento desconocido";
   if (el.type === "image") {
-    const props = (el.props ?? {}) as Record<string, unknown>;
     return isCanvasHttpURL(props.src) ? "" : "Imagen sin URL http(s)";
+  }
+  if (el.type === "button") {
+    return isCanvasSafeURL(props.href) ? "" : "Botón con enlace no válido";
   }
   return "";
 }
 
-/** Fixes what can be fixed in place and holds back what cannot (counts drafts). */
+/**
+ * Fixes in place whatever the backend would clamp or truncate, and holds back
+ * whatever it would reject as-is (BIZ-79.2, mirror of validateAdCanvasElements
+ * in internal/api/ads_canvas.go): element id (present, unique, max 64), size
+ * bounds, text/button length limits, enum props (align, fit, shape, type),
+ * safe colors and the button fontSize range. Elements past the backend cap of
+ * 200 stay as local drafts so the first 200 always land.
+ */
 function sanitizeCanvasElements(elements: RestaurantAdCanvasElement[], onDraft: () => void): RestaurantAdCanvasElement[] {
   const out: RestaurantAdCanvasElement[] = [];
+  const seen = new Set<string>();
   for (const el of elements) {
-    const reason = canvasElementDraftReason(el);
-    if (!reason) {
-      out.push(el);
-      continue;
-    }
-    // No size or no usable image src: the element stays locally as a draft.
-    if (el.w <= 0 || el.h <= 0 || el.type === "image") {
-      onDraft();
-      continue;
-    }
+    if (out.length >= CANVAS_MAX_ELEMENTS) { onDraft(); continue; }
+    if (canvasElementHardDraftReason(el)) { onDraft(); continue; }
+    let id = asText(el.id).trim();
+    let adjusted = false;
+    if (!id) { id = createClientID("el"); adjusted = true; } else if (id.length > 64) { id = id.slice(0, 64); adjusted = true; }
+    if (seen.has(id)) { id = createClientID("el"); adjusted = true; }
+    seen.add(id);
+    const w = Math.min(el.w, CANVAS_MAX_ELEMENT_DIM);
+    const h = Math.min(el.h, CANVAS_MAX_ELEMENT_DIM);
+    if (w !== el.w || h !== el.h) adjusted = true;
     const props = { ...(el.props as Record<string, unknown>) };
-    if (el.type === "button") props.text = "Botón";
-    if (el.type === "text") props.fontSize = clampCanvasNumber(Number(props.fontSize), CANVAS_TEXT_FONT_MIN, CANVAS_TEXT_FONT_MAX, 16);
-    out.push({ ...el, props });
-    onDraft();
+    if (el.type === "text") {
+      const text = asText(props.text);
+      if (text.length > CANVAS_MAX_TEXT_LENGTH) { props.text = text.slice(0, CANVAS_MAX_TEXT_LENGTH); adjusted = true; }
+      const size = Number(props.fontSize);
+      if (!(size >= CANVAS_TEXT_FONT_MIN && size <= CANVAS_TEXT_FONT_MAX)) { props.fontSize = clampCanvasNumber(size, CANVAS_TEXT_FONT_MIN, CANVAS_TEXT_FONT_MAX, 16); adjusted = true; }
+      if (props.color && !isCanvasSafeColor(props.color)) { delete props.color; adjusted = true; }
+      if (props.align !== "left" && props.align !== "center" && props.align !== "right") { props.align = "left"; adjusted = true; }
+      const family = asText(props.fontFamily);
+      if (family.length > CANVAS_MAX_FONT_FAMILY_LENGTH) { props.fontFamily = family.slice(0, CANVAS_MAX_FONT_FAMILY_LENGTH); adjusted = true; }
+    } else if (el.type === "image") {
+      if (props.fit !== "cover" && props.fit !== "contain") { props.fit = "cover"; adjusted = true; }
+      const alt = asText(props.alt);
+      if (alt.length > CANVAS_IMAGE_MAX_ALT_LENGTH) { props.alt = alt.slice(0, CANVAS_IMAGE_MAX_ALT_LENGTH); adjusted = true; }
+    } else if (el.type === "button") {
+      const text = asText(props.text);
+      if (!text.trim()) { props.text = "Botón"; adjusted = true; }
+      else if (text.length > CANVAS_BUTTON_TEXT_MAX_LENGTH) { props.text = text.slice(0, CANVAS_BUTTON_TEXT_MAX_LENGTH); adjusted = true; }
+      if (props.bg && !isCanvasSafeColor(props.bg)) { delete props.bg; adjusted = true; }
+      if (props.color && !isCanvasSafeColor(props.color)) { delete props.color; adjusted = true; }
+      const size = Number(props.fontSize);
+      if (!(size >= CANVAS_BUTTON_FONT_MIN && size <= CANVAS_BUTTON_FONT_MAX)) { props.fontSize = clampCanvasNumber(size, CANVAS_BUTTON_FONT_MIN, CANVAS_BUTTON_FONT_MAX, 16); adjusted = true; }
+    } else if (el.type === "shape") {
+      if (props.shape !== "rect" && props.shape !== "ellipse") { props.shape = "rect"; adjusted = true; }
+      if (props.fill && !isCanvasSafeColor(props.fill)) { delete props.fill; adjusted = true; }
+      if (props.stroke && !isCanvasSafeColor(props.stroke)) { delete props.stroke; adjusted = true; }
+    }
+    out.push(adjusted ? { ...el, id, w, h, props } : el);
+    if (adjusted) onDraft();
   }
   return out;
 }
 
 function sanitizeCanvasBackground(bg: RestaurantAdCanvasBackground | undefined, onDraft: () => void): RestaurantAdCanvasBackground {
   const base = bg ?? { type: "color" as const, value: "" };
+  if (base.type !== "color" && base.type !== "image") {
+    onDraft();
+    return { type: "color", value: "" };
+  }
   if (base.type === "image" && !isCanvasHttpURL(base.value)) {
     onDraft();
     return { type: "color", value: "" };
@@ -322,7 +405,10 @@ export function sanitizeAdForSave(ad: RestaurantAd): { ad: RestaurantAd; drafts:
 
 export function canvasDocDraftCount(doc: RestaurantAdCanvas | null | undefined): number {
   if (!doc) return 0;
-  let count = (doc.elements ?? []).filter((el) => canvasElementHardDraftReason(el) !== "").length;
+  const elements = doc.elements ?? [];
+  let count = elements.slice(0, CANVAS_MAX_ELEMENTS).filter((el) => canvasElementHardDraftReason(el) !== "").length;
+  // Elements past the backend cap are held back whole (BIZ-79.2).
+  count += Math.max(0, elements.length - CANVAS_MAX_ELEMENTS);
   if (doc.background?.type === "image" && !isCanvasHttpURL(doc.background.value)) count += 1;
   if (doc.variants?.tablet) count += canvasDocDraftCount({ ...doc, ...doc.variants.tablet, variants: undefined });
   if (doc.variants?.mobile) count += canvasDocDraftCount({ ...doc, ...doc.variants.mobile, variants: undefined });
