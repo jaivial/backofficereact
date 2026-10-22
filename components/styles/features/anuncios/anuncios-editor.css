@@ -2270,7 +2270,17 @@ button.bg-bo-accent { color: var(--bo-bg); }
      to the column so the ResizeObserver fits the stage instead of clipping. */
   min-width: 0;
 }
-.bo-adcanvasStage { position: relative; transform-origin: top left; box-shadow: 0 2px 12px var(--bo-shadow-soft, rgba(0, 0, 0, 0.18)); overflow: hidden; }
+/* ads_canvas_handles_v1 (BIZ-79.1, H1): the stage clips the canvas content to
+   the document, but `overflow: hidden` also cut the resize handles of an
+   element flush with an edge in half. `overflow: clip` + a scale-compensated
+   clip-margin keeps that clip while letting the 16px handles (offset -8px in
+   canvas units) breathe past the border at any zoom. `border-radius` mirrors
+   the public `.publicAdCanvasFrame` so the canvas face is rounded on its own
+   (the frame's own clip no longer reaches it, see .bo-adstudioFrameMock), and
+   `transform-origin: center` keeps it centred inside the frame's gutter.
+   `flex-shrink: 0` is REQUIRED: as a flex child of the padded frame the stage
+   would otherwise shrink on the main axis only, squashing the canvas aspect. */
+.bo-adcanvasStage { position: relative; flex: 0 0 auto; transform-origin: center; box-shadow: 0 2px 12px var(--bo-shadow-soft, rgba(0, 0, 0, 0.18)); overflow: clip; overflow-clip-margin: calc(16px / var(--bo-adcanvas-scale, 1)); border-radius: 10px; }
 .bo-adcanvasEl { position: absolute; box-sizing: border-box; cursor: grab; touch-action: none; }
 /* Outline compensates the stage zoom so the selection reads at any scale. */
 .bo-adcanvasEl.is-selected { outline: calc(2px / var(--bo-adcanvas-scale, 1)) solid var(--bo-accent); outline-offset: calc(1px / var(--bo-adcanvas-scale, 1)); }
@@ -2679,7 +2689,13 @@ button.bg-bo-accent { color: var(--bo-bg); }
   border-radius: 12px;
   background: rgba(255, 253, 248, 0.55);
 }
-.bo-adstudioFrameMock { position: relative; width: 100%; overflow: hidden; border-radius: 10px; }
+/* ads_canvas_handles_v1 (BIZ-79.1, H1): the frame clips cleanly on its own
+   border-box (`overflow: hidden`, NO clip-margin, so its rounded corners are
+   not outset into a larger, wrong radius) and reserves a fixed inner gutter
+   (padding). The stage is scaled into that content box (see AdVisualStudio
+   FRAME_BREATHE) and centred by flex, so the stage's edge handles (-8px on
+   screen) sit in the gutter and stay fully visible instead of being cut. */
+.bo-adstudioFrameMock { position: relative; box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px; overflow: hidden; border-radius: 10px; }
 .bo-adstudioWidthHandle {
   position: absolute;
   top: 0;
@@ -2770,6 +2786,21 @@ button.bg-bo-accent { color: var(--bo-bg); }
   overflow: hidden;
   border-radius: 12px;
   background: #fffdf8;
+}
+/* Unsaved ad (no render endpoint yet): ratio-locked placeholder instead of
+   the browser's broken-image glyph inside the card frame. */
+.bo-adWizardCardCanvasPending {
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bo-surface-2, #e9e4d8) 80%, transparent);
+  border: 1px dashed var(--bo-border-2, rgba(36, 52, 43, 0.18));
+}
+.bo-adWizardCanvasPendingLabel {
+  padding: 10px 14px;
+  color: var(--bo-muted, #6b7a71);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
 }
 .bo-adWizardCanvasHint {
   font-size: 12px;

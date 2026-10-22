@@ -1210,6 +1210,16 @@ export function AnuncioEditor({ api, website, phone: restaurantPhone = "", notif
                   onCardButtonsChange={(stepId, buttons) => setAd(updateStep(ad, stepId, { buttons }))}
                   onStepChange={(stepId, patch) => setAd(updateStep(ad, stepId, patch))}
                   onButtonsChange={(buttons) => setAd({ ...ad, ctas: buttons })}
+                  onOpenCardSurface={(stepId, index) => {
+                    // ads_step_card_canvas_v1: the wizard's initial card is
+                    // edited in the SAME Figma studio + website iframe as the
+                    // simple ad, on the "Tarjeta inicial" surface.
+                    setActiveStepId(stepId);
+                    setWizardCards(false);
+                    setWizardStep(index + 1);
+                    setCanvasSurface("card");
+                    setSelectedId(null);
+                  }}
                   onImagePick={() => {
                     setImageTarget(activeStep ? { kind: "step-content", stepId: activeStep.id } : { kind: "ad" });
                     setImageOpen(true);
