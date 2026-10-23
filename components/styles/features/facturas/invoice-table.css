@@ -9,9 +9,12 @@
   cursor: pointer;
 }
 
+/* The invoice number column sizes itself to its content and never wraps:
+   the header ("N. Factura") must not break into two lines. */
 .bo-table--facturas th.col-invoice_number,
 .bo-table--facturas td.col-invoice_number {
-  width: 100px;
+  width: auto;
+  white-space: nowrap;
 }
 
 .bo-table--facturas th.col-customer_name,
