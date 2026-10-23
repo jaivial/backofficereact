@@ -78,3 +78,24 @@ export function calculateTotalPages(total: number, limit: number): number {
 export function generateSummaryText(shown: number, total: number): string {
   return `${shown} de ${total} facturas`;
 }
+
+/**
+ * Label of the customer's fiscal identifier: "NIF" for a person (DNI/NIE) and
+ * "CIF" for a company, following the option chosen in the invoice form. The
+ * invoices created before that choice kept no type and fall back to the shape
+ * of the value. Mirrors the backend rule (invoice_render.go: dniCifLabel), so
+ * the form, the BackOffice and the PDF label the same value the same way.
+ * Coordination id: invoice_dni_cif_type_v1
+ */
+export function dniCifLabel(invoice: { customer_dni_cif?: string; customer_dni_cif_type?: string } | null): string {
+  const value = (invoice?.customer_dni_cif || "").trim();
+  if (!value) return "";
+  const type = (invoice?.customer_dni_cif_type || "").trim().toLowerCase();
+  if (type === "dni") return "NIF";
+  if (type === "cif") return "CIF";
+  const upper = value.toUpperCase();
+  if (/^[0-9]/.test(upper)) return "NIF";
+  // A NIE (foreign resident) starts with X, Y or Z followed by digits.
+  if (/^[XYZ][0-9]/.test(upper)) return "NIF";
+  return "CIF";
+}

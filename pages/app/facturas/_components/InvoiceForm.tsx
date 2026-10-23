@@ -500,8 +500,11 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       customer_surname: customerSurname || undefined,
       customer_email: customerEmail,
       // The toggle only chooses the document type (CIF / DNI-NIE): whatever the
-      // operator types is saved, it used to be dropped in CIF mode.
+      // operator types is saved, it used to be dropped in CIF mode. The type
+      // travels with the value so the PDF, the email and the WhatsApp print
+      // the matching label ("NIF" / "CIF").
       customer_dni_cif: customerDniCif || undefined,
+      customer_dni_cif_type: customerDniCif ? (useDni ? "dni" : "cif") : undefined,
       customer_phone: customerPhone || undefined,
       customer_address_street: customerAddressStreet || undefined,
       customer_address_number: customerAddressNumber || undefined,
