@@ -776,6 +776,14 @@ export default function Page() {
           setDetailsInvoice(null);
           handleSendWhatsApp(inv);
         }}
+        onEdit={(inv) => {
+          setDetailsInvoice(null);
+          handleEditInvoice(inv);
+        }}
+        onDelete={(inv) => {
+          setDetailsInvoice(null);
+          handleDeleteInvoice(inv);
+        }}
       />
 
       {/* Column Picker Modal (facturas_columns_preference_v1) */}
