@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { User, Mail, Phone, Calendar, FileText, Hash, Tag as TagIcon, CreditCard, MapPin, BadgeCheck, Clock, Users, ExternalLink, Download, Send, MessageCircle, Share2 } from "lucide-react";
+import { User, Mail, Phone, Calendar, FileText, Hash, Tag as TagIcon, CreditCard, MapPin, BadgeCheck, Clock, Users, ExternalLink, Download, Send, MessageCircle, Share2, PencilLine, Trash2 } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
 import { ModalHeader } from "../../../../ui/overlays/ModalHeader";
 import { ScrollArea } from "../../../../ui/layout/ScrollArea";
@@ -15,6 +15,9 @@ interface InvoiceDetailsModalProps {
   onSendEmail?: (invoice: Invoice) => void;
   onSendWhatsApp?: (invoice: Invoice) => void;
   onDownloadPdf?: (invoice: Invoice) => void;
+  // Editar y eliminar, junto a las acciones de envio (facturas_details_actions_v1).
+  onEdit?: (invoice: Invoice) => void;
+  onDelete?: (invoice: Invoice) => void;
 }
 
 function formatPrice(price: number, currency: string = "EUR"): string {
@@ -44,7 +47,7 @@ function StatusBadge({ status }: { status: InvoiceStatus }) {
   return <span data-testid="StatusBadge-span-2" className={`bo-badge ${cfg.className}`}>{cfg.label}</span>;
 }
 
-export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSendWhatsApp, onDownloadPdf }: InvoiceDetailsModalProps) {
+export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSendWhatsApp, onDownloadPdf, onEdit, onDelete }: InvoiceDetailsModalProps) {
   const fullName = useMemo(() => {
     if (!invoice) return "";
     return `${invoice.customer_name}${invoice.customer_surname ? ` ${invoice.customer_surname}` : ""}`;
@@ -82,7 +85,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
   const totalAmount = invoice?.total ?? invoice?.amount ?? 0;
   const paidAmount = invoice?.paid_amount ?? 0;
   const remaining = totalAmount - paidAmount;
-  const hasActions = onSendEmail || onSendWhatsApp || onDownloadPdf;
+  const hasActions = onSendEmail || onSendWhatsApp || onDownloadPdf || onEdit || onDelete;
 
   if (!invoice) return null;
 
@@ -275,6 +278,16 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
               {invoice.customer_phone && onSendWhatsApp && (
                 <button type="button" className="bo-btn bo-btn--secondary bo-btn--sm" onClick={() => onSendWhatsApp(invoice)} data-testid="details-send-whatsapp-btn">
                   <MessageCircle size={14} /> WhatsApp
+                </button>
+              )}
+              {onEdit && (
+                <button type="button" className="bo-btn bo-btn--secondary bo-btn--sm" onClick={() => onEdit(invoice)} data-testid="details-edit-btn">
+                  <PencilLine size={14} /> Editar
+                </button>
+              )}
+              {onDelete && (
+                <button type="button" className="bo-btn bo-btn--danger bo-btn--sm" onClick={() => onDelete(invoice)} data-testid="details-delete-btn">
+                  <Trash2 size={14} /> Eliminar
                 </button>
               )}
             </div>
