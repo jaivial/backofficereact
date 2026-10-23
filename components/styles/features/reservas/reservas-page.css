@@ -734,6 +734,14 @@
   color: var(--bo-text);
 }
 
+/* >920px variant: the title renders as the first element of
+   .bo-reservasOpenContent (outside .bo-reservasGrid), so the grid-column
+   placement is dropped and it gets bottom spacing above the tabs instead. */
+.bo-reservasDayTitle--open {
+  grid-column: auto;
+  margin-bottom: 12px;
+}
+
 .bo-reservasLayout {
   display: flex;
   flex-direction: column;
