@@ -272,7 +272,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   const [customerName, setCustomerName] = useState(invoice?.customer_name || "");
   const [customerSurname, setCustomerSurname] = useState(invoice?.customer_surname || "");
   const [customerEmail, setCustomerEmail] = useState(invoice?.customer_email || "");
-  const [useDni, setUseDni] = useState(!!invoice?.customer_dni_cif);
+  // The toggle chooses the document type: a DNI/NIE starts with digits, a CIF
+  // with a letter, so an existing value opens in its own mode.
+  const [useDni, setUseDni] = useState(() => /^\d/.test((invoice?.customer_dni_cif || "").trim()));
   const [customerDniCif, setCustomerDniCif] = useState(invoice?.customer_dni_cif || "");
   const [customerPhone, setCustomerPhone] = useState(invoice?.customer_phone || "");
   const [customerAddressStreet, setCustomerAddressStreet] = useState(invoice?.customer_address_street || "");
@@ -497,7 +499,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       customer_name: customerName,
       customer_surname: customerSurname || undefined,
       customer_email: customerEmail,
-      customer_dni_cif: useDni ? customerDniCif || undefined : undefined,
+      // The toggle only chooses the document type (CIF / DNI-NIE): whatever the
+      // operator types is saved, it used to be dropped in CIF mode.
+      customer_dni_cif: customerDniCif || undefined,
       customer_phone: customerPhone || undefined,
       customer_address_street: customerAddressStreet || undefined,
       customer_address_number: customerAddressNumber || undefined,
@@ -610,7 +614,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       customerName !== (invoice.customer_name || "") ||
       customerSurname !== (invoice.customer_surname || "") ||
       customerEmail !== (invoice.customer_email || "") ||
-      (useDni ? customerDniCif : "") !== (invoice.customer_dni_cif || "") ||
+      customerDniCif !== (invoice.customer_dni_cif || "") ||
       customerPhone !== (invoice.customer_phone || "") ||
       customerAddressStreet !== (invoice.customer_address_street || "") ||
       customerAddressNumber !== (invoice.customer_address_number || "") ||
