@@ -6,7 +6,7 @@ import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { Invoice, InvoiceStatus } from "../../../../api/types";
 import { CURRENCY_SYMBOLS } from "../../../../api/types";
 import { INVOICE_STATUS_CONFIG } from "../types/invoice";
-import { invoiceTotal, moneyEs } from "../utils";
+import { invoiceTotal, moneyEs, dniCifLabel } from "../utils";
 
 interface InvoiceDetailsModalProps {
   open: boolean;
@@ -149,7 +149,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
               <DetailRow icon={<User size={14} />} label="Nombre" value={fullName} />
               {invoice.customer_email && <DetailRow icon={<Mail size={14} />} label="Email" value={invoice.customer_email} isLong />}
               {invoice.customer_phone && <DetailRow icon={<Phone size={14} />} label="Teléfono" value={invoice.customer_phone} />}
-              {invoice.customer_dni_cif && <DetailRow icon={<BadgeCheck size={14} />} label="DNI/CIF" value={invoice.customer_dni_cif} />}
+              {invoice.customer_dni_cif && <DetailRow icon={<BadgeCheck size={14} />} label={dniCifLabel(invoice)} value={invoice.customer_dni_cif} />}
               {addressParts.length > 0 && <DetailRow icon={<MapPin size={14} />} label="Dirección" value={addressParts.join(", ")} isLong />}
             </div>
 

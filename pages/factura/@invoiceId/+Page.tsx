@@ -3,6 +3,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { Download, FileText, Calendar, User, Mail, Phone, MapPin, CreditCard, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import type { Data } from "./+data";
 import { formatCurrency, type CurrencyCode } from "../../../api/types";
+import { dniCifLabel } from "../../app/facturas/utils";
 
 function formatPrice(price: number, currency: CurrencyCode = "EUR"): string {
   return formatCurrency(price, currency);
@@ -160,7 +161,7 @@ export default function Page() {
               <div className="bo-publicInvoiceField" data-slot="@invoiceId-publicInvoiceField">
                 <FileText size={16} />
                 <div data-slot="@invoiceId-div">
-                  <label data-slot="@invoiceId-cif">DNI/CIF</label>
+                  <label data-slot="@invoiceId-cif">{dniCifLabel(invoice)}</label>
                   <p data-slot="@invoiceId-cif">{invoice.customer_dni_cif}</p>
                 </div>
               </div>
