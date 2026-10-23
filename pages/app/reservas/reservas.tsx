@@ -342,6 +342,13 @@ export default function Page() {
   // client is live.
   const [viewportWidth, setViewportWidth] = useState<number | null>(null);
   const columnsReady = viewportWidth != null;
+  // >920px the reservas grid is two columns (calendar | side), so a direct
+  // grid-child day title breaks the auto-placement (it lands on row 2 col 1
+  // and pushes the side panel down). On wide viewports the title renders as
+  // the FIRST element of .bo-reservasOpenContent instead; at <=920px (single
+  // column grid) it stays between the calendar and the side stack. Null until
+  // the client mounts, so SSR keeps the grid placement (no hydration change).
+  const isWideDayTitle = viewportWidth != null && viewportWidth > 920;
 
   const [searchMode, setSearchMode] = useState(false);
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
@@ -827,7 +834,7 @@ export default function Page() {
             <div className={`bo-reservasGrid${isDayOpen ? "" : " bo-reservasGrid--closed"}`} data-slot="reservas-div">
               <MonthCalendar year={view.year} month={view.month} days={calendarDays} selectedDateISO={date} onSelectDate={onSelectDate} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} loading={monthBusy} />
 
-              {isDayOpen && selectedDayLabel ? (
+              {isDayOpen && selectedDayLabel && !isWideDayTitle ? (
                 <h2 className="bo-reservasDayTitle" data-slot="reservas-day-title">{selectedDayLabel}</h2>
               ) : null}
 
@@ -891,6 +898,9 @@ export default function Page() {
             <AnimatePresence mode="wait" initial={false}>
               {isDayOpen ? (
                 <motion.div key="reservas-open-content" className="bo-reservasOpenContent" initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }} transition={dayVisibilityTransition}>
+                  {isDayOpen && selectedDayLabel && isWideDayTitle ? (
+                    <h2 className="bo-reservasDayTitle bo-reservasDayTitle--open" data-slot="reservas-day-title">{selectedDayLabel}</h2>
+                  ) : null}
                   <BookingsViewTabs
                     date={date}
                     activeTab={viewTab}
