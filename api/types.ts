@@ -1507,6 +1507,8 @@ export type Invoice = {
   customer_surname?: string;
   customer_email: string;
   customer_dni_cif?: string;
+  /** "dni" (persona) o "cif" (empresa), segun la opcion del formulario. */
+  customer_dni_cif_type?: string;
   customer_phone?: string;
   customer_address_street?: string;
   customer_address_number?: string;
@@ -1599,6 +1601,8 @@ export type InvoiceInput = {
   customer_surname?: string;
   customer_email: string;
   customer_dni_cif?: string;
+  /** "dni" (persona) o "cif" (empresa), segun la opcion del formulario. */
+  customer_dni_cif_type?: string;
   customer_phone?: string;
   customer_address_street?: string;
   customer_address_number?: string;
