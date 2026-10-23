@@ -9,6 +9,7 @@ import {
   getStatusBadge,
   getPaymentStatusInfo,
 } from "./helpers/factura.helpers";
+import { dniCifLabel } from "../../app/facturas/utils";
 
 export default function Page() {
   const pageContext = usePageContext();
@@ -105,7 +106,7 @@ export default function Page() {
               <div className="bo-publicInvoiceField" data-slot="field-dni">
                 <FileText size={16} />
                 <div data-slot="factura-div">
-                  <label data-slot="factura-cif">DNI/CIF</label>
+                  <label data-slot="factura-cif">{dniCifLabel(invoice)}</label>
                   <p data-slot="factura-cif">{invoice.customer_dni_cif}</p>
                 </div>
               </div>

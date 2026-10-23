@@ -2,6 +2,7 @@ import React from "react";
 import { X, FileDown, PencilLine, Calendar, User, Mail, Phone, MapPin, CreditCard, Send } from "lucide-react";
 import { Modal } from "../../../../ui/overlays/Modal";
 import type { Invoice, InvoiceStatus } from "../../../../api/types";
+import { dniCifLabel } from "../utils";
 
 type InvoicePreviewModalProps = {
   invoice: Invoice;
@@ -149,7 +150,7 @@ export function InvoicePreviewModal({ invoice, onClose, onEdit, onDownloadPdf, o
             </div>
             {invoice.customer_dni_cif && (
               <div data-testid="invoicePreviewModal-invoicePreviewField-5" className="bo-invoicePreviewField" data-slot="invoicePreviewModal-invoicePreviewField">
-                <span data-testid="invoicePreviewModal-invoicePreviewLabel-5" className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">DNI/CIF</span>
+                <span data-testid="invoicePreviewModal-invoicePreviewLabel-5" className="bo-invoicePreviewLabel" data-slot="invoicePreviewModal-invoicePreviewLabel">{dniCifLabel(invoice)}</span>
                 <span data-testid="invoicePreviewModal-invoicePreviewValue-5" className="bo-invoicePreviewValue" data-slot="invoicePreviewModal-invoicePreviewValue">{invoice.customer_dni_cif}</span>
               </div>
             )}
