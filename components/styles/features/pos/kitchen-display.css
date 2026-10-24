@@ -62,7 +62,7 @@
 .kds__lineName { font-size: var(--bo-text-base); font-weight: 650; color: var(--bo-text); overflow-wrap: anywhere; }
 .kds__lineNotes { font-size: var(--bo-text-sm); font-weight: 700; color: var(--bo-text-warning); overflow-wrap: anywhere; }
 .kds__lineTag { flex-shrink: 0; align-self: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .04em; }
-.kds__lineTag.is-void { background: var(--bo-color-danger); color: #fff; }
+.kds__lineTag.is-void { background: #b91c1c; color: #fff; }
 
 .kds__actions { display: flex; gap: var(--bo-space-2); flex-wrap: wrap; }
 .kds__btn {

@@ -87,11 +87,12 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
   return (
     <section
       className={cn("pos-ticketPanel", !ticket && "is-empty", expanded && "pos-ticketPanel--expanded")}
-      aria-label={ticket ? "Cuenta" : "Cuenta — toca para abrir mesa"}
+      aria-label="Cuenta"
       data-testid="pos-ticket-panel"
-      onClick={ticket ? undefined : onRequestTable}
-      {...(ticket ? {} : { role: "button", tabIndex: 0 })}
-      {...(ticket ? {} : { onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRequestTable?.(); } } })}
+      // The whole panel stays a finger target to open the table picker, but it
+      // holds real buttons (Traer cuenta, open tables), so the keyboard/AT
+      // control is the explicit button in the empty state below.
+      onClick={ticket ? undefined : (event) => { if ((event.target as HTMLElement).closest("button")) return; onRequestTable?.(); }}
     >
       <header className="pos-ticketPanel__header" data-testid="pos-ticket-header">
         <h2 className="pos-ticketPanel__title" data-testid="pos-ticket-title"><Receipt className="mr-2 inline h-4 w-4" aria-hidden="true" data-testid="pos-ticket-title-icon" />Cuenta{ticket?.ticketNumber ? ` · ${ticket.ticketNumber}` : ""}</h2>
@@ -260,7 +261,7 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
         </>
       ) : (
         <div className="pos-ticketPanel__emptyWrap" data-testid="pos-ticket-empty-wrap">
-          <p className="pos-ticketPanel__empty" data-testid="pos-ticket-empty">Selecciona mesa o pulsa Mesa para empezar.</p>
+          <button type="button" className="pos-ticketPanel__empty" onClick={onRequestTable} data-testid="pos-ticket-empty">Selecciona mesa o pulsa Mesa para empezar.</button>
           {openVisits.length && onRestoreVisit ? (
             <div className="pos-openVisits" role="group" aria-label={`${openVisits.length} mesas abiertas`} data-testid="pos-open-visits" onClick={(event) => event.stopPropagation()}>
               <span className="pos-openVisits__title" data-testid="pos-open-visits-title">Mesas abiertas ({openVisits.length})</span>

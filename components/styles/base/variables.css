@@ -170,7 +170,7 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bo-text-info: #0284c7;
+  --bo-text-info: #0369a1;
   --bo-text-success: #15803d;
   --bo-text-warning: #b45309;
   --bo-text-danger: #dc2626;
