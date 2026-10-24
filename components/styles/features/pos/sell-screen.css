@@ -261,7 +261,8 @@
 .pos-line__main { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--bo-space-2); flex-wrap: wrap; }
 .pos-line__note { flex-basis: 100%; margin: 0; color: var(--bo-muted); font-size: var(--bo-text-xs); white-space: pre-wrap; overflow-wrap: anywhere; }
 .pos-line__tags { display: flex; flex-wrap: wrap; gap: var(--bo-space-1); flex-basis: 100%; color: var(--bo-accent-2); font-size: var(--bo-text-xs); }
-.pos-line__name { flex: 1; min-width: 0; font-size: var(--bo-text-sm); font-weight: var(--bo-weight-semibold); color: var(--bo-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pos-line__name { flex: 1; min-width: 0; font-size: var(--bo-text-sm); font-weight: var(--bo-weight-semibold); color: var(--bo-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; /* button reset */ background: none; border: 0; padding: 0; margin: 0; text-align: left; font-family: inherit; cursor: pointer; }
+.pos-line__name:focus-visible { outline: 2px solid var(--bo-accent); outline-offset: 2px; border-radius: 4px; }
 .pos-line__total { flex: 0 0 auto; min-width: 4.5rem; text-align: right; font-size: var(--bo-text-sm); font-weight: var(--bo-weight-bold); color: var(--bo-text); }
 .pos-line__actions { display: flex; align-items: center; gap: var(--bo-space-2); flex: 0 0 auto; }
 
@@ -685,7 +686,9 @@
 .pos-checkout__figure { display: grid; gap: 2px; min-width: 0; }
 .pos-checkout__figure dt { font-size: var(--bo-text-xs); color: var(--bo-muted); }
 .pos-checkout__figure dd { margin: 0; font-size: var(--bo-text-base); font-weight: var(--bo-weight-semibold); font-variant-numeric: tabular-nums; color: var(--bo-text); }
-.pos-checkout__figure--pending dd { color: var(--bo-text-warning); }
+.pos-checkout__figure--pending dd { color: var(--bo-text-warning); font-weight: 700; }
+:root[data-theme="light"] .pos-checkout__figure--pending dd { color: color-mix(in srgb, var(--bo-text-warning) 70%, #000); }
+:root:not([data-theme="light"]) .pos-checkout__figure--pending dd { color: color-mix(in srgb, var(--bo-text-warning) 75%, #fff); }
 .pos-checkout__figure--change dd { color: var(--bo-on-surface-success); }
 .pos-checkout__note { margin: 0; font-size: var(--bo-text-xs); color: var(--bo-text-warning); }
 .pos-checkout__progress { height: 6px; overflow: hidden; border-radius: var(--bo-radius-full); background: color-mix(in srgb, var(--bo-color-warning) 26%, transparent); }

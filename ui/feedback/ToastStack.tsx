@@ -29,7 +29,7 @@ export function ToastStack({
   }, [dismissToast, toasts]);
 
   return (
-    <div className={cn("bo-toastWrap", className)} aria-label="Notifications" aria-live="polite" data-ui="toast-stack" data-testid="global-toast-stack">
+    <div className={cn("bo-toastWrap", className)} role="region" aria-label="Notificaciones" aria-live="polite" data-ui="toast-stack" data-testid="global-toast-stack">
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
           <motion.div

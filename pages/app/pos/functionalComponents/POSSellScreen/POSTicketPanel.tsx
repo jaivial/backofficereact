@@ -184,11 +184,11 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
               <div
                 className={cn(line.id === selectedLineId && "pos-line--selected", line.id < 0 && "pos-line--pending", "pos-line")}
                 key={line.id}
+                // The row is the tap target for a finger; the keyboard/AT
+                // target is the dish-name button inside it, so the row itself
+                // is not a control (axe: nested-interactive).
                 onClick={() => onSelectLine(line)}
-                onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelectLine(line); } }}
-                role="button"
-                tabIndex={0}
-                aria-pressed={line.id === selectedLineId}
+                data-selected={line.id === selectedLineId ? "true" : undefined}
                 data-testid={`pos-line-${line.id}`}
               >
                 <div className="pos-line__actions" data-testid={`pos-line-actions-${line.id}`}>
@@ -197,7 +197,7 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
                   <button className="pos-line__qtyBtn" type="button" disabled={readOnly} onClick={(event) => { event.stopPropagation(); onLineQuantity(line, line.quantity + 1); }} aria-label={`Sumar ${line.productName}`} data-testid={`pos-line-plus-${line.id}`}><Plus className="h-4 w-4" aria-hidden="true" data-testid={`pos-line-plus-icon-${line.id}`} /></button>
                 </div>
                 <div className="pos-line__main" data-testid={`pos-line-main-${line.id}`}>
-                  <strong className="pos-line__name" data-testid={`pos-line-name-${line.id}`}>{line.productName}</strong>
+                  <button type="button" className="pos-line__name" aria-pressed={line.id === selectedLineId} aria-label={`${line.quantity} × ${line.productName}, ${money(line.lineTotalGrossCents)}${line.id === selectedLineId ? ", seleccionada" : ""}`} onClick={(event) => { event.stopPropagation(); onSelectLine(line); }} data-testid={`pos-line-name-${line.id}`}>{line.productName}</button>
                   {(sentKitchenQuantities[line.id] || 0) >= line.quantity ? (
                     <StatusBadge variant="neutral" size="sm" data-ui="pos-line-sent" data-testid={`pos-line-sent-${line.id}`}>Cocina</StatusBadge>
                   ) : null}

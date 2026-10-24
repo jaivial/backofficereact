@@ -23,7 +23,7 @@ export function POSProductGrid({ products, packs = [], disabled = false, readOnl
   stockStatus?: Record<string, StockStatus>;
 }) {
   return (
-    <section className="pos-products" aria-label="Productos" data-testid="pos-product-grid">
+    <section className="pos-products" aria-label="Productos" tabIndex={0} data-testid="pos-product-grid">
       {products.map((product) => {
         const status = stockStatus?.[String(product.id)];
         const pending = pendingProductId === product.id;
