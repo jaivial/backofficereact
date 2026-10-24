@@ -884,7 +884,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
             const counted = (values.countedCash || "").trim() ? Math.round((Number((values.countedCash || "").replace(",", ".")) || 0) * 100) : null;
             const diff = typeof expected === "number" && counted !== null ? counted - expected : null;
             return (
-              <span className="pos-closeDaySummary" data-testid="pos-close-day-summary">
+              <span className="pos-closeDaySummary" data-testid="pos-close-day-figures">
                 <span data-slot="pos-close-day-sales">{totals ? `Ventas del día ${money(totals.totalGrossCents)}` : "Sin totales"}</span>
                 {typeof expected === "number" ? <span data-slot="pos-close-day-expected">Efectivo esperado en caja <strong>{money(expected)}</strong> (fondo {money(cashDay?.openingCashCents ?? 0)} + ventas efectivo {money(cashDay?.cashSalesCents ?? 0)}{cashDay?.cashInCents ? ` + entradas ${money(cashDay.cashInCents)}` : ""}{cashDay?.cashOutCents ? ` − salidas ${money(cashDay.cashOutCents)}` : ""}{cashDay?.cashRefundsCents ? ` − devoluciones ${money(cashDay.cashRefundsCents)}` : ""})</span> : null}
                 {diff !== null ? <span className={diff === 0 ? "pos-closeDaySummary__ok" : "pos-closeDaySummary__diff"} data-slot="pos-close-day-diff" data-testid="pos-close-day-diff">{diff === 0 ? "Cuadra" : `Descuadre ${diff > 0 ? "+" : ""}${money(diff)}`}</span> : null}
