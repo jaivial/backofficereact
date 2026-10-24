@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AlertTriangle, Check, ChefHat, Clock, RefreshCw, ShoppingBag, Users } from "lucide-react";
 
 import "../../../../../components/styles/features/pos/kitchen-display.css";
+import { posErrorMessage } from "../../utils/posErrorMessage";
 
 type KitchenLine = { id: number; productName: string; quantity: number; action: "ADD" | "VOID" | "NOTE" | "FIRE"; notes?: string };
 type KitchenDispatch = {
@@ -77,7 +78,7 @@ export function KitchenDisplay() {
       setError("");
     } catch (reason) {
       if (seq !== seqRef.current) return;
-      setError(reason instanceof Error ? reason.message : "No se pudo cargar cocina");
+      setError(posErrorMessage(reason, "No se pudo cargar cocina"));
     }
   }, []);
 
@@ -92,7 +93,7 @@ export function KitchenDisplay() {
   const update = useCallback(async (id: number, status: string) => {
     ++seqRef.current;
     try { await request(`/kitchen/dispatches/${id}/status`, { method: "POST", body: JSON.stringify({ status }) }); await load(); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo actualizar cocina"); }
+    catch (reason) { setError(posErrorMessage(reason, "No se pudo actualizar cocina")); }
   }, [load]);
 
   return (

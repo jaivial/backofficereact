@@ -7,6 +7,7 @@ import { normalizeTableKey, resolveAssignments } from "../../../reservas/tables/
 import type { BookingState } from "../../../reservas/tables/types/tables";
 import { createClient } from "../../../../../api/client";
 import type { Booking, TableMapItem } from "../../../../../api/types";
+import { posErrorMessage } from "../../utils/posErrorMessage";
 
 const INACTIVE_BOOKING = new Set(["cancelled", "canceled", "rejected", "no_show", "noshow"]);
 
@@ -205,7 +206,7 @@ function POSSalonComanda({ visit }: { visit: Visit }) {
     setTickets(null); setError("");
     request<{ visit: Visit & { tickets: Ticket[] } }>(`/visits/${visit.id}`)
       .then((data) => { if (alive) setTickets((data.visit.tickets || []).filter((t) => t.status !== "VOIDED")); })
-      .catch((reason) => { if (alive) setError(reason instanceof Error ? reason.message : "No se pudo cargar la comanda"); });
+      .catch((reason) => { if (alive) setError(posErrorMessage(reason, "No se pudo cargar la comanda")); });
     return () => { alive = false; };
   }, [visit.id]);
 

@@ -14,6 +14,7 @@ import { CashControl } from "./functionalComponents/CashControl/CashControl";
 import { usePOSCashDay, isValidPOSDate } from "./hooks/usePOSCashDay";
 import { POSToastProvider } from "./feedback/POSToastProvider";
 import { money } from "./utils/money";
+import { posErrorMessage } from "./utils/posErrorMessage";
 import { POSNoCashDayModal, formatSpanishLongDate } from "./functionalComponents/CashDay/POSNoCashDayModal";
 import { CalendarDays } from "lucide-react";
 import { POSUnclosedDaysModal } from "./functionalComponents/CashDay/POSUnclosedDaysModal";
@@ -141,7 +142,7 @@ export default function Page() {
       // screen knows a dish needs a choice before adding it to a ticket.
       const modifierMap = (data.productModifiers || {}) as Record<string, ModifierGroup[]>;
       setSettings(data.settings || DEFAULT_SETTINGS); setProducts((data.products || []).map((product: Product) => modifierMap[String(product.id)]?.length ? { ...product, modifierGroups: modifierMap[String(product.id)] } : product)); setTables(data.tables || []); setVisits(data.visits || []);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar TPV"); }
+    } catch (reason) { setError(posErrorMessage(reason, "No se pudo cargar TPV")); }
   }, [activeDate, scopeReady]);
   useEffect(() => { void load(); }, [load]);
   // Health check runs once on load; users without pos.settings.manage get a 403 and simply never see the banner.
@@ -151,7 +152,7 @@ export default function Page() {
   const compatibleRecipes = useMemo(()=>recipes.filter(recipe=>recipe.outputItemId===mappingItemId),[mappingItemId,recipes]);
   const loadStockAdmin = useCallback(async () => {
     try { const [ready, items, warehouseData,recipeData] = await Promise.all([request<Readiness>("/stock-readiness"), stockRequest<{ items: StockOption[] }>("/item-options"), stockRequest<{ warehouses: Warehouse[] }>("/warehouses"),stockRequest<{recipes:Recipe[]}>("/recipes")]); setReadiness(ready); setStockItems(items.items || []); setWarehouses(warehouseData.warehouses || []);setRecipes(recipeData.recipes||[]); setMappingWarehouseId((current) => current || warehouseData.warehouses.find((entry) => entry.isDefault)?.id || 0); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar preparación de stock"); }
+    catch (reason) { setError(posErrorMessage(reason, "No se pudo cargar preparación de stock")); }
   }, []);
   useEffect(() => { if (section === "stock") void loadStockAdmin(); }, [loadStockAdmin, section]);
 
@@ -160,16 +161,16 @@ export default function Page() {
   const saveMapping = useCallback(async () => {
     if (!mappingProductId || !mappingRules.length) return;
     try { await request(`/products/${mappingProductId}/stock-rules`, { method: "PUT", body: JSON.stringify({ rules: mappingRules }) }); setMessage("Reglas de stock guardadas."); setMappingRules([]); await loadStockAdmin(); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo guardar la regla"); }
+    catch (reason) { setError(posErrorMessage(reason, "No se pudo guardar la regla")); }
   }, [loadStockAdmin, mappingProductId, mappingRules]);
 
-  const previewImport = useCallback(async () => { try { const data = await request<{ items: typeof importItems }>("/products/import-preview", { method: "POST" }); setImportItems(data.items || []); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo previsualizar Carta"); } }, []);
-  const confirmImport = useCallback(async () => { const ids = importItems.filter((entry) => !entry.imported).map((entry) => entry.sourceId); if (!ids.length) return; try { await request("/products/import-confirm", { method: "POST", body: JSON.stringify({ items: importItems.filter((entry) => !entry.imported).map((entry) => ({ sourceType: entry.sourceType, sourceId: entry.sourceId })) }) }); setMessage("Carta importada al TPV."); setImportItems([]); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo importar Carta"); } }, [importItems, load]);
+  const previewImport = useCallback(async () => { try { const data = await request<{ items: typeof importItems }>("/products/import-preview", { method: "POST" }); setImportItems(data.items || []); } catch (reason) { setError(posErrorMessage(reason, "No se pudo previsualizar Carta")); } }, []);
+  const confirmImport = useCallback(async () => { const ids = importItems.filter((entry) => !entry.imported).map((entry) => entry.sourceId); if (!ids.length) return; try { await request("/products/import-confirm", { method: "POST", body: JSON.stringify({ items: importItems.filter((entry) => !entry.imported).map((entry) => ({ sourceType: entry.sourceType, sourceId: entry.sourceId })) }) }); setMessage("Carta importada al TPV."); setImportItems([]); await load(); } catch (reason) { setError(posErrorMessage(reason, "No se pudo importar Carta")); } }, [importItems, load]);
 
-  const loadReports = useCallback(async () => { try { const [coversData, salesData] = await Promise.all([request<{ items: typeof coverRows }>("/covers"), request<{ items: typeof salesRows }>("/reports/sales")]); setCoverRows(coversData.items || []); setSalesRows(salesData.items || []); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudieron cargar informes"); } }, []);
+  const loadReports = useCallback(async () => { try { const [coversData, salesData] = await Promise.all([request<{ items: typeof coverRows }>("/covers"), request<{ items: typeof salesRows }>("/reports/sales")]); setCoverRows(coversData.items || []); setSalesRows(salesData.items || []); } catch (reason) { setError(posErrorMessage(reason, "No se pudieron cargar informes")); } }, []);
   useEffect(() => { if (section === "reports") void loadReports(); }, [loadReports, section]);
 
-  const saveSettings = useCallback(async () => { try { await request("/settings", { method: "PATCH", body: JSON.stringify(settings) }); setMessage("Configuración TPV guardada."); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo guardar configuración"); } }, [load, settings]);
+  const saveSettings = useCallback(async () => { try { await request("/settings", { method: "PATCH", body: JSON.stringify(settings) }); setMessage("Configuración TPV guardada."); await load(); } catch (reason) { setError(posErrorMessage(reason, "No se pudo guardar configuración")); } }, [load, settings]);
 
   const healthAlert = health ? health.negativeStockAnomalies > 0 || health.openStockExceptions > 0 || health.partialStockTickets > 0 || health.oldOpenShifts > 0 || health.oldOpenVisits > 0 : false;
   const healthCritical = health ? health.negativeStockAnomalies > 0 : false;

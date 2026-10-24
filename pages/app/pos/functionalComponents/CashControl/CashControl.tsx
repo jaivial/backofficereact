@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { POSSelect } from "../POSSelect/POSSelect";
 import { downloadCashClosurePdf, type CashClosureSummary } from "../../utils/cashClosurePdf";
 import { money, parseAmount } from "../../utils/money";
+import { posErrorMessage } from "../../utils/posErrorMessage";
 
 type Movement = { id: number; type: "IN" | "OUT"; amountCents: number; reason: string; approvedBy?: string; createdAt: string };
 type Closure = { id: number; shiftId: number; closureType: "X" | "Y" | "Z"; generatedAt: string; expectedCashCents: number; countedCashCents?: number | null; differenceCents?: number | null; summary?: CashClosureSummary };
@@ -34,25 +35,25 @@ export function CashControl({ onChanged }: { onChanged?: () => void | Promise<vo
     try {
       const [summaryData, movementData, closureData] = await Promise.all([request<{ summary: CashClosureSummary | null }>("/cash/summary"), request<{ items: Movement[] }>("/cash/movements"), request<{ items: Closure[] }>("/cash/closures")]);
       setSummary(summaryData.summary); setMovements(movementData.items || []); setClosures(closureData.items || []); setError("");
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo cargar caja"); }
+    } catch (reason) { setError(posErrorMessage(reason, "No se pudo cargar caja")); }
   }, []);
   useEffect(() => { void load(); }, [load]);
 
   const createMovement = useCallback(async () => {
     const amountCents = Math.round(parseAmount(movementAmount) * 100);
     if (!summary || amountCents <= 0 || !movementReason.trim()) return;
-    setBusy(true); try { await request("/cash/movements", { method: "POST", body: JSON.stringify({ shiftId: summary.shiftId, type: movementType, amountCents, reason: movementReason.trim(), approvalPin: movementPin.trim(), idempotencyKey: key("cash-movement") }) }); setMovementAmount(""); setMovementReason(""); setMovementPin(""); setMessage("Movimiento de caja registrado."); await load(); await onChanged?.(); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo registrar movimiento"); } finally { setBusy(false); }
+    setBusy(true); try { await request("/cash/movements", { method: "POST", body: JSON.stringify({ shiftId: summary.shiftId, type: movementType, amountCents, reason: movementReason.trim(), approvalPin: movementPin.trim(), idempotencyKey: key("cash-movement") }) }); setMovementAmount(""); setMovementReason(""); setMovementPin(""); setMessage("Movimiento de caja registrado."); await load(); await onChanged?.(); } catch (reason) { setError(posErrorMessage(reason, "No se pudo registrar movimiento")); } finally { setBusy(false); }
   }, [load, movementAmount, movementPin, movementReason, movementType, onChanged, summary]);
 
   const createClosure = useCallback(async (closureType: "X" | "Y" | "Z") => {
     if (!summary) return;
     const counted = countedCash.trim() === "" ? undefined : Math.round(parseAmount(countedCash) * 100);
     if (closureType === "Z" && counted == null) { setError("El cierre Z requiere efectivo contado."); return; }
-    setBusy(true); try { const data = await request<{ summary: CashClosureSummary; closureId: number }>("/cash/closures", { method: "POST", body: JSON.stringify({ shiftId: summary.shiftId, closureType, countedCashCents: counted, discrepancyReason: discrepancyReason.trim(), note: note.trim(), idempotencyKey: key(`cash-closure-${closureType}`) }) }); setMessage(`Cierre ${closureType} generado.`); setSummary(data.summary); setCountedCash(""); setDiscrepancyReason(""); setNote(""); await load(); await onChanged?.(); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo generar cierre"); } finally { setBusy(false); }
+    setBusy(true); try { const data = await request<{ summary: CashClosureSummary; closureId: number }>("/cash/closures", { method: "POST", body: JSON.stringify({ shiftId: summary.shiftId, closureType, countedCashCents: counted, discrepancyReason: discrepancyReason.trim(), note: note.trim(), idempotencyKey: key(`cash-closure-${closureType}`) }) }); setMessage(`Cierre ${closureType} generado.`); setSummary(data.summary); setCountedCash(""); setDiscrepancyReason(""); setNote(""); await load(); await onChanged?.(); } catch (reason) { setError(posErrorMessage(reason, "No se pudo generar cierre")); } finally { setBusy(false); }
   }, [countedCash, discrepancyReason, load, note, onChanged, summary]);
 
   const lastClosure = useMemo(() => closures[0], [closures]);
-  const pdf = useCallback(async (closure: Closure) => { try { const full = closure.summary ? closure : await request<{ closure: Closure }>(`/cash/closures/${closure.id}`).then((data) => data.closure); if (full.summary) await downloadCashClosurePdf({ closureType: full.closureType, summary: full.summary }); } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo generar PDF"); } }, []);
+  const pdf = useCallback(async (closure: Closure) => { try { const full = closure.summary ? closure : await request<{ closure: Closure }>(`/cash/closures/${closure.id}`).then((data) => data.closure); if (full.summary) await downloadCashClosurePdf({ closureType: full.closureType, summary: full.summary }); } catch (reason) { setError(posErrorMessage(reason, "No se pudo generar PDF")); } }, []);
 
   return <section className="grid gap-4" data-ui="pos-cash-control">
     {error ? <p className="rounded-lg border border-[var(--bo-color-danger)] p-3 text-[var(--bo-text-danger)]" role="alert" data-ui="pos-cash-error">{error}</p> : null}

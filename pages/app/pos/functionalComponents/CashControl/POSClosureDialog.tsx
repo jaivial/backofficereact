@@ -3,6 +3,7 @@ import { POSDialog } from "../POSSellScreen/POSDialog";
 import { downloadCashClosurePdf, type CashClosureSummary } from "../../utils/cashClosurePdf";
 import { money, parseAmount } from "../../utils/money";
 import { request } from "../../hooks/usePOSRegister";
+import { posErrorMessage } from "../../utils/posErrorMessage";
 
 type ClosureType = "X" | "Y";
 
@@ -35,7 +36,7 @@ export function POSClosureDialog({ closureType, shiftId, onClose, onGenerated }:
     let alive = true;
     request<{ summary: CashClosureSummary | null }>(`/cash/summary?shiftId=${shiftId}&closureType=${closureType}`)
       .then((data) => { if (alive) setSummary(data.summary); })
-      .catch((reason) => { if (alive) setError(reason instanceof Error ? reason.message : "No se pudo cargar el resumen."); });
+      .catch((reason) => { if (alive) setError(posErrorMessage(reason, "No se pudo cargar el resumen.")); });
     return () => { alive = false; };
   }, [closureType, shiftId]);
 

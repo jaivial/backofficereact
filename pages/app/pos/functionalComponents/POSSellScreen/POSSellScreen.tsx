@@ -32,6 +32,7 @@ import { todayISO } from "../../../reservas/tables/helpers/tables";
 import { downloadComandaPdf } from "../../utils/comandaPdf";
 import { createClient } from "../../../../../api/client";
 import type { POSCashDay, POSCashDayTotals } from "../../../../../api/types";
+import { posErrorMessage } from "../../utils/posErrorMessage";
 
 type KeypadContext = { kind: "quantity" } | { kind: "cash" } | { kind: "discount" } | { kind: "covers" };
 
@@ -323,7 +324,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       });
       register.setMessage("Comanda descargada.");
     } catch (reason) {
-      register.setError(reason instanceof Error ? reason.message : "No se pudo generar la comanda.");
+      register.setError(posErrorMessage(reason, "No se pudo generar la comanda."));
     } finally {
       comandaInFlight.current = false;
       setComandaBusy(false);
@@ -354,7 +355,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       await register.load();
       return true;
     } catch (reason) {
-      register.setError(reason instanceof Error ? reason.message : "No se pudo cerrar las mesas.");
+      register.setError(posErrorMessage(reason, "No se pudo cerrar las mesas."));
       return false;
     } finally { setComandaBusy(false); }
   }, [date, register]);
@@ -596,7 +597,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                   payments: register.lastPaidPayments,
                 });
               } catch (reason) {
-                register.setError(reason instanceof Error ? reason.message : "No se pudo imprimir el recibo.");
+                register.setError(posErrorMessage(reason, "No se pudo imprimir el recibo."));
               }
             }} data-ui="pos-last-receipt-print" data-testid="pos-last-receipt-print" style={{ marginLeft: "0.5rem" }}>Imprimir</button>
           </div>
@@ -903,7 +904,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
               <input id="pos-discount-reason" value={discountReason} onChange={(event) => setDiscountReason(event.target.value)} placeholder="Fidelidad, incidencia..." data-ui="pos-discount-reason" data-testid="pos-discount-reason" />
             </label>
             <p className="pos-modal__pending" data-testid="pos-discount-preview">Descuento {money(discountCents)} · Total {money(Math.max(register.ticketTotal - discountCents, 0))}</p>
-            <button className="pos-modal__primary" type="button" disabled={register.busy || register.commandBusy || discountCents <= 0 || !discountReason.trim()} onClick={() => void confirmDiscount()} data-pos-command="discount" data-testid="pos-discount-confirm">Aplicar descuento</button>
+            {discountCents > register.ticketTotal ? <p className="pos-modal__error" role="alert" data-testid="pos-discount-over">El descuento supera el total de la cuenta ({money(register.ticketTotal)}). Para no cobrar nada usa «Invita».</p> : null}
+            <button className="pos-modal__primary" type="button" disabled={register.busy || register.commandBusy || discountCents <= 0 || discountCents > register.ticketTotal || !discountReason.trim()} onClick={() => void confirmDiscount()} data-pos-command="discount" data-testid="pos-discount-confirm">Aplicar descuento</button>
           </div>
         </POSDialog>
       ) : null}

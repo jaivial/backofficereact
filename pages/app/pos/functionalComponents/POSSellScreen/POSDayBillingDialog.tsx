@@ -5,6 +5,7 @@ import { createClient } from "../../../../../api/client";
 import type { POSCashDayBilling, POSCashDayBillingTable } from "../../../../../api/types";
 import { money } from "../../utils/money";
 import { POSDialog } from "./POSDialog";
+import { posErrorMessage } from "../../utils/posErrorMessage";
 
 const METHOD_LABELS: Array<{ key: keyof POSCashDayBilling["byMethod"]; label: string }> = [
   { key: "CASH", label: "Efectivo" },
@@ -49,7 +50,7 @@ export function POSDayBillingDialog({ date, onClose }: { date: string; onClose: 
       setData(response);
     } catch (reason) {
       if (id !== requestId.current) return;
-      setError(reason instanceof Error ? reason.message : "No se pudo cargar la facturación.");
+      setError(posErrorMessage(reason, "No se pudo cargar la facturación."));
     } finally {
       if (id === requestId.current) setLoading(false);
     }
