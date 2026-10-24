@@ -430,6 +430,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Mobile browsers' text autosizing inflated the text-heavy cells (long dish
+   names in Desglose platos principales) above the table's 12px. Pin it so
+   every column shares the same size. Coordination id: reservas_table_font_v1 */
+.bo-table--reservas {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 .bo-table--reservas th.col-status,
 .bo-table--reservas td.col-status {
   width: 120px;
