@@ -583,3 +583,57 @@ with cu (no tests were written, by instruction).
   QR, no declaracion responsable, no certified software. See
   `~/bg/verifactu-guide.txt` for the legal path; until then the POS documents are
   internal and the not-certified banner must stay.
+
+---
+
+## Round 4 — QA en local con `cu` y usuarios mock (2026-10-24)
+
+Pila: worktrees `agent/pos-qa-20261024` (backoffice :3098 + backend :18092) contra
+la BD dev local. Usuarios mock `qa.camarero` (camarero), `qa.metre` (metre, PIN
+1234), `qa.admin` (admin, PIN 9876), clientes `Empresa Demo SL` y `Juan Pérez`.
+Recorrido: abrir día (forzado) → mesa → platos con modificadores → cocina (KDS)
+→ cobro mixto → recibo → descuento/anulación con PIN → cierre de día; móvil
+390×844; dos terminales a la vez; axe WCAG 2.1 AA en todas las secciones.
+
+### Bugs encontrados y arreglados (medidos)
+
+| # | Hallazgo | Arreglo |
+|---|---|---|
+| 1 | **Dinero.** Cobro mixto "50 € efectivo + 20 € tarjeta" en una cuenta de 49 € registraba 49 € efectivo y **perdía la tarjeta** en silencio (`pos_payments` solo CASH). | `allocateTenders`: los medios sin cambio (tarjeta/Bizum/transferencia) se liquidan primero y el efectivo cubre el resto. Verificado: CASH 36 + CARD 20 en una cuenta de 56. |
+| 2 | **Cocina.** Los modificadores ("al punto", "extra queso") **no llegaban al KDS**: el snapshot del despacho solo llevaba `notes`. | La consulta de despacho concatena los modificadores en `notes_snapshot`. KDS los pinta en ámbar bajo el plato. |
+| 3 | **Cocina.** Un plato sin ruta a estación se daba por "enviado" y nunca llegaba. | El backend devuelve `unroutedLines`; el TPV avisa con los nombres. Re-disparos idempotentes dicen "ya estaba enviado". |
+| 4 | **Cocina.** Anular un plato ya enviado no avisaba a cocina hasta que alguien recordaba reenviar la comanda. | Tras anular una línea con cantidad enviada se despacha el VOID al instante. |
+| 5 | **Cocina.** El KDS mostraba despachos de tickets **cobrados hace 17 días**. | La cola excluye tickets no OPEN y despachos de más de 24 h. |
+| 6 | Descuento de 50 € sobre una cuenta de 33 € se aceptaba y dejaba la cuenta a 0 €. | Rechazado en cliente y servidor (`DISCOUNT_EXCEEDS_TOTAL`); el % se calcula sobre el importe sin descontar y avisa de que sustituye al actual. |
+| 7 | "Abrir día igualmente" fallaba en silencio para un camarero (403): el error se pintaba bajo el diálogo de confirmación y `refresh()` lo borraba. | Error dentro del diálogo superior y texto que nombra el permiso `pos.shift.manage`. |
+| 8 | Cerrar el día pedía "efectivo contado" sin decir **cuánto debería haber**; el servidor exigía motivo de descuadre con un mensaje en inglés. | `GET /cash-days/current` devuelve `expectedCashCents` y desglose (fondo + efectivo + entradas − salidas − devoluciones); el diálogo muestra esperado y descuadre en vivo. |
+| 9 | Recibo 80 mm: IVA y pagos en la columna equivocada ("Efectivo36,00 €"), TOTAL después del desglose de pago. | Filas con `colspan`, TOTAL antes del pago. |
+| 10 | Factura: base imponible "0,00 €" con IVA 10,63 € (estimación de 10 % sobre total 0 con la cuenta en pantalla). Comprador "Consumidor final" aunque había cliente asociado. | Base = total − IVA real del ticket; comprador toma el cliente asociado y su NIF. |
+| 11 | Catálogo/Stock/Informes/Configuración **no hacían scroll** en escritorio (el bloqueo al viewport del modo venta se aplicaba a todas las secciones). | `overflow` por `data-section`. |
+| 12 | Checkbox "TPV activo" estirado al 100 % (regla `input{width:100%}`). | Excluidos checkbox/radio. |
+| 13 | Permisos por rol mostraban claves crudas (`pos.shift.manage`). | Nombre y descripción en castellano por permiso. |
+| 14 | Tras recargar o cambiar de terminal, la cuenta aparecía vacía sin pista de que la mesa 5 seguía abierta. | Tira "Mesas abiertas" en la cuenta vacía con un toque para recuperar. |
+| 15 | Al tocar una mesa en el selector la fila Comensales + Abrir quedaba bajo 27 azulejos: parecía que no pasaba nada. | Fila fija al pie del diálogo, foco y selección en Comensales, Enter abre. |
+| 16 | Dos terminales: el segundo no se enteraba de cambios y chocaba con `STALE_TICKET`. | Evento `pos_ticket_updated` por socket tras cada mutación de ticket (middleware sobre 19 rutas); el cliente recarga por versión. |
+| 17 | Mensajes de la API en inglés en el TPV ("A cash discrepancy requires a reason", "Forbidden", "Ticket is not open"…). | `posErrorMessage` traduce por `code` (30 códigos) y por texto; `APIResponseError` conserva el body. |
+| 18 | WCAG: filas de la cuenta con controles anidados (`role=button` con botones dentro), rejilla de productos desplazable sin foco, toasts con `aria-live` en `div` sin rol, `--bo-text-danger` a **3,2:1** en tema oscuro en toda la app. | Nombre del plato como botón, `tabIndex` en la rejilla, `role=region`, tokens de texto de estado a ≥ 4,5:1 (oscuro y claro). axe: 0 violaciones en venta, cobro, mesas, cocina, informes, configuración. |
+| 19 | Nombres accesibles pegados ("Al puntosin coste", "54 pax"). | `aria-label` explícitos. |
+| 20 | Modificador obligatorio sin elegir: botón deshabilitado sin explicación. | "Falta elegir: Punto de la carne". |
+
+### Mejoras de valor para hostelería añadidas
+
+- **Chip del día de caja** en la cabecera, con aviso «No es hoy» cuando se trabaja un día pasado. Antes solo se veía en la URL.
+- **KDS rediseñado**: tiempo de espera con color (verde/ámbar ≥10 min/rojo ≥20 min), comensales, curso, nota del ticket, platos anulados tachados, resaltado de comandas nuevas, filtro "Ver listas", botones de 48 px.
+- **Botón "Enviar a cocina"** en el rail con contador de líneas pendientes; "Comanda" pasa a llamarse "Comanda PDF" (se confundían).
+- **Barra fija de cobro en móvil** (artículos, total, Cocina, Cobrar): "Total" estaba a 1300 px del plato.
+- **Datos de factura** se rellenan con el cliente asociado en «Cliente» (nombre y NIF).
+- **PWA instalable**: `manifest.webmanifest` con accesos directos a TPV/Cocina/Reservas, iconos maskable, metas iOS, `viewport-fit=cover`.
+- Contador "N artículos" en el total de la cuenta con chevrón para ampliar (antes solo doble clic sin pista).
+
+### Lo que sigue sin estar (honesto)
+
+- El KDS sigue con **polling de 5 s**; no escucha `pos_ticket_updated`/despachos por socket.
+- Los **modificadores** no se incluyen en el PDF de comanda ni en el recibo 80 mm (sí en el KDS y en la cuenta).
+- El rol `camarero` **no ve el TPV por defecto**: hay que darle la sección `pos` en Roles y los permisos `pos.*` en Configuración TPV. Es diseño, pero conviene un asistente de "activar TPV para un rol" en una sola pantalla.
+- El selector de mesas no distingue zonas en móvil ni muestra el tiempo de ocupación de cada mesa abierta.
+- Reservas: `aria-required-children` en `.bo-mcalGrid` (fuera del alcance del TPV).
