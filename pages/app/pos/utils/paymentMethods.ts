@@ -89,8 +89,14 @@ export function allocateTenders(input: { saleTotalCents: number; tipCents: numbe
   let saleLeft = saleTotalCents;
   let tipLeft = tipCents;
   const payments: POSPaymentTender[] = [];
-  for (const method of POS_PAYMENT_METHODS) {
-    const tendered = method === "CASH" ? Math.max(perMethod.get("CASH") ?? 0, cashApplied) : Math.min(perMethod.get(method) ?? 0, saleLeft + tipLeft);
+  // Cashless methods are settled first: a card/Bizum/transfer charge is the
+  // exact figure typed, it cannot give change. Cash goes last and only covers
+  // what is left (over-tender becomes change). With cash first, "50 € cash +
+  // 20 € card" on a 49 € sale booked 49 € cash and silently dropped the card.
+  // Coordination id: pos_split_tender_cash_last_v1
+  const order: POSPaymentMethod[] = [...POS_PAYMENT_METHODS.filter((method) => method !== "CASH"), "CASH"];
+  for (const method of order) {
+    const tendered = method === "CASH" ? Math.min(Math.max(perMethod.get("CASH") ?? 0, cashApplied), saleLeft + tipLeft) : Math.min(perMethod.get(method) ?? 0, saleLeft + tipLeft);
     let sale = Math.min(tendered, saleLeft);
     let tip = Math.min(tendered - sale, tipLeft);
     saleLeft -= sale;
@@ -112,6 +118,8 @@ export function allocateTenders(input: { saleTotalCents: number; tipCents: numbe
   const cashTyped = perMethod.get("CASH") ?? 0;
   const cashPayment = payments.find((payment) => payment.method === "CASH");
   if (cashPayment && cashTyped >= cashPayment.amountCents + cashPayment.tipCents) cashPayment.tenderedCents = cashTyped;
+  // Presentation order stays CASH, CARD, BIZUM, BANK whatever the settlement order.
+  payments.sort((a, b) => POS_PAYMENT_METHODS.indexOf(a.method) - POS_PAYMENT_METHODS.indexOf(b.method));
   return payments;
 }
 
