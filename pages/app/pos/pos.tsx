@@ -14,7 +14,8 @@ import { CashControl } from "./functionalComponents/CashControl/CashControl";
 import { usePOSCashDay, isValidPOSDate } from "./hooks/usePOSCashDay";
 import { POSToastProvider } from "./feedback/POSToastProvider";
 import { money } from "./utils/money";
-import { POSNoCashDayModal } from "./functionalComponents/CashDay/POSNoCashDayModal";
+import { POSNoCashDayModal, formatSpanishLongDate } from "./functionalComponents/CashDay/POSNoCashDayModal";
+import { CalendarDays } from "lucide-react";
 import { POSUnclosedDaysModal } from "./functionalComponents/CashDay/POSUnclosedDaysModal";
 import { POSCalendarModal } from "./functionalComponents/CashDay/POSCalendarModal";
 import "../../../components/styles/features/pos/cash-day.css";
@@ -55,6 +56,12 @@ function dateFromLocation(): string | null {
   // A malformed date falls back to the business date the backend resolves,
   // rather than showing an empty till for a day that does not exist.
   return isValidPOSDate(value) ? value : null;
+}
+
+/** Today's calendar date in the browser's zone as YYYY-MM-DD. Coordination id: pos_active_date_chip_v1 */
+function localTodayISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export default function Page() {
@@ -170,7 +177,7 @@ export default function Page() {
   return (
     <POSToastProvider>
       <main className="w-full overflow-y-auto" data-ui="pos-page">
-        <header className="flex flex-wrap items-start justify-between gap-3" data-ui="pos-header"><div data-ui="pos-heading"><h1 className="text-2xl font-bold text-[var(--bo-text)]" data-ui="pos-title">TPV</h1><p className="text-sm text-[var(--bo-muted)]" data-ui="pos-subtitle">Ventas, stock automático y comensales</p></div><span className="rounded-full border border-[var(--bo-border)] px-3 py-2 text-xs text-[var(--bo-muted)]" data-ui="pos-mode">Stock {settings.stockMode} · comensales {settings.coversMode}</span><POSSectionMenu section={section} onChange={setSection} onOpenCalendar={() => setCalendarOpen(true)}/></header>
+        <header className="flex flex-wrap items-start justify-between gap-3" data-ui="pos-header"><div data-ui="pos-heading"><h1 className="text-2xl font-bold text-[var(--bo-text)]" data-ui="pos-title">TPV</h1><p className="text-sm text-[var(--bo-muted)]" data-ui="pos-subtitle">Ventas, stock automático y comensales</p></div><span className="rounded-full border border-[var(--bo-border)] px-3 py-2 text-xs text-[var(--bo-muted)]" data-ui="pos-mode">Stock {settings.stockMode} · comensales {settings.coversMode}</span>{activeDate?<button type="button" className={`pos-dateChip${activeDate!==localTodayISO()?" is-notToday":""}`} onClick={()=>setCalendarOpen(true)} aria-label={`Día de caja ${formatSpanishLongDate(activeDate)}${activeDate!==localTodayISO()?" (no es hoy)":""}. Cambiar día`} title="Cambiar día de caja" data-testid="pos-active-date-chip"><CalendarDays className="h-4 w-4" aria-hidden="true" /><span data-slot="pos-active-date-label">{formatSpanishLongDate(activeDate)}</span>{activeDate!==localTodayISO()?<span className="pos-dateChip__badge" data-slot="pos-active-date-notToday">No es hoy</span>:null}</button>:null}<POSSectionMenu section={section} onChange={setSection} onOpenCalendar={() => setCalendarOpen(true)}/></header>
         {error?<div className="mb-4 rounded-lg border border-[var(--bo-color-danger)] p-3 text-[var(--bo-text-danger)]" role="alert" data-ui="pos-error">{error}</div>:null}{message?<div className="mb-4 rounded-lg border border-[var(--bo-color-success)] p-3 text-[var(--bo-text-success)]" role="status" data-ui="pos-message">{message}</div>:null}
         {healthAlert&&health?<div className={`mb-4 rounded-lg border p-3 text-sm ${healthCritical?"border-[var(--bo-color-danger)] text-[var(--bo-text-danger)]":"border-[var(--bo-border-2)] text-[var(--bo-text-warning)]"}`} role={healthCritical?"alert":"status"} data-ui="pos-health-banner" data-testid="pos-health-banner"><span className="font-semibold" data-ui="pos-health-banner-title">{healthCritical?"Atención stock TPV":"Aviso TPV"}</span><span className="ml-2 inline-flex flex-wrap gap-3" data-ui="pos-health-banner-items">{health.negativeStockAnomalies>0?<a className="underline" href="/app/pos?section=stock" data-testid="pos-health-anomalies">{health.negativeStockAnomalies} anomalías de stock</a>:null}{health.openStockExceptions>0?<a className="underline" href="/app/pos?section=stock" data-testid="pos-health-exceptions">{health.openStockExceptions} excepciones de stock</a>:null}{health.partialStockTickets>0?<span data-ui="pos-health-partial">{health.partialStockTickets} tickets con stock parcial</span>:null}{health.oldOpenShifts>0?<span data-ui="pos-health-shifts">{health.oldOpenShifts} turnos abiertos +24 h</span>:null}{health.oldOpenVisits>0?<span data-ui="pos-health-visits">{health.oldOpenVisits} visitas abiertas +12 h</span>:null}</span></div>:null}
     

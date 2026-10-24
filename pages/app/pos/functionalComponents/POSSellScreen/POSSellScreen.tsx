@@ -824,8 +824,25 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
             { name: "countedCash", label: "Efectivo contado €", inputMode: "decimal", required: true },
             { name: "discrepancyReason", label: "Motivo descuadre (si lo hay)" },
           ]}
-          validate={(values) => Number((values.countedCash || "").replace(",", ".")) < 0 || !Number.isFinite(Number((values.countedCash || "").replace(",", "."))) ? "Introduce el efectivo contado." : null}
-          summary={() => `${totals ? `Ventas del día ${money(totals.totalGrossCents)}` : "Sin totales"}${cashDayError || closeDayError ? ` · ${cashDayError || closeDayError}` : ""}`}
+          validate={(values) => {
+            const counted = Number((values.countedCash || "").replace(",", "."));
+            if (counted < 0 || !Number.isFinite(counted)) return "Introduce el efectivo contado.";
+            // The API refuses a discrepancy without a reason; say so before the round trip.
+            if (typeof cashDay?.expectedCashCents === "number" && (values.countedCash || "").trim() && Math.round(counted * 100) !== cashDay.expectedCashCents && !(values.discrepancyReason || "").trim()) return "El efectivo no cuadra: escribe el motivo del descuadre.";
+            return null;
+          }}
+          summary={(values) => {
+            const expected = cashDay?.expectedCashCents;
+            const counted = (values.countedCash || "").trim() ? Math.round((Number((values.countedCash || "").replace(",", ".")) || 0) * 100) : null;
+            const diff = typeof expected === "number" && counted !== null ? counted - expected : null;
+            return (
+              <span className="pos-closeDaySummary" data-testid="pos-close-day-summary">
+                <span data-slot="pos-close-day-sales">{totals ? `Ventas del día ${money(totals.totalGrossCents)}` : "Sin totales"}</span>
+                {typeof expected === "number" ? <span data-slot="pos-close-day-expected">Efectivo esperado en caja <strong>{money(expected)}</strong> (fondo {money(cashDay?.openingCashCents ?? 0)} + ventas efectivo {money(cashDay?.cashSalesCents ?? 0)}{cashDay?.cashInCents ? ` + entradas ${money(cashDay.cashInCents)}` : ""}{cashDay?.cashOutCents ? ` − salidas ${money(cashDay.cashOutCents)}` : ""}{cashDay?.cashRefundsCents ? ` − devoluciones ${money(cashDay.cashRefundsCents)}` : ""})</span> : null}
+                {diff !== null ? <span className={diff === 0 ? "pos-closeDaySummary__ok" : "pos-closeDaySummary__diff"} data-slot="pos-close-day-diff" data-testid="pos-close-day-diff">{diff === 0 ? "Cuadra" : `Descuadre ${diff > 0 ? "+" : ""}${money(diff)}`}</span> : null}
+              </span>
+            );
+          }}
           onClose={() => { setCloseDayError(""); closePrompt(); }} onConfirm={(values) => { void runCloseDay(values).then((ok) => { if (ok) closePrompt(); }); }} />
       ) : null}
 

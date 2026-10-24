@@ -1,7 +1,7 @@
 import { createPOSModule } from "./modules/pos";
 import { adminApiAuthHeaders } from "./adminApiAuth";
 import { prepareFormImages } from "../lib/imageUpload";
-import { assertJsonResponse } from "./utils/request";
+import { APIResponseError, assertJsonResponse } from "./utils/request";
 import type {
   APIError,
   APISuccess,
@@ -197,7 +197,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
     }
     if (!res.ok) {
       const msg = data?.message || `HTTP ${res.status}`;
-      throw new Error(msg);
+      throw new APIResponseError(msg, res.status, data);
     }
     return data as T;
   }

@@ -2839,6 +2839,18 @@ export type POSCashDay = {
   totalGrossCents?: number;
   ticketCount?: number;
   covers?: number;
+  /**
+   * Drawer figures, only on `GET /pos/cash-days/current`: what the till should
+   * hold now (float + cash sales + ins − outs − cash refunds) and what is still
+   * open. Coordination id: pos_cash_day_expected_cash_v1
+   */
+  expectedCashCents?: number;
+  cashSalesCents?: number;
+  cashInCents?: number;
+  cashOutCents?: number;
+  cashRefundsCents?: number;
+  openVisitCount?: number;
+  openTicketCount?: number;
 };
 
 /** Headline figures of a day, as pushed by `pos_cash_day_totals`. */

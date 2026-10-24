@@ -134,10 +134,27 @@ export function createJsonRequest(apiFetch: ReturnType<typeof createApiFetch>) {
     }
     if (!res.ok) {
       const msg = data?.message || `HTTP ${res.status}`;
-      throw new Error(msg);
+      // The body often carries a machine code and figures (e.g. the POS
+      // DISCREPANCY_REASON_REQUIRED answer brings expectedCashCents); keep it
+      // so callers can act on it instead of parsing English prose.
+      throw new APIResponseError(msg, res.status, data);
     }
     return data as T;
   };
+}
+
+/** Non-2xx JSON answer. `body` is the parsed payload (may be null). */
+export class APIResponseError extends Error {
+  readonly status: number;
+  readonly body: any;
+  readonly code: string;
+  constructor(message: string, status: number, body: any) {
+    super(message);
+    this.name = "APIResponseError";
+    this.status = status;
+    this.body = body ?? null;
+    this.code = typeof body?.code === "string" ? body.code : "";
+  }
 }
 
 /**

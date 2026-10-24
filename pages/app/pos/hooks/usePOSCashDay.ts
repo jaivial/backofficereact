@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createClient } from "../../../../api/client";
 import type { POSCashDay, POSCashDayTotals } from "../../../../api/types";
+import { APIResponseError } from "../../../../api/utils/request";
+import { money } from "../utils/money";
 
 /** Strict YYYY-MM-DD, so a hand-edited URL can never reach the API as a filter. */
 export function isValidPOSDate(value: string | null | undefined): value is string {
@@ -60,6 +62,21 @@ function mergeDay(current: POSCashDay | null, next: POSCashDay): POSCashDay {
 function cashDayErrorMessage(reason: unknown, fallback: string): string {
   const msg = reason instanceof Error ? reason.message : "";
   if (/forbidden|HTTP 403/i.test(msg)) return "Tu rol no puede abrir ni cerrar la caja. Pide a un responsable que lo haga o que te dé el permiso pos.shift.manage en Ajustes TPV.";
+  if (reason instanceof APIResponseError) {
+    // The API speaks English codes; the till speaks to a waiter.
+    switch (reason.code) {
+      case "DISCREPANCY_REASON_REQUIRED": {
+        const expected = Number(reason.body?.expectedCashCents);
+        const diff = Number(reason.body?.differenceCents);
+        const figures = Number.isFinite(expected) && Number.isFinite(diff) ? ` Esperado ${money(expected)}, diferencia ${diff > 0 ? "+" : ""}${money(diff)}.` : "";
+        return `El efectivo contado no cuadra con el esperado.${figures} Escribe el motivo del descuadre para cerrar.`;
+      }
+      case "OPEN_POS_ITEMS": return "Cierra o cobra todas las mesas y cuentas abiertas antes de cerrar el día.";
+      case "CASH_DAY_ALREADY_CLOSED": return "Este día ya está cerrado.";
+      case "COUNTED_CASH_REQUIRED": return "Introduce el efectivo contado.";
+      case "UNCLOSED_PREVIOUS_DAYS": return "Hay días anteriores sin cerrar.";
+    }
+  }
   return msg || fallback;
 }
 
