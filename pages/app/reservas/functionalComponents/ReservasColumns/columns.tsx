@@ -48,6 +48,7 @@ export type ReservasColumnId =
   | "adelantoDesglose"
   | "adelantoMetodos"
   | "menusEspeciales"
+  | "principalesDesglose"
   | "movilidad"
   | "movilidadPax"
   | "pendiente"
@@ -268,6 +269,41 @@ export const RESERVAS_COLUMNS: ReservasColumnDef[] = [
               {m.label} x {m.count}
             </span>
           ))}
+        </span>
+      );
+    },
+  },
+  {
+    // Coordination id: special_booking_optional_principales_v1 - principales
+    // are optional (backoffice may save without them), so dishes are grouped
+    // by name and every serving still without a dish shows as a dash line.
+    id: "principalesDesglose",
+    label: "Desglose platos principales",
+    thClass: "col-principales-desglose",
+    cellClass: "col-principales-desglose",
+    hideBelowWidth: 1680,
+    render: (b) => {
+      if (!isSpecial(b)) return DASH;
+      const counts = new Map<string, number>();
+      let pending = 0;
+      for (const m of b.special.menus) {
+        const names = (m.items ?? []).map((it) => String(it?.name || "").trim()).filter(Boolean);
+        names.forEach((n) => counts.set(n, (counts.get(n) ?? 0) + 1));
+        pending += Math.max(0, Number(m.count || 0) - names.length);
+      }
+      if (counts.size === 0) return DASH;
+      return (
+        <span className="bo-reservasColLines" data-testid={`reservas-principales-desglose-${b.id}`}>
+          {[...counts].map(([name, n]) => (
+            <span key={name} className="bo-reservasColLine" data-slot="reservas-principales-desglose-line">
+              {name} x {n}
+            </span>
+          ))}
+          {pending > 0 ? (
+            <span className="bo-reservasColLine" data-slot="reservas-principales-desglose-pending">
+              {DASH} x {pending}
+            </span>
+          ) : null}
         </span>
       );
     },

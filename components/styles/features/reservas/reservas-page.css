@@ -666,9 +666,28 @@
   padding: 2px 4px;
 }
 
-/* No horizontal scroll inside the column picker: items shrink, labels ellipsize. */
+/* No horizontal scroll inside the column picker: items shrink, labels ellipsize.
+   Only the list scrolls (flex column), so on mobile the options never slide
+   under the sticky footer buttons. Coordination id: reservas_columns_modal_scroll_v1 */
 .bo-reservasColumnsModal {
+  display: flex;
+  flex-direction: column;
   overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.bo-reservasColumnsModal > * {
+  flex-shrink: 0;
+}
+
+.bo-reservasColumnsModal > .bo-reservasColumnsList {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: start;
+}
+
+.bo-reservasColumnsModal > .bo-modalActions {
+  position: static;
 }
 
 .bo-reservasColumnsItem,
