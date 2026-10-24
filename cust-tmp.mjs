@@ -1,0 +1,12 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.connectOverCDP("http://127.0.0.1:9362");
+const p = b.contexts()[0].pages().find(x=>x.url().includes("3098"));
+await p.goto("http://127.0.0.1:3098/app/pos", { waitUntil: "networkidle" }); await p.waitForTimeout(2000);
+await p.getByTestId("pos-open-visit-" + (await p.evaluate(()=>[...document.querySelectorAll('[data-testid^="pos-open-visit-"]')].map(e=>e.dataset.testid.split('-').pop())[0]))).click(); await p.waitForTimeout(1500);
+await p.getByTestId("pos-rail-cliente").click(); await p.waitForTimeout(1200);
+await p.screenshot({ path: "/tmp/pos49.png" });
+const dlg = await p.locator('[role=dialog]').last().innerText().catch(()=>"(no dialog)");
+console.log("CLIENTE dialog:", dlg.replace(/\n+/g," | ").slice(0,600));
+const inputs = await p.locator('[role=dialog] input, [role=dialog] [role=combobox]').evaluateAll(els=>els.map(e=>(e.getAttribute('aria-label')||e.placeholder||e.name||e.type)));
+console.log("inputs:", inputs);
+await b.close();

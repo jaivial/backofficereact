@@ -252,6 +252,16 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
   );
 
   const closePrompt = useCallback(() => setPrompt(null), []);
+  // NIF of the guest linked through «Historial», read once per guest so the
+  // invoice prompt can offer it. Coordination id: pos_customer_prefill_v1
+  const [linkedCustomerTaxId, setLinkedCustomerTaxId] = useState("");
+  useEffect(() => {
+    const id = register.ticket?.customerId;
+    if (!id) { setLinkedCustomerTaxId(""); return; }
+    let cancelled = false;
+    void request<{ customer: { taxId?: string } }>(`/customers/${id}`).then((data) => { if (!cancelled) setLinkedCustomerTaxId(data.customer?.taxId || ""); }).catch(() => { if (!cancelled) setLinkedCustomerTaxId(""); });
+    return () => { cancelled = true; };
+  }, [register.ticket?.customerId]);
 
   useEffect(() => {
     if (showTables && !register.visit) void register.loadReservations();
@@ -814,11 +824,14 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       ) : null}
 
       {prompt === "cliente" ? (
-        <POSPromptModal testId="pos-customer" title="Cliente" confirmLabel="Guardar cliente" busy={register.busy || register.commandBusy} error={register.error}
+        <POSPromptModal testId="pos-customer" title="Datos de facturación" confirmLabel="Guardar datos" busy={register.busy || register.commandBusy} error={register.error}
           fields={[
-            { name: "customerName", label: "Nombre", initialValue: register.visit?.customerName ?? "", required: true },
-            { name: "customerTaxId", label: "NIF/CIF", initialValue: register.visit?.customerTaxId ?? "" },
+            // Pre-filled from the guest linked in «Historial», so a regular
+            // never has their NIF retyped. Coordination id: pos_customer_prefill_v1
+            { name: "customerName", label: "Nombre o razón social", initialValue: register.visit?.customerName || register.ticket?.customerName || "", required: true, placeholder: "Empresa Demo SL" },
+            { name: "customerTaxId", label: "NIF/CIF", initialValue: register.visit?.customerTaxId || linkedCustomerTaxId || "", placeholder: "B12345674" },
           ]}
+          summary={() => register.ticket?.customerName && !register.visit?.customerName ? `Tomado del cliente «${register.ticket.customerName}» asociado en «Cliente».` : "Estos datos salen en la factura de esta mesa. Para buscar un cliente habitual usa «Cliente»."}
           onClose={closePrompt} onConfirm={(values, option) => void runPrompt("cliente", values, option)} />
       ) : null}
 
