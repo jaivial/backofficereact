@@ -1370,11 +1370,15 @@
   max-width: 100%;
 }
 
-[data-ui="pos-settings-fields"] input,
+[data-ui="pos-settings-fields"] input:not([type="checkbox"]):not([type="radio"]),
 [data-ui="pos-settings-fields"] select,
-[data-ui="pos-mapping-fields"] input,
+[data-ui="pos-mapping-fields"] input:not([type="checkbox"]):not([type="radio"]),
 [data-ui="pos-mapping-fields"] select {
   width: 100%;
+}
+/* A full-width checkbox pushed its label to the far edge of the column. */
+[data-ui="pos-settings-fields"] input[type="checkbox"] {
+  width: 20px; height: 20px; flex: 0 0 auto;
 }
 
 @media (max-width: 640px) {
@@ -1496,7 +1500,12 @@
 
 @media (min-width: 901px) {
   /* Fit the workspace to the viewport: header (~68px) + shell topbar. */
-  .bo-main--pos [data-ui="pos-page"] { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  /* Only the sell screen is locked to the viewport (ticket/catalogue/rail
+     scroll internally). Catalogue, stock, reports and settings are long
+     documents: locking them left everything under the fold unreachable. */
+  .bo-main--pos [data-ui="pos-page"] { display: flex; flex-direction: column; min-height: 0; }
+  .bo-main--pos [data-ui="pos-page"][data-section="sell"] { overflow: hidden; }
+  .bo-main--pos [data-ui="pos-page"]:not([data-section="sell"]) { overflow-y: auto; }
   .bo-main--pos .pos-sell { flex: 1 1 0; min-height: 0; height: auto; }
   .pos-sell__body { flex: 1 1 0; min-height: 0; }
   .pos-rail { max-height: calc(100% - 2rem); align-self: stretch; overflow-y: auto; scrollbar-width: thin; }
