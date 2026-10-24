@@ -1,5 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { allocatePayments } from "../utils/paymentAllocation";
+import { useAtomValue } from "jotai";
+import { sessionAtom } from "../../../../state/atoms";
 import { posErrorMessage } from "../utils/posErrorMessage";
 import type { POSPaymentTender } from "../utils/paymentMethods";
 import type { POSPayment } from "../types/register";
@@ -366,6 +368,47 @@ export function usePOSRegister(date?: string | null) {
     } catch (reason) { setError(posErrorMessage(reason, "No se pudo cambiar de mesa")); }
     finally { setBusy(false); }
   }, [load, visit]);
+
+  // Another terminal edited the ticket on screen (or any ticket of this visit):
+  // re-read it so the waiter never works on a stale copy. The server names the
+  // actor so this terminal's own writes, already applied from the response,
+  // are ignored. Coordination id: pos_ticket_updated_v1
+  const ticketRef = useRef<Ticket | null>(null); ticketRef.current = ticket;
+  const visitRef = useRef<Visit | null>(null); visitRef.current = visit;
+  const sessionUserId = useAtomValue(sessionAtom)?.user?.id ?? null;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let socket: WebSocket | null = null; let disposed = false; let retry = 0; let timer: ReturnType<typeof setTimeout> | null = null;
+    const connect = () => {
+      if (disposed) return;
+      socket = new WebSocket(`${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/api/admin/tables/ws`);
+      socket.onopen = () => { retry = 0; };
+      socket.onmessage = async (event) => {
+        let payload: { type?: string; data?: { ticketId?: number; visitId?: number; byUserId?: number; tableId?: number } };
+        try { payload = JSON.parse(event.data); } catch { return; }
+        const type = payload.type || "";
+        if (type === "pos_visit_opened" || type === "pos_visit_closed" || type === "pos_visit_cancelled" || type === "pos_visits_merged") { void load(); return; }
+        if (type !== "pos_ticket_updated") return;
+        if (payload.data?.byUserId && payload.data.byUserId === sessionUserId) return;
+        const current = ticketRef.current; const currentVisit = visitRef.current;
+        const sameVisit = currentVisit && payload.data?.visitId === currentVisit.id;
+        if (!current || !sameVisit) { void load(); return; }
+        try {
+          const data = await request<{ visit: Visit & { tickets: Ticket[] } }>(`/visits/${currentVisit.id}`);
+          const tickets = data.visit.tickets || [];
+          setSplitTickets(tickets);
+          const refreshed = tickets.find((entry) => entry.id === current.id);
+          if (refreshed) setTicket(refreshed);
+          setVisit(data.visit);
+          setMessage("La cuenta se actualizó desde otro terminal.");
+        } catch { /* a failed refresh keeps the current copy; the next write will tell */ }
+      };
+      socket.onclose = () => { if (disposed) return; timer = setTimeout(connect, Math.min(1000 * 2 ** retry, 30000)); retry += 1; };
+      socket.onerror = () => { socket?.close(); };
+    };
+    connect();
+    return () => { disposed = true; if (timer) clearTimeout(timer); socket?.close(); };
+  }, [load, sessionUserId, setMessage]);
 
   const restoreVisit = useCallback(async (openVisitEntry: Visit) => {
     try { const data = await request<{ visit: Visit & { tickets: Ticket[] } }>(`/visits/${openVisitEntry.id}`); const openTicket = data.visit.tickets?.find((entry) => entry.status === "OPEN") || data.visit.tickets?.[0]; setVisit(data.visit); setSplitTickets(data.visit.tickets || []); setTicket(openTicket || null); setSentKitchenQuantities({}); }
