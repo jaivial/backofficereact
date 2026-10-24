@@ -32,10 +32,14 @@
   --bo-color-warning: #d97706;
   --bo-color-danger: #dc2626;
   --bo-color-info: #0284c7;
-  --bo-text-info: #0284c7;
-  --bo-text-success: #16a34a;
-  --bo-text-warning: #d97706;
-  --bo-text-danger: #dc2626;
+  /* Text variants of the state colours. On the dark surfaces the raw brand
+     reds/blues sit at ~3.2:1 (danger) and ~3.8:1 (info), under WCAG AA 4.5:1
+     for body text, so the dark theme uses lighter tints; the light theme
+     re-pins the originals below. Coordination id: bo_state_text_contrast_v1 */
+  --bo-text-info: #38bdf8;
+  --bo-text-success: #4ade80;
+  --bo-text-warning: #fbbf24;
+  --bo-text-danger: #f87171;
   --bo-border-color: var(--bo-border);
 
   /* State text readable on surfaces (WCAG AA on --bo-surface) */
@@ -166,6 +170,10 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
+  --bo-text-info: #0284c7;
+  --bo-text-success: #15803d;
+  --bo-text-warning: #b45309;
+  --bo-text-danger: #dc2626;
   --bo-bg: #f4f6fb;
   --bo-shell: #ffffff;
   --bo-surface: #ffffff;
