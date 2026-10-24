@@ -597,6 +597,14 @@
 }
 
 .pos-modal__confirm, .pos-modal__payments { display: grid; gap: var(--bo-space-2); margin-top: var(--bo-space-3); }
+/* Table picker: the covers + "Abrir" row sticks to the bottom of the scrolling
+   dialog so it is reachable right after tapping any of the 27 tiles. */
+[data-testid="pos-tables-confirm"] {
+  position: sticky; bottom: calc(-1 * var(--bo-space-4, 16px)); z-index: 1;
+  margin-inline: calc(-1 * var(--bo-space-4, 16px)); padding: var(--bo-space-3) var(--bo-space-4, 16px);
+  border-top: 1px solid var(--bo-border);
+  background: var(--bo-surface);
+}
 .pos-modal__payments label, .pos-modal__covers {
   display: grid; gap: 4px;
   font-size: var(--bo-text-sm); color: var(--bo-muted); font-weight: var(--bo-weight-semibold);

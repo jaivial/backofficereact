@@ -44,7 +44,9 @@ export function printTicketReceipt({ ticket, visit, restaurant, operatorName, pa
     // The base is printed as well as the tax: a receipt that only says
     // "IVA 10%  2,73" does not let the guest check anything, and the base is
     // what a customer (or an inspector) reads the rate against.
-    .map((row) => `<tr class="vat"><td>Base IVA ${row.rate}%</td><td>${money(row.baseCents)}</td></tr><tr class="vat"><td>IVA ${row.rate}%</td><td>${money(row.taxCents)}</td></tr>`)
+    // Three-column table (qty · name · sum): these rows span the first two
+    // cells or the amounts land in the name column and wrap.
+    .map((row) => `<tr class="vat"><td colspan="2">Base IVA ${row.rate}%</td><td class="sum">${money(row.baseCents)}</td></tr><tr class="vat"><td colspan="2">IVA ${row.rate}%</td><td class="sum">${money(row.taxCents)}</td></tr>`)
     .join("");
 
   // How the guest paid. Without this the receipt says "TOTAL 30,00" and stops,
@@ -55,7 +57,7 @@ export function printTicketReceipt({ ticket, visit, restaurant, operatorName, pa
     .map((row) => {
       const base = paymentLabel[row.method] ?? row.method;
       const label = row.cardLast4 ? `${base} ****${row.cardLast4}` : base;
-      return `<tr class="pay"><td>${escapeHtml(label)}</td><td>${money(row.amountCents)}</td></tr>`;
+      return `<tr class="pay"><td colspan="2">${escapeHtml(label)}</td><td class="sum">${money(row.amountCents)}</td></tr>`;
     })
     .join("");
   // Change comes ONLY from what the server recorded as handed over
@@ -124,10 +126,10 @@ ${rows.join("\n")}
     ${ticket.discountCents ? `<tr><td colspan="2">Descuento</td><td class="sum">-${money(ticket.discountCents)}</td></tr>` : ""}
     ${ticket.surchargeCents ? `<tr><td colspan="2">Recargo</td><td class="sum">${money(ticket.surchargeCents)}</td></tr>` : ""}
     ${vatRows}
+    <tr class="total"><td colspan="2">TOTAL</td><td class="sum">${money(ticket.totalGrossCents)}</td></tr>
     ${ticket.tipCents ? `<tr><td colspan="2">Propina</td><td class="sum">${money(ticket.tipCents)}</td></tr>` : ""}
     ${paymentRows ? `<tr class="pay-head"><td colspan="2">Pago</td><td></td></tr>${paymentRows}` : ""}
     ${tenderedRows.length ? `<tr><td colspan="2">Entregado</td><td class="sum">${money(tenderedCents)}</td></tr><tr><td colspan="2">Cambio</td><td class="sum">${money(changeCents)}</td></tr>` : ""}
-    <tr class="total"><td colspan="2">TOTAL</td><td class="sum">${money(ticket.totalGrossCents)}</td></tr>
   </tfoot>
 </table>
 <hr>
