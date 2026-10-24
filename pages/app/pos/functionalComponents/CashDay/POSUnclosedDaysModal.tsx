@@ -37,13 +37,18 @@ export type POSUnclosedDaysModalProps = {
 export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay, onPickDate }: POSUnclosedDaysModalProps) {
   const [confirmForce, setConfirmForce] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Error of the force attempt itself: the confirm dialog sits on top of this
+  // modal, so an error rendered here would stay hidden under it.
+  const [forceFailed, setForceFailed] = useState(false);
 
   const forceOpen = async () => {
     setBusy(true);
+    setForceFailed(false);
     try {
       // No float is collected in this flow: an empty float opens with 0, the
       // same default `POSNoCashDayModal` uses for a blank field.
-      await onOpenDay(0, true);
+      const ok = await onOpenDay(0, true);
+      if (!ok) setForceFailed(true);
     } finally {
       setBusy(false);
     }
@@ -155,7 +160,8 @@ export function POSUnclosedDaysModal({ date, unclosedPrevious, error, onOpenDay,
         <POSForceOpenConfirmModal
           count={unclosedPrevious.length}
           busy={busy}
-          onCancel={() => setConfirmForce(false)}
+          error={forceFailed ? error || "No se pudo abrir el día." : ""}
+          onCancel={() => { setConfirmForce(false); setForceFailed(false); }}
           onConfirm={() => void forceOpen()}
         />
       ) : null}

@@ -52,6 +52,17 @@ function mergeDay(current: POSCashDay | null, next: POSCashDay): POSCashDay {
  * instead of recomputing the rule here keeps the two from drifting apart at
  * 02:00, which is exactly when nobody is watching.
  */
+/**
+ * Opening/closing the till needs `pos.shift.manage`; the API answers a bare
+ * 403 "Forbidden" which tells a waiter nothing. Say what is missing instead.
+ * Coordination id: pos_cash_day_permission_message_v1
+ */
+function cashDayErrorMessage(reason: unknown, fallback: string): string {
+  const msg = reason instanceof Error ? reason.message : "";
+  if (/forbidden|HTTP 403/i.test(msg)) return "Tu rol no puede abrir ni cerrar la caja. Pide a un responsable que lo haga o que te dé el permiso pos.shift.manage en Ajustes TPV.";
+  return msg || fallback;
+}
+
 export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
   const api = useMemo(() => createClient({ baseUrl: "" }), []);
   const [date, setDate] = useState<string | null>(isValidPOSDate(requestedDate) ? requestedDate : null);
@@ -169,11 +180,12 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
       setUnclosedPrevious((current) => current.filter((entry) => entry.date !== response.cashDay.date));
       return true;
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "No se pudo abrir la caja");
       // A 409 UNCLOSED_PREVIOUS_DAYS carries the pending days, but the request
       // helper discards the body; re-reading `/current` populates the list so
       // the gate can offer the force-open path instead of stranding the user.
+      // The refresh clears `error` on success, so the reason is set after it.
       await refresh();
+      setError(cashDayErrorMessage(reason, "No se pudo abrir la caja"));
       return false;
     }
   }, [api, date, refresh]);
@@ -192,7 +204,7 @@ export function usePOSCashDay(requestedDate: string | null): POSCashDayState {
       setUnclosedPrevious((current) => current.filter((entry) => entry.date !== response.cashDay.date));
       return true;
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "No se pudo cerrar la caja");
+      setError(cashDayErrorMessage(reason, "No se pudo cerrar la caja"));
       return false;
     }
   }, [api, cashDay]);
