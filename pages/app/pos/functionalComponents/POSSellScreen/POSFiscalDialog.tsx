@@ -49,6 +49,9 @@ export function POSFiscalDialog({ ticket, visit, online, onClose }: { ticket: Ti
   // the tax already on the ticket. Once a document is issued its own figures
   // win, so this is only ever the pre-issue estimate.
   const pickedTotal = () => {
+    // The ticket on screen knows its VAT exactly; only a ticket picked from the
+    // day's list (no breakdown) falls back to the 10 % estimate below.
+    if (!picked && ticket) return Math.max(0, (ticket.totalGrossCents ?? 0) - (ticket.taxCents ?? 0));
     const total = picked?.totalGrossCents ?? 0;
     // The summary list carries no VAT breakdown, so this is an ESTIMATE at the
     // 10% restaurant rate, and it is labelled as one. Once the document is
@@ -118,7 +121,7 @@ export function POSFiscalDialog({ ticket, visit, online, onClose }: { ticket: Ti
           <div><dt>Base imponible{picked ? " (estimada)" : ""}</dt><dd data-testid="pos-fiscal-base">{money(document?.baseCents ?? pickedTotal())}</dd></div>
           <div><dt>IVA</dt><dd data-testid="pos-fiscal-tax">{money(document?.taxCents ?? (ticket?.taxCents ?? 0))}</dd></div>
           <div><dt>Total</dt><dd data-testid="pos-fiscal-total">{money(document?.totalCents ?? (ticket?.totalGrossCents ?? picked?.totalGrossCents ?? 0))}</dd></div>
-          <div><dt>Comprador</dt><dd data-testid="pos-fiscal-customer">{document?.customerName || visit?.customerName || "Consumidor final"}{document?.customerTaxId ? ` · ${document.customerTaxId}` : ""}</dd></div>
+          <div><dt>Comprador</dt><dd data-testid="pos-fiscal-customer">{document?.customerName || visit?.customerName || ticket?.customerName || "Consumidor final"}{document?.customerTaxId || visit?.customerTaxId ? ` · ${document?.customerTaxId || visit?.customerTaxId}` : ""}{!document && !visit?.customerName && ticket?.customerName ? " (sin NIF: añádelo en «Datos factura»)" : ""}</dd></div>
         </dl>
 
         {series.length > 0 ? (
