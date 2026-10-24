@@ -1,0 +1,11 @@
+import { chromium } from "@playwright/test";
+import { readFileSync } from "node:fs";
+const axe = readFileSync("node_modules/axe-core/axe.min.js", "utf8");
+const b = await chromium.connectOverCDP("http://127.0.0.1:9362");
+const p = b.contexts()[0].pages().find(x=>x.url().includes("3098"));
+const run = async (label) => { await p.addScriptTag({ content: axe }); const r = await p.evaluate(async () => await window.axe.run(document, { runOnly: ["wcag2a","wcag2aa"], resultTypes: ["violations"] })); console.log(`== ${label}: ${r.violations.length}`); for (const v of r.violations) console.log(`- [${v.impact}] ${v.id} (${v.nodes.length}) ${v.nodes[0]?.target[0]}`); };
+await p.goto("http://127.0.0.1:3098/app/pos", { waitUntil: "networkidle" }); await p.waitForTimeout(1500); await run("sell-empty");
+await p.goto("http://127.0.0.1:3098/app/pos?section=kitchen", { waitUntil: "networkidle" }); await p.waitForTimeout(1500); await run("kitchen");
+await p.goto("http://127.0.0.1:3098/app/reservas", { waitUntil: "networkidle" }); await p.waitForTimeout(2500); await run("reservas");
+await p.screenshot({ path: "/tmp/pos54.png" });
+await b.close();

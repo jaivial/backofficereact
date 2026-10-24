@@ -42,9 +42,17 @@ export default function Head() {
   return (
     <>
       <meta charSet="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       <link rel="icon" href="/favicon.ico" sizes="any" />
       <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      {/* Installable PWA: a till/KDS tablet runs it full screen from the home screen. Coordination id: bo_pwa_manifest_v1 */}
+      <link rel="manifest" href="/manifest.webmanifest" />
+      <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      <meta name="theme-color" content="#1b1c22" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      <meta name="apple-mobile-web-app-title" content="Backoffice" />
       {/* CSS is loaded via import in +Layout.tsx; Vite resolves @import from the aggregator */}
       <script dangerouslySetInnerHTML={{ __html: boot }} />
     </>
