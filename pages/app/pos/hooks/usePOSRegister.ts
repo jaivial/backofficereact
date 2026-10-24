@@ -394,10 +394,14 @@ export function usePOSRegister(date?: string | null) {
         if (payload.data?.ticketId === current.id && typeof payload.data?.version === "number" && payload.data.version <= current.version) return;
         try {
           const data = await request<{ visit: Visit & { tickets: Ticket[] } }>(`/visits/${currentVisit.id}`);
+          // The event may trail our own checkout: by then the screen has
+          // already moved on and must not get the paid ticket back.
+          if (ticketRef.current?.id !== current.id) return;
           const tickets = data.visit.tickets || [];
-          setSplitTickets(tickets);
           const refreshed = tickets.find((entry) => entry.id === current.id);
-          if (refreshed) setTicket(refreshed);
+          if (!refreshed || refreshed.status !== "OPEN" || data.visit.status !== "OPEN") { setTicket(null); setVisit(null); setSplitTickets([]); setSentKitchenQuantities({}); void load(); return; }
+          setSplitTickets(tickets);
+          setTicket(refreshed);
           setVisit(data.visit);
           setMessage("La cuenta se actualizó desde otro terminal.");
         } catch { /* a failed refresh keeps the current copy; the next write will tell */ }

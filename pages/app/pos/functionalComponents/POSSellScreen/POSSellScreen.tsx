@@ -418,7 +418,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
       return reasons;
     }
     if (!date) reasons.facturacion = "Día de caja no determinado.";
-    if (!register.hasPendingKitchenLines) reasons.cocina = "No hay líneas pendientes de enviar a cocina.";
+    if (register.ticket && register.ticket.status !== "OPEN") reasons.cocina = "La cuenta ya está cerrada.";
+    else if (!register.hasPendingKitchenLines) reasons.cocina = "No hay líneas pendientes de enviar a cocina.";
     if (!register.activeTicketLines.length) reasons.comanda = "No hay líneas en la cuenta.";
     else if (comandaBusy) reasons.comanda = "Generando comanda…";
     if (!register.ticket) {
