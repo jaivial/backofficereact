@@ -193,8 +193,11 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
 
   const divideShares = useMemo(() => splitShares(register.ticketTotal, Math.round(Number(divideGuests) || 0)), [divideGuests, register.ticketTotal]);
 
+  // Reset per selection so each table pick re-scrolls/focuses the covers field.
+  const coversFocusedRef = useRef(false);
   const selectTable = useCallback((table: Table) => {
     if (readOnly) return;
+    coversFocusedRef.current = false;
     if (register.visit) {
       if (table.id === register.visit.tableId) { setShowTables(false); return; }
       void register.moveVisitToTable(table).then(() => setShowTables(false));
@@ -605,6 +608,8 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
             <POSTicketPanel courses={register.courses} activeCourse={register.activeCourse} onSelectCourse={register.setActiveCourse} onFireCourse={(course) => void register.fireCourse(course)} onRequestTable={() => setShowTables(true)} onRequestRecall={() => { void register.loadRecallCandidates(); setShowRecall(true); }}
               expanded={ticketExpanded}
               onToggleExpand={toggleTicketExpanded}
+              openVisits={openVisits.filter((entry) => !entry.parked)}
+              onRestoreVisit={(entry) => void register.restoreVisit(entry)}
               ticket={register.ticket}
               visit={register.visit}
               tags={register.tags}
@@ -729,7 +734,18 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
                 </div>
               ) : null}
               <label className="pos-modal__covers" data-testid="pos-covers-field">Comensales
-                <input inputMode="numeric" value={register.covers} onChange={(event) => register.setCovers(event.target.value)} aria-label="Comensales" data-testid="pos-covers-input" />
+                <input
+                  inputMode="numeric"
+                  value={register.covers}
+                  onChange={(event) => register.setCovers(event.target.value)}
+                  // The confirm row sits under 27 tiles: with no scroll the tap
+                  // on a table looked like nothing happened. Bring it into view
+                  // and put the caret where the next tap goes.
+                  ref={(node) => { if (node && !coversFocusedRef.current) { coversFocusedRef.current = true; node.scrollIntoView({ block: "nearest" }); node.focus(); node.select(); } }}
+                  onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void register.openVisit().then((opened) => { if (opened) setShowTables(false); }); } }}
+                  aria-label="Comensales"
+                  data-testid="pos-covers-input"
+                />
               </label>
               <button className="pos-modal__primary" type="button" disabled={register.busy} onClick={() => { void register.openVisit().then((opened) => { if (opened) setShowTables(false); }); }} data-testid="pos-open-visit">
                 Abrir {register.selectedTable.name}

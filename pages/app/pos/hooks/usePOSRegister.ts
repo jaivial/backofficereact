@@ -88,6 +88,25 @@ export function checkoutMessage(stockStatus?: string | null): string {
  * display, where no provider is mounted. Falling back to plain state keeps
  * those callers working while the POS page gets the toast.
  */
+/**
+ * Dishes the kitchen never received because no station routes them. Said out
+ * loud instead of a silent "sent". Coordination id: pos_kitchen_unrouted_v1
+ */
+function unroutedKitchenWarning(lines?: { productName: string }[] | null): string {
+  if (!lines?.length) return "";
+  const names = lines.map((line) => line.productName).slice(0, 3).join(", ");
+  const more = lines.length > 3 ? ` y ${lines.length - 3} más` : "";
+  return `${lines.length === 1 ? "Este plato no llegó" : "Estos platos no llegaron"} a ninguna estación de cocina (sin ruta): ${names}${more}. Configura su ruta en Cocina → Rutas.`;
+}
+
+function kitchenErrorMessage(reason: unknown, fallback: string): string {
+  const msg = reason instanceof Error ? reason.message : "";
+  if (/No kitchen routes configured/i.test(msg)) return "Ningún plato de esta cuenta tiene estación de cocina asignada. Configura las rutas en Cocina → Rutas.";
+  if (/Ticket has no kitchen lines/i.test(msg)) return "No hay platos pendientes de enviar a cocina.";
+  if (/forbidden|HTTP 403/i.test(msg)) return "Tu rol no puede enviar comandas a cocina (permiso pos.kitchen.manage).";
+  return msg || fallback;
+}
+
 export function usePOSRegister(date?: string | null) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [products, setProducts] = useState<Product[]>([]);
@@ -783,11 +802,13 @@ export function usePOSRegister(date?: string | null) {
     const changedCount = pendingKitchenLines.length + pendingKitchenVoids.length;
     setMessage("");
     try {
-      await request(`/tickets/${ticket.id}/kitchen-dispatches`, { method: "POST", body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) });
+      const result = await request<{ duplicate?: boolean; dispatchIds?: number[]; unroutedLines?: { productName: string }[] }>(`/tickets/${ticket.id}/kitchen-dispatches`, { method: "POST", body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) });
       // The server snapshot only keeps active lines: drop voided ids and sync sent = current.
       setSentKitchenQuantities(Object.fromEntries(activeTicketLines.map((line) => [line.id, line.quantity])));
-      setMessage(`Comanda enviada a cocina · ${changedCount} línea(s).`);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo enviar a cocina"); }
+      setMessage(result.duplicate || !result.dispatchIds?.length ? "Cocina ya tenía esta comanda: no se envió nada nuevo." : `Comanda enviada a cocina · ${changedCount} línea(s).`);
+      const unrouted = unroutedKitchenWarning(result.unroutedLines);
+      if (unrouted) setError(unrouted);
+    } catch (reason) { setError(kitchenErrorMessage(reason, "No se pudo enviar a cocina")); }
   }, [activeTicketLines, hasPendingKitchenLines, pendingKitchenLines, pendingKitchenVoids, ticket]);
 
   /**
@@ -812,11 +833,15 @@ export function usePOSRegister(date?: string | null) {
     if (!ticket) return;
     setBusy(true); setError("");
     try {
-      await request(`/tickets/${ticket.id}/courses/fire`, { method: "POST", body: JSON.stringify({ course }) });
-      setMessage(`Curso ${course} enviado a cocina.`);
+      const result = await request<{ duplicate?: boolean; dispatchIds?: number[]; unroutedLines?: { productName: string }[] }>(`/tickets/${ticket.id}/courses/fire`, { method: "POST", body: JSON.stringify({ course }) });
+      // An identical re-fire is a no-op on the server; saying "enviado" would
+      // make the waiter believe the kitchen got a second copy.
+      setMessage(result.duplicate || !result.dispatchIds?.length ? `El curso ${course} ya estaba enviado: cocina no recibe nada nuevo.` : `Curso ${course} enviado a cocina.`);
+      const unrouted = unroutedKitchenWarning(result.unroutedLines);
+      if (unrouted) setError(unrouted);
       await load();
       await loadCourses();
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "No se pudo enviar el curso"); } finally { setBusy(false); }
+    } catch (reason) { setError(kitchenErrorMessage(reason, "No se pudo enviar el curso")); } finally { setBusy(false); }
   }, [ticket, load, loadCourses]);
 
   const checkout = useCallback(async (requestedTipCents = tipCents, tenders?: POSPaymentTender[]) => {

@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
-import { ArrowRightLeft, History, Merge, Minus, Pencil, Plus, Receipt, Trash2, Users, X } from "lucide-react";
+import { ArrowRightLeft, ChevronDown, History, Merge, Minus, Pencil, Plus, Receipt, Trash2, Users, X } from "lucide-react";
 import { StatusBadge } from "../../../../../ui/feedback/StatusBadge";
 import { cn } from "../../../../../ui/shadcn/utils";
 import { POSCourseStrip } from "./POSCourseStrip";
 import type { POSCourseSummary } from "../../types/register";
 import { money, type Tag, type Ticket, type TicketLine, type Visit } from "../../hooks/usePOSRegister";
 
-export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, expanded = false, onToggleExpand, onRequestRecall, courses = [], activeCourse = "1", onSelectCourse, onFireCourse, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, onRenameTicket, busy = false, readOnly = false }: {
+export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, selectedLineId, onSelectLine, onLineQuantity, onVoidLine, onRequestTable, openVisits = [], onRestoreVisit, expanded = false, onToggleExpand, onRequestRecall, courses = [], activeCourse = "1", onSelectCourse, onFireCourse, splitTickets = [], sentKitchenQuantities = {}, onSelectTicket, onMoveLine, canMoveLine = false, onMergeSplitTickets, onDeleteEmptyTicket, onRenameTicket, busy = false, readOnly = false }: {
   ticket: Ticket | null;
   visit: Visit | null;
   tags?: Tag[];
@@ -16,6 +16,10 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
   onLineQuantity: (line: TicketLine, quantity: number) => void;
   onVoidLine: (line: TicketLine) => void;
   onRequestTable?: () => void;
+  /** Tables already open on this day, offered when no ticket is loaded so a
+   *  reload/relogin never looks like the floor is empty. Coordination id: pos_open_visits_strip_v1 */
+  openVisits?: Visit[];
+  onRestoreVisit?: (visit: Visit) => void;
   expanded?: boolean;
   onToggleExpand?: () => void;
   /** Opens the "traer una cuenta" picker; hidden when the ticket is not open. */
@@ -238,15 +242,39 @@ export function POSTicketPanel({ ticket, visit, tags = [], activeTicketLines, se
             aria-expanded={expanded}
             aria-label={expanded ? "Contraer cuenta" : "Ampliar cuenta"}
             onDoubleClick={onToggleExpand}
+            onClick={(event) => { if (event.detail === 1 && (event.target as HTMLElement).closest("[data-testid=\"pos-total-count\"]")) onToggleExpand?.(); }}
             onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onToggleExpand?.(); } }}
           >
             <span data-testid="pos-total-label">Total</span>
+            {onToggleExpand ? (
+              // Double-click/Enter already toggles; touch users had no cue that
+              // the ticket could grow or that lines were hidden under the fold.
+              <span className="pos-ticketPanel__count" data-testid="pos-total-count">
+                {topLevelLines.length} {topLevelLines.length === 1 ? "artículo" : "artículos"}
+                <ChevronDown className={cn("h-4 w-4", expanded && "rotate-180")} aria-hidden="true" />
+              </span>
+            ) : null}
             <strong data-testid="pos-total-value">{money(ticket.totalGrossCents)}</strong>
           </footer>
           <POSTicketBreakdown ticket={ticket} />
         </>
       ) : (
-        <p className="pos-ticketPanel__empty" data-testid="pos-ticket-empty">Selecciona mesa o pulsa Mesa para empezar.</p>
+        <div className="pos-ticketPanel__emptyWrap" data-testid="pos-ticket-empty-wrap">
+          <p className="pos-ticketPanel__empty" data-testid="pos-ticket-empty">Selecciona mesa o pulsa Mesa para empezar.</p>
+          {openVisits.length && onRestoreVisit ? (
+            <div className="pos-openVisits" role="group" aria-label={`${openVisits.length} mesas abiertas`} data-testid="pos-open-visits" onClick={(event) => event.stopPropagation()}>
+              <span className="pos-openVisits__title" data-testid="pos-open-visits-title">Mesas abiertas ({openVisits.length})</span>
+              <div className="pos-openVisits__list">
+                {openVisits.map((entry) => (
+                  <button className="pos-openVisits__item" type="button" key={entry.id} disabled={busy} aria-label={`Abrir ${entry.tableName ? `mesa ${entry.tableName}` : entry.channel === "TAKEAWAY" ? "para llevar" : entry.channel === "BAR" ? "barra" : `visita ${entry.id}`}, ${entry.covers} comensales, ${money(entry.totalGrossCents || 0)}`} onClick={(event) => { event.stopPropagation(); onRestoreVisit(entry); }} data-testid={`pos-open-visit-${entry.id}`}>
+                    <strong>{entry.tableName ? `Mesa ${entry.tableName}` : entry.channel === "TAKEAWAY" ? "Para llevar" : entry.channel === "BAR" ? "Barra" : `Visita ${entry.id}`}</strong>
+                    <span>{entry.covers} pax · {money(entry.totalGrossCents || 0)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
       )}
     </section>
   );

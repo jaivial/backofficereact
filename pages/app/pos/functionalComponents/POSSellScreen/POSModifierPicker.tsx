@@ -113,7 +113,7 @@ export function POSModifierPicker({ product, busy = false, error, onClose, onCon
                   const blocked = !entry && atMax(group, option.id);
                   return (
                     <div className={`pos-modifierOption${entry ? " pos-modifierOption--on" : ""}${blocked ? " pos-modifierOption--blocked" : ""}`} key={option.id} data-testid={`pos-modifier-option-${option.id}`}>
-                      <button className="pos-modifierOption__pick" type="button" aria-pressed={Boolean(entry)} disabled={busy || blocked} onClick={() => toggle(group, option)} data-testid={`pos-modifier-option-pick-${option.id}`}>
+                      <button className="pos-modifierOption__pick" type="button" aria-pressed={Boolean(entry)} aria-label={`${option.name}, ${option.priceDeltaCents === 0 ? "sin coste" : `${option.priceDeltaCents > 0 ? "más " : "menos "}${money(Math.abs(option.priceDeltaCents))}`}`} disabled={busy || blocked} onClick={() => toggle(group, option)} data-testid={`pos-modifier-option-pick-${option.id}`}>
                         <span className="pos-modifierOption__name">{option.name}</span>
                         <span className="pos-modifierOption__price">{option.priceDeltaCents === 0 ? "sin coste" : `${option.priceDeltaCents > 0 ? "+" : ""}${money(option.priceDeltaCents)}`}</span>
                       </button>
@@ -140,6 +140,7 @@ export function POSModifierPicker({ product, busy = false, error, onClose, onCon
         <span className="pos-modifierPicker__total" data-testid="pos-modifier-picker-total">
           Total {money(product.priceGrossCents + delta)}
           {delta !== 0 ? <span className="pos-modifierPicker__delta" data-testid="pos-modifier-picker-delta"> ({delta > 0 ? "+" : ""}{money(delta)})</span> : null}
+          {!canConfirm && missing.length ? <span className="pos-modifierPicker__pending" role="status" data-testid="pos-modifier-picker-pending">Falta elegir: {missing.map((g) => g.name).join(", ")}</span> : null}
         </span>
         <button className="pos-modal__primary" type="button" disabled={busy || !canConfirm} onClick={() => onConfirm(Object.values(picked).map((entry) => ({ modifierOptionId: entry.optionId, quantity: entry.quantity })))} data-testid="pos-modifier-picker-confirm">
           Añadir a la cuenta

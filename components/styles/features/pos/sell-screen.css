@@ -225,6 +225,23 @@
 }
 .pos-ticketPanel__lines::-webkit-scrollbar { display: none; }
 
+/* Open tables offered in the empty ticket. Coordination id: pos_open_visits_strip_v1 */
+.pos-ticketPanel__emptyWrap { display: grid; gap: var(--bo-space-3); align-content: center; flex: 1; min-height: 0; }
+.pos-openVisits { display: grid; gap: var(--bo-space-2); }
+.pos-openVisits__title { font-size: var(--bo-text-xs); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--bo-muted); text-align: center; }
+.pos-openVisits__list { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--bo-space-2); max-height: 140px; overflow-y: auto; }
+.pos-openVisits__item {
+  display: grid; gap: 2px; min-width: 96px; min-height: 44px; padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--bo-color-success) 45%, var(--bo-border));
+  border-radius: var(--bo-radius-sm);
+  background: color-mix(in srgb, var(--bo-color-success) 10%, var(--bo-surface));
+  color: var(--bo-text); text-align: left; font-size: var(--bo-text-xs);
+}
+.pos-openVisits__item strong { font-size: var(--bo-text-sm); }
+.pos-openVisits__item span { color: var(--bo-muted); }
+.pos-openVisits__item:hover { border-color: var(--bo-color-success); }
+.pos-openVisits__item:focus-visible { outline: 2px solid var(--bo-accent); outline-offset: 2px; }
+
 .pos-line {
   display: flex;
   align-items: center;
@@ -287,12 +304,24 @@
 .pos-line__void:focus-visible { outline: 2px solid var(--bo-accent); outline-offset: 2px; }
 
 .pos-ticketPanel__total {
-  display: flex; justify-content: space-between; align-items: baseline;
+  display: flex; justify-content: space-between; align-items: center;
   font-size: var(--bo-text-2xl); font-weight: var(--bo-weight-bold);
   color: var(--bo-text);
   border-top: 1px solid var(--bo-border);
   padding-top: var(--bo-space-3); margin-top: var(--bo-space-3);
 }
+.pos-ticketPanel__count {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: auto; margin-right: var(--bo-space-3);
+  padding: 4px 10px;
+  border: 1px solid var(--bo-border);
+  border-radius: 999px;
+  color: var(--bo-muted);
+  font-size: var(--bo-text-xs); font-weight: 600;
+  cursor: pointer;
+}
+.pos-ticketPanel__count:hover { color: var(--bo-accent); border-color: color-mix(in srgb, var(--bo-accent) 40%, var(--bo-border)); }
+.pos-ticketPanel__count svg { transition: transform 150ms ease-out; }
 .pos-ticketPanel__total strong {
   font-size: var(--bo-text-3xl);
   background: linear-gradient(150deg, var(--bo-accent), color-mix(in srgb, var(--bo-accent-2) 60%, var(--bo-accent)));
@@ -1742,6 +1771,8 @@
   font-variant-numeric: tabular-nums;
 }
 .pos-modifierPicker__delta { color: var(--bo-muted); font-weight: 500; }
+.pos-modifierPicker__total { display: grid; gap: 2px; }
+.pos-modifierPicker__pending { color: var(--bo-text-warning); font-size: var(--bo-text-xs); font-weight: 600; }
 
 /* The chosen extras sit under the dish name so a waiter can read the order
    back without opening the line. */
