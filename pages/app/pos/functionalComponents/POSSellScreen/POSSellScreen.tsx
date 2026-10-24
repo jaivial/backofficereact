@@ -184,13 +184,17 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
     setLineToVoid(null);
   }, [lineToVoid, register]);
 
+  // A new discount REPLACES the current one, so both the percentage and the
+  // upper bound are taken on the undiscounted amount (lines + surcharge), not
+  // on the already-discounted total.
+  const discountBaseCents = useMemo(() => (register.ticket?.subtotalGrossCents ?? register.ticketTotal) + (register.ticket?.surchargeCents ?? 0), [register.ticket?.subtotalGrossCents, register.ticket?.surchargeCents, register.ticketTotal]);
   const discountCents = useMemo(() => {
     const value = Number(discountValue.replace(",", ".")) || 0;
     if (value <= 0) return 0;
     return discountMode === "percent"
-      ? Math.round((register.ticketTotal * Math.min(value, 100)) / 100)
+      ? Math.round((discountBaseCents * Math.min(value, 100)) / 100)
       : Math.round(value * 100);
-  }, [discountMode, discountValue, register.ticketTotal]);
+  }, [discountBaseCents, discountMode, discountValue]);
 
   const divideShares = useMemo(() => splitShares(register.ticketTotal, Math.round(Number(divideGuests) || 0)), [divideGuests, register.ticketTotal]);
 
@@ -903,9 +907,9 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
             <label className="pos-modal__covers" htmlFor="pos-discount-reason" data-testid="pos-discount-reason-field">Motivo
               <input id="pos-discount-reason" value={discountReason} onChange={(event) => setDiscountReason(event.target.value)} placeholder="Fidelidad, incidencia..." data-ui="pos-discount-reason" data-testid="pos-discount-reason" />
             </label>
-            <p className="pos-modal__pending" data-testid="pos-discount-preview">Descuento {money(discountCents)} · Total {money(Math.max(register.ticketTotal - discountCents, 0))}</p>
-            {discountCents > register.ticketTotal ? <p className="pos-modal__error" role="alert" data-testid="pos-discount-over">El descuento supera el total de la cuenta ({money(register.ticketTotal)}). Para no cobrar nada usa «Invita».</p> : null}
-            <button className="pos-modal__primary" type="button" disabled={register.busy || register.commandBusy || discountCents <= 0 || discountCents > register.ticketTotal || !discountReason.trim()} onClick={() => void confirmDiscount()} data-pos-command="discount" data-testid="pos-discount-confirm">Aplicar descuento</button>
+            <p className="pos-modal__pending" data-testid="pos-discount-preview">{register.ticket?.discountCents ? `Sustituye el descuento actual de ${money(register.ticket.discountCents)} · ` : ""}Descuento {money(discountCents)} · Total {money(Math.max(discountBaseCents - discountCents, 0))}</p>
+            {discountCents > discountBaseCents ? <p className="pos-modal__error" role="alert" data-testid="pos-discount-over">El descuento supera el importe de la cuenta ({money(discountBaseCents)}). Para no cobrar nada usa «Invita».</p> : null}
+            <button className="pos-modal__primary" type="button" disabled={register.busy || register.commandBusy || discountCents <= 0 || discountCents > discountBaseCents || !discountReason.trim()} onClick={() => void confirmDiscount()} data-pos-command="discount" data-testid="pos-discount-confirm">Aplicar descuento</button>
           </div>
         </POSDialog>
       ) : null}
