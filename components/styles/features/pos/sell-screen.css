@@ -2539,3 +2539,14 @@
   /* Room under the rail so the last buttons clear the bar. */
   [data-ui="pos-page"][data-section="sell"] { padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* Counter on a rail button. Coordination id: pos_rail_send_kitchen_v1 */
+.pos-rail__btn { position: relative; }
+.pos-rail__badge {
+  position: absolute; top: -6px; right: -6px;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  background: var(--bo-color-danger); color: #fff;
+  font-size: 11px; font-weight: 800; line-height: 1;
+}

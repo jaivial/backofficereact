@@ -1,0 +1,15 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.connectOverCDP("http://127.0.0.1:9362");
+const p = b.contexts()[0].pages().find(x=>x.url().includes("3098"));
+const type = async (pin) => { for (const d of pin) await p.getByTestId(`pos-pin-key-${d}`).click(); };
+await type("9999"); await p.getByRole("button", { name: "Aprobar con PIN" }).click(); await p.waitForTimeout(1500);
+const err1 = await p.locator('[data-testid="pos-pin-dialog"] [role=alert], .pos-pinDialog [role=alert], .pos-modal__error').allTextContents().catch(()=>[]);
+console.log("wrong pin ->", JSON.stringify(err1));
+await p.screenshot({ path: "/tmp/pos45.png" });
+await p.getByTestId("pos-pin-clear").click().catch(()=>{});
+await type("1234"); await p.getByRole("button", { name: "Aprobar con PIN" }).click(); await p.waitForTimeout(2500);
+const lines = await p.locator(".pos-line").allInnerTexts();
+console.log("after void lines:", lines.map(l=>l.replace(/\n/g,' ').slice(0,50)));
+const msg = await p.getByTestId("pos-message").textContent(); const er = await p.getByTestId("pos-error").textContent();
+console.log("msg:", msg, "| err:", er);
+await b.close();

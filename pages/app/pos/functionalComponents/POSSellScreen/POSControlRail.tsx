@@ -1,6 +1,6 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { Archive, Banknote, ChefHat, Combine, FileText, Gift, HandCoins, IdCard, LayoutGrid, Lock, Map as MapIcon, MessageSquare, Percent, Receipt, Scissors, ShoppingBag, Split, Tags, Trash2, TrendingUp, UserRound, Wine, ListChecks, CirclePause, ChartPie, KeyRound, ScrollText, History } from "lucide-react";
+import { Archive, Banknote, ChefHat, Combine, FileText, Gift, HandCoins, IdCard, LayoutGrid, Lock, Map as MapIcon, MessageSquare, Percent, Receipt, Scissors, ShoppingBag, Split, Tags, Trash2, TrendingUp, UserRound, Wine, ListChecks, CirclePause, ChartPie, KeyRound, ScrollText, History, Printer } from "lucide-react";
 
 export type RailFeatureKey =
   | "total" | "cerrar-mesas" | "comanda" | "aparcar" | "mesa" | "salon" | "juntar-mesas" | "borrar-comanda"
@@ -20,7 +20,7 @@ export const RAIL_GROUP_LABELS: Record<RailFeatureGroup, string> = {
 
 /** One icon per rail command: a scannable glyph plus the label keeps dense tills readable. */
 const RAIL_ICONS: Record<RailFeatureKey, LucideIcon> = {
-  total: Banknote, comanda: ChefHat, "separar-comanda": Split, "dividir-comanda": Scissors, "juntar-mesas": Combine,
+  total: Banknote, comanda: Printer, "separar-comanda": Split, "dividir-comanda": Scissors, "juntar-mesas": Combine,
   descuento: Percent, recargo: TrendingUp, invita: Gift, comentario: MessageSquare, tags: Tags, propina: HandCoins,
   "borrar-comanda": Trash2, mesa: LayoutGrid, salon: MapIcon, aparcar: CirclePause, barra: Wine, llevar: ShoppingBag,
   cliente: IdCard, comensal: History, empleado: UserRound, cajon: Archive, cocina: ChefHat, "cerrar-mesas": ListChecks,
@@ -30,7 +30,11 @@ const RAIL_ICONS: Record<RailFeatureKey, LucideIcon> = {
 /** `readOnlySafe`: the command only reads, so a sealed day does not disable it. */
 export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: RailFeatureGroup; accent?: boolean; danger?: boolean; readOnlySafe?: boolean }> = [
   { key: "total", label: "Total", group: "cobro", accent: true },
-  { key: "comanda", label: "Comanda", group: "cuenta" },
+  // Sending to the kitchen was only reachable from the small flame in the
+  // course strip; "Comanda" (the PDF) looked like it and was pressed instead.
+  // Coordination id: pos_rail_send_kitchen_v1
+  { key: "cocina", label: "Enviar a cocina", group: "cobro", accent: true },
+  { key: "comanda", label: "Comanda PDF", group: "cuenta" },
   { key: "separar-comanda", label: "Separar comanda", group: "cuenta" },
   { key: "dividir-comanda", label: "Dividir comanda", group: "cuenta" },
   { key: "juntar-mesas", label: "Juntar mesas", group: "cuenta" },
@@ -59,8 +63,10 @@ export const RAIL_FEATURES: Array<{ key: RailFeatureKey; label: string; group: R
   { key: "cerrar-dia", label: "Cerrar día", group: "cierre", accent: true },
 ];
 
-export function POSControlRail({ onAction, disabledReasons = {}, readOnly = false }: {
+export function POSControlRail({ onAction, disabledReasons = {}, readOnly = false, badges = {} }: {
   onAction: (key: RailFeatureKey) => void;
+  /** Small counter on a button (e.g. dishes pending for the kitchen). */
+  badges?: Partial<Record<RailFeatureKey, number>>;
   /** Reason per disabled feature. Presence of a reason disables and explains the button. */
   disabledReasons?: Partial<Record<RailFeatureKey, string>>;
   /** Sealed day: disable every rail action except the read-only ones. */
@@ -87,6 +93,7 @@ export function POSControlRail({ onAction, disabledReasons = {}, readOnly = fals
                 >
                   {React.createElement(RAIL_ICONS[feature.key], { className: "pos-rail__icon", "aria-hidden": true, "data-testid": `pos-rail-icon-${feature.key}` } as React.ComponentProps<LucideIcon>)}
                   <span className="pos-rail__label" data-testid={`pos-rail-label-${feature.key}`}>{feature.label}</span>
+                  {badges[feature.key] ? <span className="pos-rail__badge" aria-label={`${badges[feature.key]} pendientes`} data-testid={`pos-rail-badge-${feature.key}`}>{badges[feature.key]}</span> : null}
                 </button>
                 {reason ? <span id={`pos-rail-reason-${feature.key}`} className="pos-rail__reason" data-testid={`pos-rail-reason-${feature.key}`}>{reason}</span> : null}
               </React.Fragment>

@@ -653,7 +653,7 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
             </div>
           </div>
         </div>
-        <POSControlRail onAction={railAction} disabledReasons={disabledReasons} readOnly={readOnly} />
+        <POSControlRail onAction={railAction} disabledReasons={disabledReasons} readOnly={readOnly} badges={{ cocina: register.pendingKitchenLines.length + register.pendingKitchenVoids.length }} />
       </div>
       {register.ticket && !readOnly ? (
         // Phone layout stacks ticket → catalogue → rail, so "Total" sat a full

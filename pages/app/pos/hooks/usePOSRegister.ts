@@ -731,12 +731,27 @@ export function usePOSRegister(date?: string | null) {
    */
   const voidLine = useCallback(async (line: TicketLine, reason = "Error al introducir", approvalPin?: string): Promise<boolean> => {
     if (!ticket) return false; const trimmed = reason.trim(); if (!trimmed) return false;
-    try { const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed, approvalPin }) }); setTicket(data.ticket); return true; }
+    try {
+      const data = await request<{ ticket: Ticket }>(`/tickets/${ticket.id}/lines/${line.id}/void`, { method: "POST", body: JSON.stringify({ reason: trimmed, approvalPin }) });
+      setTicket(data.ticket);
+      // A dish the kitchen already has must be stopped NOW, not when the
+      // waiter remembers to resend the comanda. Coordination id: pos_void_reaches_kitchen_v1
+      if ((sentKitchenQuantities[line.id] ?? 0) > 0) {
+        try {
+          await request(`/tickets/${ticket.id}/kitchen-dispatches`, { method: "POST", body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }) });
+          setSentKitchenQuantities((current) => { const next = { ...current }; delete next[line.id]; return next; });
+          setMessage(`Anulado ${line.productName}. Cocina avisada.`);
+        } catch {
+          setError(`${line.productName} anulado en la cuenta, pero cocina no recibió el aviso. Pulsa «Enviar a cocina».`);
+        }
+      }
+      return true;
+    }
     catch (reasonValue) {
       if (isPinRequired(reasonValue) && !approvalPin) { setPinChallenge({ title: "Anular línea", message: (reasonValue as Error).message, retry: (pin) => voidLineRef.current(line, reason, pin) }); return false; }
       setError(posErrorMessage(reasonValue, "No se pudo anular línea")); return false;
     }
-  }, [ticket]);
+  }, [sentKitchenQuantities, ticket]);
   const voidLineRef = useRef(voidLine);
   voidLineRef.current = voidLine;
 
@@ -881,7 +896,7 @@ export function usePOSRegister(date?: string | null) {
     online, offlineEntries, offlineNotice, setOfflineNotice, flushOffline,
     cash, setCash, card, setCard, cardReference, setCardReference, discount, setDiscount,
     filteredProducts, ticketTotal, activeTicketLines, openSplitTickets, otherOpenSplitTickets, paymentTotal,
-    pendingKitchenLines, hasPendingKitchenLines, sentKitchenQuantities,
+    pendingKitchenLines, pendingKitchenVoids, hasPendingKitchenLines, sentKitchenQuantities,
     changeDue, amountDueCents, tipCents, setTipCents,
     areas, restaurant, operators, currentShift, tags, lineTags,
     load, loadReservations, selectReservation, openVisit, openTakeaway, restoreVisit, restoreParkedVisit, moveVisitToTable,
