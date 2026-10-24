@@ -1,0 +1,27 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.connectOverCDP("http://127.0.0.1:9362");
+const ctx = b.contexts()[0];
+const p = await ctx.newPage();
+await p.setViewportSize({ width: 390, height: 844 });
+await p.goto("http://127.0.0.1:3098/app/pos", { waitUntil: "networkidle" }); await p.waitForTimeout(2500);
+const audit = async (label) => {
+  const r = await p.evaluate(()=>{const small=[...document.querySelectorAll('button,a,input,select,[role=button]')].filter(e=>{const r=e.getBoundingClientRect(); const cs=getComputedStyle(e); return cs.visibility!=='hidden'&&r.width>0&&r.height>0&&(r.width<44||r.height<44);}).map(e=>(e.getAttribute('aria-label')||e.textContent||e.getAttribute('placeholder')||'').trim().slice(0,28)+` ${Math.round(e.getBoundingClientRect().width)}x${Math.round(e.getBoundingClientRect().height)}`); return {vw:innerWidth, docW:document.documentElement.scrollWidth, overflowX:document.documentElement.scrollWidth>innerWidth, small:small, smallCount:small.length};});
+  console.log(label, JSON.stringify(r));
+};
+await audit("sell-empty");
+await p.screenshot({ path: "/tmp/m01.png" });
+await p.getByTestId("pos-ticket-panel").click(); await p.waitForTimeout(1200);
+await p.screenshot({ path: "/tmp/m02.png" });
+await audit("tables-modal");
+await p.getByRole("button", { name: /Mesa 9 /}).click(); await p.waitForTimeout(800);
+await p.screenshot({ path: "/tmp/m03.png" });
+await p.getByTestId("pos-covers-input").fill("3"); await p.getByTestId("pos-open-visit").click(); await p.waitForTimeout(2500);
+await p.getByRole("button", { name: /^Añadir Arroz a banda$/ }).click(); await p.waitForTimeout(1200);
+await p.getByRole("button", { name: /^Añadir Arroz de señoret$/ }).click(); await p.waitForTimeout(1200);
+await p.screenshot({ path: "/tmp/m04.png", fullPage: false });
+await audit("sell-with-ticket");
+const rail = await p.evaluate(()=>{const r=document.querySelector('.pos-rail'); const total=document.querySelector('[data-testid="pos-rail-total"]')||[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Total'); const rr=total?.getBoundingClientRect(); return {railTop: r?.getBoundingClientRect().y, totalY: rr?.y, totalVisible: rr? rr.y>=0&&rr.y<innerHeight : null, docH: document.documentElement.scrollHeight, pageScrollH: document.querySelector('[data-ui="pos-page"]')?.scrollHeight};});
+console.log("rail", JSON.stringify(rail));
+await p.evaluate(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Total'); b?.scrollIntoView({block:'center'});}); await p.waitForTimeout(500);
+await p.screenshot({ path: "/tmp/m05.png" });
+await p.close(); await b.close();

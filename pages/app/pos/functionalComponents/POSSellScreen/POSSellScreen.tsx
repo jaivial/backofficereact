@@ -650,6 +650,19 @@ export function POSSellScreen({ date, readOnly = false, cashDay = null, totals =
         </div>
         <POSControlRail onAction={railAction} disabledReasons={disabledReasons} readOnly={readOnly} />
       </div>
+      {register.ticket && !readOnly ? (
+        // Phone layout stacks ticket → catalogue → rail, so "Total" sat a full
+        // screen below the dishes. A sticky bar keeps cobrar one thumb away.
+        // Coordination id: pos_mobile_checkout_bar_v1
+        <div className="pos-mobileBar" data-testid="pos-mobile-bar">
+          <span className="pos-mobileBar__total" data-testid="pos-mobile-bar-total">
+            <span>{register.activeTicketLines.length} {register.activeTicketLines.length === 1 ? "artículo" : "artículos"}</span>
+            <strong>{money(register.ticket.totalGrossCents)}</strong>
+          </span>
+          <button type="button" className="pos-mobileBar__kitchen" disabled={register.busy || !register.hasPendingKitchenLines} onClick={() => railAction("cocina")} aria-label="Enviar a cocina" data-testid="pos-mobile-bar-kitchen">Cocina</button>
+          <button type="button" className="pos-mobileBar__pay" disabled={register.busy || !register.activeTicketLines.length} onClick={() => railAction("total")} data-testid="pos-mobile-bar-pay">Cobrar</button>
+        </div>
+      ) : null}
 
       {billingOpen && date ? <POSDayBillingDialog date={date} onClose={() => setBillingOpen(false)} /> : null}
 
