@@ -1,19 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "vike/client/router";
-import { Eye, FileText, Gauge, Mail, MessageCircle, Palette, PenLine, ScrollText, Send, Settings, Trash2, Users, Workflow } from "lucide-react";
+import { Eye, FileText, Gauge, Mail, MessageCircle, PenLine, ScrollText, Send, Settings, Trash2, Users, Workflow } from "lucide-react";
 import type { Campaign, CampaignChannel, CampaignInput, CampaignRecipient } from "../../../../api/types";
 import { Button } from "../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { Panel } from "../../../../ui/shell/Panel";
 import { CampaignField, CampaignFieldCell, CampaignSection, CampaignStatusBadge, CAMPAIGN_CAPTION_CLASS } from "./campaignUi";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
-import { RichTextEditor } from "../../../../ui/inputs/RichTextEditor";
 import { Select } from "../../../../ui/inputs/Select";
 import { InlineCounter } from "../../../../ui/widgets/InlineCounter";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_PAUSE, CAMPAIGN_RATE_LIMITS, CAMPAIGN_RATE_NOTES, createCampaignsAPI, emptyCampaignInput, estimatedTime } from "./campaignsApi";
-import { CampaignPreview } from "./CampaignPreview";
 import { CampaignFlowCanvas, type CampaignFlowSection } from "./CampaignFlowCanvas";
+import { EmailBuilder } from "./builder/EmailBuilder";
+import { defaultDesign, legacyDesign, type BlockContext } from "./builder/emailBuilderBlocks";
+import { compileCampaignEmail, designToWhatsAppMarkdown, fillPreviewPlaceholders } from "./builder/emailBuilderCompile";
+import { DeviceSwitch, EmailPreviewFrame } from "./builder/EmailPreviewFrame";
+import type { BuilderDevice } from "./builder/EmailBuilderCanvas";
+import { renderCampaignEmailBody } from "./campaignEmailBody";
+import { IPhoneFrame, IPHONE_DEFAULT_TIME } from "./IPhoneFrame";
+import { WhatsAppPreview } from "./WhatsAppPreview";
 
 /** Message of a rejected request, falling back to a copy the operator can act on. */
 function errorMessage(err: unknown, fallback: string): string {
@@ -26,7 +32,7 @@ export type CampaignEditorTab = "flow" | "editor" | "preview" | "settings";
 
 const CAMPAIGN_EDITOR_TABS: TabItem[] = [
   { id: "flow", label: "Flujo", href: "#", icon: <Workflow size={16} aria-hidden="true" /> },
-  { id: "editor", label: "Editor", href: "#", icon: <PenLine size={16} aria-hidden="true" /> },
+  { id: "editor", label: "Diseño", href: "#", icon: <PenLine size={16} aria-hidden="true" /> },
   { id: "preview", label: "Previsualización", href: "#", icon: <Eye size={16} aria-hidden="true" /> },
   { id: "settings", label: "Ajustes", href: "#", icon: <Settings size={16} aria-hidden="true" /> },
 ];
@@ -49,9 +55,8 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const { pushToast } = useToasts();
   const [form, setForm] = useState<CampaignInput>(initialCampaign ? campaignToInput(initialCampaign) : emptyCampaignInput());
   const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign);
-  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string; brandName: string; logoUrl: string; website: string; unsubscribeUrl: string }>({
-    shell: "",
-    bodyPlaceholder: "",
+  const [template, setTemplate] = useState<{ loaded: boolean; brandName: string; logoUrl: string; website: string; unsubscribeUrl: string }>({
+    loaded: false,
     brandName: "",
     logoUrl: "",
     website: "",
@@ -59,7 +64,8 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   });
   const themeApplied = useRef(false);
   const navigated = useRef(false);
-  const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
+  const [device, setDevice] = useState<BuilderDevice>("desktop");
+  const [previewEmail, setPreviewEmail] = useState<{ html: string; error: string }>({ html: "", error: "" });
   const [tab, setTab] = useState<CampaignEditorTab>("flow");
   const [audience, setAudience] = useState<{ total: number; emails: number; whatsapp: number } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -91,37 +97,45 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     });
   }, []);
 
-  // The email shell always comes from the backend, which builds the same
-  // markup it sends. It is refetched only when the theme changes; typing stays
-  // fully local. A brand new campaign adopts the reference theme on first load.
-  const themeKey = JSON.stringify(form.theme);
+  // Brand of the restaurant (name, logo, website, preview opt-out link) for the
+  // builder blocks and the previews. A brand new campaign adopts the reference
+  // theme (its accent colours the default design). A failed fetch still opens
+  // the builder, just without brand data.
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      const result = await api.template(mode === "create" && !themeApplied.current ? undefined : form.theme);
-      if (!result.success) return;
-      setTemplate({
-        shell: result.shell ?? "",
-        bodyPlaceholder: result.body_placeholder ?? "",
-        brandName: result.brand_name ?? "",
-        logoUrl: result.logo_url ?? "",
-        website: result.website ?? "",
-        unsubscribeUrl: result.unsubscribe_url ?? "",
-      });
-      if (mode === "create" && !themeApplied.current && result.theme) {
-        themeApplied.current = true;
-        setForm((prev) => ({ ...prev, theme: result.theme }));
-      }
-    }, 250);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [api, mode, themeKey]);
+    let alive = true;
+    api
+      .template(mode === "create" && !themeApplied.current ? undefined : form.theme)
+      .then((result) => {
+        if (!alive) return;
+        const ok = result.success;
+        setTemplate({
+          loaded: true,
+          brandName: ok ? result.brand_name ?? "" : "",
+          logoUrl: ok ? result.logo_url ?? "" : "",
+          website: ok ? result.website ?? "" : "",
+          unsubscribeUrl: ok ? result.unsubscribe_url ?? "" : "",
+        });
+        if (ok && mode === "create" && !themeApplied.current && result.theme) {
+          themeApplied.current = true;
+          setForm((prev) => ({ ...prev, theme: result.theme }));
+        }
+      })
+      .catch(() => alive && setTemplate((prev) => ({ ...prev, loaded: true })));
+    return () => {
+      alive = false;
+    };
+  }, [api, mode]);
 
   // Persists without leaving the page. The API client throws on non-2xx, so the
   // failure is caught here and always reported instead of dying silently.
   const persist = useCallback(async () => {
     setBusy(true);
     try {
-      const result = campaign ? await api.update(campaign.id, form) : await api.create(form);
+      // The email SMTP sends is compiled from the design on every save, so the
+      // stored email_html can never drift from body_html (campaign_html_builder_v1).
+      const emailHtml = form.body_html ? await compileCampaignEmail(form.body_html, form.subject || form.name, coordId) : "";
+      const payload: CampaignInput = { ...form, email_html: emailHtml };
+      const result = campaign ? await api.update(campaign.id, payload) : await api.create(payload);
       if (!result.success || !result.campaign) throw new Error(apiMessage(result, "No se pudo guardar la campaña"));
       savedFormRef.current = JSON.stringify(form);
       setCampaign(result.campaign);
@@ -133,7 +147,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     } finally {
       setBusy(false);
     }
-  }, [api, campaign, form, pushToast]);
+  }, [api, campaign, coordId, form, pushToast]);
 
   // Explicit save keeps the original behaviour of moving to the campaign route
   // once the campaign exists, but never twice: an image upload may already have
@@ -161,7 +175,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
       } catch (err) {
         const message = errorMessage(err, "No se pudo subir la imagen");
         pushToast({ kind: "error", title: "Imagen", message });
-        throw new Error(message);
+        throw new Error(message, { cause: err });
       }
     },
     [api, campaign, persist, pushToast],
@@ -223,15 +237,40 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
   const hasUnsavedChanges = campaign !== null && JSON.stringify(form) !== savedFormRef.current;
 
-  const themeKeys = [
-    ["accent", "Color principal"],
-    ["text", "Color texto"],
-    ["surface", "Fondo tarjeta"],
-    ["background", "Fondo exterior"],
-  ] as const;
+  // Brand data every builder block and the AI start from.
+  const blockContext = useMemo<BlockContext>(
+    () => ({ brandName: template.brandName, logoUrl: template.logoUrl, websiteUrl: template.website, accent: form.theme.accent }),
+    [form.theme.accent, template.brandName, template.logoUrl, template.website],
+  );
+
+  // The design is the source of truth: the WhatsApp text is derived from it on
+  // every change so both channels always carry the same message.
+  const setDesign = useCallback((html: string) => {
+    setForm((prev) => ({ ...prev, body_html: html, body_markdown: designToWhatsAppMarkdown(html) }));
+  }, []);
+
+  // Campaigns without a design get one once the brand is known: a new campaign
+  // starts from the default template, an older one keeps its message inside it.
+  useEffect(() => {
+    if (!template.loaded || form.body_html) return;
+    const legacy = campaign && form.body_markdown.trim() ? renderCampaignEmailBody(form.body_markdown, form.theme) : "";
+    setDesign(legacy ? legacyDesign(blockContext, legacy) : defaultDesign(blockContext));
+  }, [template.loaded]);
+
+  // Preview tab: the exact email SMTP will send, compiled from the design.
+  useEffect(() => {
+    if (tab !== "preview" || !form.body_html) return;
+    let alive = true;
+    compileCampaignEmail(form.body_html, form.subject || form.name || "Campaña", coordId)
+      .then((html) => alive && setPreviewEmail({ html: fillPreviewPlaceholders(html, template.unsubscribeUrl), error: "" }))
+      .catch((err) => alive && setPreviewEmail({ html: "", error: errorMessage(err, "No se pudo compilar el email") }));
+    return () => {
+      alive = false;
+    };
+  }, [coordId, form.body_html, form.name, form.subject, tab, template.unsubscribeUrl]);
 
   return (
-    <section className="grid gap-4 pb-24 sm:pb-0" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
+    <section className="grid min-w-0 gap-4 pb-24 sm:pb-0" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
       <h2 className="sr-only">Editor de campaña</h2>
 
       {/* Header: identity on the left, status + actions on the right. Sticky on
@@ -305,114 +344,56 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
       )}
 
       {tab === "editor" && (
-        <div className="grid gap-4" role="tabpanel" aria-label="Editor" data-testid="campaign-tabpanel-editor">
-          <CampaignSection icon={<PenLine size={15} aria-hidden="true" />} title="Contenido del mensaje" helper="El texto que leerá cada cliente" data-testid="campaign-content-panel">
-            <RichTextEditor
-              testId="campaign-richtext"
-              coordId={coordId}
-              value={form.body_markdown}
-              onChange={(value) => patch("body_markdown", value)}
-              onUploadImage={uploadImage}
-              placeholder="Escribe el anuncio…"
-            />
-          </CampaignSection>
-
-          <CampaignSection
-            icon={<Palette size={15} aria-hidden="true" />}
-            title="Estilo del email"
-            helper="Colores, alineacion y tipografia del correo"
-            data-testid="campaign-theme-panel"
-          >
-            <div className="grid content-start gap-4">
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                {themeKeys.map(([key, label]) => (
-                  <CampaignField key={key} label={label} data-testid={`campaign-theme-${key}-field`}>
-                    <span className="flex min-w-0 items-center gap-2 rounded-bo-md border border-bo-border bg-[rgba(255,255,255,0.03)] p-1.5 transition hover:border-[var(--bo-border-2)] hover:bg-[rgba(255,255,255,0.05)]">
-                      <input
-                        type="color"
-                        className="size-8 shrink-0 cursor-pointer rounded-bo-sm border border-bo-border-2 bg-transparent p-0"
-                        value={form.theme[key]}
-                        aria-label={label}
-                        onChange={(e) => patch("theme", { ...form.theme, [key]: e.currentTarget.value })}
-                        data-testid={`campaign-theme-${key}-input`}
-                      />
-                      <span className="min-w-0 truncate font-mono text-[11px] uppercase text-bo-muted">{form.theme[key]}</span>
-                    </span>
-                  </CampaignField>
-                ))}
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-3">
-                <CampaignField label="Alineacion" helper="Alinea el texto del mensaje" data-testid="campaign-theme-align-field">
-                  <Select
-                    className="w-full"
-                    value={form.theme.align}
-                    onChange={(value) => patch("theme", { ...form.theme, align: value as CampaignInput["theme"]["align"] })}
-                    options={[
-                      { value: "left", label: "Izquierda" },
-                      { value: "center", label: "Centro" },
-                      { value: "right", label: "Derecha" },
-                    ]}
-                    ariaLabel="Alineacion del texto"
-                    data-testid="campaign-theme-align-select"
-                  />
-                </CampaignField>
-                <CampaignField label="Tipografia" helper="Fuente del cuerpo del email" data-testid="campaign-theme-font-field">
-                  <Select
-                    className="w-full"
-                    value={form.theme.fontFamily}
-                    onChange={(value) => patch("theme", { ...form.theme, fontFamily: value })}
-                    options={[
-                      { value: "Helvetica, Arial, sans-serif", label: "Sans" },
-                      { value: "Georgia, 'Times New Roman', serif", label: "Serif" },
-                      { value: "'Courier New', monospace", label: "Mono" },
-                    ]}
-                    ariaLabel="Tipografia del email"
-                    data-testid="campaign-theme-font-select"
-                  />
-                </CampaignField>
-                <CampaignField label="Ancho (px)" helper="Entre 320 y 900" data-testid="campaign-theme-width-field">
-                  <input
-                    type="number"
-                    min={320}
-                    max={900}
-                    className="bo-input"
-                    value={form.theme.maxWidth}
-                    onChange={(e) => patch("theme", { ...form.theme, maxWidth: Number(e.currentTarget.value) || 600 })}
-                    data-testid="campaign-theme-width-input"
-                  />
-                </CampaignField>
-              </div>
-            </div>
-          </CampaignSection>
+        <div className="min-w-0" role="tabpanel" aria-label="Diseño" data-testid="campaign-tabpanel-editor">
+          <EmailBuilder
+            value={form.body_html ?? ""}
+            onChange={setDesign}
+            context={blockContext}
+            subject={form.subject || form.name}
+            coordId={coordId}
+            unsubscribePreviewUrl={template.unsubscribeUrl}
+            onUploadImage={uploadImage}
+          />
         </div>
       )}
 
       {tab === "preview" && (
-        <div className="grid gap-4" role="tabpanel" aria-label="Previsualización" data-testid="campaign-tabpanel-preview">
+        <div className="eb-scope grid gap-4" role="tabpanel" aria-label="Previsualización" data-testid="campaign-tabpanel-preview">
           <Panel
             title="Previsualización"
             meta="El email y el WhatsApp tal y como los recibe el cliente"
-            className="mx-auto h-auto w-full max-w-5xl"
-            bodyClassName="grid content-start gap-3"
+            className="mx-auto h-auto w-full max-w-6xl"
+            bodyClassName="grid content-start gap-4"
             data-testid="campaign-preview-panel"
           >
             <div className="flex flex-wrap items-center justify-center gap-2" data-testid="campaign-preview-device-toggle">
-              <Button variant={device === "mobile" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("mobile")} data-testid="campaign-preview-mobile-btn">Movil</Button>
-              <Button variant={device === "desktop" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("desktop")} data-testid="campaign-preview-desktop-btn">Ordenador</Button>
+              <DeviceSwitch value={device} onChange={setDevice} testId="campaign-preview-device" />
             </div>
-            <CampaignPreview
-              markdown={form.body_markdown}
-              theme={form.theme}
-              shell={template.shell}
-              bodyPlaceholder={template.bodyPlaceholder}
-              device={device}
-              brandName={template.brandName}
-              logoUrl={template.logoUrl}
-              websiteUrl={template.website}
-              unsubscribeUrl={template.unsubscribeUrl}
-              coordId={coordId}
-            />
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_auto]" data-testid="campaign-preview-live" data-coord-id={coordId} data-observe="campaign-preview">
+              <figure className="m-0 grid min-w-0 gap-2" data-testid="campaign-preview-email-block">
+                <figcaption className="text-center text-sm font-semibold" data-testid="campaign-preview-email-label">Email</figcaption>
+                {previewEmail.html ? (
+                  <EmailPreviewFrame html={previewEmail.html} device={device} testId="campaign-preview-email" />
+                ) : (
+                  <p className="m-0 p-6 text-center text-sm text-bo-muted" data-testid="campaign-preview-email-wait">{previewEmail.error || "Compilando el email…"}</p>
+                )}
+              </figure>
+              <figure className="m-0 grid content-start justify-items-center gap-2" data-testid="campaign-preview-whatsapp-block">
+                <figcaption className="text-center text-sm font-semibold" data-testid="campaign-preview-whatsapp-label">WhatsApp</figcaption>
+                <IPhoneFrame title={`WhatsApp ${template.brandName || "Restaurante"}`} time={IPHONE_DEFAULT_TIME} testId="campaign-preview-whatsapp-device">
+                  <WhatsAppPreview
+                    markdown={form.body_markdown}
+                    brandName={template.brandName}
+                    logoUrl={template.logoUrl}
+                    websiteUrl={template.website}
+                    unsubscribeUrl={template.unsubscribeUrl}
+                    accent={form.theme.accent}
+                    time={IPHONE_DEFAULT_TIME}
+                    coordId={coordId}
+                  />
+                </IPhoneFrame>
+              </figure>
+            </div>
           </Panel>
         </div>
       )}

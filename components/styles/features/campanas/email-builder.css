@@ -1,0 +1,52 @@
+/* ────────────────────────────────────────────────────────────────
+ * Campañas — HTML builder (campaign_html_builder_v1).
+ * The backoffice runs Tailwind without preflight, so a bare `border-b`
+ * paints nothing and a <button> keeps the UA bevel. Inside the builder
+ * (and its Hairline chat) the preflight defaults are restored with zero
+ * specificity: every Tailwind utility still wins over them.
+ * ──────────────────────────────────────────────────────────────── */
+:where(.eb-scope) *,
+:where(.eb-scope) ::before,
+:where(.eb-scope) ::after {
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--bo-border-2);
+}
+
+:where(.eb-scope) button {
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  background-color: transparent;
+  background-image: none;
+  cursor: pointer;
+}
+
+:where(.eb-scope) button:disabled {
+  cursor: default;
+}
+
+:where(.eb-scope) :is(p, h1, h2, h3, h4, figure) {
+  margin: 0;
+}
+
+:where(.eb-scope) * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+:where(.eb-scope) :is(input, textarea, select) {
+  font: inherit;
+}
+
+/* The builder chat is the assistant of this screen: while it is open the
+ * floating Forky mascot steps aside instead of covering its Send button. */
+body:has(.eb-chat-open) .forky-floating-host {
+  display: none;
+}
+
+/* The composer shows focus on its own border (focus-within); the global
+ * textarea ring would draw a second box inside it. */
+.eb-chat-open textarea:focus-visible {
+  outline: none;
+}

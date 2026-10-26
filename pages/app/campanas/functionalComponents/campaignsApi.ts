@@ -192,6 +192,9 @@ export function campaignToInput(campaign: Campaign): CampaignInput {
     name: campaign.name,
     subject: campaign.subject,
     body_markdown: campaign.body_markdown,
+    // The compiled email_html is never part of the form: it is rebuilt from
+    // the design on every save (campaign_html_builder_v1).
+    body_html: campaign.body_html ?? "",
     theme: campaign.theme ?? DEFAULT_CAMPAIGN_THEME,
     channels: campaign.channels?.length ? campaign.channels : ["email"],
     audience: campaign.audience ?? "bookings",
@@ -206,7 +209,8 @@ export function emptyCampaignInput(): CampaignInput {
   return {
     name: "",
     subject: "",
-    body_markdown: "# Hola\n\nEscribe aqui tu anuncio.\n",
+    body_markdown: "",
+    body_html: "",
     theme: { ...DEFAULT_CAMPAIGN_THEME },
     channels: ["email"],
     audience: "bookings",

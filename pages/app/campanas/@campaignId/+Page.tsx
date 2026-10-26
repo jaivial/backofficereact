@@ -10,7 +10,7 @@ export default function CampanaEditPage() {
   const data = (pageContext.data ?? { campaignId: null, initialCampaign: null }) as Data;
 
   return (
-    <section className="grid gap-4" aria-label="Campana" data-testid="campaign-edit-page">
+    <section className="grid min-w-0 gap-4" aria-label="Campana" data-testid="campaign-edit-page">
       <a href="/app/campanas" className="inline-flex items-center gap-2 text-sm" data-testid="campaign-edit-back-link">
         <ArrowLeft size={16} aria-hidden="true" /> Volver a campañas
       </a>

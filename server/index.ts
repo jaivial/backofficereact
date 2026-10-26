@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 // (docker-compose, CI) is respected as-is.
 import { adminApiAuthHeaders, registerAdminApiAuth, registerAdminApiBearerToken } from "../api/adminApiAuth";
 import { defaultVikeCrawl } from "./vikeCrawl";
+import { CAMPAIGN_EMAIL_CSS_MAX_BYTES, CAMPAIGN_EMAIL_CSS_PATH, compileCampaignEmailCss } from "./campaignEmailCss";
 
 if (!process.env.VIKE_CRAWL) {
   process.env.VIKE_CRAWL = JSON.stringify(defaultVikeCrawl());
@@ -861,6 +862,26 @@ async function start() {
   }
 
   app.use("/api/admin", (req, res) => proxyToBackend(backendOrigin, toBackendAdminPath(req.originalUrl), req, res, { injectAdminSecret: true }));
+
+  // Campaign HTML builder: Tailwind classes of a design -> CSS (campaign_html_builder_v1).
+  // Signed-in operators only; the compiler runs here because Tailwind needs Node.
+  app.post(CAMPAIGN_EMAIL_CSS_PATH, express.json({ limit: CAMPAIGN_EMAIL_CSS_MAX_BYTES }), async (req, res) => {
+    const started = performance.now();
+    const auth = await fetchSession(backendOrigin, req.headers.cookie, "/app/campanas", requestScheme(req));
+    if (auth.status !== "authenticated") {
+      res.status(401).json({ success: false, message: "Unauthorized" });
+      return;
+    }
+    const html = typeof req.body?.html === "string" ? req.body.html : "";
+    try {
+      const css = await compileCampaignEmailCss(html);
+      console.info(`[campaign_html_builder_v1] css compiled coord_id=${String(req.body?.coord_id ?? "")} html_bytes=${html.length} css_bytes=${css.length} ms=${Math.round(performance.now() - started)}`);
+      res.json({ success: true, css });
+    } catch (err) {
+      console.error("[campaign_html_builder_v1] css compile failed", err);
+      res.status(500).json({ success: false, message: "No se pudo compilar el CSS" });
+    }
+  });
 
   // Public ads endpoints (canvas render, embed list) keep their /api/public path on the
   // Go backend. Proxied same-origin so the AnuncioEditor preview iframe works here too.
