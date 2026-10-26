@@ -69,11 +69,21 @@ const actionBtn =
 // Loading state while assistant is generating — the literal beautifului.dev
 // LoadingState (pixel-grid loader + shimmer label + mono elapsed timer).
 // ---------------------------------------------------------------------------
+/** Campaign editor tools (campaign_tools_v1): their steps can take minutes (design AI). */
+const CAMPAIGN_TOOL_LABELS: Record<string, string> = {
+  campaign_get: "Leyendo la campaña",
+  campaign_save: "Guardando la campaña",
+  campaign_design: "Editando el diseño del email",
+  campaign_send: "Preparando el envío",
+  campaign_delete: "Eliminando la campaña",
+};
+
 /** Human label of a tool step in the live trace (the model sees the raw name). */
 function forkyToolLabel(tool: string): string {
   if (tool === "admin_catalog") return "Buscando la operación";
   if (tool === "admin_describe") return "Leyendo la operación";
   if (tool === "admin_call") return "Ejecutando en el backoffice";
+  if (CAMPAIGN_TOOL_LABELS[tool]) return CAMPAIGN_TOOL_LABELS[tool];
   return tool.replace(/_/g, " ");
 }
 

@@ -4,7 +4,11 @@
  * Tailwind classes: the canvas, the layers panel, the inspector and the AI all
  * read and write that one string. Every edit parses it, changes the DOM and
  * serializes it back, so there is no second representation to keep in sync.
- * Client-only (DOMParser).
+ *
+ * Shared by the browser (native DOMParser) and the backoffice server, which
+ * runs the very same operations for the campaign tools of Forky and the
+ * WhatsApp bot (campaign_tools_v1) with a jsdom parser injected through
+ * setDesignDomParser. Nothing here may touch window/CSS/document directly.
  */
 
 /** Stable element id while editing; stripped from what is stored and sent. */
@@ -45,12 +49,24 @@ export function builderSafeUrl(raw: string): boolean {
   return scheme === "http" || scheme === "https" || scheme === "mailto" || scheme === "tel";
 }
 
-/** Parses a fragment (or a whole document) into a detached <body>. */
-export function parseFragment(html: string): HTMLElement {
-  return new DOMParser().parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, "text/html").body;
+type DesignDomParser = { parseFromString(source: string, type: "text/html"): Document };
+
+let domParserFactory: () => DesignDomParser = () => new DOMParser();
+
+/** Server only: the HTML parser (jsdom) used where there is no browser DOMParser. */
+export function setDesignDomParser(factory: () => DesignDomParser): void {
+  domParserFactory = factory;
 }
 
-function sanitize(root: Element): void {
+/** Parses a fragment (or a whole document) into a detached <body>. */
+export function parseFragment(html: string): HTMLElement {
+  return domParserFactory().parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, "text/html").body;
+}
+
+/** Attribute-value escape for selectors (CSS.escape is browser-only). */
+const attrValue = (value: string) => value.replace(/["\\]/g, "\\$&");
+
+export function sanitize(root: Element): void {
   for (const el of Array.from(root.querySelectorAll("*"))) {
     if (!el.isConnected) continue;
     const tag = el.tagName.toLowerCase();
@@ -71,7 +87,7 @@ function sanitize(root: Element): void {
   }
 }
 
-function ensureIds(root: Element): void {
+export function ensureIds(root: Element): void {
   for (const el of Array.from(root.querySelectorAll("*"))) {
     if (!el.getAttribute(EB_ID)) el.setAttribute(EB_ID, newId());
   }
@@ -103,7 +119,7 @@ export function mutate(html: string, fn: (body: HTMLElement) => void): string {
 
 export function findById(root: ParentNode, id: string | null): HTMLElement | null {
   if (!id) return null;
-  return root.querySelector<HTMLElement>(`[${EB_ID}="${CSS.escape(id)}"]`);
+  return root.querySelector<HTMLElement>(`[${EB_ID}="${attrValue(id)}"]`);
 }
 
 /** Outer HTML of one element without editing ids (AI context, inspector). */
@@ -321,6 +337,14 @@ const GROUPS: Record<ClassGroupId, RegExp> = {
   maxWidth: /^max-w-/,
   width: /^w-/,
 };
+
+/** Every inspector group, in the order the inspector shows them (campaign tools vocabulary). */
+export const CLASS_GROUP_IDS = Object.keys(GROUPS) as ClassGroupId[];
+
+/** Whether a Tailwind class (without breakpoint prefix) belongs to a group. */
+export function classGroupMatches(group: ClassGroupId, cls: string): boolean {
+  return GROUPS[group].test(cls);
+}
 
 /** Classes split, with `p-N` / `m-N` shorthands expanded so each axis is editable alone. */
 function expandShorthands(classes: string[], prefix: string): string[] {
