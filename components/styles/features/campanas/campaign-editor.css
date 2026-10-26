@@ -407,3 +407,24 @@
     min-height: 0;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * 5. Ajustes tab: main goes edge to edge (no inline padding), so the
+ *    settings panel scrolls across the whole width of main with its
+ *    scrollbar on the main border. The header and every settings
+ *    section keep a 2rem gutter; the topbar gets the same gutter so it
+ *    does not touch the window edge. Only applies while the Ajustes
+ *    panel is mounted (create and edit pages).
+ * ------------------------------------------------------------------ */
+main[data-testid="app-layout-main"]:has(.campaign-settingsPanel) {
+  padding-inline: 0;
+}
+
+main[data-testid="app-layout-main"]:has(.campaign-settingsPanel) > .bo-topbar {
+  padding-inline: 2rem;
+}
+
+main[data-testid="app-layout-main"]:has(.campaign-settingsPanel) .campaign-editorHeader,
+.campaign-settingsPanel > * {
+  margin-inline: 2rem;
+}
