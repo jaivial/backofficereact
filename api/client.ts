@@ -2417,6 +2417,18 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async campaignStatus(id: number): Promise<APISuccess<{ status: string; stats: import("./types").CampaignStats }> | APIError> {
         return json(`/api/admin/campanas/${id}/status`, { method: "GET" });
       },
+      async campaignAIModels(): Promise<APISuccess<{ models: import("./types").CampaignAIModel[]; default: string }> | APIError> {
+        return json("/api/admin/campanas/ai/models", { method: "GET" });
+      },
+      async campaignAIChat(input: {
+        model: string;
+        messages: import("./types").CampaignAIChatMessage[];
+        html: string;
+        selected_html?: string;
+        coord_id?: string;
+      }): Promise<APISuccess<{ reply: string; html: string; model: string }> | APIError> {
+        return json("/api/admin/campanas/ai/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
       async checkRestaurantWebsite(website: string): Promise<APISuccess<{ website: string }> | APIError> {
         return json("/api/admin/config/check-website", {
           method: "POST",

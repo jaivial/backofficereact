@@ -27,7 +27,6 @@ export type CampaignFlowSection =
   | "campaign-data-panel"
   | "campaign-audience-panel"
   | "campaign-content-panel"
-  | "campaign-theme-panel"
   | "campaign-rate-panel"
   | "campaign-send-panel";
 
@@ -88,7 +87,13 @@ function CampaignFlowNode({ data }: NodeProps<CampaignNodeData>) {
 const nodeTypes = { campaign: CampaignFlowNode };
 
 function stripMarkdown(md: string): string {
-  return md.replace(/^#+\s*/gm, "").replace(/[*_`>]/g, "").replace(/\s+/g, " ").trim();
+  return md
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/^#+\s*/gm, "")
+    .replace(/[*_`>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export type CampaignFlowCanvasProps = {
@@ -161,7 +166,7 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
 
     // 3. Mensaje
     const body = stripMarkdown(form.body_markdown || "");
-    const bodyOk = body !== "" && body !== "Hola Escribe aqui tu anuncio.";
+    const bodyOk = body !== "";
     add("content", X, y, {
       icon: <PenLine size={15} />,
       title: "Mensaje",
@@ -180,10 +185,10 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
     if (hasEmail) {
       add("theme", X, y, {
         icon: <Palette size={15} />,
-        title: "Estilo del email",
-        lines: ["Colores y logo de la marca"],
-        state: "ok",
-        section: "campaign-theme-panel",
+        title: "Diseño del email",
+        lines: ["HTML responsive con Tailwind"],
+        state: form.body_html ? "ok" : "warn",
+        section: "campaign-content-panel",
         onEdit,
       });
       link(prev, "theme");
