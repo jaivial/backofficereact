@@ -50,7 +50,7 @@ export function CampaignEditorHeader(props: Props) {
   const save = SAVE_STATE_UI[saveState];
   return (
     <header
-      className="eb-scope grid gap-3 rounded-bo-lg border border-bo-border bg-bo-shell px-3 py-2.5 shadow-[var(--bo-shadow-soft)] md:sticky md:top-0 md:z-30 lg:static lg:flex lg:items-center lg:gap-4"
+      className="campaign-editorHeader eb-scope grid gap-3 rounded-bo-lg border border-bo-border bg-bo-shell px-3 py-2.5 shadow-[var(--bo-shadow-soft)] md:sticky md:top-0 md:z-30 lg:static lg:flex lg:items-center lg:gap-4"
       data-testid="campaign-editor-header"
       data-observe="campaign-editor-header"
     >

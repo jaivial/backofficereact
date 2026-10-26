@@ -448,7 +448,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null, initi
       )}
 
       {tab === "ajustes" && (
-        <div className={`grid content-start gap-4 ${TABPANEL_SCROLL}`} role="tabpanel" aria-label="Ajustes" data-testid="campaign-tabpanel-settings">
+        <div className={`campaign-settingsPanel grid content-start gap-4 ${TABPANEL_SCROLL}`} role="tabpanel" aria-label="Ajustes" data-testid="campaign-tabpanel-settings">
           <CampaignSection icon={<FileText size={15} aria-hidden="true" data-testid="campaign-data-panel-svg" />} title="Datos de la campaña" helper="Cómo se guarda la campaña y el asunto que lee el cliente" data-testid="campaign-data-panel">
             <div className="grid content-start gap-4" data-testid="campaign-data-fields">
               <div className="grid gap-4 sm:grid-cols-2" data-testid="campaign-data-fields-row">
