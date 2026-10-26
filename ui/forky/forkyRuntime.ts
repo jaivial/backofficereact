@@ -782,8 +782,11 @@ function seedHistory(runtime: AssistantRuntime, history: ForkyHistoryMessage[]):
   for (const item of history) {
     // Old base64-wrapped replies persisted before the guard existed must render
     // as readable text when replayed from history.
+    // The persisted user row lists image attachments with their storage ref
+    // (" · ref forky/…", for the campaign tools): the model needs it, the
+    // person reading the history does not.
     const content =
-      item.role === "assistant" ? recoverEncodedReply(item.content) : item.content;
+      item.role === "assistant" ? recoverEncodedReply(item.content) : item.content.replace(/ · ref [^\]\n]+\]/g, "]");
     const id = generateId();
     // A voice row carries its clip on the row itself (assistant_messages
     // .audio_url), so the player survives a reload. Register BEFORE the import:

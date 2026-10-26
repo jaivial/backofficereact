@@ -74,6 +74,7 @@ const CAMPAIGN_TOOL_LABELS: Record<string, string> = {
   campaign_get: "Leyendo la campaña",
   campaign_save: "Guardando la campaña",
   campaign_design: "Editando el diseño del email",
+  campaign_image: "Subiendo la imagen al CDN",
   campaign_send: "Preparando el envío",
   campaign_delete: "Eliminando la campaña",
 };
