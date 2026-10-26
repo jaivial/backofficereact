@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { MessageCircle, TrendingUp, Users } from "lucide-react";
+import { MessageCircle, Search, TrendingUp, Users } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { AnalyticsOverview, AnalyticsOverviewParams } from "../../../api/types";
@@ -9,9 +9,10 @@ import type { Data } from "./+data";
 import { AffluenceDashboard } from "./functionalComponents/AffluenceDashboard/AffluenceDashboard";
 import { AnalyticsDashboard } from "./functionalComponents/AnalyticsDashboard/AnalyticsDashboard";
 import { MessagingDashboard } from "./functionalComponents/MessagingDashboard/MessagingDashboard";
+import { SearchConsoleDashboard } from "./functionalComponents/SearchConsoleDashboard/SearchConsoleDashboard";
 
 /** Afluencia (client flow, full booking history), Ventas and IA/WhatsApp ledgers. */
-type EstadisticasTab = "afluencia" | "ventas" | "mensajeria";
+type EstadisticasTab = "afluencia" | "ventas" | "mensajeria" | "busqueda";
 
 const EMPTY_DATA: Data = {
   params: { from: "", to: "", granularity: "day", compare: "previous" },
@@ -84,6 +85,7 @@ export default function Page() {
             { id: "afluencia", label: "Afluencia", title: "Afluencia de clientes", icon: <Users size={17} strokeWidth={1.8} /> },
             { id: "ventas", label: "Ventas", title: "Estadísticas de ventas", icon: <TrendingUp size={17} strokeWidth={1.8} /> },
             { id: "mensajeria", label: "IA y WhatsApp", title: "Consumo de IA y registro de mensajes WhatsApp", icon: <MessageCircle size={17} strokeWidth={1.8} /> },
+            { id: "busqueda", label: "Búsqueda orgánica", title: "Informe privado de Google Search Console", icon: <Search size={17} strokeWidth={1.8} /> },
           ]}
           activeId={activeTab}
           onChange={(id) => setActiveTab(id as EstadisticasTab)}
@@ -102,8 +104,10 @@ export default function Page() {
           onRefresh={handleRefresh}
           data-ui="estadisticas-page-dashboard"
         />
-      ) : (
+      ) : activeTab === "mensajeria" ? (
         <MessagingDashboard data-ui="estadisticas-page-messaging" />
+      ) : (
+        <SearchConsoleDashboard data-ui="estadisticas-page-search-console" />
       )}
     </div>
   );
