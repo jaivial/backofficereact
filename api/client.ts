@@ -1750,6 +1750,14 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           form.append("generation_id", generationId);
           return json(`/api/admin/group-menus-v2/${id}/slider/images/ai`, { method: "POST", body: form });
         },
+        // Coordination id: menu_public_seo_v1 (editor SEO fields -> DB -> public SSR)
+        async patchSEO(id: number, input: import("./types").MenuPublicSEO): Promise<APISuccess<{ seo_slug: string }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${id}/seo`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
+        },
         async patchBasics(
           id: number,
           input: Partial<{

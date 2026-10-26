@@ -775,7 +775,17 @@ export type MenuSlider = {
   images: MenuSliderImage[];
 };
 
-export type GroupMenuV2 = {
+export type MenuPublicSEO = {
+  seo_slug: string;
+  seo_title: string;
+  seo_title_english: string;
+  seo_description: string;
+  seo_description_english: string;
+  seo_h1: string;
+  seo_h1_english: string;
+};
+
+export type GroupMenuV2 = MenuPublicSEO & {
   id: number;
   menu_title: string;
   price: string;
