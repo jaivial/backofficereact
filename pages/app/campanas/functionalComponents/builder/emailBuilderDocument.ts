@@ -222,7 +222,21 @@ export function isTextElement(el: Element | null): boolean {
 
 // ── Layers ────────────────────────────────────────────────────────────────
 
-export type LayerNode = { id: string; depth: number; label: string; kind: string; hint: string; hidden: boolean };
+export type LayerNode = {
+  id: string;
+  depth: number;
+  label: string;
+  kind: string;
+  hint: string;
+  hidden: boolean;
+  /** Last child of its parent: its tree connector ends here (└ instead of ├). */
+  last: boolean;
+  /** Per ancestor level, whether that ancestor has a later sibling (the │ guide keeps going). */
+  guides: boolean[];
+  hasChildren: boolean;
+  /** Ids of every ancestor layer, outermost first (collapsing any of them hides this one). */
+  ancestors: string[];
+};
 
 const TAG_LABELS: Record<string, string> = {
   div: "Bloque", section: "Sección", h1: "Título 1", h2: "Título 2", h3: "Título 3", h4: "Título 4", p: "Párrafo",
@@ -249,19 +263,39 @@ export function elementLabel(el: Element): string {
   return TAG_LABELS[el.tagName.toLowerCase()] ?? el.tagName.toLowerCase();
 }
 
+/** Layer children of an element: text elements keep their inline markup inside one layer. */
+function layerChildren(el: Element): Element[] {
+  if (el.tagName !== "BODY" && isTextElement(el)) return [];
+  return Array.from(el.children).filter((c) => c.getAttribute(EB_ID) && c.tagName !== "BR");
+}
+
+/** The design as a file-tree: one row per element with its connectors and ancestors. */
 export function layerTree(html: string): LayerNode[] {
   const out: LayerNode[] = [];
-  const walk = (el: Element, depth: number) => {
-    const id = el.getAttribute(EB_ID);
-    if (id && el.tagName !== "BR") {
+  const visit = (parent: Element, depth: number, guides: boolean[], ancestors: string[]) => {
+    const kids = layerChildren(parent);
+    kids.forEach((el, i) => {
+      const id = el.getAttribute(EB_ID) as string;
+      const last = i === kids.length - 1;
       const cls = el.getAttribute("class") ?? "";
       const hint = el.tagName === "IMG" ? el.getAttribute("alt") ?? "" : isTextElement(el) ? (el.textContent ?? "").trim().slice(0, 32) : "";
-      out.push({ id, depth, label: elementLabel(el), kind: elementKind(el), hint, hidden: /(^|\s)hidden(\s|$)|max-\[639px\]:hidden|(^|\s)sm:hidden/.test(cls) });
-      if (isTextElement(el)) return;
-    }
-    for (const child of Array.from(el.children)) walk(child, id ? depth + 1 : depth);
+      const children = layerChildren(el);
+      out.push({
+        id,
+        depth,
+        label: elementLabel(el),
+        kind: elementKind(el),
+        hint,
+        hidden: /(^|\s)hidden(\s|$)|max-\[639px\]:hidden|(^|\s)sm:hidden/.test(cls),
+        last,
+        guides,
+        hasChildren: children.length > 0,
+        ancestors,
+      });
+      if (children.length) visit(el, depth + 1, [...guides, !last], [...ancestors, id]);
+    });
   };
-  walk(parseFragment(html), 0);
+  visit(parseFragment(html), 0, [], []);
   return out;
 }
 

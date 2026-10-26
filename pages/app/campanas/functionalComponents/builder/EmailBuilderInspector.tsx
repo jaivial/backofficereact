@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ArrowUpLeft, Copy, ImageUp, Loader2, Trash2 } from "lucide-react";
 import { cn } from "../../../../../ui/shadcn/utils";
+import { Select } from "../../../../../ui/inputs/Select";
 import {
   UNSUBSCRIBE_PLACEHOLDER, elementKind, elementLabel, findById, isTextElement, parseFragment, readGroup, readVisibility,
   splitClasses, writeGroup, writeVisibility, type ClassGroupId, type Visibility,
@@ -60,17 +61,25 @@ function Field({ label, children, testId }: { label: string; children: React.Rea
   );
 }
 
+/** Inspector selector: the backoffice Select (bo-selectBtn--sm + bo-selectList). */
 function SelectField({ label, value, options, onChange, testId, emptyLabel = "—" }: { label: string; value: string | null; options: Option[]; onChange: (v: string | null) => void; testId: string; emptyLabel?: string }) {
+  // A class typed by hand (raw classes field, AI) still shows as the current value.
+  const all = [{ value: "", label: emptyLabel }, ...options, ...(value && !options.some((o) => o.value === value) ? [{ value, label: value }] : [])];
   return (
-    <Field label={label} testId={testId}>
-      <select className={INPUT} value={value ?? ""} onChange={(e) => onChange(e.currentTarget.value || null)} data-testid={`${testId}-select`}>
-        <option value="" data-testid={`${testId}-option-none`}>{emptyLabel}</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value} data-testid={`${testId}-option-${o.value}`}>{o.label}</option>
-        ))}
-        {value && !options.some((o) => o.value === value) && <option value={value} data-testid={`${testId}-option-current`}>{value}</option>}
-      </select>
-    </Field>
+    <div className="grid min-w-0 gap-1" data-testid={testId}>
+      <span className="text-[11px] text-bo-muted" data-testid={`${testId}-label`}>{label}</span>
+      <Select
+        size="sm"
+        className="w-full"
+        style={{ width: "100%", minWidth: 0 }}
+        ariaLabel={label}
+        value={value ?? ""}
+        onChange={(v) => onChange(v || null)}
+        options={all}
+        menuMinWidthPx={140}
+        data-testid={`${testId}-select`}
+      />
+    </div>
   );
 }
 
@@ -215,11 +224,11 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
           <p className="m-0 font-mono text-[10.5px] text-bo-faint" data-testid="email-builder-inspector-tag">&lt;{tag}&gt;</p>
         </div>
         {[
-          { icon: <ArrowUpLeft size={14} />, title: "Seleccionar contenedor (Esc)", onClick: actions.selectParent, id: "parent" },
-          { icon: <ArrowUp size={14} />, title: "Subir", onClick: () => actions.move(-1), id: "up" },
-          { icon: <ArrowDown size={14} />, title: "Bajar", onClick: () => actions.move(1), id: "down" },
-          { icon: <Copy size={14} />, title: "Duplicar (Ctrl+D)", onClick: actions.duplicate, id: "duplicate" },
-          { icon: <Trash2 size={14} />, title: "Eliminar (Supr)", onClick: actions.remove, id: "delete" },
+          { icon: <ArrowUpLeft size={14} data-testid="email-builder-inspector-parent-icon" />, title: "Seleccionar contenedor (Esc)", onClick: actions.selectParent, id: "parent" },
+          { icon: <ArrowUp size={14} data-testid="email-builder-inspector-up-icon" />, title: "Subir", onClick: () => actions.move(-1), id: "up" },
+          { icon: <ArrowDown size={14} data-testid="email-builder-inspector-down-icon" />, title: "Bajar", onClick: () => actions.move(1), id: "down" },
+          { icon: <Copy size={14} data-testid="email-builder-inspector-duplicate-icon" />, title: "Duplicar (Ctrl+D)", onClick: actions.duplicate, id: "duplicate" },
+          { icon: <Trash2 size={14} data-testid="email-builder-inspector-delete-icon" />, title: "Eliminar (Supr)", onClick: actions.remove, id: "delete" },
         ].map((b) => (
           <button
             key={b.id}
@@ -276,7 +285,7 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
                     className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-bo-border bg-bo-surface-2 text-[12px] text-bo-text transition hover:border-[#7c5cff]/60 disabled:opacity-60"
                     data-testid="email-builder-inspector-upload"
                   >
-                    {uploading ? <Loader2 size={14} className="animate-spin" aria-hidden="true" /> : <ImageUp size={14} aria-hidden="true" />}
+                    {uploading ? <Loader2 size={14} className="animate-spin" aria-hidden="true" data-testid="email-builder-inspector-upload-icon-loading" /> : <ImageUp size={14} aria-hidden="true" data-testid="email-builder-inspector-upload-icon-idle" />}
                     {uploading ? "Subiendo…" : "Subir imagen"}
                   </button>
                   <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => void pickImage(e.currentTarget.files?.[0])} data-testid="email-builder-inspector-upload-input" />
@@ -308,13 +317,13 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
               value={(group("textAlign") ?? "") as string}
               onChange={(v) => setGroup("textAlign", v || null)}
               options={[
-                { value: "text-left", label: <AlignLeft size={14} />, title: "Izquierda" },
-                { value: "text-center", label: <AlignCenter size={14} />, title: "Centro" },
-                { value: "text-right", label: <AlignRight size={14} />, title: "Derecha" },
+                { value: "text-left", label: <AlignLeft size={14} data-testid="email-builder-inspector-align-left-icon" />, title: "Izquierda" },
+                { value: "text-center", label: <AlignCenter size={14} data-testid="email-builder-inspector-align-center-icon" />, title: "Centro" },
+                { value: "text-right", label: <AlignRight size={14} data-testid="email-builder-inspector-align-right-icon" />, title: "Derecha" },
               ]}
               testId="email-builder-inspector-align"
             />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2" data-testid="email-builder-inspector-type-row">
               <SelectField label="Tamaño" value={group("fontSize")} options={FONT_SIZES} onChange={(v) => setGroup("fontSize", v)} testId="email-builder-inspector-font-size" />
               <SelectField label="Peso" value={group("fontWeight")} options={WEIGHTS} onChange={(v) => setGroup("fontWeight", v)} testId="email-builder-inspector-font-weight" />
             </div>
@@ -323,13 +332,13 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
           </>
         )}
         <ColorField label="Fondo" value={bgColor} accent={accent} onChange={(hex) => setGroup("bgColor", hex ? `bg-[${hex}]` : null)} testId="email-builder-inspector-bg-color" />
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2" data-testid="email-builder-inspector-spacing-row">
           {spacing("px", "paddingX")}
           {spacing("py", "paddingY")}
           {spacing("mt", "marginTop")}
           {spacing("mb", "marginBottom")}
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2" data-testid="email-builder-inspector-box-row">
           <SelectField label="Esquinas" value={group("radius")} options={RADIUS} onChange={(v) => setGroup("radius", v)} testId="email-builder-inspector-radius" />
           <SelectField label="Ancho" value={group("width")} options={WIDTH} onChange={(v) => setGroup("width", v)} testId="email-builder-inspector-width" />
         </div>

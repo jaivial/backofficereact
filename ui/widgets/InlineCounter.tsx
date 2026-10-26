@@ -95,8 +95,8 @@ export function InlineCounter({
       data-ui="inline-counter"
       data-testid={testId}
     >
-      <div className="bo-label" data-slot="inlineCounter-label">{label}</div>
-      <div className="bo-counter" data-slot="inlineCounter-counter">
+      <div className="bo-label" data-slot="inlineCounter-label" data-testid={`${testId}-label`}>{label}</div>
+      <div className="bo-counter" data-slot="inlineCounter-counter" data-testid={`${testId}-counter`}>
         <button
           type="button"
           className="bo-counterBtn"
@@ -106,7 +106,7 @@ export function InlineCounter({
           data-action="decrease"
           data-testid={`${testId}-minus`}
         >
-          <Minus size={16} strokeWidth={2} />
+          <Minus size={16} strokeWidth={2} data-testid={`${testId}-minus-icon`} />
         </button>
         <input
           className="bo-input bo-input--sm bo-counterInput"
@@ -128,7 +128,7 @@ export function InlineCounter({
           data-action="increase"
           data-testid={`${testId}-plus`}
         >
-          <Plus size={16} strokeWidth={2} />
+          <Plus size={16} strokeWidth={2} data-testid={`${testId}-plus-icon`} />
         </button>
       </div>
       {helperText ? (

@@ -72,11 +72,12 @@ const swap = (on: boolean, reduced: boolean): React.CSSProperties => ({
 });
 
 /** A piece of a line that opens out of nothing and folds back into it. */
-function Reveal({ show, reduced, className = "", children }: { show: boolean; reduced: boolean; className?: string; children: React.ReactNode }) {
+function Reveal({ show, reduced, className = "", children, id }: { show: boolean; reduced: boolean; className?: string; children: React.ReactNode; id: string }) {
   return (
     <span
       aria-hidden={!show || undefined}
       className={`inline-grid align-bottom ${className}`}
+      data-testid={id}
       style={{
         gridTemplateColumns: show ? "1fr" : "0fr",
         opacity: show ? 1 : 0,
@@ -84,7 +85,7 @@ function Reveal({ show, reduced, className = "", children }: { show: boolean; re
         transition: reduced ? "none" : `grid-template-columns 460ms ${MORPH}, opacity ${show ? "320ms" : "160ms"} ${MORPH}, filter 320ms ${MORPH}`,
       }}
     >
-      <span className="min-w-0 whitespace-nowrap [clip-path:inset(-4px_-2px)]">{children}</span>
+      <span className="min-w-0 whitespace-nowrap [clip-path:inset(-4px_-2px)]" data-testid={`${id}-clip`}>{children}</span>
     </span>
   );
 }
@@ -112,19 +113,19 @@ function useCountdown(resetAt: number | undefined, onReset?: () => void) {
 }
 
 /** "4:59" rolling down a second at a time ("1h 05m" when it's over an hour); seconds roll back 00 → 59 like a clock. */
-function Countdown({ ms, reduced }: { ms: number; reduced: boolean }) {
+function Countdown({ ms, reduced, id }: { ms: number; reduced: boolean; id: string }) {
   const s = Math.max(0, Math.ceil(ms / 1000));
   const hours = Math.floor(s / 3600);
   const minutes = hours ? Math.floor((s % 3600) / 60) : Math.floor(s / 60);
   return (
-    <span className="inline-flex items-baseline tabular-nums">
-      <Reveal show={hours > 0} reduced={reduced}>
-        <NumberRoll value={hours} suffix="h" duration={600} />
+    <span className="inline-flex items-baseline tabular-nums" data-testid={id}>
+      <Reveal show={hours > 0} reduced={reduced} id={`${id}-hours-fold`}>
+        <NumberRoll value={hours} suffix="h" duration={600} data-testid={`${id}-hours`} />
         &nbsp;
       </Reveal>
-      <NumberRoll value={minutes} suffix={hours ? "m" : ""} format={hours ? TWO_DIGITS : undefined} direction="down" duration={600} />
-      <Reveal show={!hours} reduced={reduced}>
-        :<NumberRoll value={s % 60} format={TWO_DIGITS} direction="down" duration={600} />
+      <NumberRoll value={minutes} suffix={hours ? "m" : ""} format={hours ? TWO_DIGITS : undefined} direction="down" duration={600} data-testid={`${id}-minutes`} />
+      <Reveal show={!hours} reduced={reduced} id={`${id}-seconds-fold`}>
+        :<NumberRoll value={s % 60} format={TWO_DIGITS} direction="down" duration={600} data-testid={`${id}-seconds`} />
       </Reveal>
     </span>
   );
@@ -173,12 +174,13 @@ export function ChatNotice({
   }[kind];
 
   const iconKey = kind === "rate-limit" && ready ? "ready" : kind;
+  const id = (props as { "data-testid"?: string })["data-testid"] ?? "hl-chat-notice";
   const icons: Record<string, React.ReactNode> = {
-    error: <AlertCircle className="size-4 text-red-500" />,
-    offline: <WifiOff className="size-4 text-muted-foreground" />,
-    "rate-limit": <Hourglass className="size-4 text-amber-500" />,
+    error: <AlertCircle className="size-4 text-red-500" data-testid={`${id}-icon-error`} />,
+    offline: <WifiOff className="size-4 text-muted-foreground" data-testid={`${id}-icon-offline`} />,
+    "rate-limit": <Hourglass className="size-4 text-amber-500" data-testid={`${id}-icon-rate-limit`} />,
     ready: (
-      <svg viewBox="0 0 16 16" fill="none" className="size-4 text-emerald-600 dark:text-emerald-400">
+      <svg viewBox="0 0 16 16" fill="none" className="size-4 text-emerald-600 dark:text-emerald-400" data-testid={`${id}-icon-ready`}>
         <path
           d="M3.5 8.5 6.5 11.5 12.5 4.5"
           stroke="currentColor"
@@ -191,51 +193,53 @@ export function ChatNotice({
         />
       </svg>
     ),
-    context: <Layers className="size-4 text-muted-foreground" />,
+    context: <Layers className="size-4 text-muted-foreground" data-testid={`${id}-icon-context`} />,
   };
   const shownIcons = kind === "rate-limit" ? ["rate-limit", "ready"] : [kind];
   const resetsAt = resetAt !== undefined && left !== undefined ? new Date(resetAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : undefined;
 
   return (
     // Laid out by its own width, not the screen's, so it reads right in a narrow column too.
-    <div className="w-full">
+    <div className="w-full" data-testid={`${id}-outer`}>
       {/* Its natural width where the parent sizes to its content, without forcing it on narrow screens. */}
-      <div aria-hidden="true" data-natural-width className="grid h-0" style={{ gridTemplateColumns: "minmax(0, 560px)" }} />
-      <div className="@container w-full">
+      <div aria-hidden="true" data-natural-width className="grid h-0" style={{ gridTemplateColumns: "minmax(0, 560px)" }} data-testid={`${id}-sizer`} />
+      <div className="@container w-full" data-testid={`${id}-container`}>
         <div
           role={kind === "error" ? "alert" : "status"}
           className={`flex flex-col gap-3 rounded-xl border border-border bg-background px-3.5 py-3 animate-[ui-fade-up_320ms_cubic-bezier(0.23,1,0.32,1)_both] motion-reduce:animate-none @[36rem]:flex-row @[36rem]:items-start ${className}`}
+          data-testid={id}
           {...props}
         >
-          <div className="flex min-w-0 flex-1 gap-3">
-            <span aria-hidden="true" className="relative mt-0.5 flex size-4 shrink-0">
+          <div className="flex min-w-0 flex-1 gap-3" data-testid={`${id}-main`}>
+            <span aria-hidden="true" className="relative mt-0.5 flex size-4 shrink-0" data-testid={`${id}-icons`}>
               {shownIcons.map((k) => (
-                <span key={k} className="absolute inset-0 flex items-center justify-center" style={swap(k === iconKey, reduced)}>
+                <span key={k} className="absolute inset-0 flex items-center justify-center" style={swap(k === iconKey, reduced)} data-testid={`${id}-icon-slot-${k}`}>
                   {icons[k]}
                 </span>
               ))}
             </span>
-            <div className="min-w-0">
-              <p className="text-[13px] font-medium leading-5 text-foreground">
-                <TextMorph animateWidth={false}>{title ?? preset.title}</TextMorph>
+            <div className="min-w-0" data-testid={`${id}-texts`}>
+              <p className="text-[13px] font-medium leading-5 text-foreground" data-testid={`${id}-title`}>
+                <TextMorph animateWidth={false} data-testid={`${id}-title-text`}>{title ?? preset.title}</TextMorph>
               </p>
-              <p className="text-[12.5px] leading-5 text-muted-foreground">
-                <TextMorph animateWidth={false}>{description ?? preset.description}</TextMorph>
+              <p className="text-[12.5px] leading-5 text-muted-foreground" data-testid={`${id}-description`}>
+                <TextMorph animateWidth={false} data-testid={`${id}-description-text`}>{description ?? preset.description}</TextMorph>
                 {kind === "rate-limit" && description === undefined && resetAt !== undefined && (
                   // The ticking digits are hidden from screen readers (the notice is a live region); they hear the time it resets instead.
-                  <Reveal show={counting && left !== undefined} reduced={reduced}>
-                    <span aria-hidden="true">
+                  <Reveal show={counting && left !== undefined} reduced={reduced} id={`${id}-countdown-fold`}>
+                    <span aria-hidden="true" data-testid={`${id}-countdown-text`}>
                       &nbsp;
-                      {left !== undefined && <Countdown ms={left} reduced={reduced} />}.
+                      {left !== undefined && <Countdown ms={left} reduced={reduced} id={`${id}-countdown`} />}.
                     </span>
-                    {resetsAt && counting && <span className="sr-only"> at {resetsAt}</span>}
+                    {resetsAt && counting && <span className="sr-only" data-testid={`${id}-countdown-sr`}> at {resetsAt}</span>}
                   </Reveal>
                 )}
                 {kind === "offline" && (
-                  <Reveal show={retrying} reduced={reduced}>
-                    <span className="ml-1.5 inline-flex items-center gap-1.5 text-foreground/70">
+                  <Reveal show={retrying} reduced={reduced} id={`${id}-reconnecting-fold`}>
+                    <span className="ml-1.5 inline-flex items-center gap-1.5 text-foreground/70" data-testid={`${id}-reconnecting`}>
                       <span
                         aria-hidden="true"
+                        data-testid={`${id}-reconnecting-dot`}
                         className={`size-1.5 rounded-full bg-amber-500 motion-reduce:animate-none ${retrying ? "animate-[ui-breathe_1.4s_ease-in-out_infinite]" : ""}`}
                       />
                       Reconnecting
@@ -251,9 +255,11 @@ export function ChatNotice({
                     aria-controls={detailsId}
                     onClick={() => setDetailsOpen((o) => !o)}
                     className={`cursor-pointer mt-1.5 flex items-center gap-1 rounded text-[11.5px] text-muted-foreground transition-colors hover:text-foreground ${FOCUS}`}
+                    data-testid={`${id}-details-toggle`}
                   >
-                    <TextMorph>{detailsOpen ? "Ocultar detalles" : "Ver detalles"}</TextMorph>
+                    <TextMorph data-testid={`${id}-details-toggle-label`}>{detailsOpen ? "Ocultar detalles" : "Ver detalles"}</TextMorph>
                     <ChevronDown
+                      data-testid={`${id}-details-toggle-icon`}
                       aria-hidden="true"
                       className="size-3 transition-transform duration-300 motion-reduce:transition-none"
                       style={{ transform: detailsOpen ? "rotate(180deg)" : "none", transitionTimingFunction: MORPH }}
@@ -268,9 +274,10 @@ export function ChatNotice({
                       opacity: detailsOpen ? 1 : 0,
                       transition: reduced ? "none" : `grid-template-rows 420ms ${MORPH}, opacity ${detailsOpen ? "320ms" : "160ms"} ${MORPH}`,
                     }}
+                    data-testid={`${id}-details-fold`}
                   >
-                    <div className="min-h-0 overflow-hidden">
-                      <p className="pt-1 break-all font-mono text-[11px] leading-5 text-muted-foreground">{details}</p>
+                    <div className="min-h-0 overflow-hidden" data-testid={`${id}-details-clip`}>
+                      <p className="pt-1 break-all font-mono text-[11px] leading-5 text-muted-foreground" data-testid={`${id}-details`}>{details}</p>
                     </div>
                   </div>
                 </>
@@ -278,35 +285,35 @@ export function ChatNotice({
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-2 pl-7 @[36rem]:pl-0">
+          <div className="flex shrink-0 flex-wrap items-center gap-2 pl-7 @[36rem]:pl-0" data-testid={`${id}-actions`}>
             {(kind === "error" || kind === "offline") && onRetry && (
               <StatusButton
                 variant="outline"
                 size="sm"
-                icon={<RotateCcw />}
+                icon={<RotateCcw data-testid={`${id}-retry-icon`} />}
                 status={retrying ? "pending" : "idle"}
                 labels={kind === "offline" ? { idle: "Probar ahora", pending: "Probando" } : { idle: "Reintentar", pending: "Reintentando" }}
-                data-testid="hl-chat-notice-retry"
+                data-testid={`${id}-retry`}
                 onClick={onRetry}
               />
             )}
             {kind === "rate-limit" && onUpgrade && (
               // Folds away once the limit has reset.
-              <Reveal show={!ready} reduced={reduced}>
-                <span className="block p-0.5">
-                  <button type="button" inert={ready} onClick={onUpgrade} className={PRIMARY}>
+              <Reveal show={!ready} reduced={reduced} id={`${id}-upgrade-fold`}>
+                <span className="block p-0.5" data-testid={`${id}-upgrade-pad`}>
+                  <button type="button" inert={ready} onClick={onUpgrade} className={PRIMARY} data-testid={`${id}-upgrade`}>
                     {upgradeLabel}
                   </button>
                 </span>
               </Reveal>
             )}
             {kind === "context" && onNewChat && (
-              <button type="button" onClick={onNewChat} className={SECONDARY}>
+              <button type="button" onClick={onNewChat} className={SECONDARY} data-testid={`${id}-new-chat`}>
                 New chat
               </button>
             )}
             {kind === "context" && onSummarize && (
-              <button type="button" onClick={onSummarize} className={PRIMARY}>
+              <button type="button" onClick={onSummarize} className={PRIMARY} data-testid={`${id}-summarize`}>
                 Continue with summary
               </button>
             )}

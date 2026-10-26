@@ -394,3 +394,16 @@
     padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px) + 12px);
   }
 }
+
+/* Desktop: the flow tab fills the editor height (the page itself never scrolls). */
+@media (min-width: 1024px) {
+  .campaign-flowFill .campaign-flowWrap {
+    height: 100%;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .campaign-flowFill .campaign-flowCanvas {
+    height: auto;
+    min-height: 0;
+  }
+}

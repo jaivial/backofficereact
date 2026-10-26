@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ScrollArea } from "../layout/ScrollArea";
 import { cn } from "../shadcn/utils";
+import { childTestId } from "../lib/testId";
 
 type Option = { value: string; label: string; icon?: React.ReactNode };
 
@@ -173,6 +174,7 @@ export function Select({
       className={cn("bo-selectWrapper", fitWidestOption && "bo-selectWrapper--fitWidest")}
       style={style}
       data-ui="select-wrapper"
+      data-testid={childTestId(dataTestId, "wrapper")}
     >
       {fitWidestOption ? (
         // Reserves the width of the widest option so the trigger keeps a stable
@@ -200,15 +202,15 @@ export function Select({
         data-role="select-trigger"
         data-testid={dataTestId}
       >
-        <span className="bo-selectLabelWrap" data-ui="select-label-wrap">
+        <span className="bo-selectLabelWrap" data-ui="select-label-wrap" data-testid={childTestId(dataTestId, "label-wrap")}>
           {selected?.icon ? (
-            <span className="bo-selectIcon" aria-hidden="true" data-ui="select-selected-icon">
+            <span className="bo-selectIcon" aria-hidden="true" data-ui="select-selected-icon" data-testid={childTestId(dataTestId, "selected-icon")}>
               {selected.icon}
             </span>
           ) : null}
-          <span className="bo-selectLabel" data-ui="select-selected-label">{selected?.label ?? placeholder ?? ""}</span>
+          <span className="bo-selectLabel" data-ui="select-selected-label" data-testid={childTestId(dataTestId, "selected-label")}>{selected?.label ?? placeholder ?? ""}</span>
         </span>
-        <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" />
+        <ChevronDown size={16} strokeWidth={1.8} className="bo-selectChev" aria-hidden="true" data-testid={childTestId(dataTestId, "chevron")} />
       </button>
       {typeof window !== "undefined" &&
         createPortal(
@@ -235,9 +237,10 @@ export function Select({
                   height: `${listHeight}px`,
                 }}
                 data-ui="select-listbox"
+                data-testid={childTestId(dataTestId, "listbox")}
               >
-                <ScrollArea dataSlot="select-list-scroll">
-                  <div data-slot="select-gap-0.5" className="grid gap-0.5">
+                <ScrollArea dataSlot="select-list-scroll" testId={childTestId(dataTestId, "scroll")}>
+                  <div data-slot="select-gap-0.5" className="grid gap-0.5" data-testid={childTestId(dataTestId, "options")}>
                     {options.map((o, idx) => {
                       const isSel = o.value === value;
                       const isAct = idx === activeIdx;
@@ -257,13 +260,14 @@ export function Select({
                             btnRef.current?.focus();
                           }}
                           data-role="select-option"
+                          data-testid={childTestId(dataTestId, `option-${o.value || "none"}`)}
                         >
                           {o.icon ? (
-                            <span className="bo-selectItemIcon" aria-hidden="true" data-ui="select-item-icon">
+                            <span className="bo-selectItemIcon" aria-hidden="true" data-ui="select-item-icon" data-testid={childTestId(dataTestId, `option-${o.value || "none"}-icon`)}>
                               {o.icon}
                             </span>
                           ) : null}
-                          <span data-ui="select-item-label">{o.label}</span>
+                          <span data-ui="select-item-label" data-testid={childTestId(dataTestId, `option-${o.value || "none"}-label`)}>{o.label}</span>
                         </button>
                       );
                     })}

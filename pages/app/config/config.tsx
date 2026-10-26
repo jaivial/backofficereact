@@ -7,6 +7,7 @@ import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Spa
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
 import { sessionAtom } from "../../../state/atoms";
+import { ROOT_ONLY_CONFIG_CONTENT } from "../../../lib/navigation";
 import { InlineAlert } from "../../../ui/feedback/InlineAlert";
 import { useErrorToast } from "../../../ui/feedback/useErrorToast";
 import { useToasts } from "../../../ui/feedback/useToasts";
@@ -41,7 +42,7 @@ type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" 
 
 function resolveContentTab(raw: unknown, isRoot: boolean): ContentTab {
   const value = String(raw ?? "").trim() as ContentTab;
-  if (value === "ia" || value === "pipeline" || value === "cdn" || value === "stripe") return isRoot ? value : "restaurante";
+  if (ROOT_ONLY_CONFIG_CONTENT.includes(value)) return isRoot ? value : "restaurante";
   if (value === "contacto" || value === "booking" || value === "legal-pages" || value === "restaurante") return value;
   return "restaurante";
 }

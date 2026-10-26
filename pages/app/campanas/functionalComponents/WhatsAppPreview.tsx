@@ -200,7 +200,7 @@ export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websit
       >
         <ArrowLeft size={18} aria-hidden="true" data-testid="campaign-preview-whatsapp-back" />
         <Avatar brandName={brand} logoUrl={logoUrl} />
-        <span className="min-w-0 flex-1 leading-tight">
+        <span className="min-w-0 flex-1 leading-tight" data-testid="campaign-preview-whatsapp-identity">
           <span className="block truncate text-[15px] font-semibold" data-testid="campaign-preview-whatsapp-contact">
             {brand}
           </span>
@@ -287,7 +287,7 @@ export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websit
           data-testid="campaign-preview-whatsapp-send"
           data-observe="campaign-preview-whatsapp-send"
         >
-          <Send size={16} aria-hidden="true" />
+          <Send size={16} aria-hidden="true" data-testid="campaign-preview-whatsapp-send-icon" />
         </span>
       </div>
     </div>

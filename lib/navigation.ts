@@ -104,3 +104,12 @@ export function sidebarItemsForRole(roleRaw: string | null | undefined, sectionA
     ? canAccessComida(roleRaw, sectionAccessRaw, roleImportanceRaw, appVersionRaw)
     : hasSectionAccess(roleRaw, item.key, sectionAccessRaw, roleImportanceRaw, appVersionRaw));
 }
+
+/** /app/config tabs (`?content=`) that only the root role may open. */
+export const ROOT_ONLY_CONFIG_CONTENT: readonly string[] = ["ia", "pipeline", "cdn", "stripe"];
+
+/** Whether the user may open /app/config?content=<content> (section ACL + root-only tabs). */
+export function isConfigContentAllowed(content: string, roleRaw: string | null | undefined, sectionAccessRaw?: string[] | null, roleImportanceRaw?: number | null, appVersionRaw?: unknown): boolean {
+  if (!isPathAllowed("/app/config", roleRaw, sectionAccessRaw, roleImportanceRaw, appVersionRaw)) return false;
+  return !ROOT_ONLY_CONFIG_CONTENT.includes(content) || String(roleRaw ?? "").trim() === "root";
+}

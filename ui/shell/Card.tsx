@@ -1,5 +1,6 @@
 import React, { type HTMLAttributes, type ReactNode } from "react";
 import { cn } from "../shadcn/utils";
+import { childTestId } from "../lib/testId";
 
 type CardVariant = "default" | "glass" | "tailwind";
 
@@ -35,6 +36,7 @@ export function Card({
   children,
   ...rest
 }: CardProps) {
+  const testId = (rest as { "data-testid"?: string })["data-testid"];
   // bodyClassName is accepted for API parity with <Panel bodyClassName>; the
   // bo-cardBody wrapper is not introduced here so that <Card>'s outer
   // container stays a single <div> (existing callers rely on `padding={false}`
@@ -50,9 +52,9 @@ export function Card({
       )}
       {...rest}
     >
-      {header && <div className={cn("bo-cardHead", headerClassName)}>{header}</div>}
+      {header && <div className={cn("bo-cardHead", headerClassName)} data-testid={childTestId(testId, "head")}>{header}</div>}
       {children}
-      {footer && <div className={cn("bo-cardFoot", footerClassName)}>{footer}</div>}
+      {footer && <div className={cn("bo-cardFoot", footerClassName)} data-testid={childTestId(testId, "foot")}>{footer}</div>}
     </div>
   );
 }
