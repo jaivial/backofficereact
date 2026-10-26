@@ -94,6 +94,8 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null, initi
   const [confirm, setConfirm] = useState<"send" | "delete" | null>(null);
   const [audience, setAudience] = useState<{ total: number; emails: number; whatsapp: number } | null>(null);
   const [busy, setBusy] = useState(false);
+  // Only a save drives the "Guardando…" state: sending and deleting also set busy.
+  const [saving, setSaving] = useState(false);
   const [testTarget, setTestTarget] = useState("");
   const [recipients, setRecipients] = useState<CampaignRecipient[]>([]);
   // Snapshot of the last persisted form: "Enviar" sends the saved campaign, so
@@ -179,6 +181,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null, initi
   // failure is caught here and always reported instead of dying silently.
   const persist = useCallback(async () => {
     setBusy(true);
+    setSaving(true);
     try {
       // The email SMTP sends is compiled from the design on every save, so the
       // stored email_html can never drift from body_html (campaign_html_builder_v1).
@@ -195,6 +198,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null, initi
       return null;
     } finally {
       setBusy(false);
+      setSaving(false);
     }
   }, [api, campaign, coordId, form, pushToast]);
 
@@ -341,7 +345,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null, initi
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const saveState: CampaignSaveState = busy ? "saving" : !campaign ? "new" : hasUnsavedChanges ? "dirty" : "saved";
+  const saveState: CampaignSaveState = saving ? "saving" : !campaign ? "new" : hasUnsavedChanges ? "dirty" : "saved";
 
   return (
     <section className="flex min-w-0 flex-col gap-3 pb-24 sm:pb-0 lg:min-h-0 lg:flex-1 lg:pb-0" aria-label="Editor de campaña" data-testid="campaign-editor" data-coord-id={coordId}>
