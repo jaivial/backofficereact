@@ -7,7 +7,7 @@ import {
   duplicateElement, elementHtml, elementLabel, findById, insertSnippet, moveElement, moveElementTo, normalizeDesign, parentId,
   parseFragment, removeElement, stripIds, updateElement, type InsertPosition,
 } from "./emailBuilderDocument";
-import { fetchDesignCss, fillPreviewPlaceholders, inlineEmail } from "./emailBuilderCompile";
+import { compileCampaignEmail, fetchDesignCss, fillPreviewPlaceholders } from "./emailBuilderCompile";
 import { EmailBuilderCanvas, type BuilderDevice, type CanvasDrop } from "./EmailBuilderCanvas";
 import { BlockPalette, LayersPanel } from "./EmailBuilderPanels";
 import { EmailBuilderInspector } from "./EmailBuilderInspector";
@@ -248,10 +248,24 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
     [actions, redo, selectedId, undo],
   );
 
-  const previewHtml = useMemo(
-    () => (mode === "preview" && design && css ? fillPreviewPlaceholders(inlineEmail(design, css, subject || "Campaña"), unsubscribePreviewUrl) : ""),
-    [css, design, mode, subject, unsubscribePreviewUrl],
-  );
+  // "Vista previa": the exact email the server compiles for SMTP (campaign_tools_v1).
+  const [preview, setPreview] = useState<{ html: string; error: string }>({ html: "", error: "" });
+  useEffect(() => {
+    if (mode !== "preview" || !design) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      compileCampaignEmail(design, subject || "Campaña", coordId, controller.signal)
+        .then((html) => setPreview({ html: fillPreviewPlaceholders(html, unsubscribePreviewUrl), error: "" }))
+        .catch((err: unknown) => {
+          if (!controller.signal.aborted) setPreview((prev) => ({ html: prev.html, error: err instanceof Error ? err.message : "No se pudo compilar el email" }));
+        });
+    }, 160);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [coordId, design, mode, subject, unsubscribePreviewUrl]);
+  const previewHtml = mode === "preview" ? preview.html : "";
 
   useEffect(() => {
     if (mode === "code") setCode(stripIds(designRef.current));
@@ -402,6 +416,8 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
             <div className="h-full overflow-auto bg-[#0d0e13] p-4" data-testid="email-builder-preview">
               {previewHtml ? (
                 <EmailPreviewFrame html={previewHtml} device={device} testId="email-builder-preview-frame" />
+              ) : preview.error ? (
+                <p className="m-0 p-6 text-center text-sm text-[#f87171]" role="alert" data-testid="email-builder-preview-error">{preview.error}</p>
               ) : (
                 <p className="m-0 p-6 text-center text-sm text-bo-muted" data-testid="email-builder-preview-wait">Compilando el email…</p>
               )}

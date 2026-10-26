@@ -17,6 +17,9 @@ import { fileURLToPath } from "node:url";
 import { adminApiAuthHeaders, registerAdminApiAuth, registerAdminApiBearerToken } from "../api/adminApiAuth";
 import { defaultVikeCrawl } from "./vikeCrawl";
 import { CAMPAIGN_EMAIL_CSS_MAX_BYTES, CAMPAIGN_EMAIL_CSS_PATH, compileCampaignEmailCss } from "./campaignEmailCss";
+import { CAMPAIGN_EMAIL_COMPILE_MAX_BYTES, CAMPAIGN_EMAIL_COMPILE_PATH, compileCampaignEmail } from "./campaignEmailCompile";
+import { CAMPAIGN_DESIGN_MAX_BYTES, CAMPAIGN_DESIGN_PATH, runDesignRequest } from "./campaignDesign";
+import { isBackendServiceRequest } from "./serviceAuth";
 
 if (!process.env.VIKE_CRAWL) {
   process.env.VIKE_CRAWL = JSON.stringify(defaultVikeCrawl());
@@ -880,6 +883,50 @@ async function start() {
     } catch (err) {
       console.error("[campaign_html_builder_v1] css compile failed", err);
       res.status(500).json({ success: false, message: "No se pudo compilar el CSS" });
+    }
+  });
+
+  // Coordination id: campaign_tools_v1 - the ONE design -> email compiler. The
+  // editor calls it with its session; the Go backend calls it with the shared
+  // server secrets when Forky or the WhatsApp bot change a design.
+  app.post(CAMPAIGN_EMAIL_COMPILE_PATH, express.json({ limit: CAMPAIGN_EMAIL_COMPILE_MAX_BYTES }), async (req, res) => {
+    const started = performance.now();
+    const service = isBackendServiceRequest(req.headers);
+    if (!service) {
+      const auth = await fetchSession(backendOrigin, req.headers.cookie, "/app/campanas", requestScheme(req));
+      if (auth.status !== "authenticated") {
+        res.status(401).json({ success: false, message: "Unauthorized" });
+        return;
+      }
+    }
+    const html = typeof req.body?.html === "string" ? req.body.html : "";
+    const title = typeof req.body?.title === "string" ? req.body.title : "";
+    try {
+      const out = await compileCampaignEmail(html, title);
+      console.info(`[campaign_tools_v1] email compiled coord_id=${String(req.body?.coord_id ?? "")} caller=${service ? "backend" : "browser"} html_bytes=${html.length} css_bytes=${out.cssBytes} email_bytes=${out.emailHtml.length} ms=${Math.round(performance.now() - started)}`);
+      res.json({ success: true, email_html: out.emailHtml, whatsapp_markdown: out.whatsappMarkdown });
+    } catch (err) {
+      console.error("[campaign_tools_v1] email compile failed", err);
+      res.status(500).json({ success: false, message: "No se pudo compilar el email" });
+    }
+  });
+
+  // Coordination id: campaign_tools_v1 - design engine of the campaign tools
+  // (blocks, layers, inspector ops). Backend-only: the browser edits locally.
+  app.post(CAMPAIGN_DESIGN_PATH, express.json({ limit: CAMPAIGN_DESIGN_MAX_BYTES }), async (req, res) => {
+    const started = performance.now();
+    if (!isBackendServiceRequest(req.headers)) {
+      res.status(401).json({ success: false, message: "Unauthorized" });
+      return;
+    }
+    const action = String(req.body?.action ?? "");
+    try {
+      const out = await runDesignRequest(req.body ?? {});
+      console.info(`[campaign_tools_v1] design action=${action} coord_id=${String(req.body?.coord_id ?? "")} ops=${Array.isArray(req.body?.ops) ? req.body.ops.length : 0} ok=${out.success} ms=${Math.round(performance.now() - started)}${out.success ? "" : ` refused=${JSON.stringify(out.message ?? "")}`}`);
+      res.status(out.success ? 200 : 400).json(out);
+    } catch (err) {
+      console.error(`[campaign_tools_v1] design action=${action} failed`, err);
+      res.status(500).json({ success: false, message: "No se pudo procesar el diseño" });
     }
   });
 

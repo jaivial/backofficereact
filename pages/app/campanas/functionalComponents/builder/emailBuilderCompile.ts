@@ -1,23 +1,28 @@
 import { EB_ROLE, UNSUBSCRIBE_PLACEHOLDER, parseFragment, stripIds } from "./emailBuilderDocument";
 
 /*
- * Design -> email (coordination id campaign_html_builder_v1).
+ * Design -> email (coordination ids campaign_html_builder_v1, campaign_tools_v1).
  *
- * 1. The backoffice server compiles the Tailwind classes of the design to CSS
- *    (POST /bo-tools/campaign-email-css, Tailwind needs Node).
- * 2. The browser inlines that CSS: plain utility rules become style attributes
- *    (with Tailwind's --tw-* variables resolved, rem turned into px and colours
- *    normalised by the CSSOM), while responsive (@media) and interactive
- *    (:hover) rules stay in a <style> block with !important so they can still
- *    override the inline styles. Class names are made email-safe (no `:` `/`
- *    `[` escapes, which Gmail drops).
- * The result is the document SMTP sends; the opt-out placeholder is filled per
- * recipient by the Go sender.
+ * The backoffice server compiles a design into the email SMTP sends
+ * (POST /bo-tools/campaign-email-compile): Tailwind turns the classes of the
+ * design into CSS, the plain utility rules become style attributes (Tailwind
+ * --tw-* variables resolved, rem turned into px, colours in the legacy rgb()
+ * syntax every client reads) and responsive (@media) / interactive (:hover)
+ * rules stay in a <style> block with !important. Class names are made
+ * email-safe (no `:` `/` `[` escapes, which Gmail drops).
+ *
+ * It is ONE implementation on purpose: the editor (save, "Vista previa",
+ * "Previsualización") and the campaign tools of Forky and the WhatsApp bot all
+ * call the same server code, so a design edited from a chat produces exactly
+ * the email the editor would. This module keeps the pure helpers both sides
+ * share; nothing here may touch window/CSS/document directly (the server runs
+ * it with a jsdom parser, see setDesignDomParser).
  */
 
 export const CAMPAIGN_EMAIL_CSS_ENDPOINT = "/bo-tools/campaign-email-css";
+export const CAMPAIGN_EMAIL_COMPILE_ENDPOINT = "/bo-tools/campaign-email-compile";
 
-type Decl = { prop: string; value: string; important: boolean };
+export type Decl = { prop: string; value: string; important: boolean };
 
 /** Base reset shared by the canvas and the email so both render the same. */
 export const EMAIL_RESET_CSS =
@@ -30,7 +35,7 @@ export const EMAIL_RESET_CSS =
  * inliner writes it on every element that sets a border width.
  */
 export const BORDER_PREFLIGHT_CSS = "*,::before,::after{border-width:0;border-style:solid;border-color:#e5e7eb}hr{border-top-width:1px}";
-const BORDER_PREFLIGHT: Decl[] = [
+export const BORDER_PREFLIGHT: Decl[] = [
   { prop: "border-width", value: "0", important: false },
   { prop: "border-style", value: "solid", important: false },
   { prop: "border-color", value: "#e5e7eb", important: false },
@@ -38,7 +43,7 @@ const BORDER_PREFLIGHT: Decl[] = [
 
 const cssCache = new Map<string, string>();
 
-/** Tailwind CSS of one design, memoised (undo/redo and previews reuse it). */
+/** Tailwind CSS of one design, memoised (undo/redo and the canvas reuse it). */
 export async function fetchDesignCss(html: string, coordId: string, signal?: AbortSignal): Promise<string> {
   const cached = cssCache.get(html);
   if (cached !== undefined) return cached;
@@ -57,8 +62,38 @@ export async function fetchDesignCss(html: string, coordId: string, signal?: Abo
   return css;
 }
 
+const emailCache = new Map<string, string>();
+
+/** Full pipeline on the server: design -> compiled, inlined, sendable email. */
+export async function compileCampaignEmail(design: string, title: string, coordId: string, signal?: AbortSignal): Promise<string> {
+  const html = stripIds(design);
+  const key = `${title}\u0000${html}`;
+  const cached = emailCache.get(key);
+  if (cached !== undefined) return cached;
+  const res = await fetch(CAMPAIGN_EMAIL_COMPILE_ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ html, title, coord_id: coordId }),
+    signal,
+  });
+  const data = (await res.json().catch(() => null)) as { success?: boolean; email_html?: string; message?: string } | null;
+  if (!res.ok || !data?.success) throw new Error(data?.message || `No se pudo compilar el email (HTTP ${res.status})`);
+  const email = data.email_html ?? "";
+  if (emailCache.size > 20) emailCache.delete(emailCache.keys().next().value as string);
+  emailCache.set(key, email);
+  return email;
+}
+
+/** Previews show the opt-out link a recipient would get. */
+export function fillPreviewPlaceholders(html: string, unsubscribeUrl: string): string {
+  return html.split(UNSUBSCRIBE_PLACEHOLDER).join(unsubscribeUrl || "#");
+}
+
+// ── Pure CSS value helpers (shared with the server inliner) ──────────────
+
 /** Splits a declaration block on top-level `;` (values may hold parentheses). */
-function parseDecls(text: string): Decl[] {
+export function parseDecls(text: string): Decl[] {
   const out: Decl[] = [];
   let depth = 0;
   let start = 0;
@@ -84,7 +119,7 @@ function parseDecls(text: string): Decl[] {
 }
 
 /** Substitutes var(--x, fallback) with the element's own custom properties. */
-function resolveVars(value: string, vars: Map<string, string>, depth = 0): string {
+export function resolveVars(value: string, vars: Map<string, string>, depth = 0): string {
   if (depth > 8) return value;
   let out = "";
   let i = 0;
@@ -111,101 +146,105 @@ function resolveVars(value: string, vars: Map<string, string>, depth = 0): strin
   return out;
 }
 
+/**
+ * Space-separated colour functions (`rgb(9 121 105 / 1)`, what Tailwind v3
+ * emits) in the legacy comma syntax: Outlook and older webmails only read
+ * `rgb(r, g, b)` / `rgba(r, g, b, a)`.
+ */
+export function legacyColors(value: string): string {
+  return value.replace(/rgba?\(\s*(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s*(?:\/\s*(-?[\d.]+%?))?\s*\)/g, (_m, r: string, g: string, b: string, a?: string) => {
+    if (a === undefined) return `rgb(${r}, ${g}, ${b})`;
+    const alpha = a.endsWith("%") ? parseFloat(a) / 100 : parseFloat(a);
+    return alpha >= 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${Number(alpha.toFixed(3))})`;
+  });
+}
+
+/** `a op b op c` with + - * / and the usual precedence; null when it is anything else. */
+function evalArithmetic(expr: string): number | null {
+  const nums: number[] = [];
+  const ops: string[] = [];
+  const s = expr.trim();
+  let i = 0;
+  let wantNumber = true;
+  while (i < s.length) {
+    if (s[i] === " ") {
+      i++;
+      continue;
+    }
+    if (wantNumber) {
+      const m = /^-?\d*\.?\d+/.exec(s.slice(i));
+      if (!m) return null;
+      nums.push(parseFloat(m[0]));
+      i += m[0].length;
+    } else {
+      if (!"+-*/".includes(s[i])) return null;
+      ops.push(s[i]);
+      i++;
+    }
+    wantNumber = !wantNumber;
+  }
+  if (wantNumber || !nums.length) return null;
+  const terms = [nums[0]];
+  const sums: string[] = [];
+  ops.forEach((op, k) => {
+    const v = nums[k + 1];
+    if (op === "*") terms[terms.length - 1] *= v;
+    else if (op === "/") terms[terms.length - 1] = v === 0 ? NaN : terms[terms.length - 1] / v;
+    else {
+      sums.push(op);
+      terms.push(v);
+    }
+  });
+  let result = terms[0];
+  sums.forEach((op, k) => {
+    result = op === "+" ? result + terms[k + 1] : result - terms[k + 1];
+  });
+  return Number.isFinite(result) ? result : null;
+}
+
+/**
+ * Folds calc() of a single unit (`calc(16px * calc(1 - 0))` -> `16px`), the
+ * form a resolved Tailwind variable leaves behind. Anything it cannot fold
+ * (mixed units, percentages against lengths) is kept as written.
+ */
+export function foldCalc(value: string): string {
+  let out = value;
+  for (let guard = 0; guard < 8; guard++) {
+    const next = out.replace(/calc\(([^()]*)\)/g, (whole, expr: string) => {
+      const units = new Set(Array.from(expr.matchAll(/\d([a-z%]+)/gi), (m) => m[1].toLowerCase()));
+      if (units.size > 1) return whole;
+      const result = evalArithmetic(expr.replace(/(\d)[a-z%]+/gi, "$1"));
+      return result === null ? whole : `${Number(result.toFixed(4))}${units.size ? [...units][0] : ""}`;
+    });
+    if (next === out) break;
+    out = next;
+  }
+  return out;
+}
+
 /** rem -> px (16px root): Outlook and several webmails ignore rem. */
-const emailValue = (value: string) => value.replace(/(-?\d*\.?\d+)rem\b/g, (_m, n: string) => `${Number((parseFloat(n) * 16).toFixed(3))}px`);
+export const emailValue = (value: string) =>
+  legacyColors(foldCalc(value.replace(/(-?\d*\.?\d+)rem\b/g, (_m, n: string) => `${Number((parseFloat(n) * 16).toFixed(3))}px`)));
 
 const unescapeCss = (s: string) => s.replace(/\\([0-9a-fA-F]{1,6}\s?|.)/g, (_m, c: string) => (/^[0-9a-fA-F]/.test(c) && c.trim().length > 1 ? String.fromCodePoint(parseInt(c, 16)) : c.trim() || c));
 /** Email-safe class name: Gmail drops selectors with escaped characters. */
 export const safeClassName = (name: string) => name.replace(/[^A-Za-z0-9_-]/g, "_");
-const safeSelector = (selector: string) => selector.replace(/\.((?:\\[0-9a-fA-F]{1,6}\s?|\\.|[\w-])+)/g, (_m, cls: string) => `.${safeClassName(unescapeCss(cls))}`);
+export const safeSelector = (selector: string) => selector.replace(/\.((?:\\[0-9a-fA-F]{1,6}\s?|\\.|[\w-])+)/g, (_m, cls: string) => `.${safeClassName(unescapeCss(cls))}`);
 /** A real pseudo-class/element, not an escaped `\:` of a variant class name. */
-const hasPseudo = (selector: string) => selector.replace(/\\./g, "").includes(":");
-
-function declBlock(style: CSSStyleDeclaration, important: boolean): string {
-  const decls = parseDecls(style.cssText);
-  const vars = new Map(decls.filter((d) => d.prop.startsWith("--")).map((d) => [d.prop, d.value] as const));
-  return decls
-    .filter((d) => !d.prop.startsWith("--"))
-    .map((d) => `${d.prop}:${emailValue(resolveVars(d.value, vars))}${important || d.important ? "!important" : ""}`)
-    .join(";");
-}
-
-function residualRule(rule: CSSRule, important: boolean): string {
-  if (rule instanceof CSSStyleRule) return `${safeSelector(rule.selectorText)}{${declBlock(rule.style, important)}}`;
-  if (rule instanceof CSSMediaRule) return `@media ${rule.media.mediaText}{${Array.from(rule.cssRules).map((r) => residualRule(r, true)).join("")}}`;
-  return rule.cssText;
-}
-
-const escapeText = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-/** Inlines compiled Tailwind CSS into a design and wraps it as a full email document. */
-export function inlineEmail(design: string, css: string, title: string): string {
-  const doc = new DOMParser().parseFromString(`<!DOCTYPE html><html><head></head><body>${stripIds(design)}</body></html>`, "text/html");
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(css);
-  const perElement = new Map<HTMLElement, Decl[]>();
-  const residual: string[] = [];
-  for (const rule of Array.from(sheet.cssRules)) {
-    if (rule instanceof CSSStyleRule && !hasPseudo(rule.selectorText)) {
-      let targets: HTMLElement[] = [];
-      try {
-        targets = Array.from(doc.body.querySelectorAll<HTMLElement>(rule.selectorText));
-      } catch {
-        residual.push(residualRule(rule, false));
-        continue;
-      }
-      const decls = parseDecls(rule.style.cssText);
-      for (const el of targets) perElement.set(el, [...(perElement.get(el) ?? []), ...decls]);
-    } else {
-      residual.push(residualRule(rule, false));
-    }
-  }
-  for (const [el, decls] of perElement) {
-    const authored = parseDecls(el.getAttribute("style") ?? "");
-    const vars = new Map(decls.filter((d) => d.prop.startsWith("--")).map((d) => [d.prop, d.value] as const));
-    el.removeAttribute("style");
-    const own = decls.filter((x) => !x.prop.startsWith("--"));
-    const bordered = own.some((x) => /^border(-(top|right|bottom|left|x|y))?-width$|^border(-(top|right|bottom|left))?$/.test(x.prop));
-    for (const d of [...(bordered ? BORDER_PREFLIGHT : []), ...own, ...authored]) {
-      el.style.setProperty(d.prop, emailValue(resolveVars(d.value, vars)), d.important ? "important" : "");
-    }
-    // The CSSOM keeps calc() around plain lengths (space-y-*) and writes the
-    // text-decoration longhand, which older clients ignore: email-safe forms.
-    el.setAttribute("style", el.style.cssText.replace(/calc\((-?[\d.]+[a-z%]*)\)/g, "$1").replace(/text-decoration-line:/g, "text-decoration:"));
-  }
-  for (const el of Array.from(doc.body.querySelectorAll("*"))) {
-    for (const attr of Array.from(el.attributes)) if (attr.name.startsWith("data-eb-")) el.removeAttribute(attr.name);
-    const cls = el.getAttribute("class");
-    if (cls) el.setAttribute("class", cls.split(/\s+/).filter(Boolean).map(safeClassName).join(" "));
-  }
-  // The page background of the design also paints the body (no white band under it).
-  const rootBg = (doc.body.firstElementChild as HTMLElement | null)?.style.backgroundColor ?? "";
-  const bodyStyle = `margin:0;padding:0;${rootBg ? `background-color:${rootBg};` : ""}`;
-  return (
-    `<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n` +
-    `<meta name="x-apple-disable-message-reformatting">\n<meta name="color-scheme" content="light">\n<title>${escapeText(title)}</title>\n` +
-    `<style>${EMAIL_RESET_CSS}${residual.join("")}</style>\n</head>\n<body style="${bodyStyle}">\n${doc.body.innerHTML.trim()}\n</body>\n</html>\n`
-  );
-}
-
-/** Full pipeline: design -> compiled, inlined, sendable email. */
-export async function compileCampaignEmail(design: string, title: string, coordId: string): Promise<string> {
-  const clean = stripIds(design);
-  return inlineEmail(clean, await fetchDesignCss(clean, coordId), title);
-}
-
-/** Previews show the opt-out link a recipient would get. */
-export function fillPreviewPlaceholders(html: string, unsubscribeUrl: string): string {
-  return html.split(UNSUBSCRIBE_PLACEHOLDER).join(unsubscribeUrl || "#");
-}
+export const hasPseudo = (selector: string) => selector.replace(/\\./g, "").includes(":");
 
 // ── WhatsApp text from the design ────────────────────────────────────────
 
 const BLOCK_TAGS = new Set(["div", "section", "header", "footer", "article", "aside", "main", "nav", "center", "p", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "hr", "img", "table", "tbody", "thead", "tfoot", "tr", "td", "th", "blockquote", "figure", "figcaption", "pre"]);
+// nodeType instead of `instanceof Element`/`Node`: the server parses with
+// jsdom, whose classes are not the global ones.
+const ELEMENT_NODE = 1;
+const TEXT_NODE = 3;
+const isElement = (node: Node): node is Element => node.nodeType === ELEMENT_NODE;
 
 function inlineMarkdown(node: Node): string {
-  if (node.nodeType === Node.TEXT_NODE) return (node.textContent ?? "").replace(/\s+/g, " ");
-  if (!(node instanceof Element)) return "";
+  if (node.nodeType === TEXT_NODE) return (node.textContent ?? "").replace(/\s+/g, " ");
+  if (!isElement(node)) return "";
   const tag = node.tagName.toLowerCase();
   const inner = Array.from(node.childNodes).map(inlineMarkdown).join("");
   if (tag === "br") return "\n";
@@ -248,7 +287,7 @@ function blockMarkdown(el: Element, out: string[]): void {
     run = "";
   };
   for (const child of Array.from(el.childNodes)) {
-    if (child instanceof Element && BLOCK_TAGS.has(child.tagName.toLowerCase())) {
+    if (isElement(child) && BLOCK_TAGS.has(child.tagName.toLowerCase())) {
       flush();
       blockMarkdown(child, out);
     } else run += inlineMarkdown(child);
