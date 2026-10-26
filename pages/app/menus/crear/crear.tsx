@@ -24,6 +24,7 @@ import { usePageContext } from "vike-react/usePageContext";
 
 import { createClient } from "../../../../api/client";
 import { useToasts } from "../../../../ui/feedback/useToasts";
+import { MenuPublicSEOSettings } from "./functionalComponents/MenuPublicSEOSettings";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { Select } from "../../../../ui/inputs/Select";
@@ -811,6 +812,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       </div>
                     ) : null}
                   </div>
+                  <MenuPublicSEOSettings menuId={menuId} title={title} />
                   {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-title-preview" /> : null}
                   {!isSpecial ? (
                     <div className="bo-field bo-field--full" data-slot="crear-field--full">
