@@ -1,5 +1,6 @@
 import React, { type HTMLAttributes, type ReactNode } from "react";
 import { cn } from "../shadcn/utils";
+import { childTestId } from "../lib/testId";
 
 type CardVariant = "default" | "glass" | "tailwind";
 
@@ -50,9 +51,9 @@ export function Card({
       )}
       {...rest}
     >
-      {header && <div className={cn("bo-cardHead", headerClassName)}>{header}</div>}
+      {header && <div className={cn("bo-cardHead", headerClassName)} data-testid={childTestId(rest["data-testid" as keyof typeof rest] as string | undefined, "head")}>{header}</div>}
       {children}
-      {footer && <div className={cn("bo-cardFoot", footerClassName)}>{footer}</div>}
+      {footer && <div className={cn("bo-cardFoot", footerClassName)} data-testid={childTestId(rest["data-testid" as keyof typeof rest] as string | undefined, "foot")}>{footer}</div>}
     </div>
   );
 }

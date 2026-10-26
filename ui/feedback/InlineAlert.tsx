@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "../shadcn/utils";
+import { childTestId } from "../lib/testId";
 
 export function InlineAlert({
   kind,
@@ -23,8 +24,8 @@ export function InlineAlert({
         : "bo-alert bo-alert--glass";
   return (
     <div className={cn(cls, className)} role="status" aria-live="polite" aria-label={title} data-ui="inline-alert" data-testid={testId}>
-      <div className="bo-alertTitle" data-slot="alert-title">{title}</div>
-      {message ? <div className="bo-alertMsg" data-slot="alert-message">{message}</div> : null}
+      <div className="bo-alertTitle" data-slot="alert-title" data-testid={childTestId(testId, "title")}>{title}</div>
+      {message ? <div className="bo-alertMsg" data-slot="alert-message" data-testid={childTestId(testId, "message")}>{message}</div> : null}
     </div>
   );
 }

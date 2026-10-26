@@ -74,7 +74,7 @@ const swap = (on: boolean, reduced: boolean): React.CSSProperties => ({
 });
 
 /** A block that folds open to its height and shut again, keeping what it showed while it closes. */
-function Fold({ show, reduced, children }: { show: boolean; reduced: boolean; children: React.ReactNode }) {
+function Fold({ show, reduced, children, testId }: { show: boolean; reduced: boolean; children: React.ReactNode; testId: string }) {
   const [last, setLast] = React.useState(children);
   if (show && children !== last) setLast(children);
   return (
@@ -82,13 +82,14 @@ function Fold({ show, reduced, children }: { show: boolean; reduced: boolean; ch
       aria-hidden={!show || undefined}
       inert={!show}
       className="grid"
+      data-testid={testId}
       style={{
         gridTemplateRows: show ? "1fr" : "0fr",
         opacity: show ? 1 : 0,
         transition: reduced ? "none" : `grid-template-rows 380ms ${MORPH}, opacity ${show ? "280ms" : "140ms"} ${MORPH}`,
       }}
     >
-      <div className="min-h-0 overflow-hidden">{show ? children : last}</div>
+      <div className="min-h-0 overflow-hidden" data-testid={`${testId}-clip`}>{show ? children : last}</div>
     </div>
   );
 }
@@ -155,6 +156,7 @@ export function PromptComposer({
   };
 
   const action = busy ? (status === "streaming" && onStop ? "stop" : "wait") : "send";
+  const id = (props as { "data-testid"?: string })["data-testid"] ?? "hl-prompt-composer";
 
   return (
     <form
@@ -179,14 +181,15 @@ export function PromptComposer({
       className={`relative rounded-2xl border bg-background transition-colors focus-within:border-foreground/25 ${
         dragging ? "border-dashed border-foreground/40" : "border-border"
       } ${className}`}
+      data-testid={id}
       {...props}
     >
-      <Fold show={Boolean(disabled && disabledReason)} reduced={reduced}>
-        <div className="border-b border-border px-3.5 py-2 text-[12px] text-muted-foreground">{disabledReason}</div>
+      <Fold show={Boolean(disabled && disabledReason)} reduced={reduced} testId={`${id}-disabled-fold`}>
+        <div className="border-b border-border px-3.5 py-2 text-[12px] text-muted-foreground" data-testid={`${id}-disabled-reason`}>{disabledReason}</div>
       </Fold>
 
-      <Fold show={Boolean(attachments)} reduced={reduced}>
-        <div className="flex flex-wrap gap-2 px-3 pt-3">{attachments}</div>
+      <Fold show={Boolean(attachments)} reduced={reduced} testId={`${id}-attachments-fold`}>
+        <div className="flex flex-wrap gap-2 px-3 pt-3" data-testid={`${id}-attachments`}>{attachments}</div>
       </Fold>
 
       <textarea
@@ -199,14 +202,14 @@ export function PromptComposer({
         aria-label={placeholder}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={onKeyDown}
-        data-testid="hl-prompt-composer-input"
+        data-testid={`${id}-input`}
         onPaste={(e) => {
           if (takeFiles(e.clipboardData.files) && !e.clipboardData.getData("text")) e.preventDefault();
         }}
         className="block max-h-[200px] w-full resize-none overflow-y-auto bg-transparent px-3.5 pb-1 pt-3 text-[14px] leading-6 text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
       />
 
-      <div className="flex items-center gap-1.5 px-2 pb-2 pt-1">
+      <div className="flex items-center gap-1.5 px-2 pb-2 pt-1" data-testid={`${id}-bar`}>
         {onFilesSelected && (
           <>
             <button
@@ -215,8 +218,9 @@ export function PromptComposer({
               disabled={disabled}
               onClick={() => fileRef.current?.click()}
               className={`cursor-pointer disabled:cursor-default flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40 ${FOCUS}`}
+              data-testid={`${id}-attach`}
             >
-              <Paperclip className="size-4" />
+              <Paperclip className="size-4" data-testid={`${id}-attach-icon`} />
             </button>
             <input
               ref={fileRef}
@@ -224,6 +228,7 @@ export function PromptComposer({
               multiple
               accept={accept}
               className="hidden"
+              data-testid={`${id}-file-input`}
               onChange={(e) => {
                 takeFiles(e.target.files);
                 e.target.value = "";
@@ -233,7 +238,7 @@ export function PromptComposer({
         )}
         {toolbar}
 
-        <div className="ml-auto flex items-center gap-2.5">
+        <div className="ml-auto flex items-center gap-2.5" data-testid={`${id}-end`}>
           {maxLength !== undefined && (
             // Opens in near the limit and rolls as you type; red once you're over.
             <span
@@ -244,33 +249,35 @@ export function PromptComposer({
                 opacity: text.length > maxLength * 0.8 ? 1 : 0,
                 transition: reduced ? "none" : `grid-template-columns 380ms ${MORPH}, opacity 260ms ${MORPH}`,
               }}
+              data-testid={`${id}-counter`}
             >
               <span
+                data-testid={`${id}-counter-text`}
                 className={`flex min-w-0 items-baseline overflow-hidden whitespace-nowrap font-mono text-[11px] tabular-nums transition-colors duration-300 ${
                   text.length > maxLength ? "text-red-500" : "text-muted-foreground"
                 }`}
               >
-                <NumberRoll value={text.length} duration={300} />/{maxLength}
+                <NumberRoll value={text.length} duration={300} data-testid={`${id}-counter-value`} />/{maxLength}
               </span>
             </span>
           )}
           <button
             type={action === "send" ? "submit" : "button"}
             aria-label={action === "stop" ? "Detener" : action === "wait" ? "Enviando" : "Enviar"}
-            data-testid="hl-prompt-composer-send"
+            data-testid={`${id}-send`}
             disabled={action === "send" ? !canSend : action === "wait"}
             onClick={action === "stop" ? onStop : undefined}
             className={`cursor-pointer disabled:cursor-default relative flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-[opacity,transform] duration-200 active:scale-95 disabled:opacity-35 ${FOCUS}`}
           >
-            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center" style={swap(action === "send", reduced)}>
-              <ArrowUp className="size-4" />
+            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center" style={swap(action === "send", reduced)} data-testid={`${id}-send-arrow`}>
+              <ArrowUp className="size-4" data-testid={`${id}-send-arrow-icon`} />
             </span>
-            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center" style={swap(action === "stop", reduced)}>
-              <Square fill="currentColor" className="size-3" />
+            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center" style={swap(action === "stop", reduced)} data-testid={`${id}-send-stop`}>
+              <Square fill="currentColor" className="size-3" data-testid={`${id}-send-stop-icon`} />
             </span>
-            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center" style={swap(action === "wait", reduced)}>
+            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center" style={swap(action === "wait", reduced)} data-testid={`${id}-send-wait`}>
               {/* Spins only while it's showing. */}
-              <span className={`size-3.5 rounded-full border-[1.5px] border-current/35 border-t-current motion-reduce:animate-none ${action === "wait" ? "animate-spin" : ""}`} />
+              <span className={`size-3.5 rounded-full border-[1.5px] border-current/35 border-t-current motion-reduce:animate-none ${action === "wait" ? "animate-spin" : ""}`} data-testid={`${id}-send-spinner`} />
             </span>
           </button>
         </div>
@@ -280,6 +287,7 @@ export function PromptComposer({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-background/85 text-[13px] font-medium text-foreground"
         style={{ opacity: dragging ? 1 : 0, transition: reduced ? "none" : `opacity 200ms ${MORPH}` }}
+        data-testid={`${id}-drop-overlay`}
       >
         Suelta los archivos para adjuntarlos
       </div>

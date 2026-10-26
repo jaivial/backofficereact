@@ -1,14 +1,13 @@
 import React from "react";
-import { ArrowLeft } from "lucide-react";
-import { CampaignEditor } from "../functionalComponents/CampaignEditor";
+import { usePageContext } from "vike-react/usePageContext";
+import { CampaignEditor, campaignEditorTab } from "../functionalComponents/CampaignEditor";
 
 export default function CampanaNuevaPage() {
+  const pageContext = usePageContext();
   return (
-    <section className="grid min-w-0 gap-4" aria-label="Nueva campana" data-testid="campaign-new-page">
-      <a href="/app/campanas" className="inline-flex items-center gap-2 text-sm" data-testid="campaign-new-back-link">
-        <ArrowLeft size={16} aria-hidden="true" /> Volver a campañas
-      </a>
-      <CampaignEditor mode="create" />
+    // Desktop: the editor fills the rest of the viewport (no page scroll).
+    <section className="flex min-w-0 flex-col gap-4 lg:min-h-0 lg:flex-1" aria-label="Nueva campaña" data-testid="campaign-new-page">
+      <CampaignEditor mode="create" initialTab={campaignEditorTab(pageContext.urlParsed?.search?.tab)} />
     </section>
   );
 }

@@ -82,7 +82,7 @@ function columns(text: string): Column[] {
 }
 
 // Memoised: a parent that re-renders with the same number doesn't rebuild the strips.
-const Digit = React.memo(function Digit({ digit, trend, duration, reduced, rollIn }: { digit: number; trend: number; duration: number; reduced: boolean; rollIn: boolean }) {
+const Digit = React.memo(function Digit({ digit, trend, duration, reduced, rollIn, testId }: { digit: number; trend: number; duration: number; reduced: boolean; rollIn: boolean; testId?: string }) {
   // Where the strip starts: a digit that arrives after the first paint rolls in from 0. The strip's position from then on
   // lives in a ref and goes straight to the element, so a roll never re-renders and React never undoes the rebase below.
   const [start] = React.useState(() => MIDDLE + (rollIn ? 0 : digit));
@@ -137,10 +137,11 @@ const Digit = React.memo(function Digit({ digit, trend, duration, reduced, rollI
   };
 
   return (
-    <span className="relative inline-block [clip-path:inset(0)]">
-      <span className="invisible">{digit}</span>
+    <span className="relative inline-block [clip-path:inset(0)]" data-testid={testId}>
+      <span className="invisible" data-testid={testId ? `${testId}-sizer` : undefined}>{digit}</span>
       <span
         ref={stripRef}
+        data-testid={testId ? `${testId}-strip` : undefined}
         aria-hidden="true"
         onTransitionEnd={settle}
         className="absolute inset-x-0 top-0 block whitespace-pre text-center"
@@ -153,10 +154,10 @@ const Digit = React.memo(function Digit({ digit, trend, duration, reduced, rollI
 });
 
 /** A place that appeared after the first paint slides open; places that were there from the start just sit. */
-function Place({ enter, children }: { enter: boolean; children: React.ReactNode }) {
+function Place({ enter, children, testId }: { enter: boolean; children: React.ReactNode; testId?: string }) {
   const [entering] = React.useState(enter);
   return (
-    <span className={`inline-block ${entering ? "[clip-path:inset(0)] animate-[ui-col-in_500ms_cubic-bezier(0.16,1,0.3,1)_both]" : ""}`}>
+    <span className={`inline-block ${entering ? "[clip-path:inset(0)] animate-[ui-col-in_500ms_cubic-bezier(0.16,1,0.3,1)_both]" : ""}`} data-testid={testId}>
       {children}
     </span>
   );
@@ -166,6 +167,8 @@ const NOTHING_NEW: ReadonlySet<string> = new Set();
 
 export function NumberRoll({ value, format, locales, prefix = "", suffix = "", from, duration = 900, direction, className = "", ...props }: NumberRollProps) {
   const reduced = useReducedMotion();
+  const rootId = (props as { "data-testid"?: string })["data-testid"];
+  const part = (name: string) => (rootId ? `${rootId}-${name}` : undefined);
   const [shown, setShown] = React.useState(from ?? value);
 
   // Roll from `from` to the real value once on screen (a frame later, so the start is painted).
@@ -177,7 +180,7 @@ export function NumberRoll({ value, format, locales, prefix = "", suffix = "", f
   const hydrated = useHydrated();
   const locale = locales ?? (hydrated ? undefined : HYDRATION_LOCALE);
   const localeKey = String(locale);
-  const formatter = React.useMemo(() => new Intl.NumberFormat(locale, format), [localeKey, format && JSON.stringify(format)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const formatter = React.useMemo(() => new Intl.NumberFormat(locale, format), [localeKey, format && JSON.stringify(format)]);
   const text = `${prefix}${formatter.format(shown)}${suffix}`;
   const cols = React.useMemo(() => columns(text), [text]);
 
@@ -214,18 +217,18 @@ export function NumberRoll({ value, format, locales, prefix = "", suffix = "", f
 
   return (
     <span className={`inline-flex tabular-nums ${className}`} {...props}>
-      <span className="sr-only">{`${prefix}${formatter.format(value)}${suffix}`}</span>
-      <span aria-hidden="true" className="inline-flex items-baseline whitespace-pre">
+      <span className="sr-only" data-testid={part("sr")}>{`${prefix}${formatter.format(value)}${suffix}`}</span>
+      <span aria-hidden="true" className="inline-flex items-baseline whitespace-pre" data-testid={part("digits")}>
         {view.leaving.map((c) => (
-          <span key={`out-${c.key}`} className="inline-block [clip-path:inset(0)] animate-[ui-col-out_400ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+          <span key={`out-${c.key}`} className="inline-block [clip-path:inset(0)] animate-[ui-col-out_400ms_cubic-bezier(0.16,1,0.3,1)_forwards]" data-testid={part(`out-${c.key}`)}>
             {c.char}
           </span>
         ))}
         {cols.map((c) => {
           const isNew = view.entering.has(c.key);
           return (
-            <Place key={c.key} enter={isNew && !still}>
-              {c.digit === null ? c.char : <Digit digit={c.digit} trend={trend} duration={duration} reduced={still} rollIn={isNew} />}
+            <Place key={c.key} enter={isNew && !still} testId={part(`place-${c.key}`)}>
+              {c.digit === null ? c.char : <Digit digit={c.digit} trend={trend} duration={duration} reduced={still} rollIn={isNew} testId={part(`digit-${c.key}`)} />}
             </Place>
           );
         })}

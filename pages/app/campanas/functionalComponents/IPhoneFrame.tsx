@@ -96,7 +96,7 @@ export function IPhoneFrame({ children, title = "iPhone", time = IPHONE_DEFAULT_
         data-testid="iphone-frame-bezel"
         data-observe="iphone-frame-bezel"
       >
-        <div className="relative overflow-hidden rounded-[2.25rem] bg-white" style={{ height: IPHONE_FRAME_HEIGHT - 24 }}>
+        <div className="relative overflow-hidden rounded-[2.25rem] bg-white" style={{ height: IPHONE_FRAME_HEIGHT - 24 }} data-testid="iphone-frame-display">
           <div
             className="absolute inset-0 overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             data-testid="iphone-frame-screen"

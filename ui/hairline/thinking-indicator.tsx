@@ -64,33 +64,35 @@ function formatElapsed(ms: number) {
 }
 
 /** Seconds that roll up as they pass; minutes slide open at the first minute; tenths join once it's settled. */
-function Elapsed({ ms, settled, reduced }: { ms: number; settled: boolean; reduced: boolean }) {
+function Elapsed({ ms, settled, reduced, id }: { ms: number; settled: boolean; reduced: boolean; id: string }) {
   const total = Math.max(0, ms) / 1000;
   const minutes = Math.floor(total / 60);
   const seconds = minutes ? Math.floor(total % 60) : settled ? Math.floor(total * 10) / 10 : Math.floor(total);
   return (
-    <span className="inline-flex items-baseline whitespace-nowrap">
+    <span className="inline-flex items-baseline whitespace-nowrap" data-testid={id}>
       <span
         className="grid"
         style={{ gridTemplateColumns: minutes ? "1fr" : "0fr", opacity: minutes ? 1 : 0, transition: reduced ? "none" : `grid-template-columns 420ms ${MORPH}, opacity 300ms ${MORPH}` }}
+        data-testid={`${id}-minutes-fold`}
       >
-        <span className="min-w-0 [clip-path:inset(-4px_0)]">
-          <NumberRoll value={minutes} suffix="m" duration={500} />
+        <span className="min-w-0 [clip-path:inset(-4px_0)]" data-testid={`${id}-minutes-clip`}>
+          <NumberRoll value={minutes} suffix="m" duration={500} data-testid={`${id}-minutes`} />
           &nbsp;
         </span>
       </span>
-      <NumberRoll value={seconds} format={minutes ? TWO_DIGITS : settled ? TENTHS : WHOLE} suffix="s" direction="up" duration={500} />
+      <NumberRoll value={seconds} format={minutes ? TWO_DIGITS : settled ? TENTHS : WHOLE} suffix="s" direction="up" duration={500} data-testid={`${id}-seconds`} />
     </span>
   );
 }
 
-function Mark({ variant }: { variant: IndicatorVariant }) {
+function Mark({ variant, id }: { variant: IndicatorVariant; id: string }) {
   if (variant === "dots")
     return (
-      <span aria-hidden="true" className="flex h-4 items-center gap-[3px]">
+      <span aria-hidden="true" className="flex h-4 items-center gap-[3px]" data-testid={id}>
         {[0, 150, 300].map((delay) => (
           <span
             key={delay}
+            data-testid={`${id}-dot-${delay}`}
             className="size-1 rounded-full bg-foreground animate-[ui-bounce_1.2s_ease-in-out_infinite] motion-reduce:animate-none"
             style={{ animationDelay: `${delay}ms` }}
           />
@@ -99,23 +101,23 @@ function Mark({ variant }: { variant: IndicatorVariant }) {
     );
   if (variant === "pulse")
     return (
-      <span aria-hidden="true" className="flex size-4 items-center justify-center">
-        <span className="size-2.5 rounded-full bg-foreground animate-[ui-breathe_1.6s_ease-in-out_infinite] motion-reduce:animate-none" />
+      <span aria-hidden="true" className="flex size-4 items-center justify-center" data-testid={id}>
+        <span className="size-2.5 rounded-full bg-foreground animate-[ui-breathe_1.6s_ease-in-out_infinite] motion-reduce:animate-none" data-testid={`${id}-pulse`} />
       </span>
     );
   if (variant === "scan")
     return (
-      <span aria-hidden="true" className="flex h-4 items-center">
-        <span className="relative h-[3px] w-6 overflow-hidden rounded-full bg-border">
-          <span className="absolute inset-y-0 left-0 w-2/5 rounded-full bg-foreground animate-[ui-scan_1.1s_cubic-bezier(0.45,0,0.55,1)_infinite] motion-reduce:animate-none" />
+      <span aria-hidden="true" className="flex h-4 items-center" data-testid={id}>
+        <span className="relative h-[3px] w-6 overflow-hidden rounded-full bg-border" data-testid={`${id}-track`}>
+          <span className="absolute inset-y-0 left-0 w-2/5 rounded-full bg-foreground animate-[ui-scan_1.1s_cubic-bezier(0.45,0,0.55,1)_infinite] motion-reduce:animate-none" data-testid={`${id}-bar`} />
         </span>
       </span>
     );
   return (
-    <span aria-hidden="true" className="relative flex size-4 items-center justify-center">
-      <span className="absolute inset-[1.5px] rounded-full border border-border" />
-      <span className="absolute inset-0 animate-spin [animation-duration:1.4s] motion-reduce:animate-none">
-        <span className="absolute left-1/2 top-0 size-[5px] -translate-x-1/2 rounded-full bg-foreground" />
+    <span aria-hidden="true" className="relative flex size-4 items-center justify-center" data-testid={id}>
+      <span className="absolute inset-[1.5px] rounded-full border border-border" data-testid={`${id}-ring`} />
+      <span className="absolute inset-0 animate-spin [animation-duration:1.4s] motion-reduce:animate-none" data-testid={`${id}-orbit`}>
+        <span className="absolute left-1/2 top-0 size-[5px] -translate-x-1/2 rounded-full bg-foreground" data-testid={`${id}-satellite`} />
       </span>
     </span>
   );
@@ -161,16 +163,17 @@ export function ThinkingIndicator({
   const elapsed = startedAt === undefined ? undefined : Math.max(0, (settled ? endedAt : now) - startedAt);
   const showTime = elapsed !== undefined && (running || doneLabel === undefined);
   const text = running ? label : (doneLabel ?? (elapsed !== undefined ? "Listo en" : "Listo"));
+  const id = (props as { "data-testid"?: string })["data-testid"] ?? "hl-thinking";
 
   return (
-    <div className={`inline-flex items-center gap-2.5 text-[13px] ${className}`} {...props}>
-      <span aria-hidden="true" className="relative flex h-4 min-w-4 items-center justify-center">
+    <div className={`inline-flex items-center gap-2.5 text-[13px] ${className}`} data-testid={id} {...props}>
+      <span aria-hidden="true" className="relative flex h-4 min-w-4 items-center justify-center" data-testid={`${id}-marks`}>
         {/* The mark stops moving once it has faded out. */}
-        <span className={running ? "" : "[&_*]:[animation-play-state:paused]"} style={swap(running, reduced)}>
-          <Mark variant={variant} />
+        <span className={running ? "" : "[&_*]:[animation-play-state:paused]"} style={swap(running, reduced)} data-testid={`${id}-mark-slot`}>
+          <Mark variant={variant} id={`${id}-mark`} />
         </span>
-        <span className="absolute inset-0 flex items-center justify-center text-muted-foreground" style={swap(!running, reduced)}>
-          <svg viewBox="0 0 16 16" fill="none" className="size-4">
+        <span className="absolute inset-0 flex items-center justify-center text-muted-foreground" style={swap(!running, reduced)} data-testid={`${id}-done-slot`}>
+          <svg viewBox="0 0 16 16" fill="none" className="size-4" data-testid={`${id}-done-check`}>
             <path
               d="M3.5 8.5 6.5 11.5 12.5 4.5"
               stroke="currentColor"
@@ -184,23 +187,24 @@ export function ThinkingIndicator({
           </svg>
         </span>
       </span>
-      <span aria-hidden="true" className="inline-flex items-baseline gap-2">
-        <span className={`font-medium transition-colors duration-300 ${running ? SHEEN : "text-foreground/75"}`}>
-          <TextMorph>{text}</TextMorph>
+      <span aria-hidden="true" className="inline-flex items-baseline gap-2" data-testid={`${id}-texts`}>
+        <span className={`font-medium transition-colors duration-300 ${running ? SHEEN : "text-foreground/75"}`} data-testid={`${id}-label-wrap`}>
+          <TextMorph data-testid={`${id}-label`}>{text}</TextMorph>
         </span>
         {elapsed !== undefined && (
           <span
             className="-ml-2 grid"
             style={{ gridTemplateColumns: showTime ? "1fr" : "0fr", opacity: showTime ? 1 : 0, transition: reduced ? "none" : `grid-template-columns 420ms ${MORPH}, opacity 300ms ${MORPH}` }}
+            data-testid={`${id}-time-fold`}
           >
-            <span className="min-w-0 pl-2 tabular-nums text-muted-foreground [clip-path:inset(-4px_0)]">
-              <Elapsed ms={elapsed} settled={settled} reduced={reduced} />
+            <span className="min-w-0 pl-2 tabular-nums text-muted-foreground [clip-path:inset(-4px_0)]" data-testid={`${id}-time-clip`}>
+              <Elapsed ms={elapsed} settled={settled} reduced={reduced} id={`${id}-time`} />
             </span>
           </span>
         )}
       </span>
       {/* What it's doing, for screen readers: the label while it works, then the outcome. Never the ticking timer. */}
-      <span role="status" aria-live="polite" className="sr-only">
+      <span role="status" aria-live="polite" className="sr-only" data-testid={`${id}-status`}>
         {running ? label : showTime && elapsed !== undefined ? `${text} ${formatElapsed(elapsed)}` : text}
       </span>
     </div>

@@ -78,7 +78,10 @@ function morph(previous: Glyph[], text: string, nextKey: () => number): Glyph[] 
   return out;
 }
 
-function LeavingGlyph({ glyph, lift, duration, onDone }: { glyph: Leaving; lift: number; duration: number; onDone: (key: number) => void }) {
+/** Test id of an inner element of a morph, derived from the root `data-testid`. */
+const part = (root: string | undefined, name: string) => (root ? `${root}-${name}` : undefined);
+
+function LeavingGlyph({ glyph, lift, duration, onDone, testId }: { glyph: Leaving; lift: number; duration: number; onDone: (key: number) => void; testId?: string }) {
   const ref = React.useRef<HTMLSpanElement>(null);
   React.useLayoutEffect(() => {
     const el = ref.current;
@@ -94,7 +97,7 @@ function LeavingGlyph({ glyph, lift, duration, onDone }: { glyph: Leaving; lift:
     return () => animation.cancel();
   }, [glyph.key, lift, duration, onDone]);
   return (
-    <span ref={ref} aria-hidden="true" className="pointer-events-none absolute whitespace-pre" style={{ left: glyph.x, top: glyph.y }}>
+    <span ref={ref} aria-hidden="true" className="pointer-events-none absolute whitespace-pre" style={{ left: glyph.x, top: glyph.y }} data-testid={testId}>
       {glyph.char}
     </span>
   );
@@ -102,6 +105,7 @@ function LeavingGlyph({ glyph, lift, duration, onDone }: { glyph: Leaving; lift:
 
 export function TextMorph({ children: text, duration = 460, direction = "up", animateWidth = true, className = "", ...props }: TextMorphProps) {
   const reduced = useReducedMotion();
+  const rootId = (props as { "data-testid"?: string })["data-testid"];
   const counter = React.useRef(text.length);
   const nextKey = React.useCallback(() => ++counter.current, []);
   const [glyphs, setGlyphs] = React.useState<Glyph[]>(() => Array.from(text).map((char, i) => ({ key: i + 1, char })));
@@ -131,7 +135,6 @@ export function TextMorph({ children: text, duration = 460, direction = "up", an
     const kept = new Set(next.map((g) => g.key));
     setLeaving((l) => [...l, ...glyphs.filter((g) => !kept.has(g.key)).map((g) => ({ ...g, ...(at.get(g.key) ?? { x: 0, y: 0 }) }))]);
     setGlyphs(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, reduced]);
 
   // 2. The new letters are in place: glide the ones that stayed, raise the new ones, ease the width.
@@ -183,12 +186,13 @@ export function TextMorph({ children: text, duration = 460, direction = "up", an
 
   return (
     <span ref={rootRef} className={`relative inline-block ${className}`} {...props}>
-      <span className="sr-only">{text}</span>
+      <span className="sr-only" data-testid={part(rootId, "sr")}>{text}</span>
       {words.map((word, w) => (
-        <span key={w} aria-hidden="true" className="inline-block whitespace-pre">
+        <span key={w} aria-hidden="true" className="inline-block whitespace-pre" data-testid={part(rootId, `w${w}`)}>
           {word.map((g) => (
             <span
               key={g.key}
+              data-testid={part(rootId, `g${g.key}`)}
               ref={(el) => {
                 if (el) els.current.set(g.key, el);
                 else els.current.delete(g.key);
@@ -201,7 +205,7 @@ export function TextMorph({ children: text, duration = 460, direction = "up", an
         </span>
       ))}
       {leaving.map((g) => (
-        <LeavingGlyph key={`out-${g.key}`} glyph={g} lift={-rise} duration={duration} onDone={done} />
+        <LeavingGlyph key={`out-${g.key}`} glyph={g} lift={-rise} duration={duration} onDone={done} testId={part(rootId, `out${g.key}`)} />
       ))}
     </span>
   );

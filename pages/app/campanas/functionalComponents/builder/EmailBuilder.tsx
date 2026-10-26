@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Code2, Eye, Layers, Loader2, PanelLeft, PenTool, Plus, Redo2, SlidersHorizontal, Sparkles, Undo2 } from "lucide-react";
 import { cn } from "../../../../../ui/shadcn/utils";
+import { Select } from "../../../../../ui/inputs/Select";
 import { blockByKind, type BlockContext, type BlockKind } from "./emailBuilderBlocks";
 import {
   duplicateElement, elementHtml, elementLabel, findById, insertSnippet, moveElement, moveElementTo, normalizeDesign, parentId,
@@ -92,7 +93,6 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
   const [leftOpen, setLeftOpen] = useState(true);
   const [leftTab, setLeftTab] = useState<LeftTab>("blocks");
   const [css, setCss] = useState("");
-  const [cssState, setCssState] = useState<"idle" | "busy" | "error">("idle");
   const [code, setCode] = useState("");
   const lg = useMinWidth(1024);
   const xl = useMinWidth(1280);
@@ -158,13 +158,12 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
     if (!design) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      setCssState("busy");
       fetchDesignCss(stripIds(design), coordId, controller.signal)
         .then((next) => {
           setCss(next);
-          setCssState("idle");
         })
-        .catch(() => !controller.signal.aborted && setCssState("error"));
+        // A failed compile keeps the last CSS; saving reports the error.
+        .catch(() => undefined);
     }, 160);
     return () => {
       controller.abort();
@@ -172,7 +171,8 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
     };
   }, [design, coordId]);
 
-  const selected = useMemo(() => findById(parseFragment(design), selectedId), [design, selectedId]);
+  // Empty until the client mounts: the DOM model never runs during SSR (no DOMParser there).
+  const selected = useMemo(() => (design && selectedId ? findById(parseFragment(design), selectedId) : null), [design, selectedId]);
   // What the AI reads: the design and the selection, without editing ids.
   const aiDesign = useMemo(() => (chat === "closed" || !design ? "" : stripIds(design)), [chat, design]);
   const aiSelection = useMemo(() => (chat === "closed" || !selectedId ? "" : elementHtml(design, selectedId)), [chat, design, selectedId]);
@@ -268,7 +268,7 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
     return (
       <div className="grid min-h-[420px] place-items-center rounded-bo-lg border border-bo-border bg-bo-surface-3 text-sm text-bo-muted" data-testid="email-builder-loading">
         <span className="inline-flex items-center gap-2" data-testid="email-builder-loading-label">
-          <Loader2 size={16} className="animate-spin" aria-hidden="true" /> Preparando el editor…
+          <Loader2 size={16} className="animate-spin" aria-hidden="true" data-testid="email-builder-loading-icon" /> Preparando el editor…
         </span>
       </div>
     );
@@ -278,9 +278,9 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
     <EmailBuilderInspector html={design} selectedId={selectedId} accent={context.accent} websiteUrl={context.websiteUrl} actions={actions} />
   );
   const leftTabs: { id: LeftTab; label: string; icon: React.ReactNode }[] = [
-    { id: "blocks", label: "Añadir", icon: <Plus size={14} aria-hidden="true" /> },
-    { id: "layers", label: "Capas", icon: <Layers size={14} aria-hidden="true" /> },
-    ...(!inspectorRight ? [{ id: "style" as const, label: "Estilo", icon: <SlidersHorizontal size={14} aria-hidden="true" /> }] : []),
+    { id: "blocks", label: "Añadir", icon: <Plus size={14} aria-hidden="true" data-testid="email-builder-tab-blocks-icon" /> },
+    { id: "layers", label: "Capas", icon: <Layers size={14} aria-hidden="true" data-testid="email-builder-tab-layers-icon" /> },
+    ...(!inspectorRight ? [{ id: "style" as const, label: "Estilo", icon: <SlidersHorizontal size={14} aria-hidden="true" data-testid="email-builder-tab-style-icon" /> }] : []),
   ];
   const panelBody = (requested: LeftTab) => {
     const tab = requested === "style" && inspectorRight ? "blocks" : requested;
@@ -314,7 +314,7 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
 
   return (
     <div
-      className="eb-scope flex min-w-0 flex-col overflow-hidden rounded-bo-lg border border-bo-border bg-bo-surface-3 lg:h-[calc(100dvh-20rem)] lg:min-h-[600px]"
+      className="eb-scope flex min-w-0 flex-col overflow-hidden rounded-bo-lg border border-bo-border bg-bo-surface-3 lg:h-full lg:min-h-[420px]"
       onKeyDown={onKey}
       data-testid="campaign-content-panel"
       data-observe="email-builder"
@@ -322,13 +322,13 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
     >
       <div className="flex flex-wrap items-center gap-1.5 border-b border-bo-border bg-bo-shell px-2 py-1.5" data-testid="email-builder-toolbar">
         <ToolButton title={showLeft ? "Ocultar panel izquierdo" : "Mostrar panel izquierdo"} onClick={() => setLeftOpen((v) => !v)} active={showLeft} className="hidden lg:inline-flex" testId="email-builder-toggle-left">
-          <PanelLeft size={15} aria-hidden="true" />
+          <PanelLeft size={15} aria-hidden="true" data-testid="email-builder-toggle-left-icon" />
         </ToolButton>
         <div role="tablist" aria-label="Modo del editor" className="inline-flex items-center gap-0.5 rounded-bo-md border border-bo-border bg-bo-surface-3 p-0.5" data-testid="email-builder-mode">
           {([
-            ["design", "Diseño", <PenTool key="d" size={14} aria-hidden="true" />],
-            ["preview", "Vista previa", <Eye key="p" size={14} aria-hidden="true" />],
-            ["code", "HTML", <Code2 key="c" size={14} aria-hidden="true" />],
+            ["design", "Diseño", <PenTool key="d" size={14} aria-hidden="true" data-testid="email-builder-mode-design-icon" />],
+            ["preview", "Vista previa", <Eye key="p" size={14} aria-hidden="true" data-testid="email-builder-mode-preview-icon" />],
+            ["code", "HTML", <Code2 key="c" size={14} aria-hidden="true" data-testid="email-builder-mode-code-icon" />],
           ] as const).map(([id, label, icon]) => (
             <button
               key={id}
@@ -346,29 +346,30 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
         </div>
         <DeviceSwitch value={device} onChange={setDevice} testId="email-builder-device" />
         <div className="ml-auto flex items-center gap-1" data-testid="email-builder-toolbar-end">
-          <span className="hidden items-center gap-1 text-[11px] text-bo-faint md:inline-flex" data-testid="email-builder-css-state" data-state={cssState}>
-            {cssState === "busy" ? <><Loader2 size={12} className="animate-spin" aria-hidden="true" /> Compilando</> : cssState === "error" ? <span className="text-[#ff9c9c]">CSS sin compilar</span> : "Tailwind ✓"}
-          </span>
           <ToolButton title="Deshacer (Ctrl+Z)" onClick={undo} disabled={!past.current.length} testId="email-builder-undo">
-            <Undo2 size={15} aria-hidden="true" />
+            <Undo2 size={15} aria-hidden="true" data-testid="email-builder-undo-icon" />
           </ToolButton>
           <ToolButton title="Rehacer (Ctrl+Shift+Z)" onClick={redo} disabled={!future.current.length} testId="email-builder-redo">
-            <Redo2 size={15} aria-hidden="true" />
+            <Redo2 size={15} aria-hidden="true" data-testid="email-builder-redo-icon" />
           </ToolButton>
-          <select
-            aria-label="Zoom"
-            value={String(zoom)}
-            onChange={(e) => setZoom(e.currentTarget.value === "fit" ? "fit" : Number(e.currentTarget.value))}
-            className="hidden h-8 rounded-md border border-bo-border bg-bo-surface-3 px-1.5 text-xs text-bo-text sm:block"
-            data-testid="email-builder-zoom"
-          >
-            <option value="fit" data-testid="email-builder-zoom-fit">Ajustar</option>
-            <option value="0.5" data-testid="email-builder-zoom-50">50 %</option>
-            <option value="0.75" data-testid="email-builder-zoom-75">75 %</option>
-            <option value="1" data-testid="email-builder-zoom-100">100 %</option>
-          </select>
+          <div className="hidden sm:block" data-testid="email-builder-zoom-cell">
+            <Select
+              size="sm"
+              ariaLabel="Zoom"
+              value={String(zoom)}
+              onChange={(v) => setZoom(v === "fit" ? "fit" : Number(v))}
+              options={[
+                { value: "fit", label: "Ajustar" },
+                { value: "0.5", label: "50 %" },
+                { value: "0.75", label: "75 %" },
+                { value: "1", label: "100 %" },
+              ]}
+              menuMinWidthPx={120}
+              data-testid="email-builder-zoom"
+            />
+          </div>
           <ToolButton title={chat === "closed" ? "Abrir asistente IA" : "Plegar asistente IA"} onClick={() => setChat((c) => (c === "closed" ? "open" : "closed"))} active={chat !== "closed"} testId="email-builder-chat-toggle">
-            <Sparkles size={15} aria-hidden="true" />
+            <Sparkles size={15} aria-hidden="true" data-testid="email-builder-chat-toggle-icon" />
             <span data-testid="email-builder-chat-toggle-label">IA</span>
           </ToolButton>
         </div>
@@ -466,7 +467,7 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
             title="Abrir asistente IA"
             data-testid="email-builder-chat-rail"
           >
-            <Sparkles size={16} aria-hidden="true" />
+            <Sparkles size={16} aria-hidden="true" data-testid="email-builder-chat-rail-icon" />
             <span className="text-[11px] font-semibold [writing-mode:vertical-rl]" data-testid="email-builder-chat-rail-label">Asistente IA</span>
           </button>
         )}

@@ -78,11 +78,12 @@ const swap = (on: boolean, reduced: boolean): React.CSSProperties => ({
 });
 
 /** A piece of a line that opens out of nothing and folds back into it. */
-function Reveal({ show, reduced, className = "", children }: { show: boolean; reduced: boolean; className?: string; children: React.ReactNode }) {
+function Reveal({ show, reduced, className = "", children, id }: { show: boolean; reduced: boolean; className?: string; children: React.ReactNode; id: string }) {
   return (
     <span
       aria-hidden={!show || undefined}
       className={`grid ${className}`}
+      data-testid={id}
       style={{
         gridTemplateColumns: show ? "1fr" : "0fr",
         opacity: show ? 1 : 0,
@@ -90,7 +91,7 @@ function Reveal({ show, reduced, className = "", children }: { show: boolean; re
         transition: reduced ? "none" : `grid-template-columns 420ms ${MORPH}, opacity ${show ? "300ms" : "160ms"} ${MORPH}, filter 300ms ${MORPH}`,
       }}
     >
-      <span className="flex min-w-0 items-center whitespace-nowrap [clip-path:inset(-4px_-2px)]">{children}</span>
+      <span className="flex min-w-0 items-center whitespace-nowrap [clip-path:inset(-4px_-2px)]" data-testid={`${id}-clip`}>{children}</span>
     </span>
   );
 }
@@ -108,13 +109,13 @@ function useUndoClock(actions: Receipt[]) {
 }
 
 /** A ring that drains from full to empty over the time left, with CSS only. */
-function DrainRing({ until, window: total, reduced }: { until: number; window: number; reduced: boolean }) {
+function DrainRing({ until, window: total, reduced, id }: { until: number; window: number; reduced: boolean; id: string }) {
   const [start] = React.useState(() => Date.now());
   const left = Math.max(0, until - start);
   const elapsed = Math.max(0, total - left);
   const c = 2 * Math.PI * 5.5;
   return (
-    <svg aria-hidden="true" viewBox="0 0 14 14" className="size-3.5 -rotate-90">
+    <svg aria-hidden="true" viewBox="0 0 14 14" className="size-3.5 -rotate-90" data-testid={id}>
       <circle cx="7" cy="7" r="5.5" fill="none" strokeWidth="1.5" className="stroke-border" />
       <circle
         cx="7"
@@ -146,7 +147,9 @@ function Line({
   reduced,
   onUndo,
   onRetry,
+  id,
 }: {
+  id: string;
   action: Receipt;
   now: number;
   pending: boolean;
@@ -170,45 +173,48 @@ function Line({
   const layer = "absolute inset-0 flex items-center justify-center";
 
   return (
-    <li className="flex min-h-10 items-center gap-2.5 py-1 animate-[ui-fade-up_320ms_cubic-bezier(0.23,1,0.32,1)_both] motion-reduce:animate-none">
+    <li className="flex min-h-10 items-center gap-2.5 py-1 animate-[ui-fade-up_320ms_cubic-bezier(0.23,1,0.32,1)_both] motion-reduce:animate-none" data-testid={id}>
       <span
         aria-hidden="true"
+        data-testid={`${id}-badge`}
         className={`relative flex size-6 shrink-0 items-center justify-center rounded-full transition-colors duration-300 [&_svg]:size-3.5 [&_svg]:stroke-[1.8] ${
           failed ? "bg-red-500/10 text-red-600 dark:text-red-400" : "bg-muted text-muted-foreground"
         }`}
       >
-        <span className={layer} style={swap(!failed, reduced)}>
-          {action.icon ?? <Check />}
+        <span className={layer} style={swap(!failed, reduced)} data-testid={`${id}-badge-ok`}>
+          {action.icon ?? <Check data-testid={`${id}-badge-ok-icon`} />}
         </span>
-        <span className={layer} style={swap(failed, reduced)}>
-          <X />
+        <span className={layer} style={swap(failed, reduced)} data-testid={`${id}-badge-failed`}>
+          <X data-testid={`${id}-badge-failed-icon`} />
         </span>
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px]">
+      <span className="min-w-0 flex-1" data-testid={`${id}-text`}>
+        <span className="block truncate text-[13px]" data-testid={`${id}-title-line`}>
           {/* The strike draws itself across the title, left to right. */}
           <span
             className={`bg-[linear-gradient(color-mix(in_oklab,currentColor_55%,transparent),color-mix(in_oklab,currentColor_55%,transparent))] bg-no-repeat [background-position:0_58%] ${undone ? "text-muted-foreground" : "text-foreground"}`}
             style={{ backgroundSize: undone ? "100% 1px" : "0% 1px", transition: reduced ? "none" : `background-size 480ms ${MORPH} 80ms, color 300ms` }}
+            data-testid={`${id}-title`}
           >
             {action.title}
           </span>
         </span>
         {(failed ? action.error : action.detail) && (
-          <span className={`block truncate text-[11.5px] transition-colors duration-300 ${failed ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}>
+          <span className={`block truncate text-[11.5px] transition-colors duration-300 ${failed ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`} data-testid={`${id}-detail`}>
             {failed ? action.error : action.detail}
           </span>
         )}
       </span>
 
-      <span role="status" className="sr-only">
+      <span role="status" className="sr-only" data-testid={`${id}-status`}>
         {status === "undoing" ? `Deshaciendo ${action.title}` : undone ? `Deshecho: ${action.title}` : failed ? `Error: ${action.error ?? action.title}` : ""}
       </span>
       {shown && (
-        <Reveal show={Boolean(mode)} reduced={reduced} className="shrink-0">
-          <span className="block p-0.5">
+        <Reveal show={Boolean(mode)} reduced={reduced} className="shrink-0" id={`${id}-action-fold`}>
+          <span className="block p-0.5" data-testid={`${id}-action-pad`}>
             <button
               type="button"
+              data-testid={`${id}-action`}
               inert={!mode}
               aria-disabled={!actionable || undefined}
               aria-label={mode === "undo" ? `Deshacer: ${action.title}` : undefined}
@@ -217,19 +223,19 @@ function Line({
                 actionable ? "text-foreground hover:bg-accent" : "cursor-default text-muted-foreground"
               }`}
             >
-              <span aria-hidden="true" className="relative flex size-3.5 shrink-0 items-center justify-center">
+              <span aria-hidden="true" className="relative flex size-3.5 shrink-0 items-center justify-center" data-testid={`${id}-action-icons`}>
                 {/* Keyed by the window, so a fresh window drains from full; paused once it has faded out. */}
-                <span className={`${layer} ${shown === "undo" ? "" : "[&_*]:[animation-play-state:paused]"}`} style={swap(shown === "undo", reduced)}>
-                  <DrainRing key={action.undoUntil} until={action.undoUntil ?? 0} window={undoWindow} reduced={reduced} />
+                <span className={`${layer} ${shown === "undo" ? "" : "[&_*]:[animation-play-state:paused]"}`} style={swap(shown === "undo", reduced)} data-testid={`${id}-action-ring-slot`}>
+                  <DrainRing key={action.undoUntil} until={action.undoUntil ?? 0} window={undoWindow} reduced={reduced} id={`${id}-action-ring`} />
                 </span>
-                <span className={layer} style={swap(shown === "undoing", reduced)}>
-                  <span className={`size-3 rounded-full border-[1.5px] border-border border-t-foreground/70 motion-reduce:animate-none ${shown === "undoing" ? "animate-spin" : ""}`} />
+                <span className={layer} style={swap(shown === "undoing", reduced)} data-testid={`${id}-action-spinner-slot`}>
+                  <span className={`size-3 rounded-full border-[1.5px] border-border border-t-foreground/70 motion-reduce:animate-none ${shown === "undoing" ? "animate-spin" : ""}`} data-testid={`${id}-action-spinner`} />
                 </span>
-                <span className={layer} style={swap(shown === "undone" || shown === "retry", reduced)}>
-                  <RotateCcw className="size-3" />
+                <span className={layer} style={swap(shown === "undone" || shown === "retry", reduced)} data-testid={`${id}-action-redo-slot`}>
+                  <RotateCcw className="size-3" data-testid={`${id}-action-redo-icon`} />
                 </span>
               </span>
-              <TextMorph>{label[shown]}</TextMorph>
+              <TextMorph data-testid={`${id}-action-label`}>{label[shown]}</TextMorph>
             </button>
           </span>
         </Reveal>
@@ -281,62 +287,65 @@ export function ActionReceipts({
   };
 
   const stacked = stackFrom > 0 && actions.length >= stackFrom;
+  const id = (props as { "data-testid"?: string })["data-testid"] ?? "hl-receipts";
   const failed = actions.filter((a) => a.status === "failed").length;
   const undone = actions.filter((a) => a.status === "undone").length;
   const busy = pending.size > 0;
 
   const lines = (
-    <ul aria-label="Cambios aplicados" data-testid="hl-action-receipts-list">
+    <ul aria-label="Cambios aplicados" data-testid={`${id}-list`}>
       {actions.map((a) => (
-        <Line key={a.id} action={a} now={now} pending={pending.has(a.id)} undoWindow={undoWindow} reduced={reduced} onUndo={onUndo ? undo : undefined} onRetry={onRetry} />
+        <Line key={a.id} id={`${id}-line-${a.id}`} action={a} now={now} pending={pending.has(a.id)} undoWindow={undoWindow} reduced={reduced} onUndo={onUndo ? undo : undefined} onRetry={onRetry} />
       ))}
     </ul>
   );
 
   if (!stacked) {
     return (
-      <div className={`w-full ${className}`} {...props}>
+      <div className={`w-full ${className}`} data-testid={id} {...props}>
         {lines}
       </div>
     );
   }
 
   return (
-    <div className={`w-full ${className}`} {...props}>
-      <div className="flex min-h-10 items-center gap-2.5">
+    <div className={`w-full ${className}`} data-testid={id} {...props}>
+      <div className="flex min-h-10 items-center gap-2.5" data-testid={`${id}-summary-row`}>
         <button
           type="button"
+          data-testid={`${id}-summary`}
           aria-expanded={open}
           aria-controls={listId}
           onClick={() => setOpen((o) => !o)}
           className="cursor-pointer group flex min-w-0 flex-1 items-center gap-2.5 rounded-lg py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
         >
-          <span aria-hidden="true" className="flex shrink-0 items-center">
+          <span aria-hidden="true" className="flex shrink-0 items-center" data-testid={`${id}-summary-badges`}>
             {actions.slice(0, 3).map((a, i) => (
               <span
                 key={a.id}
+                data-testid={`${id}-summary-badge-${a.id}`}
                 className={`flex size-6 items-center justify-center rounded-full ring-2 ring-background [&_svg]:size-3.5 [&_svg]:stroke-[1.8] ${i ? "-ml-2" : ""} ${
                   a.status === "failed" ? "bg-red-500/10 text-red-600 dark:text-red-400" : "bg-muted text-muted-foreground"
                 }`}
                 style={{ zIndex: 3 - i }}
               >
-                {a.status === "failed" ? <X /> : a.icon ?? <Check />}
+                {a.status === "failed" ? <X data-testid={`${id}-summary-badge-${a.id}-failed`} /> : a.icon ?? <Check data-testid={`${id}-summary-badge-${a.id}-ok`} />}
               </span>
             ))}
           </span>
           {/* "4 actions · 1 failed · 2 undone": counts roll, and the extra parts open in as they apply. */}
-          <span className="flex min-w-0 items-baseline truncate text-[13px] text-foreground">
-            <NumberRoll value={actions.length} duration={600} />
+          <span className="flex min-w-0 items-baseline truncate text-[13px] text-foreground" data-testid={`${id}-summary-text`}>
+            <NumberRoll value={actions.length} duration={600} data-testid={`${id}-summary-count`} />
             &nbsp;
-            <TextMorph>{actions.length === 1 ? "cambio" : "cambios"}</TextMorph>
-            <Reveal show={failed > 0} reduced={reduced}>
+            <TextMorph data-testid={`${id}-summary-noun`}>{actions.length === 1 ? "cambio" : "cambios"}</TextMorph>
+            <Reveal show={failed > 0} reduced={reduced} id={`${id}-summary-failed`}>
               &nbsp;·&nbsp;
-              <NumberRoll value={failed} duration={600} />
+              <NumberRoll value={failed} duration={600} data-testid={`${id}-summary-failed-count`} />
               &nbsp;con error
             </Reveal>
-            <Reveal show={undone > 0} reduced={reduced}>
+            <Reveal show={undone > 0} reduced={reduced} id={`${id}-summary-undone`}>
               &nbsp;·&nbsp;
-              <NumberRoll value={undone} duration={600} />
+              <NumberRoll value={undone} duration={600} data-testid={`${id}-summary-undone-count`} />
               &nbsp;deshechos
             </Reveal>
           </span>
@@ -344,28 +353,30 @@ export function ActionReceipts({
             aria-hidden="true"
             className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-300 group-hover:text-foreground motion-reduce:transition-none"
             style={{ transform: open ? "rotate(90deg)" : "none", transitionTimingFunction: EASE }}
+            data-testid={`${id}-summary-chevron`}
           />
         </button>
         {onUndo && (
           // Opens while there's more than one thing to undo; says what it's doing while it does it.
-          <Reveal show={undoable.length > 1 || busy} reduced={reduced} className="shrink-0">
-            <span className="block p-0.5">
+          <Reveal show={undoable.length > 1 || busy} reduced={reduced} className="shrink-0" id={`${id}-undo-all-fold`}>
+            <span className="block p-0.5" data-testid={`${id}-undo-all-pad`}>
               <button
                 type="button"
+                data-testid={`${id}-undo-all`}
                 inert={!(undoable.length > 1 || busy)}
                 onClick={() => !busy && undoAll()}
                 aria-disabled={busy || undefined}
                 className={`${LINK} ${busy ? "cursor-default text-muted-foreground hover:bg-transparent" : ""}`}
               >
-                <span aria-hidden="true" className="relative flex size-3 shrink-0 items-center justify-center">
-                  <span className="absolute inset-0 flex items-center justify-center" style={swap(!busy, reduced)}>
-                    <RotateCcw className="size-3" />
+                <span aria-hidden="true" className="relative flex size-3 shrink-0 items-center justify-center" data-testid={`${id}-undo-all-icons`}>
+                  <span className="absolute inset-0 flex items-center justify-center" style={swap(!busy, reduced)} data-testid={`${id}-undo-all-icon-slot`}>
+                    <RotateCcw className="size-3" data-testid={`${id}-undo-all-icon`} />
                   </span>
-                  <span className="absolute inset-0 flex items-center justify-center" style={swap(busy, reduced)}>
-                    <span className={`size-3 rounded-full border-[1.5px] border-border border-t-foreground/70 motion-reduce:animate-none ${busy ? "animate-spin" : ""}`} />
+                  <span className="absolute inset-0 flex items-center justify-center" style={swap(busy, reduced)} data-testid={`${id}-undo-all-spinner-slot`}>
+                    <span className={`size-3 rounded-full border-[1.5px] border-border border-t-foreground/70 motion-reduce:animate-none ${busy ? "animate-spin" : ""}`} data-testid={`${id}-undo-all-spinner`} />
                   </span>
                 </span>
-                <TextMorph>{busy ? "Deshaciendo todo" : "Deshacer todo"}</TextMorph>
+                <TextMorph data-testid={`${id}-undo-all-label`}>{busy ? "Deshaciendo todo" : "Deshacer todo"}</TextMorph>
               </button>
             </span>
           </Reveal>
@@ -376,9 +387,10 @@ export function ActionReceipts({
         inert={!open}
         className="grid"
         style={{ gridTemplateRows: open ? "1fr" : "0fr", transition: reduced ? "none" : `grid-template-rows 380ms ${EASE}` }}
+        data-testid={`${id}-list-fold`}
       >
-        <div className="min-h-0 overflow-hidden">
-          <div className="ml-3 border-l border-border pl-[18px]">{lines}</div>
+        <div className="min-h-0 overflow-hidden" data-testid={`${id}-list-clip`}>
+          <div className="ml-3 border-l border-border pl-[18px]" data-testid={`${id}-list-rail`}>{lines}</div>
         </div>
       </div>
     </div>

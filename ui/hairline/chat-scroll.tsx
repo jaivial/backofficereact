@@ -166,9 +166,10 @@ export function ChatScroll({
   };
 
   const reach = () => (intent.current = performance.now());
+  const id = (props as { "data-testid"?: string })["data-testid"] ?? "hl-chat-scroll";
 
   return (
-    <div className={`relative min-h-0 ${className}`} {...props}>
+    <div className={`relative min-h-0 ${className}`} data-testid={id} {...props}>
       <div
         ref={scrollerRef}
         tabIndex={0}
@@ -194,19 +195,20 @@ export function ChatScroll({
         // Dragging the scrollbar.
         onPointerDown={reach}
         className="h-full overflow-y-auto overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/30"
+        data-testid={`${id}-scroller`}
       >
-        <div ref={contentRef} className={contentClassName}>
+        <div ref={contentRef} className={contentClassName} data-testid={`${id}-content`}>
           {children}
         </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
+      <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center" data-testid={`${id}-jump-dock`}>
         <button
           type="button"
           inert={!away}
           onClick={() => toBottom(true)}
           aria-label={unread ? `${streaming ? "Sigue escribiendo" : "Nueva respuesta"} abajo. Ir al final` : "Ir al final"}
-          data-testid="hl-chat-scroll-jump"
+          data-testid={`${id}-jump`}
           className="cursor-pointer pointer-events-auto flex h-8 items-center rounded-full border border-border bg-background px-2 text-[12.5px] font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.96]"
           style={{
             opacity: away ? 1 : 0,
@@ -223,20 +225,21 @@ export function ChatScroll({
               opacity: unread ? 1 : 0,
               transition: reduced ? "none" : `grid-template-columns 380ms ${EASE}, opacity 260ms ${EASE}`,
             }}
+            data-testid={`${id}-jump-fold`}
           >
-            <span className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap">
-              <span className="flex shrink-0 items-center gap-1.5 pl-1 pr-1.5">
-                <span className="relative flex size-1.5">
-                  <span className={`absolute inset-0 rounded-full bg-primary motion-reduce:animate-none ${streaming ? "animate-[ui-ping_1.4s_cubic-bezier(0,0,0.2,1)_infinite]" : "opacity-0"}`} />
-                  <span className="relative size-1.5 rounded-full bg-primary" />
+            <span className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap" data-testid={`${id}-jump-clip`}>
+              <span className="flex shrink-0 items-center gap-1.5 pl-1 pr-1.5" data-testid={`${id}-jump-body`}>
+                <span className="relative flex size-1.5" data-testid={`${id}-jump-dot`}>
+                  <span className={`absolute inset-0 rounded-full bg-primary motion-reduce:animate-none ${streaming ? "animate-[ui-ping_1.4s_cubic-bezier(0,0,0.2,1)_infinite]" : "opacity-0"}`} data-testid={`${id}-jump-dot-ping`} />
+                  <span className="relative size-1.5 rounded-full bg-primary" data-testid={`${id}-jump-dot-core`} />
                 </span>
-                <span className={`transition-colors duration-300 ${streaming ? SHEEN : ""}`}>
-                  <TextMorph>{streaming ? "Escribiendo" : "Nueva respuesta"}</TextMorph>
+                <span className={`transition-colors duration-300 ${streaming ? SHEEN : ""}`} data-testid={`${id}-jump-label-wrap`}>
+                  <TextMorph data-testid={`${id}-jump-label`}>{streaming ? "Escribiendo" : "Nueva respuesta"}</TextMorph>
                 </span>
               </span>
             </span>
           </span>
-          <ArrowDown aria-hidden="true" className="size-4" />
+          <ArrowDown aria-hidden="true" className="size-4" data-testid={`${id}-jump-icon`} />
         </button>
       </div>
     </div>

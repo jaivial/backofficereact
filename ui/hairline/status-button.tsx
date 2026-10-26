@@ -53,9 +53,9 @@ const useReducedMotion = () =>
     () => false,
   );
 
-function Check({ drawn, reduced }: { drawn: boolean; reduced: boolean }) {
+function Check({ drawn, reduced, id }: { drawn: boolean; reduced: boolean; id: string }) {
   return (
-    <svg viewBox="0 0 16 16" fill="none">
+    <svg viewBox="0 0 16 16" fill="none" data-testid={id}>
       <path
         d="M3.5 8.5 6.5 11.5 12.5 4.5"
         stroke="currentColor"
@@ -70,9 +70,9 @@ function Check({ drawn, reduced }: { drawn: boolean; reduced: boolean }) {
   );
 }
 
-function Alert() {
+function Alert({ id }: { id: string }) {
   return (
-    <svg viewBox="0 0 16 16" fill="none">
+    <svg viewBox="0 0 16 16" fill="none" data-testid={id}>
       <circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.5" />
       <path d="M8 4.75v3.75" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
       <circle cx="8" cy="11" r="1" fill="currentColor" />
@@ -99,6 +99,7 @@ export function StatusButton({
   const busy = status === "pending";
   const sm = size === "sm";
   const iconSize = sm ? 14 : 16;
+  const id = (props as { "data-testid"?: string })["data-testid"] ?? "hl-status-button";
 
   // A short shake when it fails: the eye catches it even if you looked away.
   React.useEffect(() => {
@@ -130,10 +131,11 @@ export function StatusButton({
     pending: (
       <span
         className={`${sm ? "size-3" : "size-3.5"} rounded-full border-[1.5px] border-current border-t-transparent opacity-80 motion-reduce:animate-none ${status === "pending" ? "animate-spin" : ""}`}
+        data-testid={`${id}-spinner`}
       />
     ),
-    success: <Check drawn={status === "success"} reduced={reduced} />,
-    error: <Alert />,
+    success: <Check drawn={status === "success"} reduced={reduced} id={`${id}-check`} />,
+    error: <Alert id={`${id}-alert`} />,
   };
 
   return (
@@ -150,11 +152,13 @@ export function StatusButton({
         className={`cursor-pointer disabled:cursor-default aria-disabled:cursor-default inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition-[background-color,color,box-shadow,scale,padding] duration-300 active:scale-[0.97] motion-reduce:active:scale-100 ${
           sm ? `h-7 text-[12px] ${variant === "ghost" ? "px-2.5" : "px-3"}` : "h-9 px-4 text-[13px]"
         } ${FOCUS} ${tone} ${className}`}
+        data-testid={id}
         {...props}
       >
         <span
           aria-hidden="true"
           className={`relative flex shrink-0 items-center justify-center ${sm ? "h-3.5 [&_svg]:size-3.5" : "h-4 [&_svg]:size-4"}`}
+          data-testid={`${id}-icons`}
           style={{
             width: showIcon ? iconSize : 0,
             marginRight: showIcon ? (sm ? 5 : 6) : 0,
@@ -165,6 +169,7 @@ export function StatusButton({
             <span
               key={s}
               className="absolute inset-0 flex items-center justify-center"
+              data-testid={`${id}-icon-${s}`}
               style={{
                 opacity: s === status ? 1 : 0,
                 transform: s === status ? "none" : "scale(0.6)",
@@ -176,10 +181,10 @@ export function StatusButton({
             </span>
           ))}
         </span>
-        <TextMorph>{label}</TextMorph>
+        <TextMorph data-testid={`${id}-label`}>{label}</TextMorph>
       </button>
       {/* Outside the button, so the announcement isn't read as part of its name. */}
-      <span className="sr-only" role="status">
+      <span className="sr-only" role="status" data-testid={`${id}-status`}>
         {status === "idle" ? "" : label}
       </span>
     </>

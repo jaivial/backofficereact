@@ -15,6 +15,7 @@ import "reactflow/dist/style.css";
 import { FileText, Gauge, Mail, MessageCircle, Palette, PenLine, Send, Users } from "lucide-react";
 import type { CampaignInput } from "../../../../api/types";
 import { CAMPAIGN_RATE_LIMITS } from "./campaignsApi";
+import { useTestIdBackfill } from "../../../../ui/hooks/useTestIdBackfill";
 
 /**
  * Editor de campanas tipo React Flow (mejora UX 11): la campana como grafo de
@@ -33,7 +34,9 @@ export type CampaignFlowSection =
 type NodeState = "ok" | "warn" | "off";
 
 type CampaignNodeData = {
-  icon: React.ReactNode;
+  /** Graph node id: unique, unlike `section` (two nodes may open one section). */
+  nodeId?: string;
+  icon: React.ReactElement;
   title: string;
   lines: string[];
   state: NodeState;
@@ -55,31 +58,33 @@ const STATE_LABEL: Record<NodeState, string> = {
 
 function CampaignFlowNode({ data }: NodeProps<CampaignNodeData>) {
   const st = STATE_STYLES[data.state];
+  const id = `campaign-flow-node-${data.nodeId}`;
   return (
     <button
       type="button"
       onClick={() => data.onEdit(data.section)}
-      data-testid={`campaign-flow-node-${data.section}`}
+      data-testid={id}
+      data-section={data.section}
       data-slot={`campaign-flow-node-${data.section}`}
       data-state={data.state}
       title={data.lines.filter(Boolean).join(" · ") || undefined}
       className="campaign-flowNode"
       style={{ boxShadow: `0 0 0 4px ${st.ring}` }}
     >
-      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-      <span aria-hidden="true" className="campaign-flowNodeIcon">
-        {data.icon}
+      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} data-testid={`${id}-in`} />
+      <span aria-hidden="true" className="campaign-flowNodeIcon" data-testid={`${id}-icon`}>
+        {React.cloneElement(data.icon as React.ReactElement<Record<string, unknown>>, { "data-testid": `${id}-svg` })}
       </span>
-      <span className="campaign-flowNodeText">
-        <span className="campaign-flowNodeTitle">{data.title}</span>
+      <span className="campaign-flowNodeText" data-testid={`${id}-text`}>
+        <span className="campaign-flowNodeTitle" data-testid={`${id}-title`}>{data.title}</span>
         {data.lines.map((l, i) => (
-          <span key={i} className="campaign-flowNodeLine" title={l}>{l}</span>
+          <span key={i} className="campaign-flowNodeLine" title={l} data-testid={`${id}-line-${i}`}>{l}</span>
         ))}
       </span>
-      <span className="campaign-flowNodeState" title={STATE_LABEL[data.state]} data-testid={`campaign-flow-node-state-${data.section}`}>
-        <span aria-hidden="true" style={{ background: st.dot }} />
+      <span className="campaign-flowNodeState" title={STATE_LABEL[data.state]} data-testid={`${id}-state`}>
+        <span aria-hidden="true" style={{ background: st.dot }} data-testid={`${id}-state-dot`} />
       </span>
-      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} data-testid={`${id}-out`} />
     </button>
   );
 }
@@ -106,6 +111,9 @@ export type CampaignFlowCanvasProps = {
 export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignFlowCanvasProps) {
   const flowRef = useRef<ReactFlowInstance | null>(null);
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  // React Flow renders its panes/layers without test ids: backfill them.
+  useTestIdBackfill(wrapRef, "campaign-flow-rf");
   // fitView only runs on mount: refit when the canvas box changes (rotation, PWA resize).
   useEffect(() => {
     const el = canvasRef.current;
@@ -124,7 +132,7 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
     const STEP = 108;
 
     const add = (id: string, x: number, yy: number, data: CampaignNodeData) => {
-      nodes.push({ id, type: "campaign", position: { x, y: yy }, data });
+      nodes.push({ id, type: "campaign", position: { x, y: yy }, data: { ...data, nodeId: id } });
     };
     const link = (a: string, b: string) => {
       edges.push({
@@ -251,7 +259,7 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
   }, [form, audience, status, onEdit]);
 
   return (
-    <div className="campaign-flowWrap" data-testid="campaign-flow-canvas" data-slot="campaign-flow-canvas">
+    <div className="campaign-flowWrap" data-testid="campaign-flow-canvas" data-slot="campaign-flow-canvas" ref={wrapRef}>
       <div className="campaign-flowLegend" data-testid="campaign-flow-legend" data-observe="campaign-flow-legend">
         {(
           [
@@ -261,12 +269,12 @@ export function CampaignFlowCanvas({ form, audience, status, onEdit }: CampaignF
           ] as const
         ).map(([state, label]) => (
           <span key={state} className="campaign-flowLegendItem" data-testid={`campaign-flow-legend-${state}`}>
-            <span aria-hidden="true" className="campaign-flowLegendDot" style={{ background: STATE_STYLES[state].dot }} />
+            <span aria-hidden="true" className="campaign-flowLegendDot" style={{ background: STATE_STYLES[state].dot }} data-testid={`campaign-flow-legend-${state}-dot`} />
             {label}
           </span>
         ))}
       </div>
-      <div className="campaign-flowCanvas" ref={canvasRef}>
+      <div className="campaign-flowCanvas" ref={canvasRef} data-testid="campaign-flow-viewport">
       <ReactFlow
         nodes={nodes}
         edges={edges}

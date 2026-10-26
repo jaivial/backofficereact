@@ -9,10 +9,10 @@ import { DEVICE_WIDTH, type BuilderDevice } from "./EmailBuilderCanvas";
  * and scaled to fit. Same-origin only (to measure its height), never scripts.
  */
 
-export const DEVICES: { id: BuilderDevice; label: string; icon: React.ReactNode }[] = [
-  { id: "desktop", label: "Escritorio", icon: <Monitor size={15} aria-hidden="true" /> },
-  { id: "tablet", label: "Tablet", icon: <Tablet size={15} aria-hidden="true" /> },
-  { id: "mobile", label: "Móvil", icon: <Smartphone size={15} aria-hidden="true" /> },
+export const DEVICES: { id: BuilderDevice; label: string; Icon: typeof Monitor }[] = [
+  { id: "desktop", label: "Escritorio", Icon: Monitor },
+  { id: "tablet", label: "Tablet", Icon: Tablet },
+  { id: "mobile", label: "Móvil", Icon: Smartphone },
 ];
 
 /** Desktop / tablet / mobile switch shared by the builder toolbar and the preview tab. */
@@ -33,7 +33,7 @@ export function DeviceSwitch({ value, onChange, testId }: { value: BuilderDevice
           )}
           data-testid={`${testId}-${d.id}`}
         >
-          {d.icon}
+          <d.Icon size={15} aria-hidden="true" data-testid={`${testId}-${d.id}-icon`} />
           <span className="hidden sm:inline" data-testid={`${testId}-${d.id}-label`}>{d.label}</span>
         </button>
       ))}
