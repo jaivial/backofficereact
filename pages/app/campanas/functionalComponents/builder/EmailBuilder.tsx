@@ -94,6 +94,7 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
   const [css, setCss] = useState("");
   const [cssState, setCssState] = useState<"idle" | "busy" | "error">("idle");
   const [code, setCode] = useState("");
+  const lg = useMinWidth(1024);
   const xl = useMinWidth(1280);
   // The inspector gets its own column only on wide screens with the chat
   // folded; otherwise it is the "Estilo" tab, so the canvas keeps its room.
@@ -374,8 +375,8 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row" data-testid="email-builder-body">
-        {showLeft && (
-          <aside className="hidden w-[256px] shrink-0 flex-col border-r border-bo-border bg-bo-shell lg:flex" aria-label="Componentes y capas" data-testid="email-builder-left">
+        {lg && showLeft && (
+          <aside className="flex w-[256px] shrink-0 flex-col border-r border-bo-border bg-bo-shell" aria-label="Componentes y capas" data-testid="email-builder-left">
             {tabBar("email-builder-left-tabs")}
             <div className="min-h-0 flex-1 overflow-y-auto" data-testid="email-builder-left-body">{panelBody(leftTab)}</div>
           </aside>
@@ -470,10 +471,14 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
           </button>
         )}
 
-        <section className="border-t border-bo-border bg-bo-shell lg:hidden" aria-label="Paneles del editor" data-testid="email-builder-mobile-panels">
-          {tabBar("email-builder-mobile-tabs")}
-          <div className="max-h-[60dvh] overflow-y-auto" data-testid="email-builder-mobile-body">{panelBody(leftTab)}</div>
-        </section>
+        {/* Phones and small tablets: the same panels as tabs under the canvas
+            (mounted instead of the side panel, never next to it). */}
+        {!lg && (
+          <section className="border-t border-bo-border bg-bo-shell" aria-label="Paneles del editor" data-testid="email-builder-mobile-panels">
+            {tabBar("email-builder-mobile-tabs")}
+            <div className="max-h-[60dvh] overflow-y-auto" data-testid="email-builder-mobile-body">{panelBody(leftTab)}</div>
+          </section>
+        )}
       </div>
     </div>
   );

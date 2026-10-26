@@ -48,6 +48,8 @@ export function EmailPreviewFrame({ html, device, testId, className }: Props) {
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState(480);
   const [available, setAvailable] = useState(800);
+  // Bumped on every load: a new srcDoc is a new document to observe.
+  const [loads, setLoads] = useState(0);
   const width = DEVICE_WIDTH[device];
   const scale = Math.min(1, Math.max(0.2, available / width));
 
@@ -72,8 +74,16 @@ export function EmailPreviewFrame({ html, device, testId, className }: Props) {
     const view = frameRef.current?.contentWindow as (Window & { ResizeObserver?: typeof ResizeObserver }) | null;
     const ro = new (view?.ResizeObserver ?? ResizeObserver)(() => measure());
     ro.observe(doc.body);
-    return () => ro.disconnect();
-  }, [html, device, measure]);
+    // A preview, not a browser: links must not navigate the frame away.
+    const stopLinks = (e: MouseEvent) => {
+      if ((e.target as Element | null)?.closest?.("a")) e.preventDefault();
+    };
+    doc.addEventListener("click", stopLinks);
+    return () => {
+      ro.disconnect();
+      doc.removeEventListener("click", stopLinks);
+    };
+  }, [html, device, measure, loads]);
 
   return (
     <div ref={boxRef} className={cn("w-full", className)} data-testid={testId} data-observe={testId} data-device={device}>
@@ -87,7 +97,10 @@ export function EmailPreviewFrame({ html, device, testId, className }: Props) {
           title="Previsualización del email"
           srcDoc={html}
           sandbox="allow-same-origin"
-          onLoad={measure}
+          onLoad={() => {
+            measure();
+            setLoads((n) => n + 1);
+          }}
           scrolling="no"
           className="block origin-top-left border-0"
           style={{ width, height, transform: `scale(${scale})` }}
