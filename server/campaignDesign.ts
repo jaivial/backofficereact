@@ -161,8 +161,22 @@ function applyOp(html: string, op: DesignOp, ctx: BlockContext): { html: string;
       const block = blockByKind(String(op.block ?? ""));
       if (!block) fail(`add_block: bloque desconocido «${op.block ?? ""}» (${EMAIL_BLOCKS.map((b) => b.kind).join(", ")})`);
       if (op.target) requireElement(html, op.target, kind);
+      if (op.src !== undefined && !builderSafeUrl(String(op.src))) fail(`add_block: URL no permitida para src: ${op.src}`);
       const res = insertSnippet(html, block.html(ctx), op.target ?? null, insertPosition(op.position, "block-after"));
-      return { html: res.html, created: res.id };
+      if ((op.src === undefined && op.alt === undefined) || !res.id) return { html: res.html, created: res.id };
+      // src/alt fill the first image of the new block (an image uploaded from
+      // a chat lands in the palette's own image block, campaign_tools_v1).
+      const created = res.id;
+      let hasImage = false;
+      const next = updateElement(res.html, created, (node) => {
+        const img = node.tagName === "IMG" ? node : node.querySelector("img");
+        if (!img) return;
+        hasImage = true;
+        if (op.src !== undefined) img.setAttribute("src", String(op.src).trim());
+        if (op.alt !== undefined) img.setAttribute("alt", String(op.alt));
+      });
+      if (!hasImage) fail(`add_block: el bloque «${op.block}» no tiene imagen para src/alt`);
+      return { html: next, created };
     }
     case "insert_html": {
       if (!String(op.html ?? "").trim()) fail("insert_html: falta html");
