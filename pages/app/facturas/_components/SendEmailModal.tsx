@@ -8,23 +8,31 @@ import { createClient } from "../../../../api/client";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "../../../../state/atoms";
 import { InvoiceWhatsAppChatPreview } from "./InvoiceWhatsAppChatPreview";
-import { invoiceTotal, moneyEs } from "../utils";
+import { clearWaSendKey, formatInvoicePhone, invoiceTotal, moneyEs, newWaSendKey, resolveWaSendKey, storeWaSendKey } from "../utils";
 
 /**
  * Send-invoice modal: email and/or WhatsApp in a single action.
  * Email body is an editable HTML template (sanitised again on the server),
  * WhatsApp is an editable chat clone of the real conversation, and the
  * send goes to POST /invoices/{id}/send-whatsapp (invoice_send_whatsapp_v1).
+ * The WhatsApp channel (text + PDF attached) is only offered, and selected by
+ * default, when the restaurant's own WhatsApp is connected
+ * (invoice_whatsapp_autosend_v1).
  * Coordination id: invoice_send_multichannel_v1
  */
+type Channel = "email" | "whatsapp";
+
 interface SendEmailModalProps {
   open: boolean;
   invoice: Invoice | null;
+  /** The restaurant's WhatsApp is connected (GET /invoices/whatsapp-status). */
+  whatsappConnected: boolean;
+  /** Only this channel starts selected (e.g. the WhatsApp action); default: every usable one. */
+  initialChannel?: Channel;
   onClose: () => void;
   onSent: (invoice: Invoice) => void;
 }
 
-type Channel = "email" | "whatsapp";
 type Result = { ok: boolean; text: string };
 
 const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -42,13 +50,7 @@ function htmlToText(html: string): string {
   return (d.textContent || "").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-// invoice_send_whatsapp_v1: one idempotency key per send intent, persisted
-// per invoice so closing/reopening the modal resumes the same attempt; the
-// key clears on full success (a later open is then a deliberate new intent).
-const waStorageKey = (userId: number, restaurantId: number, invoiceId: number) => `bo-wa-send-key:u${userId}:r${restaurantId}:i${invoiceId}`;
-const newWaKey = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `wa-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-
-export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModalProps) {
+export function SendEmailModal({ open, invoice, whatsappConnected, initialChannel, onClose, onSent }: SendEmailModalProps) {
   const { pushToast } = useToasts();
   const editorRef = useRef<HTMLDivElement>(null);
   const [channels, setChannels] = useState<Record<Channel, boolean>>({ email: true, whatsapp: false });
@@ -71,6 +73,8 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
   const hasEmail = Boolean(invoice?.customer_email);
   const hasPhone = Boolean(invoice?.customer_phone);
+  const canWhatsApp = hasPhone && whatsappConnected;
+  const phoneLabel = formatInvoicePhone(invoice);
   const vars = useMemo(() => {
     if (!invoice) return {} as Record<string, string>;
     return {
@@ -93,7 +97,9 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
     const safe: Record<string, string> = Object.fromEntries(Object.entries(vars).map(([k, v]) => [k, esc(v)]));
     setSubject(fill("Factura {invoice_number} - {restaurant_name}", vars));
     setWaText(fill(WA_TEXT, vars));
-    setChannels({ email: Boolean(invoice.customer_email), whatsapp: !invoice.customer_email && Boolean(invoice.customer_phone) });
+    const wantsEmail = initialChannel !== "whatsapp";
+    const wantsWhatsApp = initialChannel !== "email";
+    setChannels({ email: wantsEmail && Boolean(invoice.customer_email), whatsapp: wantsWhatsApp && whatsappConnected && Boolean(invoice.customer_phone) });
     setResults(null);
     setShowPdf(false);
     setWaPhoneConfirm(null);
@@ -103,32 +109,10 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
     setWaNewIntentConfirm(null);
     setWaUncertainPhone("");
     let cancelled = false;
-    const scopedKey = waStorageKey(waUserId, invoice.restaurant_id, invoice.id);
-    void (async () => {
-      try {
-        const stored = localStorage.getItem(scopedKey);
-        if (stored) {
-          if (!cancelled) setWaKey(stored);
-          return;
-        }
-      } catch { /* storage optional */ }
-      // No local key (fresh browser or post-logout): recover the durable
-      // attempt from the backend instead of starting a blind new intent.
-      try {
-        const api = createClient({ baseUrl: "" });
-        const res = await api.invoices.getWhatsAppAttempt(invoice.id);
-        const att = res.success ? res.attempt : null;
-        const resumable = att != null && !(att.text_status === "sent" && att.pdf_status === "sent");
-        const key = resumable && att ? att.idempotency_key : newWaKey();
-        try { localStorage.setItem(scopedKey, key); } catch { /* storage optional */ }
-        if (!cancelled) setWaKey(key);
-      } catch {
-        if (!cancelled) setWaKey(newWaKey());
-      }
-    })();
+    void resolveWaSendKey(waUserId, invoice.restaurant_id, invoice.id).then((key) => { if (!cancelled) setWaKey(key); });
     requestAnimationFrame(() => { if (editorRef.current) editorRef.current.innerHTML = fill(EMAIL_HTML, safe); });
     return () => { cancelled = true; };
-  }, [open, invoice, vars, waUserId]);
+  }, [open, invoice, vars, waUserId, whatsappConnected, initialChannel]);
 
   // Explicit new send intent: fresh idempotency key (persisted so close/
   // reopen resumes it), old attempt preserved server-side as audit record.
@@ -188,7 +172,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
           // (unknown) or start a new intent (inflight: writer may be live).
           setWaUncertainStage(res.stage || "text");
           setWaUncertainStatus(res.stage_status || "unknown");
-          setWaUncertainPhone(res.phone_normalized || invoice.customer_phone || "");
+          setWaUncertainPhone(res.phone_normalized || phoneLabel);
           setResults(out);
           setSending(false);
           return;
@@ -204,11 +188,11 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
             setWaUncertainStatus(res.pdf_status || "unknown");
           } else {
             setWaUncertainStage(null);
-            try { localStorage.removeItem(waStorageKey(waUserId, invoice.restaurant_id, invoice.id)); } catch { /* storage optional */ }
+            clearWaSendKey(waUserId, invoice.restaurant_id, invoice.id);
           }
         }
         out.whatsapp = res.success
-          ? { ok: true, text: `WhatsApp enviado a ${res.phone_normalized || invoice.customer_phone}${res.pdf_attached === false ? (res.pdf_uncertain ? " (PDF en estado incierto: un intento anterior pudo haberlo enviado; no se reenvió)" : " (sin PDF adjunto)") : ""}` }
+          ? { ok: true, text: `WhatsApp enviado a ${res.phone_normalized || phoneLabel}${res.pdf_attached === false ? (res.pdf_uncertain ? " (PDF en estado incierto: un intento anterior pudo haberlo enviado; no se reenvió)" : " (sin PDF adjunto)") : " con el PDF adjunto"}` }
           : { ok: false, text: res.message || "No se pudo enviar el WhatsApp" };
       } catch { out.whatsapp = { ok: false, text: "No se pudo enviar el WhatsApp" }; }
     }
@@ -219,12 +203,12 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
     if (okAny) onSent(invoice.status === "enviada" || invoice.status === "pagada" ? invoice : { ...invoice, status: "enviada" });
     pushToast({ kind: okAny && selectedResults.every((r) => r.ok) ? "success" : "error", title: okAny ? "Envío completado" : "Error", message: selectedResults.map((r) => r.text).join(" · ") });
     if (okAny && selectedResults.every((r) => r.ok)) setTimeout(onClose, 1800);
-  }, [invoice, sending, selected, channels, subject, waText, waKey, waPhoneConfirm, waUncertainStage, waUserId, results, onSent, onClose, pushToast]);
+  }, [invoice, sending, selected, channels, subject, waText, waKey, waPhoneConfirm, waUncertainStage, waUserId, phoneLabel, results, onSent, onClose, pushToast]);
 
   const startNewIntent = useCallback(() => {
     if (!invoice || !waNewIntentConfirm) return;
-    const freshKey = newWaKey();
-    try { localStorage.setItem(waStorageKey(waUserId, invoice.restaurant_id, invoice.id), freshKey); } catch { /* storage optional */ }
+    const freshKey = newWaSendKey();
+    storeWaSendKey(waUserId, invoice.restaurant_id, invoice.id, freshKey);
     setWaKey(freshKey);
     setWaPhoneConfirm(null);
     setWaUncertainStage(null);
@@ -246,13 +230,18 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
           <button type="button" className={`bo-sendNotificationTab ${channels.email ? "is-active" : ""}`} aria-pressed={channels.email} disabled={!hasEmail || sending} onClick={() => setChannels((c) => ({ ...c, email: !c.email }))} data-testid="send-invoice-channel-email">
             <span className={`bo-channelBox${channels.email ? " is-on" : ""}`} aria-hidden="true" /><Mail size={16} aria-hidden="true" /> <span data-testid="send-invoice-channel-email-label">Email</span>
           </button>
-          <button type="button" className={`bo-sendNotificationTab ${channels.whatsapp ? "is-active" : ""}`} aria-pressed={channels.whatsapp} disabled={!hasPhone || sending} onClick={() => setChannels((c) => ({ ...c, whatsapp: !c.whatsapp }))} data-testid="send-invoice-channel-whatsapp">
+          <button type="button" className={`bo-sendNotificationTab ${channels.whatsapp ? "is-active" : ""}`} aria-pressed={channels.whatsapp} disabled={!canWhatsApp || sending} onClick={() => setChannels((c) => ({ ...c, whatsapp: !c.whatsapp }))} data-testid="send-invoice-channel-whatsapp">
             <span className={`bo-channelBox${channels.whatsapp ? " is-on" : ""}`} aria-hidden="true" /><MessageCircle size={16} aria-hidden="true" /> <span data-testid="send-invoice-channel-whatsapp-label">WhatsApp</span>
           </button>
         </div>
         {/* invoice_send_channels_v1: independent toggles, both may be on; the
             submit button always names exactly the chosen channels. */}
         <p className="bo-sendInvoiceChannelsHint" data-testid="send-invoice-channels-hint">Canales independientes: puedes marcar ambos. El botón de envío indica exactamente por cuáles se enviará.</p>
+        {!whatsappConnected ? (
+          <p className="bo-sendInvoiceChannelsHint" data-testid="send-invoice-wa-disconnected-hint" data-coordination-id="invoice_whatsapp_autosend_v1">WhatsApp no conectado: conecta el WhatsApp del restaurante en Configuración → Contacto para enviar la factura con el PDF adjunto por WhatsApp.</p>
+        ) : !hasPhone ? (
+          <p className="bo-sendInvoiceChannelsHint" data-testid="send-invoice-wa-no-phone-hint">La factura no tiene teléfono: añádelo para enviarla por WhatsApp.</p>
+        ) : null}
 
         <div className="bo-sendInvoiceMeta" data-testid="send-invoice-meta">
           <b data-testid="send-invoice-customer">{vars.customer_name}</b>
@@ -296,7 +285,7 @@ export function SendEmailModal({ open, invoice, onClose, onSent }: SendEmailModa
 
         {channels.whatsapp ? (
           <section className="bo-sendInvoiceSection" data-testid="send-invoice-wa-section" aria-label="WhatsApp">
-            <div className="bo-sendInvoiceTo" data-testid="send-invoice-wa-to"><MessageCircle size={14} aria-hidden="true" /> {invoice.customer_phone}</div>
+            <div className="bo-sendInvoiceTo" data-testid="send-invoice-wa-to"><MessageCircle size={14} aria-hidden="true" /> {phoneLabel}</div>
             <InvoiceWhatsAppChatPreview
               key={`${invoice.id}-${open}`}
               brandName={vars.restaurant_name || "Restaurante"}

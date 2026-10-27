@@ -1,21 +1,14 @@
 import React from "react";
-import { AnunciosList } from "../config/functionalComponents/ConfigAnuncios/AnunciosList";
-import { useAdsController } from "../config/functionalComponents/ConfigAnuncios/hooks/useAdsController";
+import { AdsList } from "./functionalComponents/AdsList";
 
 /**
  * Anuncios module entry point. First-class section reachable from the sidenav
  * and the mobile bottom nav; it is no longer a tab inside `/app/config`.
  */
 export default function AnunciosPage() {
-  const { api, notify } = useAdsController();
   return (
-    <section
-      aria-label="Anuncios"
-      className="bo-anunciosPage grid gap-4"
-      data-testid="anuncios-page"
-      data-slot="anuncios-page"
-    >
-      <AnunciosList api={api} notify={notify} />
+    <section aria-label="Anuncios" className="bo-anunciosPage grid gap-4" data-testid="anuncios-page" data-slot="anuncios-page">
+      <AdsList />
     </section>
   );
 }

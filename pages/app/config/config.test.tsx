@@ -108,9 +108,6 @@ vi.mock("./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage", () => ({
 vi.mock("./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot", () => ({
   ConfigWhatsAppBot: () => <div data-testid="mock-config-bot">Bot</div>,
 }));
-vi.mock("./functionalComponents/ConfigAnuncios/ConfigAnuncios", () => ({
-  ConfigAnuncios: () => <div data-testid="mock-config-anuncios">Anuncios</div>,
-}));
 
 import Page from "./config";
 

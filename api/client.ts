@@ -2432,6 +2432,29 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async campaignStatus(id: number): Promise<APISuccess<{ status: string; stats: import("./types").CampaignStats }> | APIError> {
         return json(`/api/admin/campanas/${id}/status`, { method: "GET" });
       },
+      // ads_html_editor_v1: brand + website the ad editor starts from.
+      async adEditorContext(): Promise<APISuccess<{ brand_name: string; logo_url: string; website: string; accent: string }> | APIError> {
+        return json("/api/admin/anuncios/context", { method: "GET" });
+      },
+      // ads_html_editor_v1: design AI of the ad editor (same models, ads gate).
+      async adAIModels(): Promise<APISuccess<{ models: import("./types").CampaignAIModel[]; default: string }> | APIError> {
+        return json("/api/admin/anuncios/ai/models", { method: "GET" });
+      },
+      async adAIChat(input: {
+        model: string;
+        messages: import("./types").CampaignAIChatMessage[];
+        html: string;
+        selected_html?: string;
+        coord_id?: string;
+      }): Promise<APISuccess<{ reply: string; html?: string; model: string; coord_id?: string }> | APIError> {
+        return json("/api/admin/anuncios/ai/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      /** Uploads an image for the HTML design of an ad: CDN only, the ad is not touched. */
+      async uploadAdDesignImage(id: number, file: File): Promise<APISuccess<{ url: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "anuncio.jpg");
+        return json(`/api/admin/config/ads/${id}/image/upload?target=design`, { method: "POST", body: form });
+      },
       async campaignAIModels(): Promise<APISuccess<{ models: import("./types").CampaignAIModel[]; default: string }> | APIError> {
         return json("/api/admin/campanas/ai/models", { method: "GET" });
       },
@@ -2742,6 +2765,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       // fresh browser (or post-logout session) resumes the same intent.
       async getWhatsAppAttempt(id: number): Promise<APISuccess<{ attempt: { idempotency_key: string; text_status: string; pdf_status: string; phone: string; pdf_url?: string; stage_error?: string } | null }> | APIError> {
         return json(`/api/admin/invoices/${id}/send-whatsapp/attempt`, { method: "GET" });
+      },
+      // invoice_whatsapp_autosend_v1: whether the restaurant's own WhatsApp is
+      // connected, so the send flows attach the WhatsApp + PDF only then.
+      async whatsappStatus(): Promise<APISuccess<{ connected: boolean }> | APIError> {
+        return json("/api/admin/invoices/whatsapp-status", { method: "GET" });
       },
 
       async searchReservations(params: {

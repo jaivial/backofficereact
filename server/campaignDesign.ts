@@ -30,11 +30,12 @@ import {
   type ClassGroupId,
   type InsertPosition,
   type Visibility,
-} from "../pages/app/campanas/functionalComponents/builder/emailBuilderDocument";
+} from "../ui/htmlBuilder/document";
 import { EMAIL_BLOCKS, blockByKind, defaultDesign, legacyDesign, type BlockContext } from "../pages/app/campanas/functionalComponents/builder/emailBuilderBlocks";
 import { renderCampaignEmailBody } from "../pages/app/campanas/functionalComponents/campaignEmailBody";
 import type { CampaignTheme } from "../api/types";
 import { compileCampaignEmail } from "./campaignEmailCompile";
+import { runAdDesignAction, type AdDesignRequest } from "./adDesign";
 
 /*
  * Design engine of the campaign tools (coordination id campaign_tools_v1).
@@ -42,7 +43,7 @@ import { compileCampaignEmail } from "./campaignEmailCompile";
  * Forky and the WhatsApp bot edit a campaign design with the SAME operations
  * the visual builder performs (palette blocks, layers, inspector fields,
  * duplicate / move / delete, raw HTML), because they run the builder's own
- * document model (emailBuilderDocument.ts / emailBuilderBlocks.ts) here with a
+ * document model (ui/htmlBuilder/document.ts / emailBuilderBlocks.ts) here with a
  * jsdom parser. The Go backend owns persistence, permissions, confirmations
  * and the AI; this module is a pure function: design in, design out.
  *
@@ -92,7 +93,7 @@ export type DesignRequest = {
   markdown?: string;
   theme?: Partial<CampaignTheme>;
   compile?: { title?: string } | null;
-};
+} & Omit<AdDesignRequest, "action">;
 
 type Layer = {
   id: string;
@@ -411,6 +412,13 @@ export async function runDesignRequest(req: DesignRequest): Promise<DesignRespon
     }
     case "inspect":
       return respond(stripIds(normalizeDesign(String(req.html ?? ""))), {});
+    case "ad_compile":
+    case "ad_default":
+    case "ad_sync":
+    case "ad_kind":
+    case "ad_convert":
+      // ads_html_editor_v1: the ad model of the backoffice editor.
+      return runAdDesignAction({ ...req, action }, ctx);
     case "compile":
       return respond(stripIds(normalizeDesign(String(req.html ?? ""))), {});
     case "element": {

@@ -12,7 +12,7 @@ import {
   safeSelector,
   type Decl,
 } from "../pages/app/campanas/functionalComponents/builder/emailBuilderCompile";
-import { designForChannel, setDesignDomParser, stripIds } from "../pages/app/campanas/functionalComponents/builder/emailBuilderDocument";
+import { designForChannel, setDesignDomParser, stripIds } from "../ui/htmlBuilder/document";
 import { compileCampaignEmailCss } from "./campaignEmailCss";
 
 /*

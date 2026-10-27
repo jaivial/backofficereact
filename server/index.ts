@@ -931,7 +931,7 @@ async function start() {
   });
 
   // Public ads endpoints (canvas render, embed list) keep their /api/public path on the
-  // Go backend. Proxied same-origin so the AnuncioEditor preview iframe works here too.
+  // Go backend. Proxied same-origin so public ad renders also load from the backoffice origin.
   app.use("/api/public/ads", (req, res) => proxyToBackend(backendOrigin, req.originalUrl, req, res, { injectAdminSecret: false }));
 
   // MCP endpoint, served from the backoffice origin on purpose. The OAuth

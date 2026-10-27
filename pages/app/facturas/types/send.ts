@@ -5,20 +5,6 @@
 
 import type { Invoice } from "../../../../api/types";
 
-export interface SendEmailModalProps {
-  open: boolean;
-  invoice: Invoice | null;
-  onClose: () => void;
-  onSent: (invoice: Invoice) => void;
-}
-
-export interface SendWhatsAppModalProps {
-  open: boolean;
-  invoice: Invoice | null;
-  onClose: () => void;
-  onSent: (invoice: Invoice) => void;
-}
-
 export interface BatchSendModalProps {
   open: boolean;
   invoices: Invoice[];

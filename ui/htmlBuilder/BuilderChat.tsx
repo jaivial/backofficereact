@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink, Maximize2, Minimize2, PanelRightClose, Sparkles, Trash } from "lucide-react";
 import { usePageContext } from "vike-react/usePageContext";
-import { isConfigContentAllowed } from "../../../../../lib/navigation";
-import { Select } from "../../../../../ui/inputs/Select";
-import { createClient } from "../../../../../api/client";
-import type { CampaignAIChatMessage, CampaignAIModel } from "../../../../../api/types";
-import { cn } from "../../../../../ui/shadcn/utils";
-import { PromptComposer } from "../../../../../ui/hairline/prompt-composer";
-import { ThinkingIndicator } from "../../../../../ui/hairline/thinking-indicator";
-import { ChatScroll } from "../../../../../ui/hairline/chat-scroll";
-import { ChatNotice } from "../../../../../ui/hairline/chat-notice";
-import { ActionReceipts, type Receipt } from "../../../../../ui/hairline/action-receipt";
+import { isConfigContentAllowed } from "../../lib/navigation";
+import { Select } from "../inputs/Select";
+import type { CampaignAIChatMessage, CampaignAIModel } from "../../api/types";
+import { cn } from "../shadcn/utils";
+import { PromptComposer } from "../hairline/prompt-composer";
+import { ThinkingIndicator } from "../hairline/thinking-indicator";
+import { ChatScroll } from "../hairline/chat-scroll";
+import { ChatNotice } from "../hairline/chat-notice";
+import { ActionReceipts, type Receipt } from "../hairline/action-receipt";
+import { useBuilderTestId } from "./testIds";
 
 /*
  * AI assistant of the campaign HTML builder (coordination id
@@ -24,7 +24,19 @@ export type ChatLayout = "open" | "wide";
 
 type Turn = { id: string; role: "user" | "assistant"; content: string; receipt?: Receipt };
 
+/** AI backend of a builder profile (campaign email, web ad). */
+export type BuilderAI = {
+  /** Accessible name of the chat panel. */
+  ariaLabel: string;
+  suggestions: string[];
+  models: () => Promise<{ models: CampaignAIModel[]; default: string } | null>;
+  chat: (input: { model: string; messages: CampaignAIChatMessage[]; html: string; selected_html: string; coord_id: string }) => Promise<
+    { success: true; reply?: string; html?: string; model?: string } | { success: false; message?: string }
+  >;
+};
+
 type Props = {
+  ai: BuilderAI;
   /** Current design without editing ids. */
   html: string;
   selectedHtml: string;
@@ -39,20 +51,14 @@ type Props = {
 };
 
 const UNDO_WINDOW = 120_000;
-const SUGGESTIONS = [
-  "Hazlo más elegante, con más aire y una tipografía más grande en el titular",
-  "Añade una sección de 3 platos destacados en columnas",
-  "Cambia la paleta a tonos cálidos mediterráneos",
-  "Añade un cupón del 10 % y un botón para reservar",
-];
 
 /** Where the restaurant's AI models are configured. */
 const AI_CONFIG_HREF = "/app/config?content=ia";
 
 const turnId = () => `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
-export function EmailBuilderChat({ html, selectedHtml, selectedLabel, coordId, layout, onLayout, onClose, onApply, onRestore }: Props) {
-  const api = useMemo(() => createClient({ baseUrl: "" }).config, []);
+export function BuilderChat({ ai, html, selectedHtml, selectedLabel, coordId, layout, onLayout, onClose, onApply, onRestore }: Props) {
+  const tp = useBuilderTestId();
   const [models, setModels] = useState<CampaignAIModel[]>([]);
   const [model, setModel] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -70,19 +76,19 @@ export function EmailBuilderChat({ html, selectedHtml, selectedLabel, coordId, l
 
   useEffect(() => {
     let alive = true;
-    void api
-      .campaignAIModels()
+    void ai
+      .models()
       .then((res) => {
-        if (!alive || !res.success) return;
-        setModels(res.models ?? []);
-        setModel(res.default || res.models?.[0]?.id || "");
+        if (!alive || !res) return;
+        setModels(res.models);
+        setModel(res.default || res.models[0]?.id || "");
       })
       .catch(() => alive && setModels([]))
       .finally(() => alive && setModelsLoaded(true));
     return () => {
       alive = false;
     };
-  }, [api]);
+  }, [ai]);
 
 
   const send = useCallback(
@@ -97,14 +103,14 @@ export function EmailBuilderChat({ html, selectedHtml, selectedLabel, coordId, l
       const controller = new AbortController();
       abortRef.current = controller;
       try {
-        const res = await api.campaignAIChat({ model, messages: history, html, selected_html: useSelection ? selectedHtml : "", coord_id: coordId });
+        const res = await ai.chat({ model, messages: history, html, selected_html: useSelection ? selectedHtml : "", coord_id: coordId });
         if (controller.signal.aborted) return;
-        if (!res.success) throw new Error(("message" in res && res.message) || "El asistente no ha podido responder");
+        if (!res.success) throw new Error(res.message || "El asistente no ha podido responder");
         let receipt: Receipt | undefined;
         if (res.html) {
           const id = turnId();
           snapshots.current.set(id, onApply(res.html));
-          receipt = { id, title: "Cambios aplicados", detail: `${models.find((m) => m.id === res.model)?.name ?? res.model} · ${new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`, status: "done", undoUntil: Date.now() + UNDO_WINDOW };
+          receipt = { id, title: "Cambios aplicados", detail: `${models.find((m) => m.id === res.model)?.name ?? res.model ?? model} · ${new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`, status: "done", undoUntil: Date.now() + UNDO_WINDOW };
         }
         setTurns((prev) => [...prev, { id: turnId(), role: "assistant", content: res.reply || "Hecho.", receipt }]);
       } catch (err) {
@@ -114,7 +120,7 @@ export function EmailBuilderChat({ html, selectedHtml, selectedLabel, coordId, l
         setBusySince(null);
       }
     },
-    [api, busySince, coordId, html, model, models, onApply, selectedHtml, turns, useSelection],
+    [ai, busySince, coordId, html, model, models, onApply, selectedHtml, turns, useSelection],
   );
 
   const stop = () => {
@@ -133,23 +139,23 @@ export function EmailBuilderChat({ html, selectedHtml, selectedLabel, coordId, l
   return (
     <aside
       className="eb-chat-open flex h-full min-h-0 flex-col border-l border-bo-border bg-bo-shell"
-      aria-label="Asistente IA del email"
-      data-testid="email-builder-chat"
-      data-observe="email-builder-chat"
+      aria-label={ai.ariaLabel}
+      data-testid={`${tp}-chat`}
+      data-observe={`${tp}-chat`}
       data-coord-id={coordId}
       data-layout={layout}
     >
-      <header className="flex items-center gap-2 border-b border-bo-border px-3 py-2.5" data-testid="email-builder-chat-header">
-        <span className="grid size-7 place-items-center rounded-lg bg-[#7c5cff]/20 text-[#b9a8ff]" data-testid="email-builder-chat-icon">
-          <Sparkles size={15} aria-hidden="true" data-testid="email-builder-chat-icon-svg" />
+      <header className="flex items-center gap-2 border-b border-bo-border px-3 py-2.5" data-testid={`${tp}-chat-header`}>
+        <span className="grid size-7 place-items-center rounded-lg bg-[#7c5cff]/20 text-[#b9a8ff]" data-testid={`${tp}-chat-icon`}>
+          <Sparkles size={15} aria-hidden="true" data-testid={`${tp}-chat-icon-svg`} />
         </span>
-        <div className="min-w-0 flex-1" data-testid="email-builder-chat-heading">
-          <p className="m-0 text-[13px] font-semibold text-bo-text" data-testid="email-builder-chat-title">Asistente IA</p>
-          <p className="m-0 truncate text-[11px] text-bo-faint" data-testid="email-builder-chat-subtitle">Edita el diseño en tiempo real</p>
+        <div className="min-w-0 flex-1" data-testid={`${tp}-chat-heading`}>
+          <p className="m-0 text-[13px] font-semibold text-bo-text" data-testid={`${tp}-chat-title`}>Asistente IA</p>
+          <p className="m-0 truncate text-[11px] text-bo-faint" data-testid={`${tp}-chat-subtitle`}>Edita el diseño en tiempo real</p>
         </div>
         {turns.length > 0 && (
-          <button type="button" title="Nueva conversación" aria-label="Nueva conversación" onClick={() => { setTurns([]); setError(null); }} className="grid size-7 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text" data-testid="email-builder-chat-clear">
-            <Trash size={14} aria-hidden="true" data-testid="email-builder-chat-clear-icon" />
+          <button type="button" title="Nueva conversación" aria-label="Nueva conversación" onClick={() => { setTurns([]); setError(null); }} className="grid size-7 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text" data-testid={`${tp}-chat-clear`}>
+            <Trash size={14} aria-hidden="true" data-testid={`${tp}-chat-clear-icon`} />
           </button>
         )}
         <button
@@ -158,45 +164,45 @@ export function EmailBuilderChat({ html, selectedHtml, selectedLabel, coordId, l
           aria-label={layout === "wide" ? "Reducir chat" : "Ampliar chat"}
           onClick={() => onLayout(layout === "wide" ? "open" : "wide")}
           className="hidden size-7 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text lg:grid"
-          data-testid="email-builder-chat-expand"
+          data-testid={`${tp}-chat-expand`}
         >
-          {layout === "wide" ? <Minimize2 size={14} aria-hidden="true" data-testid="email-builder-chat-expand-icon-minimize" /> : <Maximize2 size={14} aria-hidden="true" data-testid="email-builder-chat-expand-icon-maximize" />}
+          {layout === "wide" ? <Minimize2 size={14} aria-hidden="true" data-testid={`${tp}-chat-expand-icon-minimize`} /> : <Maximize2 size={14} aria-hidden="true" data-testid={`${tp}-chat-expand-icon-maximize`} />}
         </button>
-        <button type="button" title="Plegar chat" aria-label="Plegar chat" onClick={onClose} className="grid size-7 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text" data-testid="email-builder-chat-collapse">
-          <PanelRightClose size={15} aria-hidden="true" data-testid="email-builder-chat-collapse-icon" />
+        <button type="button" title="Plegar chat" aria-label="Plegar chat" onClick={onClose} className="grid size-7 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-bo-muted hover:bg-bo-surface-2 hover:text-bo-text" data-testid={`${tp}-chat-collapse`}>
+          <PanelRightClose size={15} aria-hidden="true" data-testid={`${tp}-chat-collapse-icon`} />
         </button>
       </header>
 
-      <ChatScroll className="flex-1" contentClassName="grid content-start gap-3 px-3 py-4" followKey={turns.length} data-testid="email-builder-chat-scroll">
+      <ChatScroll className="flex-1" contentClassName="grid content-start gap-3 px-3 py-4" followKey={turns.length} data-testid={`${tp}-chat-scroll`}>
         {modelsLoaded && !models.length && (
-          <div className="grid gap-2 rounded-xl border border-bo-border bg-bo-surface-3 p-3" data-testid="email-builder-chat-no-models">
-            <p className="m-0 text-[13px] font-medium text-bo-text" data-testid="email-builder-chat-no-models-title">No hay ningún modelo de IA configurado</p>
-            <p className="m-0 text-[12.5px] leading-relaxed text-bo-muted" data-testid="email-builder-chat-no-models-help">
+          <div className="grid gap-2 rounded-xl border border-bo-border bg-bo-surface-3 p-3" data-testid={`${tp}-chat-no-models`}>
+            <p className="m-0 text-[13px] font-medium text-bo-text" data-testid={`${tp}-chat-no-models-title`}>No hay ningún modelo de IA configurado</p>
+            <p className="m-0 text-[12.5px] leading-relaxed text-bo-muted" data-testid={`${tp}-chat-no-models-help`}>
               {canConfigureAI
                 ? "Añade la clave del proveedor y elige el modelo en la configuración de IA del restaurante."
                 : "Pide a un administrador que configure un modelo de IA para este restaurante."}
             </p>
             {canConfigureAI && (
-              <a href={AI_CONFIG_HREF} className="bo-btn bo-btn--primary bo-btn--sm justify-self-start no-underline" data-testid="email-builder-chat-config-ai">
-                <ExternalLink size={14} aria-hidden="true" data-testid="email-builder-chat-config-ai-icon" /> Configurar IA
+              <a href={AI_CONFIG_HREF} className="bo-btn bo-btn--primary bo-btn--sm justify-self-start no-underline" data-testid={`${tp}-chat-config-ai`}>
+                <ExternalLink size={14} aria-hidden="true" data-testid={`${tp}-chat-config-ai-icon`} /> Configurar IA
               </a>
             )}
           </div>
         )}
         {turns.length === 0 && models.length > 0 && (
-          <div className="grid gap-3" data-testid="email-builder-chat-empty">
-            <p className="m-0 text-[13px] leading-relaxed text-bo-muted" data-testid="email-builder-chat-intro">
+          <div className="grid gap-3" data-testid={`${tp}-chat-empty`}>
+            <p className="m-0 text-[13px] leading-relaxed text-bo-muted" data-testid={`${tp}-chat-intro`}>
               Pídeme cambios sobre el email y los verás al momento en el lienzo. Si seleccionas un elemento, trabajaré sobre él.
             </p>
-            <div className="grid gap-1.5" data-testid="email-builder-chat-suggestions">
-              {SUGGESTIONS.map((s, i) => (
+            <div className="grid gap-1.5" data-testid={`${tp}-chat-suggestions`}>
+              {ai.suggestions.map((s, i) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => void send(s)}
                   disabled={!model}
                   className="cursor-pointer rounded-lg border border-solid border-bo-border bg-bo-surface-3 px-3 py-2 text-left text-[12.5px] leading-snug text-bo-text transition hover:border-[#7c5cff]/60 disabled:opacity-50"
-                  data-testid={`email-builder-chat-suggestion-${i}`}
+                  data-testid={`${tp}-chat-suggestion-${i}`}
                 >
                   {s}
                 </button>
@@ -205,30 +211,30 @@ export function EmailBuilderChat({ html, selectedHtml, selectedLabel, coordId, l
           </div>
         )}
         {turns.map((t) => (
-          <div key={t.id} className={cn("grid gap-2", t.role === "user" ? "justify-items-end" : "justify-items-start")} data-testid={`email-builder-chat-turn-${t.id}`} data-role={t.role}>
+          <div key={t.id} className={cn("grid gap-2", t.role === "user" ? "justify-items-end" : "justify-items-start")} data-testid={`${tp}-chat-turn-${t.id}`} data-role={t.role}>
             <div
               className={cn(
                 "max-w-[92%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-[13px] leading-relaxed",
                 t.role === "user" ? "rounded-br-md bg-[#7c5cff] text-white" : "rounded-bl-md bg-bo-surface-2 text-bo-text",
               )}
-              data-testid={`email-builder-chat-bubble-${t.id}`}
+              data-testid={`${tp}-chat-bubble-${t.id}`}
             >
               {t.content}
             </div>
-            {t.receipt && <ActionReceipts className="justify-self-stretch rounded-xl border border-bo-border bg-bo-surface-3 px-2" actions={[t.receipt]} onUndo={undo} undoWindow={UNDO_WINDOW} stackFrom={0} data-testid={`email-builder-chat-receipt-${t.id}`} />}
+            {t.receipt && <ActionReceipts className="justify-self-stretch rounded-xl border border-bo-border bg-bo-surface-3 px-2" actions={[t.receipt]} onUndo={undo} undoWindow={UNDO_WINDOW} stackFrom={0} data-testid={`${tp}-chat-receipt-${t.id}`} />}
           </div>
         ))}
-        {busySince && <ThinkingIndicator variant="orbit" label="Diseñando" startedAt={busySince} className="px-1 text-bo-muted" data-testid="email-builder-chat-thinking" />}
+        {busySince && <ThinkingIndicator variant="orbit" label="Diseñando" startedAt={busySince} className="px-1 text-bo-muted" data-testid={`${tp}-chat-thinking`} />}
         {error && (
-          <ChatNotice kind="error" description={error.message} onRetry={() => void send(error.prompt)} data-testid="email-builder-chat-error" />
+          <ChatNotice kind="error" description={error.message} onRetry={() => void send(error.prompt)} data-testid={`${tp}-chat-error`} />
         )}
       </ChatScroll>
 
-      <div ref={composerRef} className="grid gap-2 border-t border-bo-border p-3" data-testid="email-builder-chat-footer">
+      <div ref={composerRef} className="grid gap-2 border-t border-bo-border p-3" data-testid={`${tp}-chat-footer`}>
         {selectedHtml && (
-          <label className="flex items-center gap-2 text-[11.5px] text-bo-muted" data-testid="email-builder-chat-selection">
-            <input type="checkbox" checked={useSelection} onChange={(e) => setUseSelection(e.currentTarget.checked)} className="accent-[#7c5cff]" data-testid="email-builder-chat-selection-toggle" />
-            <span className="truncate" data-testid="email-builder-chat-selection-label">Centrarse en «{selectedLabel}»</span>
+          <label className="flex items-center gap-2 text-[11.5px] text-bo-muted" data-testid={`${tp}-chat-selection`}>
+            <input type="checkbox" checked={useSelection} onChange={(e) => setUseSelection(e.currentTarget.checked)} className="accent-[#7c5cff]" data-testid={`${tp}-chat-selection-toggle`} />
+            <span className="truncate" data-testid={`${tp}-chat-selection-label`}>Centrarse en «{selectedLabel}»</span>
           </label>
         )}
         <PromptComposer
@@ -248,11 +254,11 @@ export function EmailBuilderChat({ html, selectedHtml, selectedLabel, coordId, l
                 onChange={setModel}
                 options={models.map((m) => ({ value: m.id, label: m.name }))}
                 menuMinWidthPx={200}
-                data-testid="email-builder-chat-model"
+                data-testid={`${tp}-chat-model`}
               />
             ) : undefined
           }
-          data-testid="email-builder-chat-composer"
+          data-testid={`${tp}-chat-composer`}
         />
       </div>
     </aside>

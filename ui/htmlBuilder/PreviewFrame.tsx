@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Monitor, Smartphone, Tablet } from "lucide-react";
-import { cn } from "../../../../../ui/shadcn/utils";
-import { DEVICE_WIDTH, type BuilderDevice } from "./EmailBuilderCanvas";
+import { cn } from "../shadcn/utils";
+import { DEVICE_WIDTH, type BuilderDevice } from "./BuilderCanvas";
 
 /*
  * Read-only preview of the compiled email (campaign_html_builder_v1): the exact
@@ -16,7 +16,7 @@ export const DEVICES: { id: BuilderDevice; label: string; Icon: typeof Monitor }
 ];
 
 /** Desktop / tablet / mobile switch shared by the builder toolbar and the preview tab. */
-export function DeviceSwitch({ value, onChange, testId }: { value: BuilderDevice; onChange: (d: BuilderDevice) => void; testId: string }) {
+export function DeviceSwitch({ value, onChange, testId, widths = DEVICE_WIDTH }: { value: BuilderDevice; onChange: (d: BuilderDevice) => void; testId: string; widths?: Record<BuilderDevice, number> }) {
   return (
     <div role="radiogroup" aria-label="Dispositivo" className="inline-flex items-center gap-0.5 rounded-bo-md border border-bo-border bg-bo-surface-3 p-0.5" data-testid={testId}>
       {DEVICES.map((d) => (
@@ -25,7 +25,7 @@ export function DeviceSwitch({ value, onChange, testId }: { value: BuilderDevice
           type="button"
           role="radio"
           aria-checked={value === d.id}
-          title={`${d.label} (${DEVICE_WIDTH[d.id]}px)`}
+          title={`${d.label} (${widths[d.id]}px)`}
           onClick={() => onChange(d.id)}
           className={cn(
             "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[7px] border-0 px-2.5 text-xs font-medium transition-colors",
@@ -43,7 +43,7 @@ export function DeviceSwitch({ value, onChange, testId }: { value: BuilderDevice
 
 type Props = { html: string; device: BuilderDevice; testId: string; className?: string };
 
-export function EmailPreviewFrame({ html, device, testId, className }: Props) {
+export function PreviewFrame({ html, device, testId, className }: Props) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState(480);
