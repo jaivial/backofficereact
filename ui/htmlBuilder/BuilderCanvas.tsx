@@ -22,6 +22,30 @@ type Drop = { box: Box; position: InsertPosition };
 
 export type CanvasDrop = { block?: string; moveId?: string; targetId: string | null; position: InsertPosition };
 
+/**
+ * Stage of a design shown over something (ads_html_editor_v1): a web ad is
+ * edited where it appears, as a sheet centred over the real website at the
+ * device size, under its dimming overlay. Without a stage the design fills
+ * the device width (campaign email).
+ */
+export type CanvasStage = {
+  /** Screen of the device the design is shown on. */
+  viewport: { width: number; height: number };
+  /** Width of the design sheet (the ad window) on this device. */
+  sheetWidth: number;
+  /** What sits behind (the website), laid out at viewport size; the canvas scales it. */
+  backdrop?: React.ReactNode;
+  overlay?: string;
+  /** Blur of what sits behind, in stage pixels (backdrop-filter). */
+  blur?: number;
+  radius?: number;
+  background?: string;
+  /** Decoration over the sheet in sheet pixels (close / back chips). */
+  chrome?: React.ReactNode;
+  /** Text of the canvas meta line ("Escritorio · 1280 × 800"). */
+  label?: string;
+};
+
 type Props = {
   html: string;
   css: string;
@@ -36,6 +60,7 @@ type Props = {
   onScale?: (scale: number) => void;
   /** Editing-only CSS of the profile (e.g. channel hints); never reaches the output. */
   extraCss?: string;
+  stage?: CanvasStage;
 };
 
 const skeleton = (extraCss: string) =>
@@ -48,7 +73,7 @@ function boxOf(el: Element | null): Box | null {
   return { x: r.left, y: r.top, w: r.width, h: r.height };
 }
 
-export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLabel, onSelect, onInlineEdit, onDrop, onKey, onScale, extraCss = "" }: Props) {
+export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLabel, onSelect, onInlineEdit, onDrop, onKey, onScale, extraCss = "", stage }: Props) {
   const tp = useBuilderTestId();
   const srcDoc = React.useMemo(() => skeleton(extraCss), [extraCss]);
   const frameRef = useRef<HTMLIFrameElement | null>(null);
@@ -60,8 +85,13 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
   const [hoverBox, setHoverBox] = useState<Box | null>(null);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [drop, setDrop] = useState<Drop | null>(null);
-  const width = DEVICE_WIDTH[device];
-  const scale = zoom === "fit" ? Math.min(1, Math.max(0.2, (available - 32) / width)) : zoom;
+  const width = stage ? stage.sheetWidth : DEVICE_WIDTH[device];
+  // The stage is scaled as a whole: the website keeps its real layout.
+  const baseWidth = stage ? stage.viewport.width : width;
+  const scale = zoom === "fit" ? Math.min(1, Math.max(0.2, (available - 32) / baseWidth)) : zoom;
+  const minHeight = stage ? 80 : 480;
+  const minHeightRef = useRef(minHeight);
+  minHeightRef.current = minHeight;
   const handlers = useRef({ onSelect, onInlineEdit, onDrop, onKey });
   handlers.current = { onSelect, onInlineEdit, onDrop, onKey };
   const selectedIdRef = useRef(selectedId);
@@ -79,7 +109,7 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
     if (!d?.body) return;
     // The body, not the document: the document is never shorter than the frame
     // itself, so a design that shrinks would leave a blank band below it.
-    setFrameHeight(Math.max(d.body.scrollHeight, 480));
+    setFrameHeight(Math.max(d.body.scrollHeight, minHeightRef.current));
     setSelectedBox(boxOf(findById(d, selectedIdRef.current)));
   }, []);
 
@@ -252,20 +282,21 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
       data-observe={`${tp}-canvas`}
       data-device={device}
     >
-      <div className="mx-auto px-4 pb-10 pt-4" style={{ width: width * scale + 32 }} data-testid={`${tp}-canvas-stage`}>
+      <div className="mx-auto px-4 pb-10 pt-4" style={{ width: baseWidth * scale + 32 }} data-testid={`${tp}-canvas-stage`}>
         <div className="mb-2 flex items-center justify-between text-[11px] text-bo-faint" data-testid={`${tp}-canvas-meta`}>
-          <span data-testid={`${tp}-canvas-device`}>{device === "desktop" ? "Escritorio" : device === "tablet" ? "Tablet" : "Móvil"} · {width}px</span>
+          <span data-testid={`${tp}-canvas-device`}>{stage?.label ?? `${device === "desktop" ? "Escritorio" : device === "tablet" ? "Tablet" : "Móvil"} · ${width}px`}</span>
           <span data-testid={`${tp}-canvas-scale`}>{Math.round(scale * 100)}%</span>
         </div>
+        <StageFrame stage={stage} scale={scale} sheetWidth={width} sheetHeight={frameHeight} testId={`${tp}-stage`}>
         <div
-          className="relative overflow-hidden rounded-md bg-white shadow-[0_18px_50px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
-          style={{ width: width * scale, height: frameHeight * scale }}
+          className={stage ? "absolute overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]" : "relative overflow-hidden rounded-md bg-white shadow-[0_18px_50px_rgba(0,0,0,0.45)] ring-1 ring-white/10"}
+          style={stage ? sheetStyle(stage, scale, width, frameHeight) : { width: width * scale, height: frameHeight * scale }}
           onMouseLeave={() => setHoverBox(null)}
           data-testid={`${tp}-frame-box`}
         >
           <iframe
             ref={frameRef}
-            title="Lienzo del email"
+            title={stage ? "Lienzo del anuncio" : "Lienzo del email"}
             srcDoc={srcDoc}
             sandbox="allow-same-origin"
             onLoad={() => setReady(true)}
@@ -296,8 +327,56 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
               data-testid={`${tp}-drop-indicator`}
             />
           )}
+          {stage?.chrome && (
+            <div className="pointer-events-none absolute left-0 top-0 origin-top-left" style={{ width, transform: `scale(${scale})` }} data-testid={`${tp}-stage-chrome`}>
+              {stage.chrome}
+            </div>
+          )}
         </div>
+        </StageFrame>
       </div>
+    </div>
+  );
+}
+
+/** Top of the sheet on the stage: centred on the screen, never above 24px. */
+function sheetTop(stage: CanvasStage, sheetHeight: number): number {
+  return Math.max(24, (stage.viewport.height - sheetHeight) / 2);
+}
+
+function sheetStyle(stage: CanvasStage, scale: number, sheetWidth: number, sheetHeight: number): React.CSSProperties {
+  return {
+    left: ((stage.viewport.width - sheetWidth) / 2) * scale,
+    top: sheetTop(stage, sheetHeight) * scale,
+    width: sheetWidth * scale,
+    height: sheetHeight * scale,
+    borderRadius: (stage.radius ?? 24) * scale,
+    background: stage.background || "#ffffff",
+  };
+}
+
+/** The website behind the design, scaled with it, under the dimming overlay. */
+function StageFrame({ stage, scale, sheetWidth, sheetHeight, testId, children }: { stage?: CanvasStage; scale: number; sheetWidth: number; sheetHeight: number; testId: string; children: React.ReactNode }) {
+  if (!stage) return <>{children}</>;
+  const height = Math.max(stage.viewport.height, sheetTop(stage, sheetHeight) + sheetHeight + 24);
+  return (
+    <div
+      className="relative overflow-hidden rounded-md bg-[#f4f1ea] shadow-[0_18px_50px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
+      style={{ width: stage.viewport.width * scale, height: height * scale }}
+      data-sheet-width={sheetWidth}
+      data-testid={testId}
+    >
+      {stage.backdrop && (
+        <div className="pointer-events-none absolute left-0 top-0 origin-top-left" style={{ width: stage.viewport.width, height, transform: `scale(${scale})` }} data-testid={`${testId}-backdrop`}>
+          {stage.backdrop}
+        </div>
+      )}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: stage.overlay || "rgba(0,0,0,0.55)", backdropFilter: stage.blur ? `blur(${stage.blur * scale}px)` : undefined }}
+        data-testid={`${testId}-overlay`}
+      />
+      {children}
     </div>
   );
 }

@@ -3049,6 +3049,20 @@ export type RestaurantAdCanvas = {
   container?: RestaurantAdCanvasContainer | null;
 };
 
+/** HTML design of an ad (ads_html_editor_v1): Tailwind HTML pages built with
+ * the shared HTML builder. "multiple" = cards page (main) + one detail page per
+ * step; a card is any element of the main page with data-ad-step="<step id>". */
+export type RestaurantAdDesignPage = { id?: string; title?: string; html: string; css?: string };
+export type RestaurantAdDesignContainer = { max_width?: number; overlay?: string; radius?: number; background?: string };
+export type RestaurantAdDesignKind = "single" | "multiple";
+export type RestaurantAdDesign = {
+  version: 1;
+  kind: RestaurantAdDesignKind;
+  container: RestaurantAdDesignContainer;
+  main: RestaurantAdDesignPage;
+  steps?: RestaurantAdDesignPage[];
+};
+
 export type RestaurantAd = {
   id: number;
   name: string;
@@ -3058,6 +3072,8 @@ export type RestaurantAd = {
   layout?: RestaurantAdLayout;
   /** Free-form canvas document (ads_canvas_v1); rendered 1-1 via the render endpoint. */
   canvas?: RestaurantAdCanvas | null;
+  /** HTML design (ads_html_editor_v1); absent for ads still in the legacy format. */
+  design?: RestaurantAdDesign | null;
   starts_at?: string | null;
   ends_at?: string | null;
   blocked_ranges?: RestaurantAdScheduleRange[];
@@ -3066,7 +3082,7 @@ export type RestaurantAd = {
   created_at?: string;
   updated_at?: string;
 };
-export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas" | "starts_at" | "ends_at" | "layout">;
+export type RestaurantAdInput = Pick<RestaurantAd, "name" | "active" | "content" | "ctas" | "starts_at" | "ends_at" | "layout"> & { canvas?: RestaurantAdCanvas | null; design?: RestaurantAdDesign | null };
 
 // Campanas: one markdown body broadcast to email + WhatsApp (coord id camp-*).
 export type CampaignChannel = "email" | "whatsapp";

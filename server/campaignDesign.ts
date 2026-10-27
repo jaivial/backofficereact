@@ -35,6 +35,7 @@ import { EMAIL_BLOCKS, blockByKind, defaultDesign, legacyDesign, type BlockConte
 import { renderCampaignEmailBody } from "../pages/app/campanas/functionalComponents/campaignEmailBody";
 import type { CampaignTheme } from "../api/types";
 import { compileCampaignEmail } from "./campaignEmailCompile";
+import { runAdDesignAction, type AdDesignRequest } from "./adDesign";
 
 /*
  * Design engine of the campaign tools (coordination id campaign_tools_v1).
@@ -92,7 +93,7 @@ export type DesignRequest = {
   markdown?: string;
   theme?: Partial<CampaignTheme>;
   compile?: { title?: string } | null;
-};
+} & Omit<AdDesignRequest, "action">;
 
 type Layer = {
   id: string;
@@ -411,6 +412,13 @@ export async function runDesignRequest(req: DesignRequest): Promise<DesignRespon
     }
     case "inspect":
       return respond(stripIds(normalizeDesign(String(req.html ?? ""))), {});
+    case "ad_compile":
+    case "ad_default":
+    case "ad_sync":
+    case "ad_kind":
+    case "ad_convert":
+      // ads_html_editor_v1: the ad model of the backoffice editor.
+      return runAdDesignAction({ ...req, action }, ctx);
     case "compile":
       return respond(stripIds(normalizeDesign(String(req.html ?? ""))), {});
     case "element": {

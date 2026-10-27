@@ -8,7 +8,7 @@ import {
   parseFragment, removeElement, stripIds, updateElement, type InsertPosition,
 } from "./document";
 import { fetchDesignCss } from "./css";
-import { BuilderCanvas, type BuilderDevice, type CanvasDrop } from "./BuilderCanvas";
+import { BuilderCanvas, type BuilderDevice, type CanvasDrop, type CanvasStage } from "./BuilderCanvas";
 import { BlockPalette, LayersPanel, type BlockIcon } from "./BuilderPanels";
 import { BuilderInspector, type LinkPreset } from "./BuilderInspector";
 import { BuilderChat, type BuilderAI, type ChatLayout } from "./BuilderChat";
@@ -36,14 +36,20 @@ export type BuilderProfile = {
   rootTestId: string;
   blocks: BlockDef[];
   blockIcons?: Record<string, BlockIcon>;
-  /** The sendable / publishable document "Vista previa" shows. */
-  preview: (design: string, signal: AbortSignal) => Promise<string>;
-  previewWaitLabel: string;
-  previewErrorLabel: string;
+  /** The sendable / publishable document "Vista previa" shows (absent = no such mode). */
+  preview?: (design: string, signal: AbortSignal) => Promise<string>;
+  previewWaitLabel?: string;
+  previewErrorLabel?: string;
   canvasCss?: string;
   linkPresets?: LinkPreset[];
   extraVisibility?: (el: Element, update: (fn: (node: HTMLElement) => void) => void) => React.ReactNode;
   ai: BuilderAI;
+  /** Stage the canvas draws behind the design on each device (web ads). */
+  stage?: (device: BuilderDevice) => CanvasStage;
+  /** Screen width each device stands for (titles of the device switch). */
+  deviceWidths?: Record<BuilderDevice, number>;
+  /** Editor modes offered (default: design, preview when the profile has one, HTML). */
+  modes?: BuilderMode[];
 };
 
 type Props = {
@@ -54,9 +60,13 @@ type Props = {
   coordId: string;
   onUploadImage?: (file: File) => Promise<string>;
   profile: BuilderProfile;
+  /** Controlled device (kept by the host across remounts, e.g. the pages of an ad). */
+  device?: BuilderDevice;
+  onDeviceChange?: (device: BuilderDevice) => void;
 };
 
-type Mode = "design" | "preview" | "code";
+export type BuilderMode = "design" | "preview" | "code";
+type Mode = BuilderMode;
 type LeftTab = "blocks" | "layers" | "style";
 type ChatState = "closed" | ChatLayout;
 
@@ -100,7 +110,7 @@ function ToolButton({ title, onClick, disabled, active, children, testId, classN
   );
 }
 
-export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, profile }: Props) {
+export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, profile, device: controlledDevice, onDeviceChange }: Props) {
   const tp = profile.testIdPrefix;
   const [design, setDesign] = useState("");
   const designRef = useRef("");
@@ -110,7 +120,15 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
   // Bumped on every history move so the undo/redo buttons re-render.
   const [, setHistoryTick] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [device, setDevice] = useState<BuilderDevice>("desktop");
+  const [ownDevice, setOwnDevice] = useState<BuilderDevice>(controlledDevice ?? "desktop");
+  const device = controlledDevice ?? ownDevice;
+  const setDevice = useCallback(
+    (next: BuilderDevice) => {
+      setOwnDevice(next);
+      onDeviceChange?.(next);
+    },
+    [onDeviceChange],
+  );
   const [zoom, setZoom] = useState<"fit" | number>("fit");
   const [mode, setMode] = useState<Mode>("design");
   const [leftOpen, setLeftOpen] = useState(true);
@@ -126,7 +144,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
 
   // On a phone the desktop frame would be a thumbnail: start on the phone frame.
   useEffect(() => {
-    if (!window.matchMedia("(min-width: 1024px)").matches) setDevice("mobile");
+    if (!controlledDevice && !window.matchMedia("(min-width: 1024px)").matches) setDevice("mobile");
   }, []);
 
   // External value (first load, seed, saved campaign) -> builder state.
@@ -274,14 +292,14 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
   // "Vista previa": the exact email the server compiles for SMTP (campaign_tools_v1).
   const [preview, setPreview] = useState<{ html: string; error: string }>({ html: "", error: "" });
   useEffect(() => {
-    if (mode !== "preview" || !design) return;
+    const render = profile.preview;
+    if (mode !== "preview" || !design || !render) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      profile
-        .preview(design, controller.signal)
+      render(design, controller.signal)
         .then((html) => setPreview({ html, error: "" }))
         .catch((err: unknown) => {
-          if (!controller.signal.aborted) setPreview((prev) => ({ html: prev.html, error: err instanceof Error ? err.message : profile.previewErrorLabel }));
+          if (!controller.signal.aborted) setPreview((prev) => ({ html: prev.html, error: err instanceof Error ? err.message : profile.previewErrorLabel ?? "No se pudo preparar la vista previa" }));
         });
     }, 160);
     return () => {
@@ -370,7 +388,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
             ["design", "Diseño", <PenTool key="d" size={14} aria-hidden="true" data-testid={`${tp}-mode-design-icon`} />],
             ["preview", "Vista previa", <Eye key="p" size={14} aria-hidden="true" data-testid={`${tp}-mode-preview-icon`} />],
             ["code", "HTML", <Code2 key="c" size={14} aria-hidden="true" data-testid={`${tp}-mode-code-icon`} />],
-          ] as const).map(([id, label, icon]) => (
+          ] as const).filter(([id]) => (!profile.modes || profile.modes.includes(id)) && (id !== "preview" || profile.preview)).map(([id, label, icon]) => (
             <button
               key={id}
               type="button"
@@ -385,7 +403,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
             </button>
           ))}
         </div>
-        <DeviceSwitch value={device} onChange={setDevice} testId={`${tp}-device`} />
+        <DeviceSwitch value={device} onChange={setDevice} testId={`${tp}-device`} widths={profile.deviceWidths} />
         <div className="ml-auto flex items-center gap-1" data-testid={`${tp}-toolbar-end`}>
           <ToolButton title="Deshacer (Ctrl+Z)" onClick={undo} disabled={!past.current.length} testId={`${tp}-undo`}>
             <Undo2 size={15} aria-hidden="true" data-testid={`${tp}-undo-icon`} />
@@ -428,6 +446,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
           {mode === "design" && (
             <BuilderCanvas
               extraCss={profile.canvasCss}
+              stage={profile.stage?.(device)}
               html={design}
               css={css}
               device={device}
@@ -447,7 +466,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
               ) : preview.error ? (
                 <p className="m-0 p-6 text-center text-sm text-[#f87171]" role="alert" data-testid={`${tp}-preview-error`}>{preview.error}</p>
               ) : (
-                <p className="m-0 p-6 text-center text-sm text-bo-muted" data-testid={`${tp}-preview-wait`}>{profile.previewWaitLabel}</p>
+                <p className="m-0 p-6 text-center text-sm text-bo-muted" data-testid={`${tp}-preview-wait`}>{profile.previewWaitLabel ?? "Preparando la vista previa…"}</p>
               )}
             </div>
           )}
