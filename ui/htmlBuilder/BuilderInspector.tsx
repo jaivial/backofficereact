@@ -225,6 +225,8 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
     try {
       const url = await actions.uploadImage(file);
       actions.update(selectedId, (node) => node.setAttribute("src", url));
+    } catch {
+      // The host already told the person why (toast); the image stays as it was.
     } finally {
       setUploading(false);
     }
