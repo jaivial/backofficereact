@@ -6,6 +6,7 @@ import {
 import type { RestaurantAdDesignContainer } from "../../../../../api/types";
 import { createClient } from "../../../../../api/client";
 import { HtmlBuilder, type BuilderProfile } from "../../../../../ui/htmlBuilder/HtmlBuilder";
+import type { ImageAI } from "../../../../../ui/htmlBuilder/BuilderInspector";
 import type { BuilderDevice } from "../../../../../ui/htmlBuilder/BuilderCanvas";
 import type { BlockContext } from "../../../../../ui/htmlBuilder/blocks";
 import type { BlockIcon } from "../../../../../ui/htmlBuilder/BuilderPanels";
@@ -36,6 +37,7 @@ type Props = {
   stepTitle: (id: string) => string;
   onOpenStep: (id: string) => void;
   onUploadImage?: (file: File) => Promise<string>;
+  imageAI?: ImageAI;
 };
 
 const AD_BLOCK_ICONS: Record<AdBlockKind, BlockIcon> = {
@@ -118,7 +120,7 @@ function CardControl({ el, update, page, stepTitle, onOpenStep }: { el: Element;
   );
 }
 
-export function AdBuilder({ value, onChange, context, coordId, website, container, page, device, onDeviceChange, stepTitle, onOpenStep, onUploadImage }: Props) {
+export function AdBuilder({ value, onChange, context, coordId, website, container, page, device, onDeviceChange, stepTitle, onOpenStep, onUploadImage, imageAI }: Props) {
   const api = useMemo(() => createClient({ baseUrl: "" }).config, []);
   const site = websiteBase(website);
   const ai = useMemo<BuilderProfile["ai"]>(
@@ -172,6 +174,7 @@ export function AdBuilder({ value, onChange, context, coordId, website, containe
       context={context}
       coordId={coordId}
       onUploadImage={onUploadImage}
+      imageAI={imageAI}
       profile={profile}
       device={device}
       onDeviceChange={onDeviceChange}
