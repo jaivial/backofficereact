@@ -2449,6 +2449,15 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       }): Promise<APISuccess<{ reply: string; html?: string; model: string; coord_id?: string }> | APIError> {
         return json("/api/admin/anuncios/ai/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
       },
+      /** Image AI of the HTML ad editor: the result goes to the CDN only (the editor places it). */
+      async enhanceAdDesignImage(id: number, file: File): Promise<APISuccess<{ url: string }> | APIError> {
+        const form = new FormData();
+        form.append("image", file, file.name || "anuncio.jpg");
+        return json(`/api/admin/config/ads/${id}/image/enhance?target=design`, { method: "POST", body: form });
+      },
+      async generateAdDesignImage(id: number, prompt: string): Promise<APISuccess<{ url: string }> | APIError> {
+        return json(`/api/admin/config/ads/${id}/image/generate?target=design`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt }) });
+      },
       /** Uploads an image for the HTML design of an ad: CDN only, the ad is not touched. */
       async uploadAdDesignImage(id: number, file: File): Promise<APISuccess<{ url: string }> | APIError> {
         const form = new FormData();
