@@ -1,11 +1,14 @@
 import React from "react";
-import { ArrowLeft, Check, Link2, MoreVertical, Phone, Plus, Search, Send, Smile, Video } from "lucide-react";
+import { ArrowLeft, Check, CornerUpLeft, Link2, MoreVertical, Phone, Plus, Search, Send, Smile, Video } from "lucide-react";
 import { cn } from "../../../../ui/shadcn/utils";
 import { CAMPAIGN_WEBSITE_COORD_ID } from "./campaignEmailChrome";
 import {
   CAMPAIGN_UNSUBSCRIBE_COORD_ID,
   CAMPAIGN_UNSUBSCRIBE_COPY,
   CAMPAIGN_WHATSAPP_MEDIA_COORD_ID,
+  CAMPAIGN_WHATSAPP_OPTOUT_REPLY_COPY,
+  whatsappButtonLabel,
+  whatsappCampaignButtons,
   CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID,
   CAMPAIGN_WHATSAPP_WEBSITE_COPY,
   toWhatsAppText,
@@ -164,6 +167,26 @@ function CampaignButton({ url, label, coordId, testId }: CampaignButtonProps) {
   );
 }
 
+/**
+ * Quick-reply button of a campaign bubble (campaign_whatsapp_reply_buttons_v1):
+ * same strip as a URL button, with the reply arrow WhatsApp draws. Tapping it
+ * sends its label back to the restaurant, which answers with the link or
+ * registers the opt-out.
+ */
+function ReplyButton({ label, testId }: { label: string; testId: string }) {
+  return (
+    <span
+      className="clear-both -mx-2.5 -mb-1.5 mt-1.5 flex items-center justify-center gap-1.5 rounded-b-lg py-2 text-[13px] font-medium"
+      style={{ borderTop: "1px solid rgba(0,0,0,0.08)", color: WHATSAPP_LINK_COLOR }}
+      data-testid={testId}
+      data-observe={testId}
+    >
+      <CornerUpLeft size={14} aria-hidden="true" data-testid={`${testId}-icon`} />
+      {whatsappButtonLabel(label)}
+    </span>
+  );
+}
+
 /** Restaurant avatar: the logo when there is one, the initial otherwise. */
 function Avatar({ brandName, logoUrl }: { brandName: string; logoUrl: string }) {
   const initial = (brandName.trim()[0] || "R").toUpperCase();
@@ -183,7 +206,10 @@ export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websit
   // The backend sends the first `https://` image as media and the rest as the
   // caption, so the bubble shows exactly what the customer will receive.
   const media = whatsappLeadImage(markdown);
-  const text = toWhatsAppText(media?.caption ?? markdown, brandName, websiteUrl);
+  // Campaigns with their own buttons: the link lines leave the text and the
+  // bubble closes with reply buttons (two links + opt-out), as the sender does.
+  const buttons = whatsappCampaignButtons(media?.caption ?? markdown);
+  const text = toWhatsAppText(buttons ? buttons.text : media?.caption ?? markdown, brandName, websiteUrl);
   return (
     <div
       className={cn("flex h-full min-h-0 flex-col", className)}
@@ -262,8 +288,19 @@ export function WhatsAppPreview({ markdown, brandName = "", logoUrl = "", websit
           <span className="whitespace-pre-wrap" data-testid="campaign-preview-whatsapp">
             {renderBubbleText(text, websiteUrl, accent)}
           </span>
-          <CampaignButton url={websiteUrl} label={CAMPAIGN_WHATSAPP_WEBSITE_COPY} coordId={CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID} testId="campaign-preview-whatsapp-website-btn" />
-          <CampaignButton url={unsubscribeUrl} label={CAMPAIGN_UNSUBSCRIBE_COPY} coordId={CAMPAIGN_UNSUBSCRIBE_COORD_ID} testId="campaign-preview-whatsapp-unsub-btn" />
+          {buttons ? (
+            <>
+              {buttons.links.map((link, i) => (
+                <ReplyButton key={`${i}-${link.url}`} label={link.label} testId={`campaign-preview-whatsapp-reply-btn-${i}`} />
+              ))}
+              <ReplyButton label={CAMPAIGN_WHATSAPP_OPTOUT_REPLY_COPY} testId="campaign-preview-whatsapp-optout-btn" />
+            </>
+          ) : (
+            <>
+              <CampaignButton url={websiteUrl} label={CAMPAIGN_WHATSAPP_WEBSITE_COPY} coordId={CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID} testId="campaign-preview-whatsapp-website-btn" />
+              <CampaignButton url={unsubscribeUrl} label={CAMPAIGN_UNSUBSCRIBE_COPY} coordId={CAMPAIGN_UNSUBSCRIBE_COORD_ID} testId="campaign-preview-whatsapp-unsub-btn" />
+            </>
+          )}
         </div>
       </div>
 

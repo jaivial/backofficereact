@@ -113,6 +113,52 @@ export const CAMPAIGN_WHATSAPP_WEBSITE_COORD_ID = "camp-wa-website";
 export const CAMPAIGN_UNSUBSCRIBE_COORD_ID = "camp-wa-unsub";
 export const CAMPAIGN_UNSUBSCRIBE_COPY = "No deseo recibir más campañas";
 
+/**
+ * Opt-out reply button of a campaign that declares its own buttons
+ * (campaign_whatsapp_reply_buttons_v1): WhatsApp caps a quick-reply label at
+ * 20 characters, so it is shorter than CAMPAIGN_UNSUBSCRIBE_COPY. Same copy as
+ * campaignOptOutReplyCopy in the backend.
+ */
+export const CAMPAIGN_WHATSAPP_OPTOUT_REPLY_COPY = "Darme de baja";
+/** WhatsApp truncates button labels past this many characters. */
+export const CAMPAIGN_WHATSAPP_BUTTON_MAX = 20;
+
+// A markdown line that is only a link (optionally after an icon or emoji, or
+// in bold): the way a campaign declares a button. Mirror of
+// campaignButtonLineRe in internal/api/campaign_whatsapp_sections.go.
+const CAMPAIGN_BUTTON_LINE_RE = /^[^\w[]*\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)[^\w]*$/;
+const CAMPAIGN_ICON_RE = /!\[icon\]\([^)\s]+(?: =[0-9]+)?\)\s*/g;
+
+/** Label as WhatsApp shows it on a button: at most CAMPAIGN_WHATSAPP_BUTTON_MAX characters. */
+export function whatsappButtonLabel(label: string): string {
+  const chars = Array.from(label.trim());
+  return chars.length <= CAMPAIGN_WHATSAPP_BUTTON_MAX ? chars.join("") : `${chars.slice(0, CAMPAIGN_WHATSAPP_BUTTON_MAX - 1).join("").trimEnd()}…`;
+}
+
+/**
+ * Buttons of a campaign that declares them (standalone link lines), the way
+ * the backend sends it (campaignPickCTAs + campaign_whatsapp_reply_buttons_v1):
+ * the link lines leave the text and the first two of them, pre-booking links
+ * first, then group menus, then menu pages, become buttons next to the opt-out
+ * one. Null when the markdown has no button line (older campaigns keep the
+ * website / opt-out buttons).
+ */
+export function whatsappCampaignButtons(markdown: string): { text: string; links: { label: string; url: string }[] } | null {
+  const links: { label: string; url: string }[] = [];
+  const kept: string[] = [];
+  for (const raw of (markdown || "").replace(/\r\n/g, "\n").split("\n")) {
+    const line = raw.replace(CAMPAIGN_ICON_RE, "").trim();
+    // An image line also fits the button pattern ("!" prefix): it is an image.
+    const m = line.startsWith("![") ? null : CAMPAIGN_BUTTON_LINE_RE.exec(line);
+    if (m) links.push({ label: m[1].trim(), url: m[2] });
+    else kept.push(raw);
+  }
+  if (!links.length) return null;
+  const rank = (url: string) => (url.includes("date=") ? 0 : url.includes("grupos") ? 1 : url.includes("/menu/") ? 2 : 3);
+  const picked = links.map((l, i) => ({ l, i })).sort((a, b) => rank(a.l.url) - rank(b.l.url) || a.i - b.i).slice(0, 2).map((x) => x.l);
+  return { text: kept.join("\n").replace(/\n{3,}/g, "\n\n").trim(), links: picked };
+}
+
 /** Copy of the WhatsApp call to action, the same wording the email uses. */
 export const CAMPAIGN_WHATSAPP_WEBSITE_COPY = CAMPAIGN_WEBSITE_COPY;
 
@@ -170,8 +216,10 @@ export function toWhatsAppText(markdown: string, brandName = "", websiteUrl = ""
       line = line.replace(/^>\s/, "");
       line = line.replace(/^#{1,3}\s+(.*)$/, "*$1*");
       line = line.replace(/^\*\s/, "- ");
-      line = line.replace(/\*\*([^*]+)\*\*/g, "*$1*");
+      // Italic first (same order as renderCampaignWhatsAppBody): after the
+      // bold rule it turned the fresh "*x*" into "_x_".
       line = line.replace(/(^|[^*])\*([^*]+)\*/g, "$1_$2_");
+      line = line.replace(/\*\*([^*]+)\*\*/g, "*$1*");
       return line.replace(/`([^`]+)`/g, "```$1```");
     })
     .join("\n")

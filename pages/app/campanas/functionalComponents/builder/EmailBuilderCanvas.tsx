@@ -35,7 +35,16 @@ type Props = {
   onScale?: (scale: number) => void;
 };
 
-const SKELETON = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}</style><style id="eb-tw"></style><style>[contenteditable="true"]{outline:none;cursor:text}a,img{cursor:default}</style></head><body></body></html>`;
+// campaign_block_channel_v1: blocks sent on one channel only are flagged on the
+// canvas (never in the email: the compiler drops data-eb-* and the blocks).
+const CHANNEL_HINT_CSS =
+  '[data-eb-channel="whatsapp"]{outline:2px dashed #25d366;outline-offset:-2px}' +
+  '[data-eb-channel="email"]{outline:2px dashed #60a5fa;outline-offset:-2px}' +
+  '[data-eb-channel]::before{display:block;width:max-content;margin:0 0 4px;padding:1px 6px;border-radius:4px;font:600 10px/1.6 system-ui,sans-serif;letter-spacing:.02em}' +
+  '[data-eb-channel="whatsapp"]::before{content:"Solo WhatsApp";color:#0f6b3a;background:#dcf8e6}' +
+  '[data-eb-channel="email"]::before{content:"Solo email";color:#1e4f9a;background:#dbeafe}';
+
+const SKELETON = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}</style><style id="eb-tw"></style><style>[contenteditable="true"]{outline:none;cursor:text}a,img{cursor:default}</style><style>${CHANNEL_HINT_CSS}</style></head><body></body></html>`;
 const CONTAINER_TAGS = new Set(["DIV", "SECTION", "TD", "UL", "OL", "TABLE", "TR"]);
 
 function boxOf(el: Element | null): Box | null {

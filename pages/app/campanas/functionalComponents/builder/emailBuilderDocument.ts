@@ -17,7 +17,37 @@ export const EB_ID = "data-eb-id";
 export const EB_NAME = "data-eb-name";
 /** Structural roles: the content slot new blocks go into, header and footer. */
 export const EB_ROLE = "data-eb-role";
+/**
+ * Channel a block is sent on (coordination id campaign_block_channel_v1):
+ * absent = email and WhatsApp, "email" = only the email, "whatsapp" = only the
+ * WhatsApp text. One design still feeds both channels; this lets the WhatsApp
+ * message be a short version (its own intro, image and buttons) while the
+ * email keeps the full content.
+ */
+export const EB_CHANNEL = "data-eb-channel";
 export const UNSUBSCRIBE_PLACEHOLDER = "{{unsubscribe_url}}";
+
+export type BlockChannel = "all" | "email" | "whatsapp";
+
+export function readChannel(el: Element): BlockChannel {
+  const v = (el.getAttribute(EB_CHANNEL) ?? "").trim().toLowerCase();
+  return v === "email" || v === "whatsapp" ? v : "all";
+}
+
+export function writeChannel(el: Element, channel: BlockChannel): void {
+  if (channel === "all") el.removeAttribute(EB_CHANNEL);
+  else el.setAttribute(EB_CHANNEL, channel);
+}
+
+/** The design as one channel sees it: blocks marked for the other channel are removed. */
+export function designForChannel(html: string, channel: "email" | "whatsapp"): string {
+  const other = channel === "email" ? "whatsapp" : "email";
+  const body = parseFragment(html);
+  for (const el of Array.from(body.querySelectorAll(`[${EB_CHANNEL}]`))) {
+    if (el.isConnected && readChannel(el) === other) el.remove();
+  }
+  return body.innerHTML.trim();
+}
 
 export type InsertPosition = "before" | "after" | "inside";
 
@@ -245,6 +275,8 @@ export type LayerNode = {
   kind: string;
   hint: string;
   hidden: boolean;
+  /** campaign_block_channel_v1: sent only by email / only by WhatsApp ("all" = both). */
+  channel: BlockChannel;
   /** Last child of its parent: its tree connector ends here (└ instead of ├). */
   last: boolean;
   /** Per ancestor level, whether that ancestor has a later sibling (the │ guide keeps going). */
@@ -303,6 +335,7 @@ export function layerTree(html: string): LayerNode[] {
         kind: elementKind(el),
         hint,
         hidden: /(^|\s)hidden(\s|$)|max-\[639px\]:hidden|(^|\s)sm:hidden/.test(cls),
+        channel: readChannel(el),
         last,
         guides,
         hasChildren: children.length > 0,
