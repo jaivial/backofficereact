@@ -111,7 +111,8 @@ var a=t.closest("a[href]");if(a&&(a.getAttribute("href")||"").charAt(0)==="#")e.
 function previewDoc(html: string, css: string, step: string): string {
   return (
     `<!doctype html><html lang="es" data-step="${step.replace(/"/g, "")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank">` +
-    `<style>html,body{margin:0;padding:0;background:transparent}[data-ad-step]{cursor:pointer}${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}${css}</style></head>` +
+    // Never scrolls (same as the public render): the iframe follows the posted height.
+    `<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}[data-ad-step]{cursor:pointer}${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}${css}</style></head>` +
     `<body>${html}<script>${PREVIEW_BRIDGE}</script></body></html>`
   );
 }
