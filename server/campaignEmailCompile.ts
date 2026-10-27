@@ -12,7 +12,7 @@ import {
   safeSelector,
   type Decl,
 } from "../pages/app/campanas/functionalComponents/builder/emailBuilderCompile";
-import { setDesignDomParser, stripIds } from "../pages/app/campanas/functionalComponents/builder/emailBuilderDocument";
+import { designForChannel, setDesignDomParser, stripIds } from "../pages/app/campanas/functionalComponents/builder/emailBuilderDocument";
 import { compileCampaignEmailCss } from "./campaignEmailCss";
 
 /*
@@ -113,6 +113,9 @@ export type CompiledCampaignEmail = { emailHtml: string; whatsappMarkdown: strin
 /** Full pipeline: design -> compiled, inlined, sendable email plus its WhatsApp text. */
 export async function compileCampaignEmail(design: string, title: string): Promise<CompiledCampaignEmail> {
   const clean = stripIds(design);
-  const css = await compileCampaignEmailCss(clean);
-  return { emailHtml: inlineEmail(clean, css, title || "Campaña"), whatsappMarkdown: designToWhatsAppMarkdown(clean), cssBytes: css.length };
+  // campaign_block_channel_v1: the email leaves out the "Solo WhatsApp" blocks;
+  // the WhatsApp text leaves out the "Solo email" ones (designToWhatsAppMarkdown).
+  const email = designForChannel(clean, "email");
+  const css = await compileCampaignEmailCss(email);
+  return { emailHtml: inlineEmail(email, css, title || "Campaña"), whatsappMarkdown: designToWhatsAppMarkdown(clean), cssBytes: css.length };
 }
