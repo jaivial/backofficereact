@@ -10,7 +10,7 @@ import {
 import { fetchDesignCss } from "./css";
 import { BuilderCanvas, type BuilderDevice, type CanvasDrop, type CanvasStage } from "./BuilderCanvas";
 import { BlockPalette, LayersPanel, type BlockIcon } from "./BuilderPanels";
-import { BuilderInspector, type LinkPreset } from "./BuilderInspector";
+import { BuilderInspector, type ImageAI, type LinkPreset } from "./BuilderInspector";
 import { BuilderChat, type BuilderAI, type ChatLayout } from "./BuilderChat";
 import { DeviceSwitch, PreviewFrame } from "./PreviewFrame";
 import { BuilderTestIdContext } from "./testIds";
@@ -59,6 +59,8 @@ type Props = {
   context: BlockContext;
   coordId: string;
   onUploadImage?: (file: File) => Promise<string>;
+  /** Image AI in the inspector (web ads). */
+  imageAI?: ImageAI;
   profile: BuilderProfile;
   /** Controlled device (kept by the host across remounts, e.g. the pages of an ad). */
   device?: BuilderDevice;
@@ -110,7 +112,7 @@ function ToolButton({ title, onClick, disabled, active, children, testId, classN
   );
 }
 
-export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, profile, device: controlledDevice, onDeviceChange }: Props) {
+export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, imageAI, profile, device: controlledDevice, onDeviceChange }: Props) {
   const tp = profile.testIdPrefix;
   const [design, setDesign] = useState("");
   const designRef = useRef("");
@@ -260,8 +262,9 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
       },
       remove: () => selectedId && commit(removeElement(designRef.current, selectedId), null),
       uploadImage: onUploadImage,
+      imageAI,
     }),
-    [commit, onUploadImage, selectedId],
+    [commit, imageAI, onUploadImage, selectedId],
   );
 
   const onKey = useCallback(
