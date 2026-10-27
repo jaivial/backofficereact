@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ArrowUpLeft, Copy, ImageUp, Loader2, Trash2 } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ArrowUpLeft, Copy, ImageUp, Loader2, Sparkles, Trash2, WandSparkles } from "lucide-react";
 import { cn } from "../shadcn/utils";
 import { Select } from "../inputs/Select";
 import {
@@ -23,6 +23,14 @@ export type InspectorActions = {
   duplicate: () => void;
   remove: () => void;
   uploadImage?: (file: File) => Promise<string>;
+  /** Image AI of the profile (web ads): each resolves to the new image URL. */
+  imageAI?: ImageAI;
+};
+
+/** "Mejorar con IA" (an uploaded photo) and "Generar con IA" (a description). */
+export type ImageAI = {
+  enhance: (file: File) => Promise<string>;
+  generate: (prompt: string) => Promise<string>;
 };
 
 /** Extra link shortcut of a profile ("Enlace de baja" in campaigns). */
@@ -309,6 +317,14 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
                   <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => void pickImage(e.currentTarget.files?.[0])} data-testid={`${tp}-inspector-upload-input`} />
                 </>
               )}
+              {actions.imageAI && (
+                <ImageAIControls
+                  key={selectedId}
+                  ai={actions.imageAI}
+                  suggestion={el.getAttribute("alt") ?? ""}
+                  onImage={(url) => actions.update(selectedId, (node) => node.setAttribute("src", url))}
+                />
+              )}
               <Field label="Texto alternativo" testId={`${tp}-inspector-alt`}>
                 <CommitInput value={el.getAttribute("alt") ?? ""} onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("alt", v))} testId={`${tp}-inspector-alt-input`} />
               </Field>
@@ -384,6 +400,86 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
           Cualquier clase de Tailwind v3, con prefijos sm: y md: para tablet y escritorio.
         </p>
       </Section>
+    </div>
+  );
+}
+
+/**
+ * Image AI of the selected <img> (ads_html_editor_v1): improve an uploaded
+ * photo or create one from a description. Either takes about a minute; the
+ * image of THIS element is replaced when it is ready, wherever the selection
+ * is by then. Errors are reported by the host (toast).
+ */
+function ImageAIControls({ ai, suggestion, onImage }: { ai: ImageAI; suggestion: string; onImage: (url: string) => void }) {
+  const tp = useBuilderTestId();
+  const [prompt, setPrompt] = useState("");
+  const [busy, setBusy] = useState<"enhance" | "generate" | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const run = async (kind: "enhance" | "generate", job: () => Promise<string>) => {
+    setBusy(kind);
+    try {
+      onImage(await job());
+    } catch {
+      // Reported by the host.
+    } finally {
+      setBusy(null);
+    }
+  };
+  const text = prompt.trim();
+  return (
+    <div className="grid gap-1.5 rounded-md border border-[#7c5cff]/30 bg-[#7c5cff]/5 p-2" data-testid={`${tp}-inspector-image-ai`}>
+      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#cfc4ff]" data-testid={`${tp}-inspector-image-ai-title`}>
+        <Sparkles size={12} aria-hidden="true" data-testid={`${tp}-inspector-image-ai-icon`} /> Imagen con IA
+      </span>
+      <textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.currentTarget.value)}
+        rows={2}
+        maxLength={600}
+        placeholder={suggestion ? `Describe la imagen (p. ej. «${suggestion.slice(0, 60)}»)` : "Describe la imagen: plato, ambiente, luz…"}
+        aria-label="Descripción de la imagen que quieres generar"
+        className="min-h-14 w-full resize-y rounded-md border border-bo-border bg-bo-surface-3 px-2 py-1.5 text-[12px] leading-snug text-bo-text outline-none focus:border-[#7c5cff]/70"
+        data-testid={`${tp}-inspector-image-ai-prompt`}
+      />
+      <div className="grid grid-cols-2 gap-1.5" data-testid={`${tp}-inspector-image-ai-actions`}>
+        <button
+          type="button"
+          disabled={Boolean(busy) || (!text && !suggestion.trim())}
+          onClick={() => void run("generate", () => ai.generate(text || suggestion.trim()))}
+          title="Crea una imagen nueva a partir de la descripción (tarda alrededor de un minuto)"
+          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-bo-border bg-bo-surface-2 text-[12px] text-bo-text transition hover:border-[#7c5cff]/60 disabled:opacity-50"
+          data-testid={`${tp}-inspector-image-ai-generate`}
+        >
+          {busy === "generate" ? <Loader2 size={14} className="animate-spin" aria-hidden="true" data-testid={`${tp}-inspector-image-ai-generate-loading`} /> : <Sparkles size={14} aria-hidden="true" data-testid={`${tp}-inspector-image-ai-generate-icon`} />}
+          {busy === "generate" ? "Generando…" : "Generar"}
+        </button>
+        <button
+          type="button"
+          disabled={Boolean(busy)}
+          onClick={() => fileRef.current?.click()}
+          title="Sube una foto y la IA la mejora (luz, detalle, acabado) sin cambiar lo que muestra"
+          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-bo-border bg-bo-surface-2 text-[12px] text-bo-text transition hover:border-[#7c5cff]/60 disabled:opacity-50"
+          data-testid={`${tp}-inspector-image-ai-enhance`}
+        >
+          {busy === "enhance" ? <Loader2 size={14} className="animate-spin" aria-hidden="true" data-testid={`${tp}-inspector-image-ai-enhance-loading`} /> : <WandSparkles size={14} aria-hidden="true" data-testid={`${tp}-inspector-image-ai-enhance-icon`} />}
+          {busy === "enhance" ? "Mejorando…" : "Mejorar foto"}
+        </button>
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.currentTarget.files?.[0];
+          e.currentTarget.value = "";
+          if (file) void run("enhance", () => ai.enhance(file));
+        }}
+        data-testid={`${tp}-inspector-image-ai-enhance-input`}
+      />
+      <p className="m-0 text-[10.5px] leading-snug text-bo-faint" data-testid={`${tp}-inspector-image-ai-help`}>
+        {busy ? "Puede tardar alrededor de un minuto; puedes seguir editando." : "Sin texto dentro de la imagen. «Mejorar foto» parte de una foto tuya."}
+      </p>
     </div>
   );
 }

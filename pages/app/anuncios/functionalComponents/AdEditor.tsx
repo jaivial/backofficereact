@@ -61,6 +61,14 @@ function errorMessage(err: unknown, fallback: string): string {
   return err instanceof Error && err.message ? err.message : fallback;
 }
 
+/** Setup problems of the image services, in words the restaurant can act on. */
+function imageErrorMessage(message: string): string {
+  if (/WaveSpeed API key not configured/i.test(message)) return "Configura la generación de imágenes en Configuración → IA → «Generación de imágenes IA».";
+  if (/Image storage not configured/i.test(message)) return "Configura el almacenamiento de imágenes en Configuración → CDN.";
+  if (/insufficient|credit|saldo/i.test(message)) return "No queda crédito en el proveedor de imágenes con IA: contacta con el administrador.";
+  return message;
+}
+
 const shortDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
 
 function scheduleLabel(meta: Meta): string {
@@ -294,22 +302,31 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const uploadImage = useCallback(
-    async (file: File) => {
+  // Every image of the design lives in the ad's CDN folder: a new ad is saved
+  // in place first to get its id. Failures are told here (toast) and rethrown.
+  const imageJob = useCallback(
+    async (fallback: string, job: (id: number) => Promise<{ success: boolean; url?: string } | { success: false; message?: string }>) => {
       try {
-        // A new ad needs an id for its image folder: save it in place first.
         const target = ad ?? (await persist());
-        if (!target) throw new Error("No se pudo guardar el anuncio antes de subir la imagen");
-        const result = await api.uploadAdDesignImage(target.id, file);
-        if (!result.success || !result.url) throw new Error(apiMessage(result, "No se pudo subir la imagen"));
+        if (!target) throw new Error("No se pudo guardar el anuncio antes de preparar la imagen");
+        const result = (await job(target.id)) as { success: boolean; url?: string; message?: string };
+        if (!result.success || !result.url) throw new Error(imageErrorMessage(apiMessage(result, fallback)));
         return result.url;
       } catch (err) {
-        const message = errorMessage(err, "No se pudo subir la imagen");
+        const message = imageErrorMessage(errorMessage(err, fallback));
         pushToast({ kind: "error", title: "Imagen", message });
         throw new Error(message, { cause: err });
       }
     },
-    [ad, api, persist, pushToast],
+    [ad, persist, pushToast],
+  );
+  const uploadImage = useCallback((file: File) => imageJob("No se pudo subir la imagen", (id) => api.uploadAdDesignImage(id, file)), [api, imageJob]);
+  const imageAI = useMemo(
+    () => ({
+      enhance: (file: File) => imageJob("No se pudo mejorar la imagen con IA", (id) => api.enhanceAdDesignImage(id, file)),
+      generate: (prompt: string) => imageJob("No se pudo generar la imagen con IA", (id) => api.generateAdDesignImage(id, prompt)),
+    }),
+    [api, imageJob],
   );
 
   const remove = useCallback(async () => {
@@ -452,6 +469,7 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
                   stepTitle={stepTitle}
                   onOpenStep={openStep}
                   onUploadImage={uploadImage}
+                  imageAI={imageAI}
                 />
               </div>
             </div>
