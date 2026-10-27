@@ -31,7 +31,8 @@ export function useMiniMaxConfig(): UseMiniMaxConfigReturn {
   const load = useCallback(async () => {
     try {
       const res = await api.config.getMiniMaxConfig();
-      if (res.success) setConfig(res.config);
+      // No stored model means the server default: show it instead of a blank select.
+      if (res.success) setConfig({ ...res.config, model: res.config.model || DEFAULT_MODEL });
     } catch {
       // keep defaults
     }
@@ -47,7 +48,7 @@ export function useMiniMaxConfig(): UseMiniMaxConfigReturn {
         model: config.model,
       });
       if (!res.success) return { ok: false, message: res.message };
-      setConfig(res.config);
+      setConfig({ ...res.config, model: res.config.model || DEFAULT_MODEL });
       setApiKey("");
       return { ok: true };
     } catch {
