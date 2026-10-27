@@ -24,6 +24,9 @@ import {
   updateElement,
   writeGroup,
   writeVisibility,
+  readChannel,
+  writeChannel,
+  type BlockChannel,
   type ClassGroupId,
   type InsertPosition,
   type Visibility,
@@ -76,6 +79,7 @@ export type DesignOp = {
   add?: string[];
   remove?: string[];
   visibility?: string;
+  channel?: string;
   direction?: string;
 };
 
@@ -102,6 +106,8 @@ type Layer = {
   alt?: string;
   classes?: string;
   hidden?: boolean;
+  /** campaign_block_channel_v1: "email" or "whatsapp" when the block is sent on one channel only. */
+  channel?: "email" | "whatsapp";
   children: number;
 };
 
@@ -260,9 +266,19 @@ function applyOp(html: string, op: DesignOp, ctx: BlockContext): { html: string;
     case "set_visibility": {
       const el = requireElement(html, id, kind);
       const v = String(op.visibility ?? "").trim();
-      if (v !== "all" && v !== "mobile" && v !== "desktop") fail("set_visibility: visibility debe ser all, mobile o desktop");
-      const classes = writeVisibility(splitClasses(el.getAttribute("class")), v as Visibility);
-      return { html: updateElement(html, id, (node) => setClassAttr(node, classes)) };
+      // campaign_block_channel_v1: channel = all | email | whatsapp (which
+      // channel sends the block); visibility = all | mobile | desktop (screen).
+      const ch = String(op.channel ?? "").trim().toLowerCase();
+      if (!v && !ch) fail("set_visibility: indica visibility (all, mobile, desktop) y/o channel (all, email, whatsapp)");
+      if (v && v !== "all" && v !== "mobile" && v !== "desktop") fail("set_visibility: visibility debe ser all, mobile o desktop");
+      if (ch && ch !== "all" && ch !== "email" && ch !== "whatsapp") fail("set_visibility: channel debe ser all, email o whatsapp");
+      const classes = v ? writeVisibility(splitClasses(el.getAttribute("class")), v as Visibility) : null;
+      return {
+        html: updateElement(html, id, (node) => {
+          if (classes) setClassAttr(node, classes);
+          if (ch) writeChannel(node, ch as BlockChannel);
+        }),
+      };
     }
     case "move": {
       requireElement(html, id, kind);
@@ -333,6 +349,8 @@ export function inspectDesign(numberedHtml: string): Layer[] {
       const cls = el.getAttribute("class");
       if (cls) layer.classes = cls;
       if (HIDDEN_RE.test(cls ?? "")) layer.hidden = true;
+      const channel = readChannel(el);
+      if (channel !== "all") layer.channel = channel;
       out.push(layer);
       visit(el, depth + 1);
     }

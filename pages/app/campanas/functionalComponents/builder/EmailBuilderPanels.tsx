@@ -198,7 +198,16 @@ export function LayersPanel({ html, selectedId, onSelect, onMove }: LayersProps)
                 </span>
                 <span className="shrink-0 font-medium" data-testid={`email-builder-layer-label-${node.id}`}>{node.label}</span>
                 {node.hint && <span className="min-w-0 truncate text-bo-faint" data-testid={`email-builder-layer-hint-${node.id}`}>{node.hint}</span>}
-                {node.hidden && <EyeOff size={12} className="ml-auto shrink-0 text-bo-faint" aria-label="Oculto en algún tamaño" data-testid={`email-builder-layer-hidden-${node.id}`} />}
+                {node.channel !== "all" && (
+                  <span
+                    className={cn("ml-auto shrink-0 rounded px-1 text-[10px] font-semibold", node.channel === "whatsapp" ? "bg-[#25d366]/15 text-[#4ade80]" : "bg-[#60a5fa]/15 text-[#93c5fd]")}
+                    title={node.channel === "whatsapp" ? "Solo WhatsApp" : "Solo email"}
+                    data-testid={`email-builder-layer-channel-${node.id}`}
+                  >
+                    {node.channel === "whatsapp" ? "WA" : "Email"}
+                  </span>
+                )}
+                {node.hidden && <EyeOff size={12} className={cn("shrink-0 text-bo-faint", node.channel === "all" && "ml-auto")} aria-label="Oculto en algún tamaño" data-testid={`email-builder-layer-hidden-${node.id}`} />}
               </button>
             </div>
           </li>
