@@ -182,6 +182,13 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
     });
   }
 
+  /** MiniMax config as the backend sends it (snake_case) or as older code typed it. */
+  type MiniMaxConfigWire = { has_api_key?: boolean; hasApiKey?: boolean; model?: string } | null | undefined;
+
+  function normalizeMiniMaxConfig(raw: MiniMaxConfigWire): import("./types").MiniMaxConfig {
+    return { hasApiKey: Boolean(raw?.has_api_key ?? raw?.hasApiKey), model: String(raw?.model ?? "") };
+  }
+
   async function json<T>(path: string, init: RequestInit): Promise<T> {
     // Global image upload rule: images in multipart bodies leave the frontend
     // as <=2MB WebP (coord id image_upload_prepare_v1).
@@ -2529,15 +2536,20 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         });
       },
       // MiniMax AI (forky chat + translations + stock) config per restaurant (root-only).
+      // The backend answers snake_case ({has_api_key, model}); the UI reads
+      // camelCase. Without this mapping the panel always said "Sin clave
+      // propia" even right after saving a key.
       async getMiniMaxConfig(): Promise<APISuccess<{ config: import("./types").MiniMaxConfig }> | APIError> {
-        return json("/api/admin/config/minimax", { method: "GET" });
+        const res = await json<APISuccess<{ config: MiniMaxConfigWire }> | APIError>("/api/admin/config/minimax", { method: "GET" });
+        return res.success ? { ...res, config: normalizeMiniMaxConfig(res.config) } : res;
       },
       async setMiniMaxConfig(input: import("./types").MiniMaxConfigInput): Promise<APISuccess<{ config: import("./types").MiniMaxConfig }> | APIError> {
-        return json("/api/admin/config/minimax", {
+        const res = await json<APISuccess<{ config: MiniMaxConfigWire }> | APIError>("/api/admin/config/minimax", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
         });
+        return res.success ? { ...res, config: normalizeMiniMaxConfig(res.config) } : res;
       },
       // WhatsApp bot AI routing, encrypted provider keys and RAG knowledge (wa_bot_ai_providers_v1).
       async getBotAIConfig(restaurantId: number): Promise<(APISuccess<import("./types").BotAIConfig>) | APIError> {
