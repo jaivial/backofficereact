@@ -88,6 +88,20 @@ function ChannelControl({ el, update }: { el: Element; update: (fn: (node: HTMLE
 
 export function EmailBuilder({ value, onChange, context, subject, coordId, unsubscribePreviewUrl, onUploadImage }: Props) {
   const api = useMemo(() => createClient({ baseUrl: "" }).config, []);
+  // Its own memo: the profile changes with the subject, and a new AI object
+  // would make the open chat reload the models on every keystroke.
+  const ai = useMemo<BuilderProfile["ai"]>(
+    () => ({
+      ariaLabel: "Asistente IA del email",
+      suggestions: SUGGESTIONS,
+      models: () => api.campaignAIModels().then((res) => (res.success ? { models: res.models ?? [], default: res.default ?? "" } : null)),
+      chat: (input) =>
+        api.campaignAIChat(input).then((res) =>
+          res.success ? { success: true as const, reply: res.reply, html: res.html, model: res.model } : { success: false as const, message: "message" in res ? res.message : undefined },
+        ),
+    }),
+    [api],
+  );
   const profile = useMemo<BuilderProfile>(
     () => ({
       testIdPrefix: "email-builder",
@@ -101,17 +115,9 @@ export function EmailBuilder({ value, onChange, context, subject, coordId, unsub
       canvasCss: CHANNEL_HINT_CSS,
       linkPresets: [{ id: "unsubscribe", label: "Enlace de baja", href: UNSUBSCRIBE_PLACEHOLDER }],
       extraVisibility: (el, update) => <ChannelControl el={el} update={update} />,
-      ai: {
-        ariaLabel: "Asistente IA del email",
-        suggestions: SUGGESTIONS,
-        models: () => api.campaignAIModels().then((res) => (res.success ? { models: res.models ?? [], default: res.default ?? "" } : null)),
-        chat: (input) =>
-          api.campaignAIChat(input).then((res) =>
-            res.success ? { success: true as const, reply: res.reply, html: res.html, model: res.model } : { success: false as const, message: "message" in res ? res.message : undefined },
-          ),
-      },
+      ai,
     }),
-    [api, coordId, subject, unsubscribePreviewUrl],
+    [ai, coordId, subject, unsubscribePreviewUrl],
   );
   return <HtmlBuilder value={value} onChange={onChange} context={context} coordId={coordId} onUploadImage={onUploadImage} profile={profile} />;
 }
