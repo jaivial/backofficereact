@@ -1,37 +1,12 @@
-import React, { useCallback } from "react";
-import { navigate } from "vike/client/router";
-import { ArrowLeft } from "lucide-react";
-import { AnuncioEditor } from "../../config/functionalComponents/ConfigAnuncios/AnuncioEditor";
-import { useAdsController } from "../../config/functionalComponents/ConfigAnuncios/hooks/useAdsController";
-
-const LIST_HREF = "/app/anuncios";
+import React from "react";
+import { usePageContext } from "vike-react/usePageContext";
+import { AdEditor, adEditorTab } from "../functionalComponents/AdEditor";
 
 export default function AnuncioNewPage() {
-  const { api, website, contactPhone, notify, wsFailureAtRef, wsStatusRef, sendAdSave, sendAdScheduleCheck, subscribeAdEvents } = useAdsController();
-
-  const onSaved = useCallback((ad: { id: number }) => {
-    if (ad.id > 0) void navigate(`/app/anuncios/${ad.id}`);
-  }, []);
-
+  const pageContext = usePageContext();
   return (
-    <section aria-label="Nuevo anuncio" className="grid gap-4" data-testid="anuncio-new-page">
-      <a href={LIST_HREF} className="bo-anunciosBackLink" data-slot="anuncio-back-link">
-        <ArrowLeft size={16} aria-hidden="true" />
-        Volver a la lista de anuncios
-      </a>
-      <AnuncioEditor
-        api={api}
-        website={website}
-        phone={contactPhone}
-        notify={notify}
-        mode="create"
-        wsFailureAtRef={wsFailureAtRef}
-        wsStatusRef={wsStatusRef}
-        sendAdSave={sendAdSave}
-        sendAdScheduleCheck={sendAdScheduleCheck}
-        subscribeAdEvents={subscribeAdEvents}
-        onSaved={onSaved}
-      />
+    <section className="flex min-w-0 flex-col gap-4 lg:min-h-0 lg:flex-1" aria-label="Nuevo anuncio" data-testid="anuncio-new-page">
+      <AdEditor mode="create" initialTab={adEditorTab(pageContext.urlParsed?.search?.tab)} />
     </section>
   );
 }

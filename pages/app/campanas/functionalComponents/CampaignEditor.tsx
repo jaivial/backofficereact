@@ -17,8 +17,8 @@ import { CampaignEditorHeader, type CampaignSaveState } from "./CampaignEditorHe
 import { EmailBuilder } from "./builder/EmailBuilder";
 import { defaultDesign, legacyDesign, type BlockContext } from "./builder/emailBuilderBlocks";
 import { compileCampaignEmail, designToWhatsAppMarkdown, fillPreviewPlaceholders } from "./builder/emailBuilderCompile";
-import { DeviceSwitch, EmailPreviewFrame } from "./builder/EmailPreviewFrame";
-import type { BuilderDevice } from "./builder/EmailBuilderCanvas";
+import { DeviceSwitch, PreviewFrame } from "../../../../ui/htmlBuilder/PreviewFrame";
+import type { BuilderDevice } from "../../../../ui/htmlBuilder/BuilderCanvas";
 import { renderCampaignEmailBody } from "./campaignEmailBody";
 import { IPhoneFrame, IPHONE_DEFAULT_TIME } from "./IPhoneFrame";
 import { WhatsAppPreview } from "./WhatsAppPreview";
@@ -422,7 +422,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null, initi
               <figure className="m-0 grid min-w-0 gap-2" data-testid="campaign-preview-email-block">
                 <figcaption className="text-center text-sm font-semibold" data-testid="campaign-preview-email-label">Email</figcaption>
                 {previewEmail.html ? (
-                  <EmailPreviewFrame html={previewEmail.html} device={device} testId="campaign-preview-email" />
+                  <PreviewFrame html={previewEmail.html} device={device} testId="campaign-preview-email" />
                 ) : (
                   <p className="m-0 p-6 text-center text-sm text-bo-muted" data-testid="campaign-preview-email-wait">{previewEmail.error || "Compilando el email…"}</p>
                 )}

@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import {
-  AlignLeft, ChevronRight, Columns2, EyeOff, Heading, Image as ImageIcon, LayoutTemplate, Link2, List, Minus, MousePointerClick,
-  PanelBottom, PanelTop, Quote, Space, Square, Ticket, Type,
+  AlignLeft, ChevronRight, EyeOff, Heading, Image as ImageIcon, Link2, List, Minus, MousePointerClick, Square, Type,
 } from "lucide-react";
-import { cn } from "../../../../../ui/shadcn/utils";
-import { EMAIL_BLOCKS, type BlockKind } from "./emailBuilderBlocks";
-import { layerTree, type InsertPosition, type LayerNode } from "./emailBuilderDocument";
-import { BLOCK_MIME, MOVE_MIME } from "./EmailBuilderCanvas";
+import { cn } from "../shadcn/utils";
+import type { BlockDef } from "./blocks";
+import { layerTree, type InsertPosition, type LayerNode } from "./document";
+import { BLOCK_MIME, MOVE_MIME } from "./BuilderCanvas";
+import { useBuilderTestId } from "./testIds";
 
 /*
  * Left panel of the campaign HTML builder (campaign_html_builder_v1): the
@@ -16,22 +16,9 @@ import { BLOCK_MIME, MOVE_MIME } from "./EmailBuilderCanvas";
  */
 
 type Icon = typeof AlignLeft;
+/** Icon of a palette block (lucide), supplied by the builder profile. */
+export type BlockIcon = Icon;
 
-const BLOCK_ICONS: Record<BlockKind, Icon> = {
-  header: PanelTop,
-  hero: LayoutTemplate,
-  heading: Heading,
-  text: AlignLeft,
-  button: MousePointerClick,
-  image: ImageIcon,
-  columns: Columns2,
-  list: List,
-  coupon: Ticket,
-  quote: Quote,
-  divider: Minus,
-  spacer: Space,
-  footer: PanelBottom,
-};
 
 const LAYER_ICONS: Record<string, Icon> = {
   heading: Heading,
@@ -44,11 +31,12 @@ const LAYER_ICONS: Record<string, Icon> = {
   box: Square,
 };
 
-export function BlockPalette({ onAdd }: { onAdd: (kind: BlockKind) => void }) {
+export function BlockPalette({ blocks, icons = {}, onAdd }: { blocks: BlockDef[]; icons?: Record<string, BlockIcon>; onAdd: (kind: string) => void }) {
+  const tp = useBuilderTestId();
   return (
-    <div className="grid grid-cols-2 gap-2 p-3" data-testid="email-builder-palette" data-observe="email-builder-palette">
-      {EMAIL_BLOCKS.map((block) => {
-        const BlockIcon = BLOCK_ICONS[block.kind];
+    <div className="grid grid-cols-2 gap-2 p-3" data-testid={`${tp}-palette`} data-observe={`${tp}-palette`}>
+      {blocks.map((block) => {
+        const Glyph = icons[block.kind] ?? Square;
         return (
           <button
             key={block.kind}
@@ -61,12 +49,12 @@ export function BlockPalette({ onAdd }: { onAdd: (kind: BlockKind) => void }) {
             onClick={() => onAdd(block.kind)}
             title={`${block.description}. Clic para añadir o arrástralo al lienzo`}
             className="group grid cursor-grab justify-items-center gap-1.5 rounded-bo-md border border-solid border-bo-border bg-bo-surface-3 px-2 py-3 text-center transition hover:border-[#7c5cff]/60 hover:bg-bo-surface-2 active:cursor-grabbing"
-            data-testid={`email-builder-block-${block.kind}`}
+            data-testid={`${tp}-block-${block.kind}`}
           >
-            <span className="grid size-8 place-items-center rounded-lg bg-bo-surface-2 text-bo-muted transition group-hover:text-[#b9a8ff]" data-testid={`email-builder-block-${block.kind}-icon`}>
-              <BlockIcon size={16} aria-hidden="true" data-testid={`email-builder-block-${block.kind}-svg`} />
+            <span className="grid size-8 place-items-center rounded-lg bg-bo-surface-2 text-bo-muted transition group-hover:text-[#b9a8ff]" data-testid={`${tp}-block-${block.kind}-icon`}>
+              <Glyph size={16} aria-hidden="true" data-testid={`${tp}-block-${block.kind}-svg`} />
             </span>
-            <span className="text-[12px] font-medium leading-tight text-bo-text" data-testid={`email-builder-block-${block.kind}-label`}>{block.label}</span>
+            <span className="text-[12px] font-medium leading-tight text-bo-text" data-testid={`${tp}-block-${block.kind}-label`}>{block.label}</span>
           </button>
         );
       })}
@@ -104,6 +92,7 @@ function TreeLines({ node, rowId }: { node: LayerNode; rowId: string }) {
 }
 
 export function LayersPanel({ html, selectedId, onSelect, onMove }: LayersProps) {
+  const tp = useBuilderTestId();
   const layers = useMemo(() => layerTree(html), [html]);
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
   const [drop, setDrop] = useState<{ id: string; position: InsertPosition } | null>(null);
@@ -124,9 +113,9 @@ export function LayersPanel({ html, selectedId, onSelect, onMove }: LayersProps)
   };
 
   return (
-    <ul className="m-0 grid list-none grid-cols-[minmax(0,1fr)] p-2" aria-label="Capas del email" role="tree" data-testid="email-builder-layers" data-observe="email-builder-layers">
+    <ul className="m-0 grid list-none grid-cols-[minmax(0,1fr)] p-2" aria-label="Capas del email" role="tree" data-testid={`${tp}-layers`} data-observe={`${tp}-layers`}>
       {visible.map((node) => {
-        const rowId = `email-builder-layer-${node.id}`;
+        const rowId = `${tp}-layer-${node.id}`;
         const open = !collapsed.has(node.id);
         const selected = selectedId === node.id;
         const LayerIcon = LAYER_ICONS[node.kind] ?? LAYER_ICONS.box;
@@ -191,23 +180,23 @@ export function LayersPanel({ html, selectedId, onSelect, onMove }: LayersProps)
                   "flex min-w-0 flex-1 cursor-pointer items-center gap-1.5 border-0 bg-transparent pr-2 text-left text-[12.5px]",
                   selected ? "text-bo-text" : "text-bo-muted hover:text-bo-text",
                 )}
-                data-testid={`email-builder-layer-btn-${node.id}`}
+                data-testid={`${tp}-layer-btn-${node.id}`}
               >
-                <span className={cn("shrink-0", selected ? "text-[#b9a8ff]" : "text-bo-faint")} data-testid={`email-builder-layer-icon-${node.id}`}>
-                  <LayerIcon size={13} aria-hidden="true" data-testid={`email-builder-layer-svg-${node.id}`} />
+                <span className={cn("shrink-0", selected ? "text-[#b9a8ff]" : "text-bo-faint")} data-testid={`${tp}-layer-icon-${node.id}`}>
+                  <LayerIcon size={13} aria-hidden="true" data-testid={`${tp}-layer-svg-${node.id}`} />
                 </span>
-                <span className="shrink-0 font-medium" data-testid={`email-builder-layer-label-${node.id}`}>{node.label}</span>
-                {node.hint && <span className="min-w-0 truncate text-bo-faint" data-testid={`email-builder-layer-hint-${node.id}`}>{node.hint}</span>}
+                <span className="shrink-0 font-medium" data-testid={`${tp}-layer-label-${node.id}`}>{node.label}</span>
+                {node.hint && <span className="min-w-0 truncate text-bo-faint" data-testid={`${tp}-layer-hint-${node.id}`}>{node.hint}</span>}
                 {node.channel !== "all" && (
                   <span
                     className={cn("ml-auto shrink-0 rounded px-1 text-[10px] font-semibold", node.channel === "whatsapp" ? "bg-[#25d366]/15 text-[#4ade80]" : "bg-[#60a5fa]/15 text-[#93c5fd]")}
                     title={node.channel === "whatsapp" ? "Solo WhatsApp" : "Solo email"}
-                    data-testid={`email-builder-layer-channel-${node.id}`}
+                    data-testid={`${tp}-layer-channel-${node.id}`}
                   >
                     {node.channel === "whatsapp" ? "WA" : "Email"}
                   </span>
                 )}
-                {node.hidden && <EyeOff size={12} className={cn("shrink-0 text-bo-faint", node.channel === "all" && "ml-auto")} aria-label="Oculto en algún tamaño" data-testid={`email-builder-layer-hidden-${node.id}`} />}
+                {node.hidden && <EyeOff size={12} className={cn("shrink-0 text-bo-faint", node.channel === "all" && "ml-auto")} aria-label="Oculto en algún tamaño" data-testid={`${tp}-layer-hidden-${node.id}`} />}
               </button>
             </div>
           </li>

@@ -4,6 +4,8 @@
  */
 
 import { CURRENCY_SYMBOLS } from "../../../../api/types";
+import { createClient } from "../../../../api/client";
+import { splitStoredPhone } from "../../../../ui/lib/phone";
 
 /**
  * Formats an amount with its currency symbol (e.g. "€120.50")
@@ -98,4 +100,69 @@ export function dniCifLabel(invoice: { customer_dni_cif?: string; customer_dni_c
   // A NIE (foreign resident) starts with X, Y or Z followed by digits.
   if (/^[XYZ][0-9]/.test(upper)) return "NIF";
   return "CIF";
+}
+
+type InvoicePhone = { customer_phone?: string | null; customer_phone_country_code?: string | null } | null | undefined;
+
+/**
+ * Country code + national number of the customer phone for the invoice form.
+ * Invoices saved before the country code existed are split from the typed
+ * text (default +34). Coordination id: invoice_phone_country_code_v1
+ */
+export function invoicePhoneParts(invoice: InvoicePhone): { countryCode: string; national: string } {
+  const phone = (invoice?.customer_phone || "").trim();
+  const countryCode = (invoice?.customer_phone_country_code || "").replace(/\D/g, "");
+  return countryCode ? { countryCode, national: phone } : splitStoredPhone(phone, "34");
+}
+
+/**
+ * Customer phone as shown in the BackOffice: "+34 600123123" when the code is
+ * stored, the stored text otherwise. Mirrors the backend invoicePhoneDisplay
+ * used by the PDF and the email. Coordination id: invoice_phone_country_code_v1
+ */
+export function formatInvoicePhone(invoice: InvoicePhone): string {
+  const phone = (invoice?.customer_phone || "").trim();
+  const countryCode = (invoice?.customer_phone_country_code || "").replace(/\D/g, "");
+  return countryCode && phone ? `+${countryCode} ${phone}` : phone;
+}
+
+/*
+ * invoice_send_whatsapp_v1: one idempotency key per WhatsApp send intent,
+ * persisted per user + restaurant + invoice so a later send (modal or the
+ * form's "Enviar") resumes the same attempt instead of duplicating it; the
+ * key is cleared once text and PDF are both delivered.
+ */
+const waSendStorageKey = (userId: number, restaurantId: number, invoiceId: number) => `bo-wa-send-key:u${userId}:r${restaurantId}:i${invoiceId}`;
+
+export const newWaSendKey = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `wa-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+export function storeWaSendKey(userId: number, restaurantId: number, invoiceId: number, key: string): void {
+  try { localStorage.setItem(waSendStorageKey(userId, restaurantId, invoiceId), key); } catch { /* storage optional */ }
+}
+
+export function clearWaSendKey(userId: number, restaurantId: number, invoiceId: number): void {
+  try { localStorage.removeItem(waSendStorageKey(userId, restaurantId, invoiceId)); } catch { /* storage optional */ }
+}
+
+/**
+ * Key of the current send intent: the stored one, else the latest unfinished
+ * attempt on the backend (fresh browser / post-logout), else a new one. When
+ * the backend lookup fails the new key is not persisted, so the next send
+ * retries the recovery instead of skipping a pending attempt.
+ */
+export async function resolveWaSendKey(userId: number, restaurantId: number, invoiceId: number): Promise<string> {
+  try {
+    const stored = localStorage.getItem(waSendStorageKey(userId, restaurantId, invoiceId));
+    if (stored) return stored;
+  } catch { /* storage optional */ }
+  try {
+    const res = await createClient({ baseUrl: "" }).invoices.getWhatsAppAttempt(invoiceId);
+    const att = res.success ? res.attempt : null;
+    const key = att && !(att.text_status === "sent" && att.pdf_status === "sent") ? att.idempotency_key : newWaSendKey();
+    storeWaSendKey(userId, restaurantId, invoiceId, key);
+    return key;
+  } catch {
+    return newWaSendKey();
+  }
 }

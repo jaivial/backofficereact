@@ -1,62 +1,21 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { navigate } from "vike/client/router";
-import { ArrowLeft } from "lucide-react";
-import { AnuncioEditor } from "../../config/functionalComponents/ConfigAnuncios/AnuncioEditor";
-import { useAdsController } from "../../config/functionalComponents/ConfigAnuncios/hooks/useAdsController";
+import { AdEditor, adEditorTab } from "../functionalComponents/AdEditor";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
-import type { RestaurantAd } from "../../../../api/types";
 import type { Data } from "./+data";
-
-const LIST_HREF = "/app/anuncios";
 
 export default function AnuncioEditPage() {
   const pageContext = usePageContext();
-  const rawId = String((pageContext as { routeParams?: { adId?: string } }).routeParams?.adId ?? "");
-  const adId = Number(rawId);
-  const valid = Number.isFinite(adId) && adId > 0;
-
-  const { api, website, contactPhone, notify, wsFailureAtRef, wsStatusRef, sendAdSave, sendAdScheduleCheck, subscribeAdEvents } = useAdsController();
   const data = (pageContext.data ?? { adId: null, initialAd: null }) as Data;
-  const initialAd: RestaurantAd | null = data.initialAd ?? null;
-
-  const onDeleted = useCallback(() => {
-    void navigate(LIST_HREF);
-  }, []);
-
-  if (!valid) {
-    return (
-      <section aria-label="Anuncio" className="max-w-3xl mx-auto grid gap-3" data-testid="anuncio-edit-invalid">
-        <a href={LIST_HREF} className="bo-anunciosBackLink" data-slot="anuncio-back-link">
-          <ArrowLeft size={16} aria-hidden="true" />
-          Volver a la lista de anuncios
-        </a>
-        <InlineAlert kind="error" title="Anuncio no válido" message="El identificador de anuncio no es válido." />
-      </section>
-    );
-  }
 
   return (
-    <section aria-label="Anuncio" className="grid gap-4" data-testid="anuncio-edit-page">
-      <a href={LIST_HREF} className="bo-anunciosBackLink" data-slot="anuncio-back-link">
-        <ArrowLeft size={16} aria-hidden="true" />
-        Volver a la lista de anuncios
-      </a>
-      <AnuncioEditor
-        api={api}
-        website={website}
-        phone={contactPhone}
-        notify={notify}
-        mode="edit"
-        adId={adId}
-        initialAd={initialAd}
-        wsFailureAtRef={wsFailureAtRef}
-        wsStatusRef={wsStatusRef}
-        sendAdSave={sendAdSave}
-        sendAdScheduleCheck={sendAdScheduleCheck}
-        subscribeAdEvents={subscribeAdEvents}
-        onDeleted={onDeleted}
-      />
+    // Desktop: the editor fills the rest of the viewport (no page scroll).
+    <section className="flex min-w-0 flex-col gap-4 lg:min-h-0 lg:flex-1" aria-label="Anuncio" data-testid="anuncio-edit-page">
+      {data.adId ? (
+        <AdEditor mode="edit" adId={data.adId} initialAd={data.initialAd} initialTab={adEditorTab(pageContext.urlParsed?.search?.tab)} />
+      ) : (
+        <InlineAlert kind="error" title="Anuncio no válido" message="El identificador de anuncio no es válido." testId="anuncio-edit-invalid" />
+      )}
     </section>
   );
 }

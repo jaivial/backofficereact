@@ -1,4 +1,7 @@
-import { EB_NAME, EB_ROLE, UNSUBSCRIBE_PLACEHOLDER } from "./emailBuilderDocument";
+import { EB_NAME, EB_ROLE, UNSUBSCRIBE_PLACEHOLDER } from "../../../../../ui/htmlBuilder/document";
+import type { BlockContext, BlockDef as SharedBlockDef } from "../../../../../ui/htmlBuilder/blocks";
+
+export type { BlockContext };
 
 /*
  * Component palette of the campaign HTML builder (campaign_html_builder_v1).
@@ -9,19 +12,12 @@ import { EB_NAME, EB_ROLE, UNSUBSCRIBE_PLACEHOLDER } from "./emailBuilderDocumen
  * same rhythm whatever order the operator picks.
  */
 
-export type BlockContext = {
-  brandName: string;
-  logoUrl: string;
-  websiteUrl: string;
-  /** Brand accent (campaign theme), used for buttons and highlights. */
-  accent: string;
-};
 
 export type BlockKind =
   | "header" | "hero" | "heading" | "text" | "button" | "image" | "columns" | "list"
   | "coupon" | "quote" | "divider" | "spacer" | "footer";
 
-export type BlockDef = { kind: BlockKind; label: string; description: string; html: (ctx: BlockContext) => string };
+export type BlockDef = SharedBlockDef & { kind: BlockKind };
 
 const PAD = "px-6 sm:px-10";
 const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

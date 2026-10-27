@@ -154,7 +154,7 @@
 @import "./styles/features/contacto/branding-logo.css";
 
 /* ── Features: Anuncios editor (backoffice tab) ─── */
-@import "./styles/features/anuncios/anuncios-editor.css";
+@import "./styles/features/anuncios/anuncios.css";
 
 /* ── Features: Campañas — email body editor ─── */
 @import "./styles/features/campanas/campaign-editor.css";

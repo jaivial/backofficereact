@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, forwardRef, u
 import { Save, Send, Upload, X, Search, Loader2, Check, AlertCircle, FileText, Tag, Plus, XCircle, List, Eye, ChevronDown, Clock } from "lucide-react";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
+import { PhoneInput } from "../../../../ui/inputs/PhoneInput";
+import { composePhoneE164, splitStoredPhone } from "../../../../ui/lib/phone";
+import { invoicePhoneParts } from "../utils";
 import { SearchableSelect } from "../../../../ui/inputs/SearchableSelect";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
 import { SPAIN_PROVINCES, SPAIN_MUNICIPIOS_BY_PROVINCE } from "../constants/spainLocations";
@@ -145,19 +148,30 @@ function validateDniCif(value: string, isDniMode: boolean): string | null {
   return null;
 }
 
-// Validate Spanish phone number
-// Accepts: +34 followed by 9 digits, or 9 digits starting with 6, 7, 8, 9
-function validatePhone(phone: string): string | null {
+// Validate the customer phone for its country code (invoice_phone_country_code_v1),
+// mirroring the backend splitInvoicePhone: the number is national (a typed
+// international prefix is moved to the selector on input); Spanish numbers
+// keep the 9-digit rule (6, 7, 8 or 9 first, a typed 34 in front is allowed);
+// any other code takes 6+ digits within the 15-digit E.164 limit.
+function validatePhone(countryCode: string, phone: string): string | null {
   if (!phone.trim()) {
     return null; // Phone is optional
   }
-  // Remove spaces, dots, dashes, and country code prefix
-  const cleanPhone = phone.replace(/[\s.\-]/g, "").replace(/^\+34/, "");
-  const phoneRegex = /^[6789][0-9]{8}$/;
-  if (!phoneRegex.test(cleanPhone)) {
-    return "El teléfono debe tener 9 dígitos y empezar por 6, 7, 8 o 9";
+  if (/[^\d\s.\-()+]/.test(phone)) {
+    return "El teléfono solo puede contener números";
   }
-  return null;
+  if (/^[\s(]*(\+|00)/.test(phone)) {
+    return "Escribe el número sin prefijo y elige el prefijo en el selector";
+  }
+  const digits = phone.replace(/\D/g, "");
+  if (countryCode === "34") {
+    const national = digits.length === 11 && digits.startsWith("34") ? digits.slice(2) : digits;
+    if (!/^[6789][0-9]{8}$/.test(national)) {
+      return "El teléfono debe tener 9 dígitos y empezar por 6, 7, 8 o 9";
+    }
+    return null;
+  }
+  return composePhoneE164(countryCode, digits) ? null : "El teléfono no es válido para el prefijo elegido";
 }
 
 // Validate Spanish postal code (5 digits, first two between 01-52)
@@ -276,7 +290,25 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   // with a letter, so an existing value opens in its own mode.
   const [useDni, setUseDni] = useState(() => /^\d/.test((invoice?.customer_dni_cif || "").trim()));
   const [customerDniCif, setCustomerDniCif] = useState(invoice?.customer_dni_cif || "");
-  const [customerPhone, setCustomerPhone] = useState(invoice?.customer_phone || "");
+  // invoice_phone_country_code_v1: prefix + national number; invoices saved
+  // before the prefix existed are split from the stored text.
+  const initialPhone = useMemo(() => invoicePhoneParts(invoice), [invoice]);
+  const [customerPhoneCountryCode, setCustomerPhoneCountryCode] = useState(initialPhone.countryCode);
+  const [customerPhone, setCustomerPhone] = useState(initialPhone.national);
+  // A number typed or pasted with its international prefix ("+44 7700…",
+  // "0034 600…") selects that prefix and keeps only the national part, so
+  // the code is never stored twice (invoice_phone_country_code_v1).
+  const handlePhoneNumberChange = useCallback((value: string) => {
+    if (/^[\s(]*(\+|00)/.test(value)) {
+      const split = splitStoredPhone(value.replace(/^[\s(]*00/, "+"), "");
+      if (split.countryCode) {
+        setCustomerPhoneCountryCode(split.countryCode);
+        setCustomerPhone(split.national);
+        return;
+      }
+    }
+    setCustomerPhone(value);
+  }, []);
   const [customerAddressStreet, setCustomerAddressStreet] = useState(invoice?.customer_address_street || "");
   const [customerAddressNumber, setCustomerAddressNumber] = useState(invoice?.customer_address_number || "");
   const [customerAddressPostalCode, setCustomerAddressPostalCode] = useState(invoice?.customer_address_postal_code || "");
@@ -380,11 +412,11 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     customerName: validateRequired(customerName, "El nombre"),
     customerEmail: validateEmail(customerEmail),
     customerDniCif: validateDniCif(customerDniCif, useDni),
-    customerPhone: validatePhone(customerPhone),
+    customerPhone: validatePhone(customerPhoneCountryCode, customerPhone),
     customerAddressPostalCode: validatePostalCode(customerAddressPostalCode),
     amount: useLineItems ? null : validateAmount(amount),
     lineItems: useLineItems && lineItems.length === 0 ? "Añade al menos una linea de factura" : null,
-  }), [customerName, customerEmail, customerDniCif, useDni, customerPhone, customerAddressPostalCode, amount, useLineItems, lineItems]);
+  }), [customerName, customerEmail, customerDniCif, useDni, customerPhoneCountryCode, customerPhone, customerAddressPostalCode, amount, useLineItems, lineItems]);
 
   // Check if field has an error (only after being touched)
   const hasError = useCallback((fieldName: string): boolean => {
@@ -506,6 +538,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       customer_dni_cif: customerDniCif || undefined,
       customer_dni_cif_type: customerDniCif ? (useDni ? "dni" : "cif") : undefined,
       customer_phone: customerPhone || undefined,
+      customer_phone_country_code: customerPhone ? customerPhoneCountryCode : undefined,
       customer_address_street: customerAddressStreet || undefined,
       customer_address_number: customerAddressNumber || undefined,
       customer_address_postal_code: customerAddressPostalCode || undefined,
@@ -561,6 +594,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       customerEmail,
       useDni,
       customerDniCif,
+      customerPhoneCountryCode,
       customerPhone,
       customerAddressStreet,
       customerAddressNumber,
@@ -618,7 +652,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
       customerSurname !== (invoice.customer_surname || "") ||
       customerEmail !== (invoice.customer_email || "") ||
       customerDniCif !== (invoice.customer_dni_cif || "") ||
-      customerPhone !== (invoice.customer_phone || "") ||
+      customerPhone !== initialPhone.national ||
+      customerPhoneCountryCode !== initialPhone.countryCode ||
       customerAddressStreet !== (invoice.customer_address_street || "") ||
       customerAddressNumber !== (invoice.customer_address_number || "") ||
       customerAddressPostalCode !== (invoice.customer_address_postal_code || "") ||
@@ -662,6 +697,8 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     customerEmail,
     useDni,
     customerDniCif,
+    initialPhone,
+    customerPhoneCountryCode,
     customerPhone,
     customerAddressStreet,
     customerAddressNumber,
@@ -771,7 +808,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     setCustomerName(reservation.customer_name.split(" ")[0] || "");
     setCustomerSurname(reservation.customer_name.split(" ").slice(1).join(" ") || "");
     setCustomerEmail(reservation.contact_email);
-    setCustomerPhone(reservation.contact_phone);
+    const reservationPhone = invoicePhoneParts({ customer_phone: reservation.contact_phone, customer_phone_country_code: reservation.contact_phone_country_code });
+    setCustomerPhoneCountryCode(reservationPhone.countryCode);
+    setCustomerPhone(reservationPhone.national);
     setReservationId(reservation.id);
     setReservationDate(reservation.reservation_date);
     setReservationCustomerName(reservation.customer_name);
@@ -800,7 +839,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     setCustomerName(r.customer_name.split(" ")[0] || "");
     setCustomerSurname(r.customer_name.split(" ").slice(1).join(" ") || "");
     setCustomerEmail(r.contact_email);
-    setCustomerPhone(r.contact_phone);
+    const bookingPhone = invoicePhoneParts({ customer_phone: r.contact_phone, customer_phone_country_code: r.contact_phone_country_code });
+    setCustomerPhoneCountryCode(bookingPhone.countryCode);
+    setCustomerPhone(bookingPhone.national);
     setReservationId(r.id);
     setReservationDate(r.reservation_date);
     setReservationCustomerName(r.customer_name);
@@ -878,7 +919,9 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     setCustomerSurname(template.customer_surname || "");
     setCustomerEmail(template.customer_email || "");
     setCustomerDniCif(template.customer_dni_cif || "");
-    setCustomerPhone(template.customer_phone || "");
+    const templatePhone = invoicePhoneParts({ customer_phone: template.customer_phone });
+    setCustomerPhoneCountryCode(templatePhone.countryCode);
+    setCustomerPhone(templatePhone.national);
     setCustomerAddressStreet(template.customer_address_street || "");
     setCustomerAddressNumber(template.customer_address_number || "");
     setCustomerAddressPostalCode(template.customer_address_postal_code || "");
@@ -1141,24 +1184,26 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             </div>
 
             <div data-testid="invoiceForm-invoiceFormRow-phoneDni" className="bo-invoiceFormRow bo-invoiceFormRow--phoneDni" data-slot="invoiceForm-invoiceFormRow--phoneDni">
-              <label data-testid="invoice-form-customer-phone-label" className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-phone-label">
+              <div data-testid="invoice-form-customer-phone-label" className={`bo-field ${hasError("customerPhone") ? "bo-field--error" : ""}`} data-slot="invoice-form-customer-phone-label" data-coordination-id="invoice_phone_country_code_v1">
                 <span data-testid="invoiceForm-label-4" className="bo-label" data-slot="invoiceForm-label">Teléfono</span>
-                <input
-                  className={`bo-input ${hasError("customerPhone") ? "bo-input--error" : ""}`}
-                  type="tel"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
+                <PhoneInput
+                  countryCode={customerPhoneCountryCode}
+                  number={customerPhone}
+                  onCountryCodeChange={setCustomerPhoneCountryCode}
+                  onNumberChange={handlePhoneNumberChange}
                   onBlur={() => handleBlur("customerPhone")}
-                  aria-describedby={hasError("customerPhone") ? "customerPhone-error" : undefined}
-                  aria-invalid={hasError("customerPhone")}
-                  data-testid="invoice-phone-input"
+                  invalid={hasError("customerPhone")}
+                  describedBy={hasError("customerPhone") ? "customerPhone-error" : undefined}
+                  countryAriaLabel="Prefijo del teléfono"
+                  numberAriaLabel="Teléfono"
+                  testId="invoice-phone-input"
                 />
                 {hasError("customerPhone") && (
                   <span data-testid="invoiceForm-fieldError-3" className="bo-fieldError" id="customerPhone-error" role="alert" data-slot="invoiceForm-fieldError">
                     {getError("customerPhone")}
                   </span>
                 )}
-              </label>
+              </div>
 
               <div data-testid="invoiceForm-field-dniCif" className="bo-field bo-field--dniCif" data-slot="invoiceForm-field--dniCif">
                 <div data-testid="invoiceForm-field-switch" className="bo-field bo-field--switch bo-field--switch--compact" data-slot="invoiceForm-field--switch">
@@ -1894,6 +1939,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
             customer_email: customerEmail,
             customer_dni_cif: customerDniCif,
             customer_phone: customerPhone,
+            customer_phone_country_code: customerPhone ? customerPhoneCountryCode : undefined,
             customer_address_street: customerAddressStreet,
             customer_address_number: customerAddressNumber,
             customer_address_postal_code: customerAddressPostalCode,
