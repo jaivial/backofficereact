@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Monitor, Smartphone, Tablet } from "lucide-react";
-import { cn } from "../../../../../ui/shadcn/utils";
-import { DEVICE_WIDTH, type BuilderDevice } from "./EmailBuilderCanvas";
+import { cn } from "../shadcn/utils";
+import { DEVICE_WIDTH, type BuilderDevice } from "./BuilderCanvas";
 
 /*
  * Read-only preview of the compiled email (campaign_html_builder_v1): the exact
@@ -43,7 +43,7 @@ export function DeviceSwitch({ value, onChange, testId }: { value: BuilderDevice
 
 type Props = { html: string; device: BuilderDevice; testId: string; className?: string };
 
-export function EmailPreviewFrame({ html, device, testId, className }: Props) {
+export function PreviewFrame({ html, device, testId, className }: Props) {
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState(480);
