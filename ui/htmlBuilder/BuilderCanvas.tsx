@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { EB_ID, findById, isTextElement, type InsertPosition } from "./emailBuilderDocument";
-import { BORDER_PREFLIGHT_CSS, EMAIL_RESET_CSS } from "./emailBuilderCompile";
+import { EB_ID, findById, isTextElement, type InsertPosition } from "./document";
+import { BORDER_PREFLIGHT_CSS, EMAIL_RESET_CSS } from "./css";
+import { useBuilderTestId } from "./testIds";
 
 /*
  * Editable canvas of the campaign HTML builder (campaign_html_builder_v1).
@@ -33,18 +34,12 @@ type Props = {
   onDrop: (drop: CanvasDrop) => void;
   onKey: (e: KeyboardEvent) => void;
   onScale?: (scale: number) => void;
+  /** Editing-only CSS of the profile (e.g. channel hints); never reaches the output. */
+  extraCss?: string;
 };
 
-// campaign_block_channel_v1: blocks sent on one channel only are flagged on the
-// canvas (never in the email: the compiler drops data-eb-* and the blocks).
-const CHANNEL_HINT_CSS =
-  '[data-eb-channel="whatsapp"]{outline:2px dashed #25d366;outline-offset:-2px}' +
-  '[data-eb-channel="email"]{outline:2px dashed #60a5fa;outline-offset:-2px}' +
-  '[data-eb-channel]::before{display:block;width:max-content;margin:0 0 4px;padding:1px 6px;border-radius:4px;font:600 10px/1.6 system-ui,sans-serif;letter-spacing:.02em}' +
-  '[data-eb-channel="whatsapp"]::before{content:"Solo WhatsApp";color:#0f6b3a;background:#dcf8e6}' +
-  '[data-eb-channel="email"]::before{content:"Solo email";color:#1e4f9a;background:#dbeafe}';
-
-const SKELETON = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}</style><style id="eb-tw"></style><style>[contenteditable="true"]{outline:none;cursor:text}a,img{cursor:default}</style><style>${CHANNEL_HINT_CSS}</style></head><body></body></html>`;
+const skeleton = (extraCss: string) =>
+  `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}</style><style id="eb-tw"></style><style>[contenteditable="true"]{outline:none;cursor:text}a,img{cursor:default}</style><style>${extraCss}</style></head><body></body></html>`;
 const CONTAINER_TAGS = new Set(["DIV", "SECTION", "TD", "UL", "OL", "TABLE", "TR"]);
 
 function boxOf(el: Element | null): Box | null {
@@ -53,7 +48,9 @@ function boxOf(el: Element | null): Box | null {
   return { x: r.left, y: r.top, w: r.width, h: r.height };
 }
 
-export function EmailBuilderCanvas({ html, css, device, zoom, selectedId, selectedLabel, onSelect, onInlineEdit, onDrop, onKey, onScale }: Props) {
+export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLabel, onSelect, onInlineEdit, onDrop, onKey, onScale, extraCss = "" }: Props) {
+  const tp = useBuilderTestId();
+  const srcDoc = React.useMemo(() => skeleton(extraCss), [extraCss]);
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const editingRef = useRef<HTMLElement | null>(null);
@@ -251,38 +248,38 @@ export function EmailBuilderCanvas({ html, css, device, zoom, selectedId, select
       onClick={(e) => {
         if (e.target === e.currentTarget) onSelect(null);
       }}
-      data-testid="email-builder-canvas"
-      data-observe="email-builder-canvas"
+      data-testid={`${tp}-canvas`}
+      data-observe={`${tp}-canvas`}
       data-device={device}
     >
-      <div className="mx-auto px-4 pb-10 pt-4" style={{ width: width * scale + 32 }} data-testid="email-builder-canvas-stage">
-        <div className="mb-2 flex items-center justify-between text-[11px] text-bo-faint" data-testid="email-builder-canvas-meta">
-          <span data-testid="email-builder-canvas-device">{device === "desktop" ? "Escritorio" : device === "tablet" ? "Tablet" : "Móvil"} · {width}px</span>
-          <span data-testid="email-builder-canvas-scale">{Math.round(scale * 100)}%</span>
+      <div className="mx-auto px-4 pb-10 pt-4" style={{ width: width * scale + 32 }} data-testid={`${tp}-canvas-stage`}>
+        <div className="mb-2 flex items-center justify-between text-[11px] text-bo-faint" data-testid={`${tp}-canvas-meta`}>
+          <span data-testid={`${tp}-canvas-device`}>{device === "desktop" ? "Escritorio" : device === "tablet" ? "Tablet" : "Móvil"} · {width}px</span>
+          <span data-testid={`${tp}-canvas-scale`}>{Math.round(scale * 100)}%</span>
         </div>
         <div
           className="relative overflow-hidden rounded-md bg-white shadow-[0_18px_50px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
           style={{ width: width * scale, height: frameHeight * scale }}
           onMouseLeave={() => setHoverBox(null)}
-          data-testid="email-builder-frame-box"
+          data-testid={`${tp}-frame-box`}
         >
           <iframe
             ref={frameRef}
             title="Lienzo del email"
-            srcDoc={SKELETON}
+            srcDoc={srcDoc}
             sandbox="allow-same-origin"
             onLoad={() => setReady(true)}
             scrolling="no"
             className="block origin-top-left border-0"
             style={{ width, height: frameHeight, transform: `scale(${scale})` }}
-            data-testid="email-builder-frame"
+            data-testid={`${tp}-frame`}
           />
-          {hoverBox && <div className="pointer-events-none absolute border border-dashed border-[#9b87ff]" style={place(hoverBox)} data-testid="email-builder-hover-box" />}
+          {hoverBox && <div className="pointer-events-none absolute border border-dashed border-[#9b87ff]" style={place(hoverBox)} data-testid={`${tp}-hover-box`} />}
           {selectedBox && (
-            <div className="pointer-events-none absolute border-2 border-[#7c5cff]" style={place(selectedBox)} data-testid="email-builder-selection-box">
+            <div className="pointer-events-none absolute border-2 border-[#7c5cff]" style={place(selectedBox)} data-testid={`${tp}-selection-box`}>
               <span
                 className="absolute left-[-2px] top-0 -translate-y-full whitespace-nowrap rounded-t-[4px] bg-[#7c5cff] px-1.5 py-0.5 text-[10px] font-semibold text-white"
-                data-testid="email-builder-selection-label"
+                data-testid={`${tp}-selection-label`}
               >
                 {selectedLabel}
               </span>
@@ -296,7 +293,7 @@ export function EmailBuilderCanvas({ html, css, device, zoom, selectedId, select
                   ? place(drop.box)
                   : { left: drop.box.x * scale, width: drop.box.w * scale, top: (drop.position === "before" ? drop.box.y : drop.box.y + drop.box.h) * scale - 1 }
               }
-              data-testid="email-builder-drop-indicator"
+              data-testid={`${tp}-drop-indicator`}
             />
           )}
         </div>

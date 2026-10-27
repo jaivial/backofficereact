@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ArrowUpLeft, Copy, ImageUp, Loader2, Trash2 } from "lucide-react";
-import { cn } from "../../../../../ui/shadcn/utils";
-import { Select } from "../../../../../ui/inputs/Select";
+import { cn } from "../shadcn/utils";
+import { Select } from "../inputs/Select";
 import {
-  UNSUBSCRIBE_PLACEHOLDER, elementKind, elementLabel, findById, isTextElement, parseFragment, readChannel, readGroup, readVisibility,
-  splitClasses, writeChannel, writeGroup, writeVisibility, type BlockChannel, type ClassGroupId, type Visibility,
-} from "./emailBuilderDocument";
+  elementKind, elementLabel, findById, isTextElement, parseFragment, readGroup, readVisibility,
+  splitClasses, writeGroup, writeVisibility, type ClassGroupId, type Visibility,
+} from "./document";
+import { useBuilderTestId } from "./testIds";
 
 /*
  * Right panel of the campaign HTML builder (campaign_html_builder_v1): the
@@ -24,7 +25,19 @@ export type InspectorActions = {
   uploadImage?: (file: File) => Promise<string>;
 };
 
-type Props = { html: string; selectedId: string | null; accent: string; websiteUrl: string; actions: InspectorActions };
+/** Extra link shortcut of a profile ("Enlace de baja" in campaigns). */
+export type LinkPreset = { id: string; label: string; href: string };
+
+type Props = {
+  html: string;
+  selectedId: string | null;
+  accent: string;
+  websiteUrl: string;
+  actions: InspectorActions;
+  linkPresets?: LinkPreset[];
+  /** Profile controls under "Visibilidad" (campaign channel), for the selected element. */
+  extraVisibility?: (el: Element, update: (fn: (node: HTMLElement) => void) => void) => React.ReactNode;
+};
 
 type Option = { value: string; label: string };
 const opts = (pairs: [string, string][]): Option[] => pairs.map(([value, label]) => ({ value, label }));
@@ -108,7 +121,7 @@ function ColorField({ label, value, onChange, testId, accent }: { label: string;
   );
 }
 
-function Segmented<T extends string>({ value, options, onChange, testId, label }: { value: T; options: { value: T; label: React.ReactNode; title: string }[]; onChange: (v: T) => void; testId: string; label: string }) {
+export function Segmented<T extends string>({ value, options, onChange, testId, label }: { value: T; options: { value: T; label: React.ReactNode; title: string }[]; onChange: (v: T) => void; testId: string; label: string }) {
   return (
     <div role="radiogroup" aria-label={label} className="grid auto-cols-fr grid-flow-col gap-0.5 rounded-md border border-bo-border bg-bo-surface-3 p-0.5" data-testid={testId}>
       {options.map((o) => (
@@ -166,7 +179,8 @@ function Section({ title, children, testId }: { title: string; children: React.R
   );
 }
 
-export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, actions }: Props) {
+export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions, linkPresets = [], extraVisibility }: Props) {
+  const tp = useBuilderTestId();
   const [scope, setScope] = useState<"" | "md:">("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -174,9 +188,9 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
 
   if (!el || !selectedId) {
     return (
-      <div className="grid gap-2 p-4 text-[12.5px] leading-relaxed text-bo-muted" data-testid="email-builder-inspector-empty">
-        <p className="m-0 font-medium text-bo-text" data-testid="email-builder-inspector-empty-title">Selecciona un elemento</p>
-        <p className="m-0" data-testid="email-builder-inspector-empty-help">
+      <div className="grid gap-2 p-4 text-[12.5px] leading-relaxed text-bo-muted" data-testid={`${tp}-inspector-empty`}>
+        <p className="m-0 font-medium text-bo-text" data-testid={`${tp}-inspector-empty-title`}>Selecciona un elemento</p>
+        <p className="m-0" data-testid={`${tp}-inspector-empty-help`}>
           Haz clic en el lienzo o en una capa para editar su texto, enlace, imagen y estilo. Doble clic sobre un texto para escribir directamente.
         </p>
       </div>
@@ -197,7 +211,7 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
         value={current}
         options={SPACING.map((n) => ({ value: `${axis}-${n}`, label: `${Number(n) * 4} px` }))}
         onChange={(v) => setGroup(id, v)}
-        testId={`email-builder-inspector-${axis}`}
+        testId={`${tp}-inspector-${axis}`}
       />
     );
   };
@@ -217,18 +231,18 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
   };
 
   return (
-    <div className="grid content-start" data-testid="email-builder-inspector" data-observe="email-builder-inspector" data-selected-tag={tag}>
-      <div className="flex items-center gap-1 border-b border-bo-border px-3 py-2" data-testid="email-builder-inspector-head">
-        <div className="min-w-0 flex-1" data-testid="email-builder-inspector-name">
-          <p className="m-0 truncate text-[13px] font-semibold text-bo-text" data-testid="email-builder-inspector-label">{elementLabel(el)}</p>
-          <p className="m-0 font-mono text-[10.5px] text-bo-faint" data-testid="email-builder-inspector-tag">&lt;{tag}&gt;</p>
+    <div className="grid content-start" data-testid={`${tp}-inspector`} data-observe={`${tp}-inspector`} data-selected-tag={tag}>
+      <div className="flex items-center gap-1 border-b border-bo-border px-3 py-2" data-testid={`${tp}-inspector-head`}>
+        <div className="min-w-0 flex-1" data-testid={`${tp}-inspector-name`}>
+          <p className="m-0 truncate text-[13px] font-semibold text-bo-text" data-testid={`${tp}-inspector-label`}>{elementLabel(el)}</p>
+          <p className="m-0 font-mono text-[10.5px] text-bo-faint" data-testid={`${tp}-inspector-tag`}>&lt;{tag}&gt;</p>
         </div>
         {[
-          { icon: <ArrowUpLeft size={14} data-testid="email-builder-inspector-parent-icon" />, title: "Seleccionar contenedor (Esc)", onClick: actions.selectParent, id: "parent" },
-          { icon: <ArrowUp size={14} data-testid="email-builder-inspector-up-icon" />, title: "Subir", onClick: () => actions.move(-1), id: "up" },
-          { icon: <ArrowDown size={14} data-testid="email-builder-inspector-down-icon" />, title: "Bajar", onClick: () => actions.move(1), id: "down" },
-          { icon: <Copy size={14} data-testid="email-builder-inspector-duplicate-icon" />, title: "Duplicar (Ctrl+D)", onClick: actions.duplicate, id: "duplicate" },
-          { icon: <Trash2 size={14} data-testid="email-builder-inspector-delete-icon" />, title: "Eliminar (Supr)", onClick: actions.remove, id: "delete" },
+          { icon: <ArrowUpLeft size={14} data-testid={`${tp}-inspector-parent-icon`} />, title: "Seleccionar contenedor (Esc)", onClick: actions.selectParent, id: "parent" },
+          { icon: <ArrowUp size={14} data-testid={`${tp}-inspector-up-icon`} />, title: "Subir", onClick: () => actions.move(-1), id: "up" },
+          { icon: <ArrowDown size={14} data-testid={`${tp}-inspector-down-icon`} />, title: "Bajar", onClick: () => actions.move(1), id: "down" },
+          { icon: <Copy size={14} data-testid={`${tp}-inspector-duplicate-icon`} />, title: "Duplicar (Ctrl+D)", onClick: actions.duplicate, id: "duplicate" },
+          { icon: <Trash2 size={14} data-testid={`${tp}-inspector-delete-icon`} />, title: "Eliminar (Supr)", onClick: actions.remove, id: "delete" },
         ].map((b) => (
           <button
             key={b.id}
@@ -237,7 +251,7 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
             aria-label={b.title}
             onClick={b.onClick}
             className={cn("grid size-7 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-bo-muted transition hover:bg-bo-surface-2 hover:text-bo-text", b.id === "delete" && "hover:text-[#ff9c9c]")}
-            data-testid={`email-builder-inspector-${b.id}`}
+            data-testid={`${tp}-inspector-${b.id}`}
           >
             {b.icon}
           </button>
@@ -245,36 +259,38 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
       </div>
 
       {(isText || tag === "a" || tag === "img") && (
-        <Section title="Contenido" testId="email-builder-inspector-content">
+        <Section title="Contenido" testId={`${tp}-inspector-content`}>
           {isText && (
-            <Field label={el.children.length ? "Contenido (HTML)" : "Texto"} testId="email-builder-inspector-text">
+            <Field label={el.children.length ? "Contenido (HTML)" : "Texto"} testId={`${tp}-inspector-text`}>
               <CommitInput
                 multiline
                 value={el.children.length ? el.innerHTML : el.textContent ?? ""}
                 onCommit={(v) => actions.update(selectedId, (node) => (el.children.length ? (node.innerHTML = v) : (node.textContent = v)))}
-                testId="email-builder-inspector-text-input"
+                testId={`${tp}-inspector-text-input`}
               />
             </Field>
           )}
           {tag === "a" && (
-            <Field label="Enlace (URL)" testId="email-builder-inspector-href">
-              <CommitInput value={el.getAttribute("href") ?? ""} placeholder="https://" onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("href", v.trim()))} testId="email-builder-inspector-href-input" />
-              <span className="flex flex-wrap gap-1.5" data-testid="email-builder-inspector-href-presets">
+            <Field label="Enlace (URL)" testId={`${tp}-inspector-href`}>
+              <CommitInput value={el.getAttribute("href") ?? ""} placeholder="https://" onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("href", v.trim()))} testId={`${tp}-inspector-href-input`} />
+              <span className="flex flex-wrap gap-1.5" data-testid={`${tp}-inspector-href-presets`}>
                 {websiteUrl && (
-                  <button type="button" className="rounded-full border border-bo-border px-2 py-0.5 text-[11px] text-bo-muted hover:text-bo-text" onClick={() => actions.update(selectedId, (node) => node.setAttribute("href", websiteUrl))} data-testid="email-builder-inspector-href-website">
+                  <button type="button" className="rounded-full border border-bo-border px-2 py-0.5 text-[11px] text-bo-muted hover:text-bo-text" onClick={() => actions.update(selectedId, (node) => node.setAttribute("href", websiteUrl))} data-testid={`${tp}-inspector-href-website`}>
                     Web del restaurante
                   </button>
                 )}
-                <button type="button" className="rounded-full border border-bo-border px-2 py-0.5 text-[11px] text-bo-muted hover:text-bo-text" onClick={() => actions.update(selectedId, (node) => node.setAttribute("href", UNSUBSCRIBE_PLACEHOLDER))} data-testid="email-builder-inspector-href-unsubscribe">
-                  Enlace de baja
-                </button>
+                {linkPresets.map((preset) => (
+                  <button key={preset.id} type="button" className="rounded-full border border-bo-border px-2 py-0.5 text-[11px] text-bo-muted hover:text-bo-text" onClick={() => actions.update(selectedId, (node) => node.setAttribute("href", preset.href))} data-testid={`${tp}-inspector-href-${preset.id}`}>
+                    {preset.label}
+                  </button>
+                ))}
               </span>
             </Field>
           )}
           {tag === "img" && (
             <>
-              <Field label="Imagen (URL)" testId="email-builder-inspector-src">
-                <CommitInput value={el.getAttribute("src") ?? ""} placeholder="https://" onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("src", v.trim()))} testId="email-builder-inspector-src-input" />
+              <Field label="Imagen (URL)" testId={`${tp}-inspector-src`}>
+                <CommitInput value={el.getAttribute("src") ?? ""} placeholder="https://" onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("src", v.trim()))} testId={`${tp}-inspector-src-input`} />
               </Field>
               {actions.uploadImage && (
                 <>
@@ -283,23 +299,23 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
                     disabled={uploading}
                     onClick={() => fileRef.current?.click()}
                     className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-bo-border bg-bo-surface-2 text-[12px] text-bo-text transition hover:border-[#7c5cff]/60 disabled:opacity-60"
-                    data-testid="email-builder-inspector-upload"
+                    data-testid={`${tp}-inspector-upload`}
                   >
-                    {uploading ? <Loader2 size={14} className="animate-spin" aria-hidden="true" data-testid="email-builder-inspector-upload-icon-loading" /> : <ImageUp size={14} aria-hidden="true" data-testid="email-builder-inspector-upload-icon-idle" />}
+                    {uploading ? <Loader2 size={14} className="animate-spin" aria-hidden="true" data-testid={`${tp}-inspector-upload-icon-loading`} /> : <ImageUp size={14} aria-hidden="true" data-testid={`${tp}-inspector-upload-icon-idle`} />}
                     {uploading ? "Subiendo…" : "Subir imagen"}
                   </button>
-                  <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => void pickImage(e.currentTarget.files?.[0])} data-testid="email-builder-inspector-upload-input" />
+                  <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => void pickImage(e.currentTarget.files?.[0])} data-testid={`${tp}-inspector-upload-input`} />
                 </>
               )}
-              <Field label="Texto alternativo" testId="email-builder-inspector-alt">
-                <CommitInput value={el.getAttribute("alt") ?? ""} onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("alt", v))} testId="email-builder-inspector-alt-input" />
+              <Field label="Texto alternativo" testId={`${tp}-inspector-alt`}>
+                <CommitInput value={el.getAttribute("alt") ?? ""} onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("alt", v))} testId={`${tp}-inspector-alt-input`} />
               </Field>
             </>
           )}
         </Section>
       )}
 
-      <Section title="Estilo" testId="email-builder-inspector-style">
+      <Section title="Estilo" testId={`${tp}-inspector-style`}>
         <Segmented
           label="Tamaños a los que se aplica"
           value={scope}
@@ -308,7 +324,7 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
             { value: "", label: "Todos", title: "Móvil, tablet y escritorio" },
             { value: "md:", label: "Tablet y escritorio", title: "Solo desde 768 px (md:)" },
           ]}
-          testId="email-builder-inspector-scope"
+          testId={`${tp}-inspector-scope`}
         />
         {kind !== "image" && kind !== "divider" && (
           <>
@@ -317,35 +333,35 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
               value={(group("textAlign") ?? "") as string}
               onChange={(v) => setGroup("textAlign", v || null)}
               options={[
-                { value: "text-left", label: <AlignLeft size={14} data-testid="email-builder-inspector-align-left-icon" />, title: "Izquierda" },
-                { value: "text-center", label: <AlignCenter size={14} data-testid="email-builder-inspector-align-center-icon" />, title: "Centro" },
-                { value: "text-right", label: <AlignRight size={14} data-testid="email-builder-inspector-align-right-icon" />, title: "Derecha" },
+                { value: "text-left", label: <AlignLeft size={14} data-testid={`${tp}-inspector-align-left-icon`} />, title: "Izquierda" },
+                { value: "text-center", label: <AlignCenter size={14} data-testid={`${tp}-inspector-align-center-icon`} />, title: "Centro" },
+                { value: "text-right", label: <AlignRight size={14} data-testid={`${tp}-inspector-align-right-icon`} />, title: "Derecha" },
               ]}
-              testId="email-builder-inspector-align"
+              testId={`${tp}-inspector-align`}
             />
-            <div className="grid grid-cols-2 gap-2" data-testid="email-builder-inspector-type-row">
-              <SelectField label="Tamaño" value={group("fontSize")} options={FONT_SIZES} onChange={(v) => setGroup("fontSize", v)} testId="email-builder-inspector-font-size" />
-              <SelectField label="Peso" value={group("fontWeight")} options={WEIGHTS} onChange={(v) => setGroup("fontWeight", v)} testId="email-builder-inspector-font-weight" />
+            <div className="grid grid-cols-2 gap-2" data-testid={`${tp}-inspector-type-row`}>
+              <SelectField label="Tamaño" value={group("fontSize")} options={FONT_SIZES} onChange={(v) => setGroup("fontSize", v)} testId={`${tp}-inspector-font-size`} />
+              <SelectField label="Peso" value={group("fontWeight")} options={WEIGHTS} onChange={(v) => setGroup("fontWeight", v)} testId={`${tp}-inspector-font-weight`} />
             </div>
-            <SelectField label="Interlineado" value={group("lineHeight")} options={LEADING} onChange={(v) => setGroup("lineHeight", v)} testId="email-builder-inspector-leading" />
-            <ColorField label="Color del texto" value={textColor} accent={accent} onChange={(hex) => setGroup("textColor", hex ? `text-[${hex}]` : null)} testId="email-builder-inspector-text-color" />
+            <SelectField label="Interlineado" value={group("lineHeight")} options={LEADING} onChange={(v) => setGroup("lineHeight", v)} testId={`${tp}-inspector-leading`} />
+            <ColorField label="Color del texto" value={textColor} accent={accent} onChange={(hex) => setGroup("textColor", hex ? `text-[${hex}]` : null)} testId={`${tp}-inspector-text-color`} />
           </>
         )}
-        <ColorField label="Fondo" value={bgColor} accent={accent} onChange={(hex) => setGroup("bgColor", hex ? `bg-[${hex}]` : null)} testId="email-builder-inspector-bg-color" />
-        <div className="grid grid-cols-2 gap-2" data-testid="email-builder-inspector-spacing-row">
+        <ColorField label="Fondo" value={bgColor} accent={accent} onChange={(hex) => setGroup("bgColor", hex ? `bg-[${hex}]` : null)} testId={`${tp}-inspector-bg-color`} />
+        <div className="grid grid-cols-2 gap-2" data-testid={`${tp}-inspector-spacing-row`}>
           {spacing("px", "paddingX")}
           {spacing("py", "paddingY")}
           {spacing("mt", "marginTop")}
           {spacing("mb", "marginBottom")}
         </div>
-        <div className="grid grid-cols-2 gap-2" data-testid="email-builder-inspector-box-row">
-          <SelectField label="Esquinas" value={group("radius")} options={RADIUS} onChange={(v) => setGroup("radius", v)} testId="email-builder-inspector-radius" />
-          <SelectField label="Ancho" value={group("width")} options={WIDTH} onChange={(v) => setGroup("width", v)} testId="email-builder-inspector-width" />
+        <div className="grid grid-cols-2 gap-2" data-testid={`${tp}-inspector-box-row`}>
+          <SelectField label="Esquinas" value={group("radius")} options={RADIUS} onChange={(v) => setGroup("radius", v)} testId={`${tp}-inspector-radius`} />
+          <SelectField label="Ancho" value={group("width")} options={WIDTH} onChange={(v) => setGroup("width", v)} testId={`${tp}-inspector-width`} />
         </div>
-        <SelectField label="Ancho máximo" value={group("maxWidth")} options={MAX_WIDTH} onChange={(v) => setGroup("maxWidth", v)} testId="email-builder-inspector-max-width" emptyLabel="Sin límite" />
+        <SelectField label="Ancho máximo" value={group("maxWidth")} options={MAX_WIDTH} onChange={(v) => setGroup("maxWidth", v)} testId={`${tp}-inspector-max-width`} emptyLabel="Sin límite" />
       </Section>
 
-      <Section title="Visibilidad" testId="email-builder-inspector-visibility">
+      <Section title="Visibilidad" testId={`${tp}-inspector-visibility`}>
         <Segmented<Visibility>
           label="Mostrar en"
           value={readVisibility(classes)}
@@ -355,29 +371,14 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
             { value: "mobile", label: "Solo móvil", title: "Oculto desde 640 px" },
             { value: "desktop", label: "Sin móvil", title: "Oculto por debajo de 640 px" },
           ]}
-          testId="email-builder-inspector-visibility-mode"
+          testId={`${tp}-inspector-visibility-mode`}
         />
-        {/* campaign_block_channel_v1: one design, two channels. */}
-        <span className="mt-1 text-[11px] font-medium text-bo-muted" data-testid="email-builder-inspector-channel-caption">Canal de envío</span>
-        <Segmented<BlockChannel>
-          label="Canal de envío"
-          value={readChannel(el)}
-          onChange={(v) => actions.update(selectedId, (node) => writeChannel(node, v))}
-          options={[
-            { value: "all", label: "Ambos", title: "Se envía por email y por WhatsApp" },
-            { value: "email", label: "Email", title: "Solo en el email: no aparece en el WhatsApp" },
-            { value: "whatsapp", label: "WhatsApp", title: "Solo en el WhatsApp: no aparece en el email" },
-          ]}
-          testId="email-builder-inspector-channel-mode"
-        />
-        <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid="email-builder-inspector-channel-help">
-          Así el WhatsApp puede ser una versión breve del email.
-        </p>
+        {extraVisibility?.(el, (fn) => actions.update(selectedId, fn))}
       </Section>
 
-      <Section title="Clases Tailwind" testId="email-builder-inspector-classes">
-        <CommitInput multiline mono value={classes.join(" ")} onCommit={(v) => setClasses(splitClasses(v))} testId="email-builder-inspector-classes-input" />
-        <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid="email-builder-inspector-classes-help">
+      <Section title="Clases Tailwind" testId={`${tp}-inspector-classes`}>
+        <CommitInput multiline mono value={classes.join(" ")} onCommit={(v) => setClasses(splitClasses(v))} testId={`${tp}-inspector-classes-input`} />
+        <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid={`${tp}-inspector-classes-help`}>
           Cualquier clase de Tailwind v3, con prefijos sm: y md: para tablet y escritorio.
         </p>
       </Section>
