@@ -62,7 +62,19 @@ export function WebsiteBackdrop({ website, testId }: { website: string; testId: 
       </div>
     );
   }
-  return <iframe src={src} title="Web del restaurante" tabIndex={-1} aria-hidden="true" className="block h-full w-full border-0 bg-white" loading="lazy" data-testid={`${testId}-site`} />;
+  // Decoration only: the home runs, but can neither navigate the editor nor open popups.
+  return (
+    <iframe
+      src={src}
+      title="Web del restaurante"
+      tabIndex={-1}
+      aria-hidden="true"
+      sandbox="allow-scripts allow-same-origin"
+      className="block h-full w-full border-0 bg-white"
+      loading="lazy"
+      data-testid={`${testId}-site`}
+    />
+  );
 }
 
 // Light chips with a dark glyph, as on the website (.publicAdClose / .publicAdBack).
