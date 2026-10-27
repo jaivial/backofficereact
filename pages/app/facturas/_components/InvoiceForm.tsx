@@ -3,7 +3,7 @@ import { Save, Send, Upload, X, Search, Loader2, Check, AlertCircle, FileText, T
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { Select } from "../../../../ui/inputs/Select";
 import { PhoneInput } from "../../../../ui/inputs/PhoneInput";
-import { composePhoneE164 } from "../../../../ui/lib/phone";
+import { composePhoneE164, splitStoredPhone } from "../../../../ui/lib/phone";
 import { invoicePhoneParts } from "../utils";
 import { SearchableSelect } from "../../../../ui/inputs/SearchableSelect";
 import { DatePicker } from "../../../../ui/inputs/DatePicker";
@@ -148,9 +148,11 @@ function validateDniCif(value: string, isDniMode: boolean): string | null {
   return null;
 }
 
-// Validate the customer phone for its country code (invoice_phone_country_code_v1):
-// Spanish numbers keep the 9-digit rule (6, 7, 8 or 9 first); any other code
-// takes 6-15 digits within the E.164 limit, like the backend normalizePhoneParts.
+// Validate the customer phone for its country code (invoice_phone_country_code_v1),
+// mirroring the backend splitInvoicePhone: the number is national (a typed
+// international prefix is moved to the selector on input); Spanish numbers
+// keep the 9-digit rule (6, 7, 8 or 9 first, a typed 34 in front is allowed);
+// any other code takes 6+ digits within the 15-digit E.164 limit.
 function validatePhone(countryCode: string, phone: string): string | null {
   if (!phone.trim()) {
     return null; // Phone is optional
@@ -158,15 +160,18 @@ function validatePhone(countryCode: string, phone: string): string | null {
   if (/[^\d\s.\-()+]/.test(phone)) {
     return "El teléfono solo puede contener números";
   }
+  if (/^[\s(]*(\+|00)/.test(phone)) {
+    return "Escribe el número sin prefijo y elige el prefijo en el selector";
+  }
+  const digits = phone.replace(/\D/g, "");
   if (countryCode === "34") {
-    // Remove spaces, dots, dashes, and a typed +34 prefix
-    const cleanPhone = phone.replace(/[\s.\-()]/g, "").replace(/^(\+|00)?34(?=\d{9}$)/, "");
-    if (!/^[6789][0-9]{8}$/.test(cleanPhone)) {
+    const national = digits.length === 11 && digits.startsWith("34") ? digits.slice(2) : digits;
+    if (!/^[6789][0-9]{8}$/.test(national)) {
       return "El teléfono debe tener 9 dígitos y empezar por 6, 7, 8 o 9";
     }
     return null;
   }
-  return composePhoneE164(countryCode, phone) ? null : "El teléfono no es válido para el prefijo elegido";
+  return composePhoneE164(countryCode, digits) ? null : "El teléfono no es válido para el prefijo elegido";
 }
 
 // Validate Spanish postal code (5 digits, first two between 01-52)
@@ -290,6 +295,20 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
   const initialPhone = useMemo(() => invoicePhoneParts(invoice), [invoice]);
   const [customerPhoneCountryCode, setCustomerPhoneCountryCode] = useState(initialPhone.countryCode);
   const [customerPhone, setCustomerPhone] = useState(initialPhone.national);
+  // A number typed or pasted with its international prefix ("+44 7700…",
+  // "0034 600…") selects that prefix and keeps only the national part, so
+  // the code is never stored twice (invoice_phone_country_code_v1).
+  const handlePhoneNumberChange = useCallback((value: string) => {
+    if (/^[\s(]*(\+|00)/.test(value)) {
+      const split = splitStoredPhone(value.replace(/^[\s(]*00/, "+"), "");
+      if (split.countryCode) {
+        setCustomerPhoneCountryCode(split.countryCode);
+        setCustomerPhone(split.national);
+        return;
+      }
+    }
+    setCustomerPhone(value);
+  }, []);
   const [customerAddressStreet, setCustomerAddressStreet] = useState(invoice?.customer_address_street || "");
   const [customerAddressNumber, setCustomerAddressNumber] = useState(invoice?.customer_address_number || "");
   const [customerAddressPostalCode, setCustomerAddressPostalCode] = useState(invoice?.customer_address_postal_code || "");
@@ -1171,7 +1190,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   countryCode={customerPhoneCountryCode}
                   number={customerPhone}
                   onCountryCodeChange={setCustomerPhoneCountryCode}
-                  onNumberChange={setCustomerPhone}
+                  onNumberChange={handlePhoneNumberChange}
                   onBlur={() => handleBlur("customerPhone")}
                   invalid={hasError("customerPhone")}
                   describedBy={hasError("customerPhone") ? "customerPhone-error" : undefined}

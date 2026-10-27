@@ -14,8 +14,8 @@ interface InvoiceDetailsModalProps {
   onClose: () => void;
   onSendEmail?: (invoice: Invoice) => void;
   onSendWhatsApp?: (invoice: Invoice) => void;
-  /** The restaurant's WhatsApp is connected: only then the invoice goes out by WhatsApp with the PDF (invoice_whatsapp_autosend_v1). */
-  whatsappConnected?: boolean;
+  /** The restaurant's WhatsApp is connected: only then the invoice goes out by WhatsApp with the PDF (invoice_whatsapp_autosend_v1); null while loading. */
+  whatsappConnected?: boolean | null;
   onDownloadPdf?: (invoice: Invoice) => void;
   // Editar y eliminar, junto a las acciones de envio (facturas_details_actions_v1).
   onEdit?: (invoice: Invoice) => void;
@@ -124,7 +124,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
           <p className="bo-muted" data-testid="details-wa-to">Para: {formatInvoicePhone(invoice) || "sin teléfono"}</p>
           <div className="bo-detailsBubble bo-detailsBubble--wa" data-testid="details-wa-preview"><p data-testid="details-wa-body">{msgText}</p></div>
           {canSendWhatsApp && onSendWhatsApp ? <button type="button" className="bo-btn bo-btn--primary" onClick={() => onSendWhatsApp(invoice)} data-testid="details-wa-send"><MessageCircle size={14} aria-hidden="true" /> Editar y enviar</button> : null}
-          {!whatsappConnected ? <p className="bo-muted" data-testid="details-wa-disconnected-hint" data-coordination-id="invoice_whatsapp_autosend_v1">WhatsApp no conectado: conecta el WhatsApp del restaurante en Configuración → Contacto para enviar la factura con el PDF adjunto.</p> : null}
+          {whatsappConnected === false ? <p className="bo-muted" data-testid="details-wa-disconnected-hint" data-coordination-id="invoice_whatsapp_autosend_v1">WhatsApp no conectado: conecta el WhatsApp del restaurante en Configuración → Contacto para enviar la factura con el PDF adjunto.</p> : null}
         </div>
       ) : null}
       {tab === "detalle" ? (

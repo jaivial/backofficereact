@@ -34,14 +34,18 @@ export function PhoneInput({
   /** Unique data-testid of the number input; the prefix select gets `${testId}-cc`. */
   testId?: string;
 }) {
+  // A stored prefix outside the shared list (e.g. a booking from +41) stays
+  // selectable instead of silently showing the first option.
+  const cc = countryCode || "34";
+  const options = phoneCodeOptions.some((o) => o.value === cc) ? phoneCodeOptions : [{ value: cc, label: `+${cc}`, icon: null }, ...phoneCodeOptions];
   return (
-    <div className={cn("bo-phone", className)} data-ui="phone-input">
+    <div className={cn("bo-phone", className)} data-ui="phone-input" data-testid={testId ? `${testId}-group` : undefined}>
       <Select
         className="bo-phoneCC"
-        value={countryCode || "34"}
+        value={cc}
         onChange={onCountryCodeChange}
         ariaLabel={countryAriaLabel}
-        options={phoneCodeOptions}
+        options={options}
         disabled={disabled}
         data-testid={testId ? `${testId}-cc` : undefined}
       />

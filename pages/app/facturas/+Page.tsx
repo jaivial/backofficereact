@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
@@ -106,8 +106,24 @@ export default function Page() {
   const [sendChannel, setSendChannel] = useState<"email" | "whatsapp" | undefined>(undefined);
 
   // invoice_whatsapp_autosend_v1: the restaurant's own WhatsApp is connected,
-  // so every send also delivers the WhatsApp with the PDF attached.
-  const [whatsappConnected, setWhatsappConnected] = useState(false);
+  // so every send also delivers the WhatsApp with the PDF attached. null while
+  // loading; the send flows await loadWhatsAppStatus instead of assuming.
+  const [whatsappConnected, setWhatsappConnected] = useState<boolean | null>(null);
+  const whatsappStatusRef = useRef<Promise<boolean> | null>(null);
+  const loadWhatsAppStatus = useCallback((): Promise<boolean> => {
+    if (!whatsappStatusRef.current) {
+      whatsappStatusRef.current = api.invoices
+        .whatsappStatus()
+        .then((res) => res.success && res.connected === true)
+        .catch(() => false);
+      void whatsappStatusRef.current.then(setWhatsappConnected);
+    }
+    return whatsappStatusRef.current;
+  }, [api]);
+
+  // One save at a time: a double click on "Enviar" must not send twice.
+  const [savingInvoice, setSavingInvoice] = useState(false);
+  const savingInvoiceRef = useRef(false);
 
   // Invoice details modal state
   const [detailsInvoice, setDetailsInvoice] = useState<Invoice | null>(null);
@@ -160,12 +176,8 @@ export default function Page() {
   }, []); // ponytail: run once on mount; invoices from SSR data
 
   useEffect(() => {
-    let cancelled = false;
-    void api.invoices.whatsappStatus().then((res) => {
-      if (!cancelled) setWhatsappConnected(res.success && res.connected === true);
-    }).catch(() => { /* treated as not connected */ });
-    return () => { cancelled = true; };
-  }, [api]);
+    void loadWhatsAppStatus();
+  }, [loadWhatsAppStatus]);
 
   // Fetch invoices with filters
   const fetchInvoices = useCallback(async () => {
@@ -358,6 +370,9 @@ export default function Page() {
   // duplicating (invoices_preview_save_first_v1).
   const handleSaveInvoice = useCallback(
     async (input: InvoiceInput, shouldSend: boolean = false, opts?: { keepOpen?: boolean }): Promise<number | undefined> => {
+      if (savingInvoiceRef.current) return undefined;
+      savingInvoiceRef.current = true;
+      setSavingInvoice(true);
       try {
         let res;
         let invoiceId: number | undefined;
@@ -380,9 +395,13 @@ export default function Page() {
             // WhatsApp with the PDF attached when the restaurant's WhatsApp is
             // connected and the invoice has a phone; each channel reports.
             const results: { ok: boolean; text: string }[] = [];
-            const sendRes = await api.invoices.send(invoiceId);
-            results.push(sendRes.success ? { ok: true, text: `Email enviado a ${input.customer_email}` } : { ok: false, text: sendRes.message || "No se pudo enviar el email" });
-            if (whatsappConnected && input.customer_phone) {
+            try {
+              const sendRes = await api.invoices.send(invoiceId);
+              results.push(sendRes.success ? { ok: true, text: `Email enviado a ${input.customer_email}` } : { ok: false, text: sendRes.message || "No se pudo enviar el email" });
+            } catch (e) {
+              results.push({ ok: false, text: e instanceof Error ? e.message : "No se pudo enviar el email" });
+            }
+            if (input.customer_phone && (await loadWhatsAppStatus())) {
               results.push(await sendWhatsAppNow(invoiceId));
             }
             const allOk = results.every((r) => r.ok);
@@ -408,9 +427,12 @@ export default function Page() {
       } catch (e) {
         pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "Error desconocido" });
         return undefined;
+      } finally {
+        savingInvoiceRef.current = false;
+        setSavingInvoice(false);
       }
     },
-    [api, editingInvoice, pushToast, fetchInvoices, whatsappConnected, sendWhatsAppNow],
+    [api, editingInvoice, pushToast, fetchInvoices, loadWhatsAppStatus, sendWhatsAppNow],
   );
 
   // Search reservations for auto-fill
@@ -426,31 +448,32 @@ export default function Page() {
   );
 
   // Handle send - opens the send modal with every usable channel. With the
-  // restaurant's WhatsApp connected the modal also sends the WhatsApp + PDF,
-  // so an incomplete email config only blocks when WhatsApp cannot be used
-  // either (invoice_whatsapp_autosend_v1).
+  // restaurant's WhatsApp connected the modal also sends the WhatsApp + PDF;
+  // an incomplete email config then opens it with WhatsApp only, and only
+  // blocks when WhatsApp cannot be used either (invoice_whatsapp_autosend_v1).
   const handleSendEmail = useCallback(async (invoice: Invoice) => {
-    if (!(whatsappConnected && invoice.customer_phone)) {
-      // Check email settings before opening modal
-      try {
-        const res = await api.config.getEmailProviderConfig();
-        // The backend adds isComplete/missingFields to the config payload.
-        if (res.success && "isComplete" in res && res.isComplete === false) {
-          const fields = "missingFields" in res && Array.isArray(res.missingFields) ? res.missingFields.join(", ") : "";
-          pushToast({
-            kind: "error",
-            title: "Email no configurado",
-            message: `Faltan campos: ${fields || "configuraci\u00f3n de email incompleta"}. Ve a Ajustes \u2192 Email para configurarlo.`,
-          });
-          return;
-        }
-      } catch {
-        // If check fails, allow modal to open anyway
+    const canWhatsApp = Boolean(invoice.customer_phone) && (await loadWhatsAppStatus());
+    let missingEmailFields: string | null = null;
+    try {
+      const res = await api.config.getEmailProviderConfig();
+      // The backend adds isComplete/missingFields to the config payload.
+      if (res.success && "isComplete" in res && res.isComplete === false) {
+        missingEmailFields = "missingFields" in res && Array.isArray(res.missingFields) ? res.missingFields.join(", ") : "";
       }
+    } catch {
+      // If check fails, allow modal to open anyway
     }
-    setSendChannel(undefined);
+    if (missingEmailFields !== null && !canWhatsApp) {
+      pushToast({
+        kind: "error",
+        title: "Email no configurado",
+        message: `Faltan campos: ${missingEmailFields || "configuraci\u00f3n de email incompleta"}. Ve a Ajustes \u2192 Email para configurarlo.`,
+      });
+      return;
+    }
+    setSendChannel(missingEmailFields !== null ? "whatsapp" : undefined);
     setEmailInvoice(invoice);
-  }, [api, pushToast, whatsappConnected]);
+  }, [api, pushToast, loadWhatsAppStatus]);
 
   // Handle email sent - updates the invoice in the list
   const handleEmailSent = useCallback((updatedInvoice: Invoice) => {
@@ -739,6 +762,7 @@ export default function Page() {
                 <InvoiceForm
                   invoice={editingInvoice}
                   onSave={handleSaveInvoice}
+                  isSubmitting={savingInvoice}
                   onCancel={handleCancelEdit}
                   searchReservations={searchReservations}
                   initialReservation={initialReservation}
@@ -762,7 +786,7 @@ export default function Page() {
       <SendEmailModal
         open={!!emailInvoice}
         invoice={emailInvoice}
-        whatsappConnected={whatsappConnected}
+        whatsappConnected={whatsappConnected === true}
         initialChannel={sendChannel}
         onClose={handleCloseEmail}
         onSent={handleEmailSent}

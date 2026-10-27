@@ -111,7 +111,7 @@ type InvoicePhone = { customer_phone?: string | null; customer_phone_country_cod
  */
 export function invoicePhoneParts(invoice: InvoicePhone): { countryCode: string; national: string } {
   const phone = (invoice?.customer_phone || "").trim();
-  const countryCode = (invoice?.customer_phone_country_code || "").trim();
+  const countryCode = (invoice?.customer_phone_country_code || "").replace(/\D/g, "");
   return countryCode ? { countryCode, national: phone } : splitStoredPhone(phone, "34");
 }
 
@@ -122,7 +122,7 @@ export function invoicePhoneParts(invoice: InvoicePhone): { countryCode: string;
  */
 export function formatInvoicePhone(invoice: InvoicePhone): string {
   const phone = (invoice?.customer_phone || "").trim();
-  const countryCode = (invoice?.customer_phone_country_code || "").trim();
+  const countryCode = (invoice?.customer_phone_country_code || "").replace(/\D/g, "");
   return countryCode && phone ? `+${countryCode} ${phone}` : phone;
 }
 
@@ -147,19 +147,22 @@ export function clearWaSendKey(userId: number, restaurantId: number, invoiceId: 
 
 /**
  * Key of the current send intent: the stored one, else the latest unfinished
- * attempt on the backend (fresh browser / post-logout), else a new one.
+ * attempt on the backend (fresh browser / post-logout), else a new one. When
+ * the backend lookup fails the new key is not persisted, so the next send
+ * retries the recovery instead of skipping a pending attempt.
  */
 export async function resolveWaSendKey(userId: number, restaurantId: number, invoiceId: number): Promise<string> {
   try {
     const stored = localStorage.getItem(waSendStorageKey(userId, restaurantId, invoiceId));
     if (stored) return stored;
   } catch { /* storage optional */ }
-  let key = newWaSendKey();
   try {
     const res = await createClient({ baseUrl: "" }).invoices.getWhatsAppAttempt(invoiceId);
     const att = res.success ? res.attempt : null;
-    if (att && !(att.text_status === "sent" && att.pdf_status === "sent")) key = att.idempotency_key;
-  } catch { /* new intent */ }
-  storeWaSendKey(userId, restaurantId, invoiceId, key);
-  return key;
+    const key = att && !(att.text_status === "sent" && att.pdf_status === "sent") ? att.idempotency_key : newWaSendKey();
+    storeWaSendKey(userId, restaurantId, invoiceId, key);
+    return key;
+  } catch {
+    return newWaSendKey();
+  }
 }
