@@ -3,8 +3,8 @@ import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ArrowUpLeft, Co
 import { cn } from "../../../../../ui/shadcn/utils";
 import { Select } from "../../../../../ui/inputs/Select";
 import {
-  UNSUBSCRIBE_PLACEHOLDER, elementKind, elementLabel, findById, isTextElement, parseFragment, readGroup, readVisibility,
-  splitClasses, writeGroup, writeVisibility, type ClassGroupId, type Visibility,
+  UNSUBSCRIBE_PLACEHOLDER, elementKind, elementLabel, findById, isTextElement, parseFragment, readChannel, readGroup, readVisibility,
+  splitClasses, writeChannel, writeGroup, writeVisibility, type BlockChannel, type ClassGroupId, type Visibility,
 } from "./emailBuilderDocument";
 
 /*
@@ -357,6 +357,22 @@ export function EmailBuilderInspector({ html, selectedId, accent, websiteUrl, ac
           ]}
           testId="email-builder-inspector-visibility-mode"
         />
+        {/* campaign_block_channel_v1: one design, two channels. */}
+        <span className="mt-1 text-[11px] font-medium text-bo-muted" data-testid="email-builder-inspector-channel-caption">Canal de envío</span>
+        <Segmented<BlockChannel>
+          label="Canal de envío"
+          value={readChannel(el)}
+          onChange={(v) => actions.update(selectedId, (node) => writeChannel(node, v))}
+          options={[
+            { value: "all", label: "Ambos", title: "Se envía por email y por WhatsApp" },
+            { value: "email", label: "Email", title: "Solo en el email: no aparece en el WhatsApp" },
+            { value: "whatsapp", label: "WhatsApp", title: "Solo en el WhatsApp: no aparece en el email" },
+          ]}
+          testId="email-builder-inspector-channel-mode"
+        />
+        <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid="email-builder-inspector-channel-help">
+          Así el WhatsApp puede ser una versión breve del email.
+        </p>
       </Section>
 
       <Section title="Clases Tailwind" testId="email-builder-inspector-classes">

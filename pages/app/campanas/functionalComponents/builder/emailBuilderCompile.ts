@@ -1,4 +1,4 @@
-import { EB_ROLE, UNSUBSCRIBE_PLACEHOLDER, parseFragment, stripIds } from "./emailBuilderDocument";
+import { EB_ROLE, UNSUBSCRIBE_PLACEHOLDER, designForChannel, parseFragment, stripIds } from "./emailBuilderDocument";
 
 /*
  * Design -> email (coordination ids campaign_html_builder_v1, campaign_tools_v1).
@@ -295,9 +295,12 @@ function blockMarkdown(el: Element, out: string[]): void {
   flush();
 }
 
-/** Markdown the WhatsApp sender understands (headings, bold, links as buttons, lead image). */
+/**
+ * Markdown the WhatsApp sender understands (headings, bold, links as buttons,
+ * lead image). Blocks marked "Solo email" are left out (campaign_block_channel_v1).
+ */
 export function designToWhatsAppMarkdown(design: string): string {
   const out: string[] = [];
-  for (const child of Array.from(parseFragment(stripIds(design)).children)) blockMarkdown(child, out);
+  for (const child of Array.from(parseFragment(designForChannel(stripIds(design), "whatsapp")).children)) blockMarkdown(child, out);
   return out.join("\n\n").trim();
 }
