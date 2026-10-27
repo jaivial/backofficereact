@@ -35,16 +35,16 @@ export function CampaignField({ label, children, helper, as = "label", className
   const Tag = as;
   return (
     <Tag className={cn(CAMPAIGN_FIELD_CELL, className)} data-testid={testId} data-observe={testId} {...rest}>
-      <span className={CAMPAIGN_CAPTION_CLASS}>{label}</span>
+      <span className={CAMPAIGN_CAPTION_CLASS} data-testid={`${testId}-caption`}>{label}</span>
       {children}
-      {helper ? <span className={CAMPAIGN_HELPER_CLASS}>{helper}</span> : null}
+      {helper ? <span className={CAMPAIGN_HELPER_CLASS} data-testid={`${testId}-helper`}>{helper}</span> : null}
     </Tag>
   );
 }
 
 /** Bare field cell for controls that paint their own label (counters). */
-export function CampaignFieldCell({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn(CAMPAIGN_FIELD_CELL, className)}>{children}</div>;
+export function CampaignFieldCell({ children, className, testId }: { children: React.ReactNode; className?: string; testId: string }) {
+  return <div className={cn(CAMPAIGN_FIELD_CELL, className)} data-testid={testId}>{children}</div>;
 }
 
 /** Status copy + badge tone per campaign status (draft / sending / sent). */
@@ -75,7 +75,7 @@ export const CAMPAIGN_CHANNEL_UI: Record<CampaignChannel, { label: string }> = {
 
 /** Audience summary in words, so a card explains who it will reach. */
 export function campaignAudienceSummary(audience: Campaign["audience"], days: number, manualCount: number): string {
-  if (audience === "manual") return `${manualCount} contacto${manualCount === 1 ? "" : "s"} manuales`;
+  if (audience === "manual") return manualCount === 1 ? "1 contacto manual" : `${manualCount} contactos manuales`;
   return `Reservas de los últimos ${days} días`;
 }
 
@@ -142,12 +142,13 @@ export function CampaignSection({
       data-testid={testId}
       data-observe={testId}
       title={
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2" data-testid={`${testId}-heading`}>
           <span
             className="grid size-7 shrink-0 place-items-center rounded-bo-sm border border-bo-border-2 bg-bo-surface-2 text-bo-accent"
             aria-hidden="true"
             data-coord-id="bo_editor_tokens_v1"
             data-observe={testId ? `${testId}-icon` : undefined}
+            data-testid={`${testId}-icon`}
           >
             {icon}
           </span>

@@ -775,7 +775,17 @@ export type MenuSlider = {
   images: MenuSliderImage[];
 };
 
-export type GroupMenuV2 = {
+export type MenuPublicSEO = {
+  seo_slug: string;
+  seo_title: string;
+  seo_title_english: string;
+  seo_description: string;
+  seo_description_english: string;
+  seo_h1: string;
+  seo_h1_english: string;
+};
+
+export type GroupMenuV2 = MenuPublicSEO & {
   id: number;
   menu_title: string;
   price: string;
@@ -3076,6 +3086,10 @@ export type Campaign = {
   name: string;
   subject: string;
   body_markdown: string;
+  /** HTML builder design: Tailwind-classed fragment (campaign_html_builder_v1). */
+  body_html?: string;
+  /** Compiled email sent by SMTP: Tailwind inlined + responsive media queries. */
+  email_html?: string;
   theme: CampaignTheme;
   channels: CampaignChannel[];
   audience: "bookings" | "manual";
@@ -3091,8 +3105,11 @@ export type Campaign = {
 };
 export type CampaignInput = Pick<
   Campaign,
-  "name" | "subject" | "body_markdown" | "theme" | "channels" | "audience" | "audience_days" | "manual_recipients" | "email_per_minute" | "whatsapp_per_minute"
+  "name" | "subject" | "body_markdown" | "body_html" | "email_html" | "theme" | "channels" | "audience" | "audience_days" | "manual_recipients" | "email_per_minute" | "whatsapp_per_minute"
 >;
+/** One configured LLM the campaign builder assistant can use ("provider/model"). */
+export type CampaignAIModel = { id: string; name: string; provider: string; label: string };
+export type CampaignAIChatMessage = { role: "user" | "assistant"; content: string };
 export type CampaignUnsubscribedKind = "baja" | "email_invalido" | "whatsapp_invalido" | "pendiente_verificar";
 export type CampaignUnsubscribedCounts = Partial<Record<CampaignUnsubscribedKind, number>>;
 export type CampaignUnsubscribed = {

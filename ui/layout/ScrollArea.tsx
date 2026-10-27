@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../shadcn/utils";
+import { childTestId } from "../lib/testId";
 
 const MIN_THUMB_SIZE = 28;
 
@@ -9,6 +10,8 @@ interface ScrollAreaProps {
   style?: React.CSSProperties;
   dataSlot?: string;
   maxHeight?: number | string;
+  /** Unique root test id; viewport, bar and thumb derive theirs from it. */
+  testId?: string;
 }
 
 export function ScrollArea({
@@ -17,6 +20,7 @@ export function ScrollArea({
   style,
   dataSlot = "scroll-area",
   maxHeight,
+  testId,
 }: ScrollAreaProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
@@ -123,12 +127,14 @@ export function ScrollArea({
         ...(resolvedMaxHeight ? { maxHeight: resolvedMaxHeight } : {}),
       }}
       data-slot={dataSlot}
+      data-testid={testId}
     >
       <div
         ref={viewportRef}
         className="bo-scrollAreaViewport h-full w-full overflow-auto overscroll-contain"
         style={resolvedMaxHeight ? { maxHeight: resolvedMaxHeight } : undefined}
         data-slot="scroll-area-viewport"
+        data-testid={childTestId(testId, "viewport")}
       >
         {children}
       </div>
@@ -137,6 +143,7 @@ export function ScrollArea({
         <div
           className="bo-scrollBar absolute right-0 top-0 z-10 h-full cursor-pointer opacity-60 hover:opacity-100"
           data-slot="scroll-area-bar"
+          data-testid={childTestId(testId, "bar")}
           onPointerDown={handleTrackClick}
         >
           <div
@@ -146,6 +153,7 @@ export function ScrollArea({
               dragging && "is-dragging",
             )}
             data-slot="scroll-area-thumb"
+            data-testid={childTestId(testId, "thumb")}
             style={{
               height: thumbHeight,
               transform: `translateY(${thumbTop}px)`,

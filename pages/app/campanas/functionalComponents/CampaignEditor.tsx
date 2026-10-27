@@ -1,19 +1,27 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "vike/client/router";
-import { Eye, FileText, Gauge, Mail, MessageCircle, Palette, PenLine, ScrollText, Send, Settings, Trash2, Users, Workflow } from "lucide-react";
+import { Eye, FileText, Gauge, Mail, MessageCircle, PenLine, RefreshCw, ScrollText, Send, Settings, Users, Workflow } from "lucide-react";
 import type { Campaign, CampaignChannel, CampaignInput, CampaignRecipient } from "../../../../api/types";
 import { Button } from "../../../../ui/actions/Button";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import { Panel } from "../../../../ui/shell/Panel";
-import { CampaignField, CampaignFieldCell, CampaignSection, CampaignStatusBadge, CAMPAIGN_CAPTION_CLASS } from "./campaignUi";
+import { ConfirmDialog } from "../../../../ui/overlays/ConfirmDialog";
+import { CampaignField, CampaignFieldCell, CampaignSection, campaignAudienceSummary, CAMPAIGN_CAPTION_CLASS } from "./campaignUi";
 import { Tabs, type TabItem } from "../../../../ui/nav/Tabs";
-import { RichTextEditor } from "../../../../ui/inputs/RichTextEditor";
 import { Select } from "../../../../ui/inputs/Select";
 import { InlineCounter } from "../../../../ui/widgets/InlineCounter";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { apiMessage, campaignToInput, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_PAUSE, CAMPAIGN_RATE_LIMITS, CAMPAIGN_RATE_NOTES, createCampaignsAPI, emptyCampaignInput, estimatedTime } from "./campaignsApi";
-import { CampaignPreview } from "./CampaignPreview";
 import { CampaignFlowCanvas, type CampaignFlowSection } from "./CampaignFlowCanvas";
+import { CampaignEditorHeader, type CampaignSaveState } from "./CampaignEditorHeader";
+import { EmailBuilder } from "./builder/EmailBuilder";
+import { defaultDesign, legacyDesign, type BlockContext } from "./builder/emailBuilderBlocks";
+import { compileCampaignEmail, designToWhatsAppMarkdown, fillPreviewPlaceholders } from "./builder/emailBuilderCompile";
+import { DeviceSwitch, EmailPreviewFrame } from "./builder/EmailPreviewFrame";
+import type { BuilderDevice } from "./builder/EmailBuilderCanvas";
+import { renderCampaignEmailBody } from "./campaignEmailBody";
+import { IPhoneFrame, IPHONE_DEFAULT_TIME } from "./IPhoneFrame";
+import { WhatsAppPreview } from "./WhatsAppPreview";
 
 /** Message of a rejected request, falling back to a copy the operator can act on. */
 function errorMessage(err: unknown, fallback: string): string {
@@ -22,14 +30,29 @@ function errorMessage(err: unknown, fallback: string): string {
 
 const LIST_HREF = "/app/campanas";
 
-export type CampaignEditorTab = "flow" | "editor" | "preview" | "settings";
+/** Editor tabs, also the `?tab=` value of the editor URL. */
+export type CampaignEditorTab = "flujo" | "diseno" | "previsualizacion" | "ajustes";
 
-const CAMPAIGN_EDITOR_TABS: TabItem[] = [
-  { id: "flow", label: "Flujo", href: "#", icon: <Workflow size={16} aria-hidden="true" /> },
-  { id: "editor", label: "Editor", href: "#", icon: <PenLine size={16} aria-hidden="true" /> },
-  { id: "preview", label: "Previsualización", href: "#", icon: <Eye size={16} aria-hidden="true" /> },
-  { id: "settings", label: "Ajustes", href: "#", icon: <Settings size={16} aria-hidden="true" /> },
+const CAMPAIGN_EDITOR_TABS: { id: CampaignEditorTab; label: string; Icon: typeof Workflow }[] = [
+  { id: "flujo", label: "Flujo", Icon: Workflow },
+  { id: "diseno", label: "Diseño", Icon: PenLine },
+  { id: "previsualizacion", label: "Previsualización", Icon: Eye },
+  { id: "ajustes", label: "Ajustes", Icon: Settings },
 ];
+
+/** Tab named by the `?tab=` query; anything else opens the flow. */
+export function campaignEditorTab(raw: unknown): CampaignEditorTab {
+  return CAMPAIGN_EDITOR_TABS.find((t) => t.id === raw)?.id ?? "flujo";
+}
+
+/** Tab holding the section a flow node points to. */
+const SECTION_TAB: Record<CampaignFlowSection, CampaignEditorTab> = {
+  "campaign-content-panel": "diseno",
+  "campaign-data-panel": "ajustes",
+  "campaign-audience-panel": "ajustes",
+  "campaign-rate-panel": "ajustes",
+  "campaign-send-panel": "ajustes",
+};
 
 type SelectOption = { value: string; label: string };
 
@@ -38,20 +61,24 @@ const AUDIENCE_SOURCE_OPTIONS: SelectOption[] = [
   { value: "manual", label: "Lista manual" },
 ];
 
+/** Desktop: the tab panel takes the rest of the viewport and scrolls inside. */
+const TABPANEL_SCROLL = "min-w-0 lg:min-h-0 lg:flex-1 lg:overflow-y-auto";
+
 type CampaignEditorProps = {
   mode: "create" | "edit";
   campaignId?: number;
   initialCampaign?: Campaign | null;
+  /** Tab from the URL (`?tab=`), read by the page so SSR and client agree. */
+  initialTab?: CampaignEditorTab;
 };
 
-export function CampaignEditor({ mode, campaignId, initialCampaign = null }: CampaignEditorProps) {
+export function CampaignEditor({ mode, campaignId, initialCampaign = null, initialTab = "flujo" }: CampaignEditorProps) {
   const api = useMemo(() => createCampaignsAPI(), []);
   const { pushToast } = useToasts();
   const [form, setForm] = useState<CampaignInput>(initialCampaign ? campaignToInput(initialCampaign) : emptyCampaignInput());
   const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign);
-  const [template, setTemplate] = useState<{ shell: string; bodyPlaceholder: string; brandName: string; logoUrl: string; website: string; unsubscribeUrl: string }>({
-    shell: "",
-    bodyPlaceholder: "",
+  const [template, setTemplate] = useState<{ loaded: boolean; brandName: string; logoUrl: string; website: string; unsubscribeUrl: string }>({
+    loaded: false,
     brandName: "",
     logoUrl: "",
     website: "",
@@ -59,10 +86,16 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   });
   const themeApplied = useRef(false);
   const navigated = useRef(false);
-  const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
-  const [tab, setTab] = useState<CampaignEditorTab>("flow");
+  const [device, setDevice] = useState<BuilderDevice>("desktop");
+  const [previewEmail, setPreviewEmail] = useState<{ html: string; error: string }>({ html: "", error: "" });
+  const [tab, setTab] = useState<CampaignEditorTab>(initialTab);
+  const tabRef = useRef(tab);
+  tabRef.current = tab;
+  const [confirm, setConfirm] = useState<"send" | "delete" | null>(null);
   const [audience, setAudience] = useState<{ total: number; emails: number; whatsapp: number } | null>(null);
   const [busy, setBusy] = useState(false);
+  // Only a save drives the "Guardando…" state: sending and deleting also set busy.
+  const [saving, setSaving] = useState(false);
   const [testTarget, setTestTarget] = useState("");
   const [recipients, setRecipients] = useState<CampaignRecipient[]>([]);
   // Snapshot of the last persisted form: "Enviar" sends the saved campaign, so
@@ -70,14 +103,38 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
   const savedFormRef = useRef<string>(JSON.stringify(initialCampaign ? campaignToInput(initialCampaign) : null));
   const coordId = campaign?.coord_id ?? "camp-new";
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const basePath = campaign ? `${LIST_HREF}/${campaign.id}` : `${LIST_HREF}/nueva`;
 
-  // Flujo -> editor: pulsar un nodo del grafo abre su seccion del editor.
-  const jumpToSection = useCallback((section: CampaignFlowSection) => {
-    setTab("editor");
-    window.setTimeout(() => {
-      document.querySelector(`[data-testid="${section}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 60);
+  // The tab lives in the URL (`?tab=`): shareable, survives reloads and the
+  // first save. replaceState keeps Vike's history entry and never re-renders.
+  const selectTab = useCallback((next: CampaignEditorTab) => {
+    setTab(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", next);
+    window.history.replaceState(window.history.state, "", url);
   }, []);
+
+  const tabs = useMemo<TabItem[]>(
+    () =>
+      CAMPAIGN_EDITOR_TABS.map(({ id, label, Icon }) => ({
+        id,
+        label,
+        href: `${basePath}?tab=${id}`,
+        icon: <Icon className="bo-ico" aria-hidden="true" data-testid={`campaign-editor-tabs-${id}-svg`} />,
+      })),
+    [basePath],
+  );
+
+  // Flujo -> its section: a flow node opens the tab that holds it.
+  const jumpToSection = useCallback(
+    (section: CampaignFlowSection) => {
+      selectTab(SECTION_TAB[section]);
+      window.setTimeout(() => {
+        document.querySelector(`[data-testid="${section}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
+    },
+    [selectTab],
+  );
 
   const patch = useCallback(<K extends keyof CampaignInput>(key: K, value: CampaignInput[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -91,37 +148,46 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     });
   }, []);
 
-  // The email shell always comes from the backend, which builds the same
-  // markup it sends. It is refetched only when the theme changes; typing stays
-  // fully local. A brand new campaign adopts the reference theme on first load.
-  const themeKey = JSON.stringify(form.theme);
+  // Brand of the restaurant (name, logo, website, preview opt-out link) for the
+  // builder blocks and the previews. A brand new campaign adopts the reference
+  // theme (its accent colours the default design). A failed fetch still opens
+  // the builder, just without brand data.
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      const result = await api.template(mode === "create" && !themeApplied.current ? undefined : form.theme);
-      if (!result.success) return;
-      setTemplate({
-        shell: result.shell ?? "",
-        bodyPlaceholder: result.body_placeholder ?? "",
-        brandName: result.brand_name ?? "",
-        logoUrl: result.logo_url ?? "",
-        website: result.website ?? "",
-        unsubscribeUrl: result.unsubscribe_url ?? "",
-      });
-      if (mode === "create" && !themeApplied.current && result.theme) {
-        themeApplied.current = true;
-        setForm((prev) => ({ ...prev, theme: result.theme }));
-      }
-    }, 250);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [api, mode, themeKey]);
+    let alive = true;
+    api
+      .template(mode === "create" && !themeApplied.current ? undefined : form.theme)
+      .then((result) => {
+        if (!alive) return;
+        const ok = result.success;
+        setTemplate({
+          loaded: true,
+          brandName: ok ? result.brand_name ?? "" : "",
+          logoUrl: ok ? result.logo_url ?? "" : "",
+          website: ok ? result.website ?? "" : "",
+          unsubscribeUrl: ok ? result.unsubscribe_url ?? "" : "",
+        });
+        if (ok && mode === "create" && !themeApplied.current && result.theme) {
+          themeApplied.current = true;
+          setForm((prev) => ({ ...prev, theme: result.theme }));
+        }
+      })
+      .catch(() => alive && setTemplate((prev) => ({ ...prev, loaded: true })));
+    return () => {
+      alive = false;
+    };
+  }, [api, mode]);
 
   // Persists without leaving the page. The API client throws on non-2xx, so the
   // failure is caught here and always reported instead of dying silently.
   const persist = useCallback(async () => {
     setBusy(true);
+    setSaving(true);
     try {
-      const result = campaign ? await api.update(campaign.id, form) : await api.create(form);
+      // The email SMTP sends is compiled from the design on every save, so the
+      // stored email_html can never drift from body_html (campaign_html_builder_v1).
+      const emailHtml = form.body_html ? await compileCampaignEmail(form.body_html, form.subject || form.name, coordId) : "";
+      const payload: CampaignInput = { ...form, email_html: emailHtml };
+      const result = campaign ? await api.update(campaign.id, payload) : await api.create(payload);
       if (!result.success || !result.campaign) throw new Error(apiMessage(result, "No se pudo guardar la campaña"));
       savedFormRef.current = JSON.stringify(form);
       setCampaign(result.campaign);
@@ -132,8 +198,9 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
       return null;
     } finally {
       setBusy(false);
+      setSaving(false);
     }
-  }, [api, campaign, form, pushToast]);
+  }, [api, campaign, coordId, form, pushToast]);
 
   // Explicit save keeps the original behaviour of moving to the campaign route
   // once the campaign exists, but never twice: an image upload may already have
@@ -142,7 +209,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
     const saved = await persist();
     if (saved && !navigated.current && (mode === "create" || !campaign)) {
       navigated.current = true;
-      void navigate(`${LIST_HREF}/${saved.id}`);
+      void navigate(`${LIST_HREF}/${saved.id}?tab=${tabRef.current}`);
     }
     return saved;
   }, [campaign, mode, persist]);
@@ -161,7 +228,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
       } catch (err) {
         const message = errorMessage(err, "No se pudo subir la imagen");
         pushToast({ kind: "error", title: "Imagen", message });
-        throw new Error(message);
+        throw new Error(message, { cause: err });
       }
     },
     [api, campaign, persist, pushToast],
@@ -217,84 +284,105 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
 
   const remove = useCallback(async () => {
     if (!campaign) return;
-    const result = await api.remove(campaign.id);
-    if (result.success) void navigate(LIST_HREF);
-  }, [api, campaign]);
+    setBusy(true);
+    try {
+      const result = await api.remove(campaign.id);
+      if (result.success) void navigate(LIST_HREF);
+      else pushToast({ kind: "error", title: "Campañas", message: apiMessage(result, "No se pudo eliminar la campaña") });
+    } catch (err) {
+      pushToast({ kind: "error", title: "Campañas", message: errorMessage(err, "No se pudo eliminar la campaña") });
+    } finally {
+      setBusy(false);
+      setConfirm(null);
+    }
+  }, [api, campaign, pushToast]);
 
   const hasUnsavedChanges = campaign !== null && JSON.stringify(form) !== savedFormRef.current;
 
-  const themeKeys = [
-    ["accent", "Color principal"],
-    ["text", "Color texto"],
-    ["surface", "Fondo tarjeta"],
-    ["background", "Fondo exterior"],
-  ] as const;
+  // Brand data every builder block and the AI start from.
+  const blockContext = useMemo<BlockContext>(
+    () => ({ brandName: template.brandName, logoUrl: template.logoUrl, websiteUrl: template.website, accent: form.theme.accent }),
+    [form.theme.accent, template.brandName, template.logoUrl, template.website],
+  );
+
+  // The design is the source of truth: the WhatsApp text is derived from it on
+  // every change so both channels always carry the same message.
+  const setDesign = useCallback((html: string) => {
+    setForm((prev) => ({ ...prev, body_html: html, body_markdown: designToWhatsAppMarkdown(html) }));
+  }, []);
+
+  // Campaigns without a design get one once the brand is known: a new campaign
+  // starts from the default template, an older one keeps its message inside it.
+  useEffect(() => {
+    if (!template.loaded || form.body_html) return;
+    const legacy = campaign && form.body_markdown.trim() ? renderCampaignEmailBody(form.body_markdown, form.theme) : "";
+    setDesign(legacy ? legacyDesign(blockContext, legacy) : defaultDesign(blockContext));
+  }, [template.loaded]);
+
+  // Preview tab: the exact email SMTP will send, compiled from the design.
+  useEffect(() => {
+    if (tab !== "previsualizacion" || !form.body_html) return;
+    let alive = true;
+    compileCampaignEmail(form.body_html, form.subject || form.name || "Campaña", coordId)
+      .then((html) => alive && setPreviewEmail({ html: fillPreviewPlaceholders(html, template.unsubscribeUrl), error: "" }))
+      .catch((err) => alive && setPreviewEmail({ html: "", error: errorMessage(err, "No se pudo compilar el email") }));
+    return () => {
+      alive = false;
+    };
+  }, [coordId, form.body_html, form.name, form.subject, tab, template.unsubscribeUrl]);
+
+  const saveRef = useRef(save);
+  saveRef.current = save;
+  // Ctrl/Cmd+S saves from anywhere in the editor (the browser dialog never opens).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        void saveRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const saveState: CampaignSaveState = saving ? "saving" : !campaign ? "new" : hasUnsavedChanges ? "dirty" : "saved";
 
   return (
-    <section className="grid gap-4 pb-24 sm:pb-0" aria-label="Editor de campana" data-testid="campaign-editor" data-coord-id={coordId}>
-      <h2 className="sr-only">Editor de campaña</h2>
+    <section className="flex min-w-0 flex-col gap-3 pb-24 sm:pb-0 lg:min-h-0 lg:flex-1 lg:pb-0" aria-label="Editor de campaña" data-testid="campaign-editor" data-coord-id={coordId}>
+      <h2 className="sr-only" data-testid="campaign-editor-heading">Editor de campaña</h2>
 
-      {/* Header: identity on the left, status + actions on the right. Sticky on
-          desktop so Guardar is always one click away while scrolling. */}
-      <div
-        className="grid content-start gap-2 rounded-bo-lg border border-bo-border bg-bo-shell p-3 shadow-[var(--bo-shadow-soft)] md:sticky md:top-0 md:z-30 md:flex md:items-center md:justify-between md:gap-4"
-        data-testid="campaign-editor-header"
-        data-observe="campaign-editor-header"
-      >
-        <div className="grid min-w-0 gap-1.5" data-testid="campaign-editor-title">
-          <span className="hidden text-[11px] font-semibold uppercase tracking-[0.08em] text-bo-faint sm:block">
-            {mode === "create" ? "Nueva campaña" : "Editar campaña"}
-          </span>
-          <span className="truncate text-base font-semibold sm:text-lg" data-testid="campaign-name-field" data-observe="campaign-editor-name">
-            {form.name || "Campaña sin nombre"}
-          </span>
-          <span className="hidden truncate text-sm text-bo-muted sm:block" data-testid="campaign-subject-field" data-observe="campaign-editor-subject">
-            {form.subject || "Sin asunto"}
-          </span>
-        </div>
-
-        <div className="grid content-start gap-2 md:justify-items-end">
-          <span className="flex flex-wrap items-center gap-2" data-testid="campaign-editor-meta">
-            <CampaignStatusBadge status={campaign?.status} testId="campaign-editor-status" />
-            <span className="text-xs text-bo-text" data-observe="campaign-editor-meta-progress">
-              {campaign ? `${campaign.stats?.sent ?? 0}/${campaign.stats?.total ?? 0} enviados` : "Borrador sin guardar"}
-            </span>
-          </span>
-          <div className="grid w-full grid-cols-[1fr_1fr_auto] items-center gap-2 sm:flex sm:w-auto sm:flex-wrap" data-testid="campaign-editor-actions">
-            <Button variant="primary" className="min-h-11 justify-center sm:min-h-0" onClick={() => void save()} disabled={busy} data-testid="campaign-save-btn">
-              <PenLine size={16} aria-hidden="true" /> Guardar
-            </Button>
-            <Button
-              variant="secondary"
-              className="min-h-11 justify-center sm:min-h-0"
-              onClick={() => void sendAll()}
-              disabled={!campaign || busy || hasUnsavedChanges}
-              title={hasUnsavedChanges ? "Guarda los cambios antes de enviar" : undefined}
-              data-testid="campaign-send-btn"
-            >
-              <Send size={16} aria-hidden="true" /> Enviar
-            </Button>
-            {campaign && (
-              <Button variant="danger" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0" aria-label="Eliminar campana" title="Eliminar campana" onClick={() => void remove()} data-testid="campaign-delete-btn">
-                <Trash2 size={16} aria-hidden="true" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <Tabs
-        mode="button"
-        className="mx-auto w-full max-w-full justify-between [&_.bo-tabLabel]:inline [&_.bo-tabLabel]:text-xs min-[896px]:[&_.bo-tabLabel]:text-sm [&_.bo-tab]:min-w-0 [&_.bo-tab]:px-2 [&_.bo-tabIcon]:hidden min-[896px]:[&_.bo-tabIcon]:inline-flex"
-        ariaLabel="Secciones de la campaña"
-        layoutId="campaignEditorTabs"
-        activeId={tab}
-        onNavigate={(_href, id) => setTab(id as CampaignEditorTab)}
-        tabs={CAMPAIGN_EDITOR_TABS}
+      <CampaignEditorHeader
+        name={form.name}
+        subject={form.subject}
+        status={campaign?.status}
+        channels={form.channels}
+        audienceSummary={campaignAudienceSummary(form.audience, form.audience_days, form.manual_recipients.filter((v) => v.trim()).length)}
+        sent={campaign?.stats?.sent ?? 0}
+        total={campaign?.stats?.total ?? 0}
+        saveState={saveState}
+        canSend={Boolean(campaign) && !hasUnsavedChanges}
+        canDelete={Boolean(campaign)}
+        busy={busy}
+        backHref={LIST_HREF}
+        onBack={() => void navigate(LIST_HREF)}
+        onNameChange={(value) => patch("name", value)}
+        onSubjectChange={(value) => patch("subject", value)}
+        onSave={() => void save()}
+        onSend={() => setConfirm("send")}
+        onDelete={() => setConfirm("delete")}
       />
 
-      {tab === "flow" && (
-        <div role="tabpanel" aria-label="Flujo" data-testid="campaign-tabpanel-flow">
+      <Tabs
+        tabs={tabs}
+        activeId={tab}
+        ariaLabel="Secciones de la campaña"
+        className="bo-tabs--reservas my-0 mx-auto flex w-fit shrink-0 flex-row rounded-xl"
+        onNavigate={(_href, id) => selectTab(id as CampaignEditorTab)}
+        testId="campaign-editor-tabs"
+      />
+
+      {tab === "flujo" && (
+        <div className="campaign-flowFill min-w-0 lg:min-h-0 lg:flex-1" role="tabpanel" aria-label="Flujo" data-testid="campaign-tabpanel-flow">
           <CampaignFlowCanvas
             form={form}
             audience={audience}
@@ -304,124 +392,66 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
         </div>
       )}
 
-      {tab === "editor" && (
-        <div className="grid gap-4" role="tabpanel" aria-label="Editor" data-testid="campaign-tabpanel-editor">
-          <CampaignSection icon={<PenLine size={15} aria-hidden="true" />} title="Contenido del mensaje" helper="El texto que leerá cada cliente" data-testid="campaign-content-panel">
-            <RichTextEditor
-              testId="campaign-richtext"
-              coordId={coordId}
-              value={form.body_markdown}
-              onChange={(value) => patch("body_markdown", value)}
-              onUploadImage={uploadImage}
-              placeholder="Escribe el anuncio…"
-            />
-          </CampaignSection>
-
-          <CampaignSection
-            icon={<Palette size={15} aria-hidden="true" />}
-            title="Estilo del email"
-            helper="Colores, alineacion y tipografia del correo"
-            data-testid="campaign-theme-panel"
-          >
-            <div className="grid content-start gap-4">
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                {themeKeys.map(([key, label]) => (
-                  <CampaignField key={key} label={label} data-testid={`campaign-theme-${key}-field`}>
-                    <span className="flex min-w-0 items-center gap-2 rounded-bo-md border border-bo-border bg-[rgba(255,255,255,0.03)] p-1.5 transition hover:border-[var(--bo-border-2)] hover:bg-[rgba(255,255,255,0.05)]">
-                      <input
-                        type="color"
-                        className="size-8 shrink-0 cursor-pointer rounded-bo-sm border border-bo-border-2 bg-transparent p-0"
-                        value={form.theme[key]}
-                        aria-label={label}
-                        onChange={(e) => patch("theme", { ...form.theme, [key]: e.currentTarget.value })}
-                        data-testid={`campaign-theme-${key}-input`}
-                      />
-                      <span className="min-w-0 truncate font-mono text-[11px] uppercase text-bo-muted">{form.theme[key]}</span>
-                    </span>
-                  </CampaignField>
-                ))}
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-3">
-                <CampaignField label="Alineacion" helper="Alinea el texto del mensaje" data-testid="campaign-theme-align-field">
-                  <Select
-                    className="w-full"
-                    value={form.theme.align}
-                    onChange={(value) => patch("theme", { ...form.theme, align: value as CampaignInput["theme"]["align"] })}
-                    options={[
-                      { value: "left", label: "Izquierda" },
-                      { value: "center", label: "Centro" },
-                      { value: "right", label: "Derecha" },
-                    ]}
-                    ariaLabel="Alineacion del texto"
-                    data-testid="campaign-theme-align-select"
-                  />
-                </CampaignField>
-                <CampaignField label="Tipografia" helper="Fuente del cuerpo del email" data-testid="campaign-theme-font-field">
-                  <Select
-                    className="w-full"
-                    value={form.theme.fontFamily}
-                    onChange={(value) => patch("theme", { ...form.theme, fontFamily: value })}
-                    options={[
-                      { value: "Helvetica, Arial, sans-serif", label: "Sans" },
-                      { value: "Georgia, 'Times New Roman', serif", label: "Serif" },
-                      { value: "'Courier New', monospace", label: "Mono" },
-                    ]}
-                    ariaLabel="Tipografia del email"
-                    data-testid="campaign-theme-font-select"
-                  />
-                </CampaignField>
-                <CampaignField label="Ancho (px)" helper="Entre 320 y 900" data-testid="campaign-theme-width-field">
-                  <input
-                    type="number"
-                    min={320}
-                    max={900}
-                    className="bo-input"
-                    value={form.theme.maxWidth}
-                    onChange={(e) => patch("theme", { ...form.theme, maxWidth: Number(e.currentTarget.value) || 600 })}
-                    data-testid="campaign-theme-width-input"
-                  />
-                </CampaignField>
-              </div>
-            </div>
-          </CampaignSection>
+      {tab === "diseno" && (
+        <div className="min-w-0 lg:min-h-0 lg:flex-1" role="tabpanel" aria-label="Diseño" data-testid="campaign-tabpanel-editor">
+          <EmailBuilder
+            value={form.body_html ?? ""}
+            onChange={setDesign}
+            context={blockContext}
+            subject={form.subject || form.name}
+            coordId={coordId}
+            unsubscribePreviewUrl={template.unsubscribeUrl}
+            onUploadImage={uploadImage}
+          />
         </div>
       )}
 
-      {tab === "preview" && (
-        <div className="grid gap-4" role="tabpanel" aria-label="Previsualización" data-testid="campaign-tabpanel-preview">
+      {tab === "previsualizacion" && (
+        <div className={`eb-scope ${TABPANEL_SCROLL}`} role="tabpanel" aria-label="Previsualización" data-testid="campaign-tabpanel-preview">
           <Panel
             title="Previsualización"
             meta="El email y el WhatsApp tal y como los recibe el cliente"
-            className="mx-auto h-auto w-full max-w-5xl"
-            bodyClassName="grid content-start gap-3"
+            className="mx-auto h-auto w-full max-w-6xl"
+            bodyClassName="grid content-start gap-4"
             data-testid="campaign-preview-panel"
           >
             <div className="flex flex-wrap items-center justify-center gap-2" data-testid="campaign-preview-device-toggle">
-              <Button variant={device === "mobile" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("mobile")} data-testid="campaign-preview-mobile-btn">Movil</Button>
-              <Button variant={device === "desktop" ? "primary" : "ghost"} size="sm" onClick={() => setDevice("desktop")} data-testid="campaign-preview-desktop-btn">Ordenador</Button>
+              <DeviceSwitch value={device} onChange={setDevice} testId="campaign-preview-device" />
             </div>
-            <CampaignPreview
-              markdown={form.body_markdown}
-              theme={form.theme}
-              shell={template.shell}
-              bodyPlaceholder={template.bodyPlaceholder}
-              device={device}
-              brandName={template.brandName}
-              logoUrl={template.logoUrl}
-              websiteUrl={template.website}
-              unsubscribeUrl={template.unsubscribeUrl}
-              coordId={coordId}
-            />
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_auto]" data-testid="campaign-preview-live" data-coord-id={coordId} data-observe="campaign-preview">
+              <figure className="m-0 grid min-w-0 gap-2" data-testid="campaign-preview-email-block">
+                <figcaption className="text-center text-sm font-semibold" data-testid="campaign-preview-email-label">Email</figcaption>
+                {previewEmail.html ? (
+                  <EmailPreviewFrame html={previewEmail.html} device={device} testId="campaign-preview-email" />
+                ) : (
+                  <p className="m-0 p-6 text-center text-sm text-bo-muted" data-testid="campaign-preview-email-wait">{previewEmail.error || "Compilando el email…"}</p>
+                )}
+              </figure>
+              <figure className="m-0 grid content-start justify-items-center gap-2" data-testid="campaign-preview-whatsapp-block">
+                <figcaption className="text-center text-sm font-semibold" data-testid="campaign-preview-whatsapp-label">WhatsApp</figcaption>
+                <IPhoneFrame title={`WhatsApp ${template.brandName || "Restaurante"}`} time={IPHONE_DEFAULT_TIME} testId="campaign-preview-whatsapp-device">
+                  <WhatsAppPreview
+                    markdown={form.body_markdown}
+                    brandName={template.brandName}
+                    logoUrl={template.logoUrl}
+                    websiteUrl={template.website}
+                    unsubscribeUrl={template.unsubscribeUrl}
+                    accent={form.theme.accent}
+                    time={IPHONE_DEFAULT_TIME}
+                    coordId={coordId}
+                  />
+                </IPhoneFrame>
+              </figure>
+            </div>
           </Panel>
         </div>
       )}
 
-      {tab === "settings" && (
-        <div className="grid gap-4" role="tabpanel" aria-label="Ajustes" data-testid="campaign-tabpanel-settings">
-          <CampaignSection icon={<FileText size={15} aria-hidden="true" />} title="Datos de la campana" helper="Como se guarda la campana y el asunto que lee el cliente" data-testid="campaign-data-panel">
-            <div className="grid content-start gap-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+      {tab === "ajustes" && (
+        <div className={`campaign-settingsPanel grid content-start gap-4 ${TABPANEL_SCROLL}`} role="tabpanel" aria-label="Ajustes" data-testid="campaign-tabpanel-settings">
+          <CampaignSection icon={<FileText size={15} aria-hidden="true" data-testid="campaign-data-panel-svg" />} title="Datos de la campaña" helper="Cómo se guarda la campaña y el asunto que lee el cliente" data-testid="campaign-data-panel">
+            <div className="grid content-start gap-4" data-testid="campaign-data-fields">
+              <div className="grid gap-4 sm:grid-cols-2" data-testid="campaign-data-fields-row">
                 <CampaignField label="Nombre interno" helper="Solo para el equipo, no llega al cliente" data-testid="campaign-data-name">
                   <input
                     className="bo-input h-10 w-full"
@@ -431,7 +461,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                     data-testid="campaign-name-input"
                   />
                 </CampaignField>
-                <CampaignField label="Asunto del email" helper="Linea que el cliente ve en su bandeja" data-testid="campaign-data-subject">
+                <CampaignField label="Asunto del email" helper="Línea que el cliente ve en su bandeja" data-testid="campaign-data-subject">
                   <input
                     className="bo-input h-10 w-full"
                     value={form.subject}
@@ -441,8 +471,8 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                   />
                 </CampaignField>
               </div>
-              <div className="grid content-start gap-2">
-                <span className={CAMPAIGN_CAPTION_CLASS}>Canales de envio</span>
+              <div className="grid content-start gap-2" data-testid="campaign-channels-field">
+                <span className={CAMPAIGN_CAPTION_CLASS} data-testid="campaign-channels-caption">Canales de envío</span>
                 <div className="flex flex-wrap gap-2" data-testid="campaign-channels">
                   {CAMPAIGN_CHANNELS.map((channel) => (
                     <Button
@@ -453,7 +483,11 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                       onClick={() => toggleChannel(channel.key)}
                       data-testid={`campaign-channel-${channel.key}`}
                     >
-                      {channel.key === "email" ? <Mail size={14} aria-hidden="true" /> : <MessageCircle size={14} aria-hidden="true" />}
+                      {channel.key === "email" ? (
+                        <Mail size={14} aria-hidden="true" data-testid={`campaign-channel-${channel.key}-icon`} />
+                      ) : (
+                        <MessageCircle size={14} aria-hidden="true" data-testid={`campaign-channel-${channel.key}-icon`} />
+                      )}
                       {channel.label}
                     </Button>
                   ))}
@@ -463,20 +497,22 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
           </CampaignSection>
 
           <CampaignSection
-            icon={<Users size={15} aria-hidden="true" />}
+            icon={<Users size={15} aria-hidden="true" data-testid="campaign-audience-panel-svg" />}
             title="Destinatarios"
-            helper="De donde salen los contactos y a cuantos se enviara"
+            helper="De dónde salen los contactos y a cuántos se enviará"
             actions={
               <Button variant="ghost" size="sm" onClick={() => void loadAudience()} disabled={!campaign} data-testid="campaign-audience-refresh-btn">
-                <Users size={14} aria-hidden="true" /> Calcular
+                <Users size={14} aria-hidden="true" data-testid="campaign-audience-refresh-btn-icon" /> Calcular
               </Button>
             }
             data-testid="campaign-audience-panel"
           >
-            <div className="grid content-start gap-3 md:grid-cols-2">
+            <div className="grid content-start gap-3 md:grid-cols-2" data-testid="campaign-audience-fields">
               <CampaignField as="div" label={<span data-testid="campaign-audience-source-caption" data-observe="campaign-audience-source-caption">Origen</span>} helper="Reservas recientes o una lista propia" data-testid="campaign-audience-source-field">
                 <Select
+                  size="sm"
                   className="w-full"
+                  style={{ width: "100%" }}
                   value={form.audience}
                   onChange={(value) => patch("audience", value as CampaignInput["audience"])}
                   options={AUDIENCE_SOURCE_OPTIONS}
@@ -485,7 +521,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                 />
               </CampaignField>
               {form.audience === "bookings" ? (
-                <CampaignFieldCell>
+                <CampaignFieldCell testId="campaign-audience-days-cell">
                   <InlineCounter
                     label="Últimos días"
                     value={form.audience_days}
@@ -499,7 +535,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
               ) : (
                 <CampaignField
                   className="md:col-span-2"
-                  label="Emails o telefonos (uno por linea)"
+                  label="Emails o teléfonos (uno por línea)"
                   data-testid="campaign-audience-manual-field"
                 >
                   <textarea
@@ -510,26 +546,26 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                   />
                 </CampaignField>
               )}
-              <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+              <div className="flex flex-wrap items-center gap-3 md:col-span-2" data-testid="campaign-audience-summary">
                 {audience ? (
                   <span className="text-xs text-bo-muted" data-testid="campaign-audience-count">
                     {audience.total} destinos ({audience.emails} email / {audience.whatsapp} WhatsApp)
                   </span>
                 ) : (
-                  <span className="text-xs text-bo-faint">Pulsa Calcular para ver cuantos destinos se alcanzaran.</span>
+                  <span className="text-xs text-bo-faint" data-testid="campaign-audience-count-hint">Pulsa Calcular para ver cuántos destinos se alcanzarán.</span>
                 )}
               </div>
             </div>
           </CampaignSection>
 
           <CampaignSection
-            icon={<Gauge size={15} aria-hidden="true" />}
-            title="Ritmo de envio"
+            icon={<Gauge size={15} aria-hidden="true" data-testid="campaign-rate-panel-svg" />}
+            title="Ritmo de envío"
             helper="Mensajes por minuto por canal"
             data-testid="campaign-rate-panel"
           >
-            <div className="grid gap-3 md:grid-cols-2">
-              <CampaignFieldCell>
+            <div className="grid gap-3 md:grid-cols-2" data-testid="campaign-rate-fields">
+              <CampaignFieldCell testId="campaign-rate-email-cell">
                 <InlineCounter
                   label={`Emails por minuto (max ${CAMPAIGN_RATE_LIMITS.email.max})`}
                   value={form.email_per_minute}
@@ -545,7 +581,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                   }${CAMPAIGN_RATE_NOTES.email} (${CAMPAIGN_RATE_LIMITS.email.max} por minuto)`}
                 />
               </CampaignFieldCell>
-              <CampaignFieldCell>
+              <CampaignFieldCell testId="campaign-rate-whatsapp-cell">
                 <InlineCounter
                   label={`WhatsApp por minuto (max ${CAMPAIGN_RATE_LIMITS.whatsapp.max})`}
                   value={form.whatsapp_per_minute}
@@ -564,11 +600,11 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
             </div>
           </CampaignSection>
 
-          <CampaignSection icon={<Send size={15} aria-hidden="true" />} title="Envío" helper="Prueba la campaña y sigue el progreso" data-testid="campaign-send-panel">
-            <div className="grid content-start gap-3">
-              {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campaña para poder probar y enviar." />}
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="grid gap-2 sm:flex sm:flex-wrap">
+          <CampaignSection icon={<Send size={15} aria-hidden="true" data-testid="campaign-send-panel-svg" />} title="Envío" helper="Prueba la campaña y sigue el progreso" data-testid="campaign-send-panel">
+            <div className="grid content-start gap-3" data-testid="campaign-send-fields">
+              {!campaign && <InlineAlert kind="info" title="Guarda primero" message="Guarda la campaña para poder probar y enviar." testId="campaign-send-save-first" />}
+              <div className="grid gap-3 md:grid-cols-2" data-testid="campaign-send-row">
+                <div className="grid gap-2 sm:flex sm:flex-wrap" data-testid="campaign-test-field">
                   <input
                     className="bo-input min-w-0 sm:flex-1"
                     placeholder="email o teléfono de prueba"
@@ -579,7 +615,7 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
                   />
                   <Button variant="ghost" className="min-h-11 w-full justify-center sm:min-h-0 sm:w-auto" onClick={() => void sendTest()} disabled={!campaign || !testTarget.trim()} data-testid="campaign-test-btn">Probar</Button>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3" data-testid="campaign-send-progress-cell">
                   {campaign ? (
                     <span className="text-xs text-bo-muted" data-testid="campaign-send-progress">
                       {campaign.stats?.sent ?? 0} enviados &middot; {campaign.stats?.failed ?? 0} fallidos &middot; {campaign.stats?.pending ?? 0} pendientes
@@ -591,58 +627,87 @@ export function CampaignEditor({ mode, campaignId, initialCampaign = null }: Cam
           </CampaignSection>
 
           <CampaignSection
-            icon={<ScrollText size={15} aria-hidden="true" />}
-            title="Registro de envios"
+            icon={<ScrollText size={15} aria-hidden="true" data-testid="campaign-recipients-panel-svg" />}
+            title="Registro de envíos"
             helper="Reserva, canal y estado por destinatario"
             actions={
-              <Button variant="ghost" size="sm" onClick={() => void loadRecipients()} disabled={!campaign} data-testid="campaign-recipients-refresh-btn">Actualizar</Button>
+              <Button variant="ghost" size="sm" onClick={() => void loadRecipients()} disabled={!campaign} data-testid="campaign-recipients-refresh-btn">
+                <RefreshCw size={14} aria-hidden="true" data-testid="campaign-recipients-refresh-btn-icon" /> Actualizar
+              </Button>
             }
             data-testid="campaign-recipients-panel"
           >
             {recipients.length === 0 ? (
-              <p className="text-xs text-bo-faint" data-testid="campaign-recipients-empty">Sin envios registrados todavia.</p>
+              <p className="text-xs text-bo-faint" data-testid="campaign-recipients-empty">Sin envíos registrados todavía.</p>
             ) : (
               <>
-              <ul className="m-0 grid list-none gap-2 p-0 md:hidden" data-testid="campaign-recipients-cards">
-                {recipients.map((row) => (
-                  <li key={row.id} className="grid gap-1 rounded-bo-md border border-bo-border bg-bo-surface-2 p-3 text-sm" title={row.error || undefined} data-testid={`campaign-recipient-card-${row.id}`}>
-                    <span className="break-all font-medium">{row.target}</span>
-                    <span className="flex flex-wrap items-center justify-between gap-2 text-xs text-bo-muted">
-                      <span>{row.channel === "whatsapp" ? "WhatsApp" : "Email"} &middot; {row.status === "sent" ? "Enviado" : row.status === "failed" ? "Fallido" : "Pendiente"}</span>
-                      <span>{row.sent_at || "Sin enviar"}{row.booking_id ? ` \u00b7 Reserva ${row.booking_id}` : ""}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <div className="hidden overflow-x-auto rounded-bo-md border border-bo-border md:block">
-                <table className="bo-table w-full" data-testid="campaign-recipients-table">
-                  <thead>
-                    <tr>
-                      <th data-testid="campaign-recipients-th-booking">Reserva</th>
-                      <th data-testid="campaign-recipients-th-channel">Canal</th>
-                      <th data-testid="campaign-recipients-th-target">Destino</th>
-                      <th data-testid="campaign-recipients-th-status">Estado</th>
-                      <th data-testid="campaign-recipients-th-sentat">Enviado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recipients.map((row) => (
-                      <tr key={row.id} data-testid={`campaign-recipient-row-${row.id}`} data-booking-id={row.booking_id || ""} data-coord-id={coordId}>
-                        <td>{row.booking_id || "—"}</td>
-                        <td>{row.channel}</td>
-                        <td className="max-w-[220px] truncate">{row.target}</td>
-                        <td title={row.error}>{row.status}</td>
-                        <td>{row.sent_at || "—"}</td>
+                <ul className="m-0 grid list-none gap-2 p-0 md:hidden" data-testid="campaign-recipients-cards">
+                  {recipients.map((row) => (
+                    <li key={row.id} className="grid gap-1 rounded-bo-md border border-bo-border bg-bo-surface-2 p-3 text-sm" title={row.error || undefined} data-testid={`campaign-recipient-card-${row.id}`}>
+                      <span className="break-all font-medium" data-testid={`campaign-recipient-card-${row.id}-target`}>{row.target}</span>
+                      <span className="flex flex-wrap items-center justify-between gap-2 text-xs text-bo-muted" data-testid={`campaign-recipient-card-${row.id}-meta`}>
+                        <span data-testid={`campaign-recipient-card-${row.id}-status`}>{row.channel === "whatsapp" ? "WhatsApp" : "Email"} &middot; {row.status === "sent" ? "Enviado" : row.status === "failed" ? "Fallido" : "Pendiente"}</span>
+                        <span data-testid={`campaign-recipient-card-${row.id}-sent`}>{row.sent_at || "Sin enviar"}{row.booking_id ? ` \u00b7 Reserva ${row.booking_id}` : ""}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden overflow-x-auto rounded-bo-md border border-bo-border md:block" data-testid="campaign-recipients-table-wrap">
+                  <table className="bo-table w-full" data-testid="campaign-recipients-table">
+                    <thead data-testid="campaign-recipients-thead">
+                      <tr data-testid="campaign-recipients-head-row">
+                        <th data-testid="campaign-recipients-th-booking">Reserva</th>
+                        <th data-testid="campaign-recipients-th-channel">Canal</th>
+                        <th data-testid="campaign-recipients-th-target">Destino</th>
+                        <th data-testid="campaign-recipients-th-status">Estado</th>
+                        <th data-testid="campaign-recipients-th-sentat">Enviado</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody data-testid="campaign-recipients-tbody">
+                      {recipients.map((row) => (
+                        <tr key={row.id} data-testid={`campaign-recipient-row-${row.id}`} data-booking-id={row.booking_id || ""} data-coord-id={coordId}>
+                          <td data-testid={`campaign-recipient-row-${row.id}-booking`}>{row.booking_id || "—"}</td>
+                          <td data-testid={`campaign-recipient-row-${row.id}-channel`}>{row.channel}</td>
+                          <td className="max-w-[220px] truncate" data-testid={`campaign-recipient-row-${row.id}-target`}>{row.target}</td>
+                          <td title={row.error} data-testid={`campaign-recipient-row-${row.id}-status`}>{row.status}</td>
+                          <td data-testid={`campaign-recipient-row-${row.id}-sent`}>{row.sent_at || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </>
             )}
           </CampaignSection>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirm === "send"}
+        title="Enviar campaña"
+        message={`Se enviará «${form.name || "Campaña sin nombre"}» a ${campaignAudienceSummary(form.audience, form.audience_days, form.manual_recipients.filter((v) => v.trim()).length).toLowerCase()} por ${form.channels.map((c) => (c === "email" ? "email" : "WhatsApp")).join(" y ")}. El envío no se puede deshacer.`}
+        confirmText="Enviar ahora"
+        cancelText="Cancelar"
+        busy={busy}
+        onClose={() => setConfirm(null)}
+        onConfirm={async () => {
+          setConfirm(null);
+          await sendAll();
+        }}
+        testId="campaign-send-confirm"
+      />
+      <ConfirmDialog
+        open={confirm === "delete"}
+        title="Eliminar campaña"
+        message={`¿Eliminar «${form.name || "Campaña sin nombre"}» y su registro de envíos? No se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        danger
+        busy={busy}
+        onClose={() => setConfirm(null)}
+        onConfirm={remove}
+        testId="campaign-delete-confirm"
+      />
     </section>
   );
 }

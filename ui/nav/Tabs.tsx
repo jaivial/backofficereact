@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { cn } from "../shadcn/utils";
+import { childTestId } from "../lib/testId";
 
 export type TabItem = {
   id: string;
@@ -17,6 +18,7 @@ export function Tabs({
   onNavigate,
   mode = "link",
   layoutId = "boTabIndicator",
+  testId,
 }: {
   tabs: TabItem[];
   activeId: string;
@@ -25,6 +27,9 @@ export function Tabs({
   onNavigate?: (href: string, id: string, ev: React.MouseEvent<HTMLAnchorElement>) => void;
   mode?: "link" | "button";
   layoutId?: string;
+  /** Unique root test id: the strip, every tab and its inner parts derive theirs
+   *  from it. Without it the legacy `tabs` / `tab-<id>` ids are kept. */
+  testId?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const isButtonMode = mode === "button";
@@ -53,7 +58,7 @@ export function Tabs({
       ref={navRef}
       className={cn("bo-tabs", "bo-tabs--glass", className)}
       aria-label={ariaLabel}
-      data-testid="tabs"
+      data-testid={testId ?? "tabs"}
       data-role="tabs-nav"
       {...(isButtonMode ? { role: "tablist" as const } : {})}
     >
@@ -77,7 +82,7 @@ export function Tabs({
               role="tab"
               aria-selected={active}
               aria-label={t.label}
-              data-testid={`tab-${t.id}`}
+              data-testid={testId ? `${testId}-${t.id}` : `tab-${t.id}`}
               data-role="tab-btn"
               disabled={active}
               onClick={() => {
@@ -85,14 +90,14 @@ export function Tabs({
                 onNavigate?.("#", t.id, null as any);
               }}
             >
-              <span data-slot="tabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
-              <span className="bo-tabInner" data-slot="tab-inner">
+              <span data-slot="tabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} data-testid={childTestId(testId, `${t.id}-indicator`)} />
+              <span className="bo-tabInner" data-slot="tab-inner" data-testid={childTestId(testId, `${t.id}-inner`)}>
                 {t.icon != null && (
-                  <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
+                  <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon" data-testid={childTestId(testId, `${t.id}-icon`)}>
                     {t.icon}
                   </span>
                 )}
-                <span className="bo-tabLabel hidden min-[896px]:inline" data-slot="tab-label">{t.label}</span>
+                <span className="bo-tabLabel hidden min-[896px]:inline" data-slot="tab-label" data-testid={childTestId(testId, `${t.id}-label`)}>{t.label}</span>
               </span>
             </button>
           );
@@ -105,7 +110,7 @@ export function Tabs({
             href={href}
             aria-current={active ? "page" : undefined}
             aria-label={t.label}
-            data-testid={`tab-${t.id}`}
+            data-testid={testId ? `${testId}-${t.id}` : `tab-${t.id}`}
             data-role="tab-link"
             transition={motionTransition}
             onClick={(ev) => {
@@ -116,14 +121,14 @@ export function Tabs({
               onNavigate(href, t.id, ev);
             }}
           >
-            <span data-slot="tabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} />
-            <span className="bo-tabInner" data-slot="tab-inner">
+            <span data-slot="tabs-tabIndicator" className="bo-tabIndicator" style={{ visibility: active ? 'visible' : 'hidden' as const }} data-testid={childTestId(testId, `${t.id}-indicator`)} />
+            <span className="bo-tabInner" data-slot="tab-inner" data-testid={childTestId(testId, `${t.id}-inner`)}>
               {t.icon != null && (
-                <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon">
+                <span className="bo-tabIcon" aria-hidden="true" data-slot="tab-icon" data-testid={childTestId(testId, `${t.id}-icon`)}>
                   {t.icon}
                 </span>
               )}
-              <span className="bo-tabLabel hidden min-[896px]:inline" data-slot="tab-label">{t.label}</span>
+              <span className="bo-tabLabel hidden min-[896px]:inline" data-slot="tab-label" data-testid={childTestId(testId, `${t.id}-label`)}>{t.label}</span>
             </span>
           </motion.a>
         );

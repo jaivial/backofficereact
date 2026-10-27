@@ -47,6 +47,7 @@
 @import "./styles/layout/toolbar.css";
 @import "./styles/components/dropdown.css";
 @import "./styles/components/popover.css";
+@import "./styles/components/hairline.css";
 @import "./styles/components/modal.css";
 
 /* ── Features: Reservas ───────────────────────────────── */
@@ -157,6 +158,7 @@
 
 /* ── Features: Campañas — email body editor ─── */
 @import "./styles/features/campanas/campaign-editor.css";
+@import "./styles/features/campanas/email-builder.css";
 
 /* ── Features: Platform (superadmin) ──────────────────── */
 @import "./styles/features/plataforma/plataforma.css";

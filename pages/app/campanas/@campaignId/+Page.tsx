@@ -1,7 +1,6 @@
 import React from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { ArrowLeft } from "lucide-react";
-import { CampaignEditor } from "../functionalComponents/CampaignEditor";
+import { CampaignEditor, campaignEditorTab } from "../functionalComponents/CampaignEditor";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
 import type { Data } from "./+data";
 
@@ -10,14 +9,17 @@ export default function CampanaEditPage() {
   const data = (pageContext.data ?? { campaignId: null, initialCampaign: null }) as Data;
 
   return (
-    <section className="grid gap-4" aria-label="Campana" data-testid="campaign-edit-page">
-      <a href="/app/campanas" className="inline-flex items-center gap-2 text-sm" data-testid="campaign-edit-back-link">
-        <ArrowLeft size={16} aria-hidden="true" /> Volver a campañas
-      </a>
+    // Desktop: the editor fills the rest of the viewport (no page scroll).
+    <section className="flex min-w-0 flex-col gap-4 lg:min-h-0 lg:flex-1" aria-label="Campaña" data-testid="campaign-edit-page">
       {data.campaignId ? (
-        <CampaignEditor mode="edit" campaignId={data.campaignId} initialCampaign={data.initialCampaign} />
+        <CampaignEditor
+          mode="edit"
+          campaignId={data.campaignId}
+          initialCampaign={data.initialCampaign}
+          initialTab={campaignEditorTab(pageContext.urlParsed?.search?.tab)}
+        />
       ) : (
-        <InlineAlert kind="error" title="Campana no valida" message="El identificador de campana no es valido." data-testid="campaign-edit-invalid" />
+        <InlineAlert kind="error" title="Campaña no válida" message="El identificador de campaña no es válido." testId="campaign-edit-invalid" />
       )}
     </section>
   );

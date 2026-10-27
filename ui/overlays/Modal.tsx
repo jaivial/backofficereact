@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { X } from "lucide-react";
 import { cn } from "../shadcn/utils";
+import { childTestId } from "../lib/testId";
 
 function portalEl(): HTMLElement | null {
   return document.getElementById("bo-portal") || document.body;
@@ -30,6 +31,7 @@ export function Modal({
   className,
   style,
   hideClose = false,
+  testId,
 }: {
   open: boolean;
   title: string;
@@ -43,6 +45,8 @@ export function Modal({
   style?: React.CSSProperties;
   /** Hide Modal's built-in close button (use when a ModalHeader inside renders its own). */
   hideClose?: boolean;
+  /** Unique test id of the dialog; overlay and close button derive theirs. */
+  testId?: string;
 }) {
   useFocusRestore(open);
   const reduceMotion = useReducedMotion();
@@ -71,6 +75,7 @@ export function Modal({
       {open ? (
         <motion.div
           data-ui="modal-overlay"
+          data-testid={childTestId(testId, "overlay")}
           className="bo-modalOverlay"
           initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -85,6 +90,7 @@ export function Modal({
         >
           <motion.div
             data-role="dialog"
+            data-testid={testId}
             className={cn("bo-modal", "bo-modal--glass", className)}
             role="dialog"
             aria-label={title}
@@ -105,8 +111,9 @@ export function Modal({
                 aria-label="Cerrar"
                 title="Cerrar"
                 data-ui="modal-close"
+                data-testid={childTestId(testId, "close")}
               >
-                <X size={18} strokeWidth={1.8} aria-hidden="true" />
+                <X size={18} strokeWidth={1.8} aria-hidden="true" data-testid={childTestId(testId, "close-icon")} />
               </button>
             )}
             {children}
