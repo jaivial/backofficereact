@@ -6,7 +6,7 @@ import { ScrollArea } from "../../../../ui/layout/ScrollArea";
 import type { Invoice, InvoiceStatus } from "../../../../api/types";
 import { CURRENCY_SYMBOLS } from "../../../../api/types";
 import { INVOICE_STATUS_CONFIG } from "../types/invoice";
-import { invoiceTotal, moneyEs, dniCifLabel } from "../utils";
+import { invoiceTotal, moneyEs, dniCifLabel, formatInvoicePhone } from "../utils";
 
 interface InvoiceDetailsModalProps {
   open: boolean;
@@ -14,6 +14,8 @@ interface InvoiceDetailsModalProps {
   onClose: () => void;
   onSendEmail?: (invoice: Invoice) => void;
   onSendWhatsApp?: (invoice: Invoice) => void;
+  /** The restaurant's WhatsApp is connected: only then the invoice goes out by WhatsApp with the PDF (invoice_whatsapp_autosend_v1). */
+  whatsappConnected?: boolean;
   onDownloadPdf?: (invoice: Invoice) => void;
   // Editar y eliminar, junto a las acciones de envio (facturas_details_actions_v1).
   onEdit?: (invoice: Invoice) => void;
@@ -47,7 +49,8 @@ function StatusBadge({ status }: { status: InvoiceStatus }) {
   return <span data-testid="StatusBadge-span-2" className={`bo-badge ${cfg.className}`}>{cfg.label}</span>;
 }
 
-export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSendWhatsApp, onDownloadPdf, onEdit, onDelete }: InvoiceDetailsModalProps) {
+export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSendWhatsApp, whatsappConnected, onDownloadPdf, onEdit, onDelete }: InvoiceDetailsModalProps) {
+  const canSendWhatsApp = Boolean(onSendWhatsApp && whatsappConnected && invoice?.customer_phone);
   const fullName = useMemo(() => {
     if (!invoice) return "";
     return `${invoice.customer_name}${invoice.customer_surname ? ` ${invoice.customer_surname}` : ""}`;
@@ -118,9 +121,10 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
       ) : null}
       {tab === "whatsapp" ? (
         <div className="bo-detailsPanel" data-testid="details-panel-whatsapp">
-          <p className="bo-muted" data-testid="details-wa-to">Para: {invoice.customer_phone || "sin teléfono"}</p>
+          <p className="bo-muted" data-testid="details-wa-to">Para: {formatInvoicePhone(invoice) || "sin teléfono"}</p>
           <div className="bo-detailsBubble bo-detailsBubble--wa" data-testid="details-wa-preview"><p data-testid="details-wa-body">{msgText}</p></div>
-          {onSendWhatsApp && invoice.customer_phone ? <button type="button" className="bo-btn bo-btn--primary" onClick={() => onSendWhatsApp(invoice)} data-testid="details-wa-send"><MessageCircle size={14} aria-hidden="true" /> Editar y enviar</button> : null}
+          {canSendWhatsApp && onSendWhatsApp ? <button type="button" className="bo-btn bo-btn--primary" onClick={() => onSendWhatsApp(invoice)} data-testid="details-wa-send"><MessageCircle size={14} aria-hidden="true" /> Editar y enviar</button> : null}
+          {!whatsappConnected ? <p className="bo-muted" data-testid="details-wa-disconnected-hint" data-coordination-id="invoice_whatsapp_autosend_v1">WhatsApp no conectado: conecta el WhatsApp del restaurante en Configuración → Contacto para enviar la factura con el PDF adjunto.</p> : null}
         </div>
       ) : null}
       {tab === "detalle" ? (
@@ -148,7 +152,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
               <div data-testid="invoiceDetailsModal-invoiceDetailsSectionTitle" data-slot="invoiceDetailsModal-invoiceDetailsSectionTitle" className="bo-invoiceDetailsSectionTitle">Cliente</div>
               <DetailRow icon={<User size={14} />} label="Nombre" value={fullName} />
               {invoice.customer_email && <DetailRow icon={<Mail size={14} />} label="Email" value={invoice.customer_email} isLong />}
-              {invoice.customer_phone && <DetailRow icon={<Phone size={14} />} label="Teléfono" value={invoice.customer_phone} />}
+              {invoice.customer_phone && <DetailRow icon={<Phone size={14} />} label="Teléfono" value={formatInvoicePhone(invoice)} />}
               {invoice.customer_dni_cif && <DetailRow icon={<BadgeCheck size={14} />} label={dniCifLabel(invoice)} value={invoice.customer_dni_cif} />}
               {addressParts.length > 0 && <DetailRow icon={<MapPin size={14} />} label="Dirección" value={addressParts.join(", ")} isLong />}
             </div>
@@ -275,7 +279,7 @@ export function InvoiceDetailsModal({ open, invoice, onClose, onSendEmail, onSen
                   <Send size={14} /> Email
                 </button>
               )}
-              {invoice.customer_phone && onSendWhatsApp && (
+              {canSendWhatsApp && onSendWhatsApp && (
                 <button type="button" className="bo-btn bo-btn--secondary bo-btn--sm" onClick={() => onSendWhatsApp(invoice)} data-testid="details-send-whatsapp-btn">
                   <MessageCircle size={14} /> WhatsApp
                 </button>

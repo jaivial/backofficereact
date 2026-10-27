@@ -2766,6 +2766,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async getWhatsAppAttempt(id: number): Promise<APISuccess<{ attempt: { idempotency_key: string; text_status: string; pdf_status: string; phone: string; pdf_url?: string; stage_error?: string } | null }> | APIError> {
         return json(`/api/admin/invoices/${id}/send-whatsapp/attempt`, { method: "GET" });
       },
+      // invoice_whatsapp_autosend_v1: whether the restaurant's own WhatsApp is
+      // connected, so the send flows attach the WhatsApp + PDF only then.
+      async whatsappStatus(): Promise<APISuccess<{ connected: boolean }> | APIError> {
+        return json("/api/admin/invoices/whatsapp-status", { method: "GET" });
+      },
 
       async searchReservations(params: {
         date_from?: string;

@@ -1520,6 +1520,8 @@ export type Invoice = {
   /** "dni" (persona) o "cif" (empresa), segun la opcion del formulario. */
   customer_dni_cif_type?: string;
   customer_phone?: string;
+  /** Prefijo internacional del teléfono (solo dígitos, "34"); null en facturas antiguas. invoice_phone_country_code_v1 */
+  customer_phone_country_code?: string | null;
   customer_address_street?: string;
   customer_address_number?: string;
   customer_address_postal_code?: string;
@@ -1614,6 +1616,8 @@ export type InvoiceInput = {
   /** "dni" (persona) o "cif" (empresa), segun la opcion del formulario. */
   customer_dni_cif_type?: string;
   customer_phone?: string;
+  /** Prefijo internacional del teléfono (solo dígitos). invoice_phone_country_code_v1 */
+  customer_phone_country_code?: string;
   customer_address_street?: string;
   customer_address_number?: string;
   customer_address_postal_code?: string;
@@ -1667,6 +1671,7 @@ export type ReservationSearchResult = {
   customer_name: string;
   contact_email: string;
   contact_phone: string;
+  contact_phone_country_code?: string;
   reservation_date: string;
   reservation_time: string;
   party_size: number;
