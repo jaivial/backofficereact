@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../api/client";
@@ -18,7 +18,7 @@ import { INVOICE_COLUMN_IDS, invoiceColumnVisibility, sortInvoicesByColumn, type
 import type { SortDirection, SortField } from "./types/table";
 import { InvoiceForm } from "./_components/InvoiceForm";
 import { SendEmailModal } from "./_components/SendEmailModal";
-import { SendWhatsAppModal } from "./_components/SendWhatsAppModal";
+import { clearWaSendKey, resolveWaSendKey } from "./utils";
 import { BatchSendModal } from "./_components/BatchSendModal";
 import { InvoiceDetailsModal } from "./_components/InvoiceDetailsModal";
 
@@ -100,11 +100,30 @@ export default function Page() {
   // Prefill from a booking (?booking_id=) — set when navigating from reservas grid.
   const [initialReservation, setInitialReservation] = useState<ReservationSearchResult | null>(null);
 
-  // Send email modal state
+  // Send modal state (email and/or WhatsApp); sendChannel preselects only one
+  // channel (the WhatsApp action), undefined = every usable channel.
   const [emailInvoice, setEmailInvoice] = useState<Invoice | null>(null);
+  const [sendChannel, setSendChannel] = useState<"email" | "whatsapp" | undefined>(undefined);
 
-  // Send WhatsApp modal state
-  const [whatsappInvoice, setWhatsappInvoice] = useState<Invoice | null>(null);
+  // invoice_whatsapp_autosend_v1: the restaurant's own WhatsApp is connected,
+  // so every send also delivers the WhatsApp with the PDF attached. null while
+  // loading; the send flows await loadWhatsAppStatus instead of assuming.
+  const [whatsappConnected, setWhatsappConnected] = useState<boolean | null>(null);
+  const whatsappStatusRef = useRef<Promise<boolean> | null>(null);
+  const loadWhatsAppStatus = useCallback((): Promise<boolean> => {
+    if (!whatsappStatusRef.current) {
+      whatsappStatusRef.current = api.invoices
+        .whatsappStatus()
+        .then((res) => res.success && res.connected === true)
+        .catch(() => false);
+      void whatsappStatusRef.current.then(setWhatsappConnected);
+    }
+    return whatsappStatusRef.current;
+  }, [api]);
+
+  // One save at a time: a double click on "Enviar" must not send twice.
+  const [savingInvoice, setSavingInvoice] = useState(false);
+  const savingInvoiceRef = useRef(false);
 
   // Invoice details modal state
   const [detailsInvoice, setDetailsInvoice] = useState<Invoice | null>(null);
@@ -145,6 +164,7 @@ export default function Page() {
               customer_name: b.customer_name,
               contact_email: b.contact_email || "",
               contact_phone: b.contact_phone || "",
+              contact_phone_country_code: b.contact_phone_country_code || undefined,
               reservation_date: b.reservation_date,
               reservation_time: b.reservation_time,
               party_size: b.party_size,
@@ -154,6 +174,10 @@ export default function Page() {
       }
     }
   }, []); // ponytail: run once on mount; invoices from SSR data
+
+  useEffect(() => {
+    void loadWhatsAppStatus();
+  }, [loadWhatsAppStatus]);
 
   // Fetch invoices with filters
   const fetchInvoices = useCallback(async () => {
@@ -321,12 +345,34 @@ export default function Page() {
     }
   }, [api, pushToast, fetchInvoices, deleteTarget]);
 
+  // WhatsApp text + PDF of a saved invoice through the restaurant's gateway,
+  // resuming the operator's pending send intent if there is one
+  // (invoice_send_whatsapp_v1 idempotency key shared with the send modal).
+  const sendWhatsAppNow = useCallback(async (invoiceId: number): Promise<{ ok: boolean; text: string }> => {
+    const userId = session?.user?.id ?? 0;
+    const restaurantId = session?.activeRestaurantId ?? 0;
+    try {
+      const key = await resolveWaSendKey(userId, restaurantId, invoiceId);
+      const res = await api.invoices.sendWhatsApp(invoiceId, { idempotency_key: key });
+      if (!res.success) return { ok: false, text: res.message || "No se pudo enviar el WhatsApp" };
+      if (!res.pdf_uncertain) clearWaSendKey(userId, restaurantId, invoiceId);
+      const to = `WhatsApp enviado a ${res.phone_normalized || ""}`.trim();
+      if (res.pdf_attached) return { ok: true, text: `${to} con el PDF adjunto` };
+      return { ok: false, text: res.pdf_uncertain ? `${to}; el PDF quedó en estado incierto (revísalo en Enviar factura)` : `${to} sin PDF adjunto` };
+    } catch {
+      return { ok: false, text: "No se pudo enviar el WhatsApp" };
+    }
+  }, [api, session]);
+
   // Handle save invoice. Returns the saved invoice id (undefined on
   // failure). opts.keepOpen keeps the form mounted and adopts a newly
   // created invoice into edit state so the next save updates instead of
   // duplicating (invoices_preview_save_first_v1).
   const handleSaveInvoice = useCallback(
     async (input: InvoiceInput, shouldSend: boolean = false, opts?: { keepOpen?: boolean }): Promise<number | undefined> => {
+      if (savingInvoiceRef.current) return undefined;
+      savingInvoiceRef.current = true;
+      setSavingInvoice(true);
       try {
         let res;
         let invoiceId: number | undefined;
@@ -345,12 +391,21 @@ export default function Page() {
 
         if (res.success) {
           if (shouldSend && invoiceId) {
-            const sendRes = await api.invoices.send(invoiceId);
-            if (sendRes.success) {
-              pushToast({ kind: "success", title: "Factura enviada", message: "La factura ha sido enviada correctamente" });
-            } else {
-              pushToast({ kind: "error", title: "Error", message: "No se pudo enviar la factura" });
+            // invoice_whatsapp_autosend_v1: the email as always, plus the
+            // WhatsApp with the PDF attached when the restaurant's WhatsApp is
+            // connected and the invoice has a phone; each channel reports.
+            const results: { ok: boolean; text: string }[] = [];
+            try {
+              const sendRes = await api.invoices.send(invoiceId);
+              results.push(sendRes.success ? { ok: true, text: `Email enviado a ${input.customer_email}` } : { ok: false, text: sendRes.message || "No se pudo enviar el email" });
+            } catch (e) {
+              results.push({ ok: false, text: e instanceof Error ? e.message : "No se pudo enviar el email" });
             }
+            if (input.customer_phone && (await loadWhatsAppStatus())) {
+              results.push(await sendWhatsAppNow(invoiceId));
+            }
+            const allOk = results.every((r) => r.ok);
+            pushToast({ kind: allOk ? "success" : "error", title: allOk ? "Factura enviada" : "Envío incompleto", message: results.map((r) => r.text).join(" · ") });
           } else {
             pushToast({ kind: "success", title: "Guardado", message: shouldSend ? "Factura enviada correctamente" : "Factura guardada correctamente" });
           }
@@ -372,9 +427,12 @@ export default function Page() {
       } catch (e) {
         pushToast({ kind: "error", title: "Error", message: e instanceof Error ? e.message : "Error desconocido" });
         return undefined;
+      } finally {
+        savingInvoiceRef.current = false;
+        setSavingInvoice(false);
       }
     },
-    [api, editingInvoice, pushToast, fetchInvoices],
+    [api, editingInvoice, pushToast, fetchInvoices, loadWhatsAppStatus, sendWhatsAppNow],
   );
 
   // Search reservations for auto-fill
@@ -389,28 +447,33 @@ export default function Page() {
     [api],
   );
 
-  // Handle send email - opens the send email modal
+  // Handle send - opens the send modal with every usable channel. With the
+  // restaurant's WhatsApp connected the modal also sends the WhatsApp + PDF;
+  // an incomplete email config then opens it with WhatsApp only, and only
+  // blocks when WhatsApp cannot be used either (invoice_whatsapp_autosend_v1).
   const handleSendEmail = useCallback(async (invoice: Invoice) => {
-    // Check email settings before opening modal
+    const canWhatsApp = Boolean(invoice.customer_phone) && (await loadWhatsAppStatus());
+    let missingEmailFields: string | null = null;
     try {
       const res = await api.config.getEmailProviderConfig();
-      if (res.success) {
-        const data = res as any;
-        if (data.isComplete === false) {
-          const fields = (data.missingFields || []).join(", ");
-          pushToast({
-            kind: "error",
-            title: "Email no configurado",
-            message: `Faltan campos: ${fields || "configuraci\u00f3n de email incompleta"}. Ve a Ajustes \u2192 Email para configurarlo.`,
-          });
-          return;
-        }
+      // The backend adds isComplete/missingFields to the config payload.
+      if (res.success && "isComplete" in res && res.isComplete === false) {
+        missingEmailFields = "missingFields" in res && Array.isArray(res.missingFields) ? res.missingFields.join(", ") : "";
       }
     } catch {
       // If check fails, allow modal to open anyway
     }
+    if (missingEmailFields !== null && !canWhatsApp) {
+      pushToast({
+        kind: "error",
+        title: "Email no configurado",
+        message: `Faltan campos: ${missingEmailFields || "configuraci\u00f3n de email incompleta"}. Ve a Ajustes \u2192 Email para configurarlo.`,
+      });
+      return;
+    }
+    setSendChannel(missingEmailFields !== null ? "whatsapp" : undefined);
     setEmailInvoice(invoice);
-  }, [api, pushToast]);
+  }, [api, pushToast, loadWhatsAppStatus]);
 
   // Handle email sent - updates the invoice in the list
   const handleEmailSent = useCallback((updatedInvoice: Invoice) => {
@@ -425,40 +488,11 @@ export default function Page() {
     setEmailInvoice(null);
   }, []);
 
-  // Handle send WhatsApp - opens the send WhatsApp modal
-  const handleSendWhatsApp = useCallback(async (invoice: Invoice) => {
-    // Check email settings before opening modal
-    try {
-      const res = await api.config.getEmailProviderConfig();
-      if (res.success) {
-        const data = res as any;
-        if (data.isComplete === false) {
-          const fields = (data.missingFields || []).join(", ");
-          pushToast({
-            kind: "error",
-            title: "Email no configurado",
-            message: `Faltan campos: ${fields || "configuraci\u00f3n de email incompleta"}. Ve a Ajustes \u2192 Email para configurarlo.`,
-          });
-          return;
-        }
-      }
-    } catch {
-      // If check fails, allow modal to open anyway
-    }
-    setWhatsappInvoice(invoice);
-  }, [api, pushToast]);
-
-  // Handle WhatsApp sent - updates the invoice in the list
-  const handleWhatsAppSent = useCallback((updatedInvoice: Invoice) => {
-    setInvoices((prev) =>
-      prev.map((inv) => (inv.id === updatedInvoice.id ? { ...inv, status: updatedInvoice.status } : inv))
-    );
-    setWhatsappInvoice(null);
-  }, []);
-
-  // Handle close WhatsApp modal
-  const handleCloseWhatsApp = useCallback(() => {
-    setWhatsappInvoice(null);
+  // Handle send WhatsApp - the same send modal with only the WhatsApp channel
+  // (text + PDF through the restaurant's connected WhatsApp).
+  const handleSendWhatsApp = useCallback((invoice: Invoice) => {
+    setSendChannel("whatsapp");
+    setEmailInvoice(invoice);
   }, []);
 
   // Handle bulk send email - opens the batch send modal
@@ -728,6 +762,7 @@ export default function Page() {
                 <InvoiceForm
                   invoice={editingInvoice}
                   onSave={handleSaveInvoice}
+                  isSubmitting={savingInvoice}
                   onCancel={handleCancelEdit}
                   searchReservations={searchReservations}
                   initialReservation={initialReservation}
@@ -751,16 +786,10 @@ export default function Page() {
       <SendEmailModal
         open={!!emailInvoice}
         invoice={emailInvoice}
+        whatsappConnected={whatsappConnected === true}
+        initialChannel={sendChannel}
         onClose={handleCloseEmail}
         onSent={handleEmailSent}
-      />
-
-      {/* Send WhatsApp Modal */}
-      <SendWhatsAppModal
-        open={!!whatsappInvoice}
-        invoice={whatsappInvoice}
-        onClose={handleCloseWhatsApp}
-        onSent={handleWhatsAppSent}
       />
 
       {/* Invoice Details Modal */}
@@ -768,6 +797,7 @@ export default function Page() {
         open={!!detailsInvoice}
         invoice={detailsInvoice}
         onClose={() => setDetailsInvoice(null)}
+        whatsappConnected={whatsappConnected}
         onSendEmail={(inv) => {
           setDetailsInvoice(null);
           handleSendEmail(inv);
