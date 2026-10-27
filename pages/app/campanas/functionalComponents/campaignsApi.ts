@@ -114,14 +114,21 @@ export const CAMPAIGN_UNSUBSCRIBE_COORD_ID = "camp-wa-unsub";
 export const CAMPAIGN_UNSUBSCRIBE_COPY = "No deseo recibir más campañas";
 
 /**
- * Opt-out reply button of a campaign that declares its own buttons
- * (campaign_whatsapp_reply_buttons_v1): WhatsApp caps a quick-reply label at
- * 20 characters, so it is shorter than CAMPAIGN_UNSUBSCRIBE_COPY. Same copy as
- * campaignOptOutReplyCopy in the backend.
+ * Opt-out button of a campaign that declares its own buttons: WhatsApp caps a
+ * button label at 20 characters, so it is shorter than
+ * CAMPAIGN_UNSUBSCRIBE_COPY. Same copy as campaignOptOutReplyCopy in the backend.
  */
 export const CAMPAIGN_WHATSAPP_OPTOUT_REPLY_COPY = "Darme de baja";
 /** WhatsApp truncates button labels past this many characters. */
 export const CAMPAIGN_WHATSAPP_BUTTON_MAX = 20;
+/**
+ * Coordination id of the campaign URL buttons (evo-weai sends up to
+ * CAMPAIGN_WHATSAPP_MAX_LINK_BUTTONS links + the opt-out as URL buttons).
+ * Same id as campaign_whatsapp_link_buttons.go in the backend.
+ */
+export const CAMPAIGN_WHATSAPP_LINK_BUTTONS_COORD_ID = "campaign_whatsapp_link_buttons_v1";
+/** Campaign links that become buttons, besides the opt-out one (campaignWAMaxLinkButtons). */
+export const CAMPAIGN_WHATSAPP_MAX_LINK_BUTTONS = 3;
 
 // A markdown line that is only a link (optionally after an icon or emoji, or
 // in bold): the way a campaign declares a button. Mirror of
@@ -137,10 +144,10 @@ export function whatsappButtonLabel(label: string): string {
 
 /**
  * Buttons of a campaign that declares them (standalone link lines), the way
- * the backend sends it (campaignPickCTAs + campaign_whatsapp_reply_buttons_v1):
- * the link lines leave the text and the first two of them, pre-booking links
- * first, then group menus, then menu pages, become buttons next to the opt-out
- * one. Null when the markdown has no button line (older campaigns keep the
+ * the backend sends it (campaignPickButtons + campaign_whatsapp_link_buttons_v1):
+ * the link lines leave the text and the first CAMPAIGN_WHATSAPP_MAX_LINK_BUTTONS
+ * of them, pre-booking links first, then group menus, then menu pages, become
+ * URL buttons next to the opt-out one. Null when the markdown has no button line (older campaigns keep the
  * website / opt-out buttons).
  */
 export function whatsappCampaignButtons(markdown: string): { text: string; links: { label: string; url: string }[] } | null {
@@ -155,7 +162,7 @@ export function whatsappCampaignButtons(markdown: string): { text: string; links
   }
   if (!links.length) return null;
   const rank = (url: string) => (url.includes("date=") ? 0 : url.includes("grupos") ? 1 : url.includes("/menu/") ? 2 : 3);
-  const picked = links.map((l, i) => ({ l, i })).sort((a, b) => rank(a.l.url) - rank(b.l.url) || a.i - b.i).slice(0, 2).map((x) => x.l);
+  const picked = links.map((l, i) => ({ l, i })).sort((a, b) => rank(a.l.url) - rank(b.l.url) || a.i - b.i).slice(0, CAMPAIGN_WHATSAPP_MAX_LINK_BUTTONS).map((x) => x.l);
   return { text: kept.join("\n").replace(/\n{3,}/g, "\n\n").trim(), links: picked };
 }
 
