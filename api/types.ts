@@ -3057,7 +3057,15 @@ export type RestaurantAdCanvas = {
 /** HTML design of an ad (ads_html_editor_v1): Tailwind HTML pages built with
  * the shared HTML builder. "multiple" = cards page (main) + one detail page per
  * step; a card is any element of the main page with data-ad-step="<step id>". */
-export type RestaurantAdDesignPage = { id?: string; title?: string; html: string; css?: string };
+export type RestaurantAdDesignPage = {
+  id?: string;
+  title?: string;
+  html: string;
+  css?: string;
+  /** Dates of a step's card (YYYY-MM-DD, both or none): shown only between them; none = the ad's dates. */
+  starts_at?: string | null;
+  ends_at?: string | null;
+};
 export type RestaurantAdDesignContainer = { max_width?: number; overlay?: string; radius?: number; background?: string };
 export type RestaurantAdDesignKind = "single" | "multiple";
 export type RestaurantAdDesign = {
