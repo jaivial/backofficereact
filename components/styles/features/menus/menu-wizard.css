@@ -222,6 +222,23 @@
   gap: 14px;
 }
 
+/* SEO is a plain configuration section, not a second nested panel. */
+.bo-menuConfigSection {
+  display: grid;
+  gap: 14px;
+}
+
+.bo-menuConfigSectionHead {
+  display: grid;
+  gap: 6px;
+  padding-inline: 5px;
+}
+
+.bo-menuConfigSectionBody {
+  display: grid;
+  gap: 12px;
+}
+
 .bo-menuBasicsMainRow {
   display: grid;
   grid-template-columns: minmax(0, 1.8fr) minmax(190px, 0.8fr);

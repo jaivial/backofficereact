@@ -813,7 +813,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                     ) : null}
                   </div>
                   <MenuPublicSEOSettings menuId={menuId} title={title} />
-                  {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-title-preview" /> : null}
+                  <FadeSeparator testId={isSpecial ? "menu-crear-config-sep-title-preview" : "menu-crear-config-sep-seo"} />
                   {!isSpecial ? (
                     <div className="bo-field bo-field--full" data-slot="crear-field--full">
                       <div className="bo-label" data-slot="crear-label">Subtitulos</div>
@@ -832,19 +832,23 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       </div>
                     </div>
                   ) : null}
+                  {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-subtitles-dishes" /> : null}
                   {!isSpecial ? (
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Visibilidad de platos</div>
                       <Select className="bo-menuSettingSelect" value={showDishImages ? "with_image" : "without_image"} onChange={(value) => setShowDishImages(value === "with_image")} options={dishVisibilityOptions} size="sm" ariaLabel="Visibilidad de platos en preview" />
                     </div>
                   ) : null}
+                  {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-dishes-tabs" /> : null}
                   {!isSpecial ? (
                     <div className="bo-field bo-field--inline" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Visibilidad con pestañas</div>
                       <Switch checked={showSectionTabs} onCheckedChange={setShowSectionTabs} data-testid="menu-crear-section-tabs-switch" />
                     </div>
                   ) : null}
+                  {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-tabs-slider" /> : null}
                   {!isSpecial ? <MenuSliderPanel menuId={menuId} initialSlider={initialSlider} onSliderChange={setSliderPreview} /> : null}
+                  {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-display-preview" /> : null}
                   <div className="bo-field" data-slot="crear-field">
                     <div className="bo-label" data-slot="crear-label">Añadir foto preview</div>
                     <Select className="bo-menuSettingSelect" value={showMenuPreviewImage ? "with_preview" : "without_preview"} onChange={(value) => setShowMenuPreviewImage(value === "with_preview")} options={menuPreviewVisibilityOptions} size="sm" ariaLabel="Visibilidad de foto preview en editor final" />
@@ -906,12 +910,14 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                     />
                   ) : null}
                   {isSpecial ? <FadeSeparator testId="menu-crear-config-sep-cta-active" /> : null}
+                  {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-settings-type" /> : null}
                   {!isSpecial ? (
                     <div className="bo-field" data-slot="crear-field">
                       <div className="bo-label" data-slot="crear-label">Cambiar tipo de menu</div>
                       <Select className="bo-menuSettingSelect" value={String(menuType)} onChange={(value) => setMenuType(normalizeMenuType(value))} options={menuTypeOptions} size="sm" ariaLabel="Seleccionar tipo de menu en editor final" />
                     </div>
                   ) : null}
+                  {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-type-active" /> : null}
                   <div className="bo-menuBasicsSwitchRow" data-slot="crear-menuBasicsSwitchRow">
                     <label className="bo-menuBasicsActiveToggle" data-slot="menu-crear-activo-label">
                       <span className="bo-label" data-slot="crear-label">Activo</span>
@@ -921,6 +927,8 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                   </div>
                 </div>
               </motion.div>
+
+              <FadeSeparator testId="menu-crear-config-sep-editor-weekday" />
 
               {/* Coordination id: menu_weekday_availability_v1 - weekly calendar
                   available for every menu type, saved over the group-menus-v2
@@ -942,6 +950,8 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                   />
                 </div>
               </motion.div>
+
+              <FadeSeparator testId="menu-crear-config-sep-weekday-visibility" />
 
               {/* Coordination id: special_menu_visibility_v1 - the visibility
                   dropdown lives in the configuracion tab so it sits next to
@@ -965,6 +975,7 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                 </div>
               </motion.div>
 
+              {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-visibility-settings" /> : null}
               {!isSpecial ? (
                 <motion.div layout transition={paneLayoutTransition} className="bo-panel bo-settingsPanel">
                   <div className="bo-panelHead" data-slot="crear-panelHead">
