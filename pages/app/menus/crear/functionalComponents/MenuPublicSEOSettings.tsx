@@ -73,14 +73,14 @@ export function MenuPublicSEOSettings({ menuId, title }: { menuId: number | null
   };
 
   return (
-    <section className="bo-panel" data-testid="menu-public-seo-panel" data-coordination-id="menu_public_seo_v1">
-      <div className="bo-panelHead" data-testid="menu-public-seo-head">
+    <section className="bo-menuConfigSection bo-menuConfigSection--seo" data-testid="menu-public-seo-panel" data-coordination-id="menu_public_seo_v1">
+      <div className="bo-menuConfigSectionHead" data-testid="menu-public-seo-head">
         <div data-testid="menu-public-seo-head-copy">
           <h2 className="bo-panelTitle" data-testid="menu-public-seo-title">SEO de la página del menú</h2>
           <p className="bo-panelMeta" data-testid="menu-public-seo-help">Configura la URL y los textos de búsqueda. Los cambios se guardan por separado del contenido del menú.</p>
         </div>
       </div>
-      <div className="bo-panelBody bo-form" data-testid="menu-public-seo-body">
+      <div className="bo-menuConfigSectionBody bo-form" data-testid="menu-public-seo-body">
         <div className="bo-field bo-field--full" data-testid="menu-public-seo-slug-field">
           <label className="bo-label" htmlFor="menu-public-seo-slug" data-testid="menu-public-seo-slug-label">Nombre de ruta (slug)</label>
           <AutosaveInput id="menu-public-seo-slug" className="bo-input" value={draft.seo_slug} disabled={!menuId || loading} onChange={(event) => setDraft({ ...draft, seo_slug: event.target.value })} placeholder="menu-arrocero" data-testid="menu-public-seo-slug-input" />
