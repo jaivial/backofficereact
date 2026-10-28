@@ -6,11 +6,12 @@ import {
 import type { RestaurantAdDesignContainer } from "../../../../../api/types";
 import { createClient } from "../../../../../api/client";
 import { HtmlBuilder, type BuilderProfile } from "../../../../../ui/htmlBuilder/HtmlBuilder";
-import type { ImageAI } from "../../../../../ui/htmlBuilder/BuilderInspector";
 import type { BuilderDevice } from "../../../../../ui/htmlBuilder/BuilderCanvas";
 import type { BlockContext } from "../../../../../ui/htmlBuilder/blocks";
 import type { BlockIcon } from "../../../../../ui/htmlBuilder/BuilderPanels";
 import { useBuilderTestId } from "../../../../../ui/htmlBuilder/testIds";
+import { InspectorSection, Segmented, type ImageAI } from "../../../../../ui/htmlBuilder/BuilderInspector";
+import { applyCardDesign, cardGroupOf, matchCardsTo, readCardDesign, type CardColumns, type CardDesign, type CardImageSize, type CardLayout, type CardMore, type CardWidth } from "./adCards";
 import { AD_STEP_ATTR, adBlocksFor, newStepId, type AdBlockKind } from "./adBlocks";
 import { AD_DEFAULT_OVERLAY } from "./adDesign";
 import { AD_BACKDROP_BLUR, AD_DEVICE_WIDTHS, AD_VIEWPORT, AdChrome, WebsiteBackdrop, adSheetWidth, websiteBase } from "./AdStage";
@@ -81,24 +82,76 @@ const SUGGESTIONS: Record<AdBuilderPage, string[]> = {
   ],
 };
 
-/** Card controls of the cards page: what a card opens, make / unmake cards. */
-function CardControl({ el, update, page, stepTitle, onOpenStep }: { el: Element; update: (fn: (node: HTMLElement) => void) => void; page: AdBuilderPage; stepTitle: (id: string) => string; onOpenStep: (id: string) => void }) {
+/** Non-card elements of the cards page can become a card (under «Visibilidad»). */
+function MakeCardControl({ el, update, page }: { el: Element; update: (fn: (node: HTMLElement) => void) => void; page: AdBuilderPage }) {
   const tp = useBuilderTestId();
-  if (page !== "cards") return null;
-  const card = el.closest(`[${AD_STEP_ATTR}]`);
-  const id = card?.getAttribute(AD_STEP_ATTR) ?? "";
+  if (page !== "cards" || el.closest(`[${AD_STEP_ATTR}]`) || el.querySelector(`[${AD_STEP_ATTR}]`)) return null;
   return (
     <>
       <span className="mt-1 text-[11px] font-medium text-bo-muted" data-testid={`${tp}-inspector-card-caption`}>Tarjeta de paso</span>
-      {card ? (
+      <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid={`${tp}-inspector-card-help`}>
+        Conviértelo en tarjeta para que abra su propia página de detalle.
+      </p>
+      <button type="button" onClick={() => update((node) => node.setAttribute(AD_STEP_ATTR, newStepId()))} className="bo-btn bo-btn--secondary bo-btn--sm w-fit" data-testid={`${tp}-inspector-card-set`}>
+        Convertir en tarjeta
+      </button>
+    </>
+  );
+}
+
+/**
+ * «Tarjetas» at the top of the inspector (cards page): what the selected card
+ * opens, and the design of every card of its grid at once: layout, image
+ * size, columns, width, the «Ver más» and «Igualar las demás a esta».
+ */
+function CardsSection({ el, update, page, stepTitle, onOpenStep }: { el: Element; update: (fn: (node: HTMLElement) => void) => void; page: AdBuilderPage; stepTitle: (id: string) => string; onOpenStep: (id: string) => void }) {
+  const tp = useBuilderTestId();
+  if (page !== "cards") return null;
+  const group = cardGroupOf(el);
+  if (!group || !group.cards.length) return null;
+  const card = el.closest(`[${AD_STEP_ATTR}]`);
+  const id = card?.getAttribute(AD_STEP_ATTR) ?? "";
+  const design = readCardDesign(group);
+  // Applied on the live node: its parent and siblings are the real grid.
+  const set = (patch: Partial<CardDesign>) =>
+    update((node) => {
+      const g = cardGroupOf(node);
+      if (g) applyCardDesign(g, patch);
+    });
+  const row = <T extends string>(label: string, key: keyof CardDesign, value: T, options: { value: T; label: string; title: string }[]) => (
+    <div className="grid gap-1" data-testid={`${tp}-inspector-cards-${key}-row`}>
+      <span className="text-[11px] font-medium text-bo-muted" data-testid={`${tp}-inspector-cards-${key}-caption`}>{label}</span>
+      <Segmented<T> label={label} value={value} onChange={(v) => set({ [key]: v } as Partial<CardDesign>)} options={options} testId={`${tp}-inspector-cards-${key}`} />
+    </div>
+  );
+  return (
+    <InspectorSection title={`Tarjetas (${group.cards.length})`} testId={`${tp}-inspector-cards`}>
+      {card && (
         <>
           <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid={`${tp}-inspector-card-help`}>
-            {card === el ? "Este elemento es una tarjeta" : "Está dentro de una tarjeta"}: al pulsarla se abre «{stepTitle(id) || id}».
+            {card === el ? "Esta tarjeta" : "Esta parte de una tarjeta"} abre «{stepTitle(id) || id}».
           </p>
           <div className="flex flex-wrap gap-1.5" data-testid={`${tp}-inspector-card-actions`}>
             <button type="button" onClick={() => onOpenStep(id)} className="bo-btn bo-btn--secondary bo-btn--sm" data-testid={`${tp}-inspector-card-open`}>
               Editar su página
             </button>
+            {group.cards.length > 1 && (
+              <button
+                type="button"
+                onClick={() =>
+                  update((node) => {
+                    const source = node.closest(`[${AD_STEP_ATTR}]`);
+                    const g = cardGroupOf(node);
+                    if (source && g) matchCardsTo(g, source);
+                  })
+                }
+                title="Copia el aspecto de esta tarjeta (colores, tamaños, botón) a las demás; cada una conserva sus textos, imagen y enlace"
+                className="bo-btn bo-btn--secondary bo-btn--sm"
+                data-testid={`${tp}-inspector-card-match`}
+              >
+                Igualar las demás a esta
+              </button>
+            )}
             {card === el && (
               <button type="button" onClick={() => update((node) => node.removeAttribute(AD_STEP_ATTR))} className="bo-btn bo-btn--ghost bo-btn--sm" data-testid={`${tp}-inspector-card-unset`}>
                 Dejar de ser tarjeta
@@ -106,17 +159,36 @@ function CardControl({ el, update, page, stepTitle, onOpenStep }: { el: Element;
             )}
           </div>
         </>
-      ) : (
-        <>
-          <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid={`${tp}-inspector-card-help`}>
-            Conviértelo en tarjeta para que abra su propia página de detalle.
-          </p>
-          <button type="button" onClick={() => update((node) => node.setAttribute(AD_STEP_ATTR, newStepId()))} className="bo-btn bo-btn--secondary bo-btn--sm w-fit" data-testid={`${tp}-inspector-card-set`}>
-            Convertir en tarjeta
-          </button>
-        </>
       )}
-    </>
+      {row<CardLayout>("Disposición", "layout", design.layout, [
+        { value: "horizontal", label: "Imagen al lado", title: "Imagen a la izquierda y texto a la derecha" },
+        { value: "vertical", label: "Imagen arriba", title: "Imagen ancha arriba y texto debajo" },
+      ])}
+      {row<CardImageSize>("Tamaño de la imagen", "imageSize", design.imageSize, [
+        { value: "s", label: "S", title: "Pequeña" },
+        { value: "m", label: "M", title: "Mediana" },
+        { value: "l", label: "L", title: "Grande" },
+        { value: "xl", label: "XL", title: "Muy grande" },
+      ])}
+      {row<CardColumns>("Columnas (tablet y escritorio)", "columns", design.columns, [
+        { value: "1", label: "1", title: "Una tarjeta por fila" },
+        { value: "2", label: "2", title: "Dos tarjetas por fila" },
+        { value: "3", label: "3", title: "Tres tarjetas por fila" },
+      ])}
+      {row<CardWidth>("Ancho de las tarjetas", "width", design.width, [
+        { value: "full", label: "Completo", title: "Todo el ancho de la ventana" },
+        { value: "medium", label: "Medio", title: "Centradas, hasta 576 px" },
+        { value: "narrow", label: "Estrecho", title: "Centradas, hasta 448 px" },
+      ])}
+      {row<CardMore>("«Ver más»", "more", design.more, [
+        { value: "text", label: "Texto", title: "Texto en el color del título" },
+        { value: "dark", label: "Botón negro", title: "Botón negro redondeado con texto blanco" },
+        { value: "light", label: "Botón claro", title: "Botón blanco redondeado con texto negro" },
+      ])}
+      <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid={`${tp}-inspector-cards-help`}>
+        Se aplica a todas las tarjetas de la rejilla. En el móvil siempre van una debajo de otra.
+      </p>
+    </InspectorSection>
   );
 }
 
@@ -149,7 +221,8 @@ export function AdBuilder({ value, onChange, context, coordId, website, containe
             { id: "menus", label: "Menús", href: `${site}/menus` },
           ]
         : [],
-      extraVisibility: (el, update) => <CardControl el={el} update={update} page={page} stepTitle={stepTitle} onOpenStep={onOpenStep} />,
+      extraVisibility: (el, update) => <MakeCardControl el={el} update={update} page={page} />,
+      inspectorTop: (el, update) => <CardsSection el={el} update={update} page={page} stepTitle={stepTitle} onOpenStep={onOpenStep} />,
       ai,
       modes: ["design", "code"],
       deviceWidths: AD_DEVICE_WIDTHS,

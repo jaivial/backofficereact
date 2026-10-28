@@ -43,7 +43,7 @@ export function cardHtml(ctx: BlockContext, id: string, title = "Título de la p
     `<img src="${esc(image || placeholder(800, 500, "Imagen"))}" alt="${esc(title)}" class="block h-40 w-full object-cover">` +
     `<div class="p-4"><h3 class="m-0 text-lg font-bold leading-snug text-gray-900">${esc(title)}</h3>` +
     `<p class="mb-0 mt-1 text-sm leading-relaxed text-gray-600">${esc(text)}</p>` +
-    `<p class="mb-0 mt-3 text-sm font-bold text-[${accentOf(ctx)}]">Ver más ›</p></div></a>`
+    `<p data-eb-name="Ver más" class="mb-0 mt-3 text-sm font-bold text-[${accentOf(ctx)}]">Ver más ›</p></div></a>`
   );
 }
 
