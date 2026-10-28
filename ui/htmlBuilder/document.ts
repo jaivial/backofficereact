@@ -263,8 +263,13 @@ const INLINE_TAGS = new Set(["a", "span", "strong", "b", "em", "i", "u", "s", "s
 export function isTextElement(el: Element | null): boolean {
   if (!el || el.tagName === "IMG" || el.tagName === "HR") return false;
   const children = Array.from(el.children);
-  return el.textContent?.trim() !== "" && children.every((c) => INLINE_TAGS.has(c.tagName.toLowerCase()));
+  // Inline tags that wrap blocks (a card: <a> with an image, a heading and a
+  // paragraph) make a container, not a text: its parts are their own layers.
+  return el.textContent?.trim() !== "" && children.every((c) => INLINE_TAGS.has(c.tagName.toLowerCase())) && !el.querySelector(BLOCK_INSIDE_TEXT);
 }
+
+/** Elements that can never be part of an editable text run. */
+const BLOCK_INSIDE_TEXT = "img,hr,div,p,h1,h2,h3,h4,h5,h6,ul,ol,li,table,section,article,header,footer,figure,blockquote,pre";
 
 // ── Layers ────────────────────────────────────────────────────────────────
 

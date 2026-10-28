@@ -11,7 +11,10 @@ import { AD_STEP_ATTR, cardHtml, cardsDesign, defaultSingleDesign, newStepId, st
  * card back) and is dropped on save.
  */
 
-export type AdStepDraft = { title: string; html: string };
+/** A step of a multiple ad: its detail page and the dates of its card (none = the ad's dates). */
+export type AdStepDraft = { title: string; html: string; starts_at?: string | null; ends_at?: string | null };
+
+export type StepSchedule = { starts_at: string | null; ends_at: string | null };
 
 export type AdDraft = {
   kind: RestaurantAdDesignKind;
@@ -48,7 +51,11 @@ export function draftFromDesign(design: RestaurantAdDesign): AdDraft {
     kind: design.kind,
     container: { ...defaultContainer(design.kind), ...design.container },
     main: design.main.html,
-    steps: Object.fromEntries((design.steps ?? []).map((s) => [s.id ?? "", { title: s.title ?? "", html: s.html }]).filter(([id]) => id)),
+    steps: Object.fromEntries(
+      (design.steps ?? [])
+        .map((s) => [s.id ?? "", { title: s.title ?? "", html: s.html, starts_at: s.starts_at ?? null, ends_at: s.ends_at ?? null }] as const)
+        .filter(([id]) => id),
+    ),
   };
 }
 
@@ -107,7 +114,16 @@ export function designFromDraft(draft: AdDraft): RestaurantAdDesign {
     kind: draft.kind,
     container: draft.container,
     main: { html: draft.main },
-    steps: draft.kind === "multiple" ? stepIdsOf(draft.main).filter((id) => draft.steps[id]).map((id) => ({ id, title: draft.steps[id].title, html: draft.steps[id].html })) : [],
+    steps:
+      draft.kind === "multiple"
+        ? stepIdsOf(draft.main)
+            .filter((id) => draft.steps[id])
+            .map((id) => {
+              const st = draft.steps[id];
+              const dated = Boolean(st.starts_at && st.ends_at);
+              return { id, title: st.title, html: st.html, ...(dated ? { starts_at: st.starts_at, ends_at: st.ends_at } : {}) };
+            })
+        : [],
   };
 }
 
@@ -144,4 +160,22 @@ export function addStep(draft: AdDraft, ctx: BlockContext): { draft: AdDraft; id
   const host = firstCard?.parentElement ?? body.querySelector('[data-eb-role="content"]') ?? body;
   host.insertAdjacentHTML("beforeend", cardHtml(ctx, id, title));
   return { draft: { ...draft, main: body.innerHTML.trim(), steps: { ...draft.steps, [id]: { title, html: stepDesign(ctx, title) } } }, id };
+}
+
+/** Sets (or clears, with nulls) the dates of one card. */
+export function setStepSchedule(draft: AdDraft, id: string, schedule: StepSchedule): AdDraft {
+  const st = draft.steps[id];
+  if (!st) return draft;
+  return { ...draft, steps: { ...draft.steps, [id]: { ...st, starts_at: schedule.starts_at, ends_at: schedule.ends_at } } };
+}
+
+/** Whether a card is shown on a day (YYYY-MM-DD): no dates = it follows the ad. */
+export function stepShownOn(step: Pick<AdStepDraft, "starts_at" | "ends_at"> | undefined, day: string): boolean {
+  if (!step?.starts_at || !step.ends_at) return true;
+  return day >= step.starts_at && day <= step.ends_at;
+}
+
+/** Today in Madrid, the day the website lives in (YYYY-MM-DD). */
+export function todayMadrid(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }

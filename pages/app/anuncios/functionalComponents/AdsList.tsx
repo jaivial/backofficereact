@@ -45,8 +45,8 @@ function kindLabel(ad: RestaurantAd): string {
 
 const shortDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 
-function scheduleLabel(ad: RestaurantAd): string | undefined {
-  return ad.starts_at && ad.ends_at ? `Del ${shortDate(ad.starts_at)} al ${shortDate(ad.ends_at)}` : undefined;
+function scheduleLabel(ad: RestaurantAd): string {
+  return ad.starts_at && ad.ends_at ? `Del ${shortDate(ad.starts_at)} al ${shortDate(ad.ends_at)}` : "Sin fechas: no aparece en la web";
 }
 
 export function AdsList() {

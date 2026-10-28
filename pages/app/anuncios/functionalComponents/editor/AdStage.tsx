@@ -3,7 +3,7 @@ import { ChevronLeft, Loader2, RotateCcw, X } from "lucide-react";
 import type { RestaurantAdDesignContainer } from "../../../../../api/types";
 import type { BuilderDevice } from "../../../../../ui/htmlBuilder/BuilderCanvas";
 import { BORDER_PREFLIGHT_CSS, EMAIL_RESET_CSS, fetchDesignCss } from "../../../../../ui/htmlBuilder/css";
-import { AD_DEFAULT_OVERLAY, stepIdsOf, type AdDraft } from "./adDesign";
+import { AD_DEFAULT_OVERLAY, stepIdsOf, stepShownOn, todayMadrid, type AdDraft } from "./adDesign";
 
 /*
  * Where an ad lives (ads_html_editor_v1): a window centred over the restaurant
@@ -108,11 +108,11 @@ document.addEventListener("click",function(e){var t=e.target;if(!t||!t.closest)r
 if(card){e.preventDefault();post({event:"step",target:card.getAttribute("data-ad-step")});return}
 var a=t.closest("a[href]");if(a&&(a.getAttribute("href")||"").charAt(0)==="#")e.preventDefault()});})();`;
 
-function previewDoc(html: string, css: string, step: string): string {
+function previewDoc(html: string, css: string, step: string, hiddenCss = ""): string {
   return (
     `<!doctype html><html lang="es" data-step="${step.replace(/"/g, "")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank">` +
     // Never scrolls (same as the public render): the iframe follows the posted height.
-    `<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}[data-ad-step]{cursor:pointer}${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}${css}</style></head>` +
+    `<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}[data-ad-step]{cursor:pointer}${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}${css}${hiddenCss}</style></head>` +
     `<body>${html}<script>${PREVIEW_BRIDGE}</script></body></html>`
   );
 }
@@ -138,6 +138,8 @@ type Props = {
   coordId: string;
   /** Step shown first ("" = main page). */
   initialStep?: string;
+  /** Dates of the ad: the preview of a day outside them says so. */
+  adRange?: { starts_at: string | null; ends_at: string | null };
 };
 
 /**
@@ -146,7 +148,7 @@ type Props = {
  * same endpoint as the canvas). Cards open their step, "Volver" goes back and
  * the close chip hides the ad until "Mostrar de nuevo".
  */
-export function AdLivePreview({ draft, device, website, coordId, initialStep = "" }: Props) {
+export function AdLivePreview({ draft, device, website, coordId, initialStep = "", adRange }: Props) {
   const testId = "ad-preview";
   const hostRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<HTMLIFrameElement | null>(null);
@@ -160,19 +162,27 @@ export function AdLivePreview({ draft, device, website, coordId, initialStep = "
   const live = useMemo(() => new Set(stepIdsOf(draft.kind === "multiple" ? draft.main : "")), [draft.kind, draft.main]);
   const page = step && live.has(step) ? draft.steps[step]?.html ?? "" : draft.main;
   const current = step && live.has(step) ? step : "";
+  // The day previewed: the website hides the cards out of their dates that
+  // day (and the whole ad out of its own dates).
+  const [day, setDay] = useState(todayMadrid);
+  const hiddenIds = useMemo(() => Array.from(live).filter((id) => !stepShownOn(draft.steps[id], day)), [day, draft.steps, live]);
+  const hiddenCss = current ? "" : hiddenIds.map((id) => `[data-ad-step="${id.replace(/[^A-Za-z0-9_-]/g, "")}"]{display:none!important}`).join("");
+  const adOff = Boolean(adRange?.starts_at && adRange.ends_at && (day < adRange.starts_at || day > adRange.ends_at));
+  const noCards = draft.kind === "multiple" && live.size > 0 && hiddenIds.length === live.size;
+  const offReason = adOff ? "Ese día el anuncio está fuera de sus fechas: no aparece en la web." : noCards ? "Ese día ninguna tarjeta está en sus fechas: el anuncio no aparece en la web." : "";
 
   useEffect(() => {
     let alive = true;
     const controller = new AbortController();
     setDoc((prev) => ({ html: prev.html, error: "" }));
     fetchDesignCss(page, coordId, controller.signal)
-      .then((css) => alive && setDoc({ html: previewDoc(page, css, current), error: "" }))
+      .then((css) => alive && setDoc({ html: previewDoc(page, css, current, hiddenCss), error: "" }))
       .catch((err: unknown) => alive && !controller.signal.aborted && setDoc({ html: "", error: err instanceof Error ? err.message : "No se pudo preparar la vista previa" }));
     return () => {
       alive = false;
       controller.abort();
     };
-  }, [page, current, coordId]);
+  }, [page, current, coordId, hiddenCss]);
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
@@ -198,7 +208,12 @@ export function AdLivePreview({ draft, device, website, coordId, initialStep = "
         <div className="relative overflow-hidden rounded-md shadow-[0_18px_50px_rgba(0,0,0,0.45)] ring-1 ring-white/10" style={{ width: viewport.width * scale, height: viewport.height * scale }} data-testid={`${testId}-screen`}>
           <div className="absolute left-0 top-0 origin-top-left" style={{ width: viewport.width, height: viewport.height, transform: `scale(${scale})` }} data-testid={`${testId}-viewport`}>
             <WebsiteBackdrop website={website} testId={`${testId}-backdrop`} />
-            {open && (
+            {open && offReason && (
+              <div className="absolute inset-x-0 top-1/3 mx-auto w-fit max-w-[80%] rounded-xl bg-black/75 px-5 py-4 text-center text-base text-white" data-testid={`${testId}-off`}>
+                {offReason}
+              </div>
+            )}
+            {open && !offReason && (
               <div
                 className="absolute inset-0 flex items-center justify-center"
                 style={{ background: c.overlay || AD_DEFAULT_OVERLAY, padding: AD_SCREEN_MARGIN, backdropFilter: `blur(${AD_BACKDROP_BLUR}px)` }}
@@ -253,6 +268,22 @@ export function AdLivePreview({ draft, device, website, coordId, initialStep = "
         <span data-testid={`${testId}-meta-size`}>
           {viewport.label} · {viewport.width} × {viewport.height} · ventana {sheet}px
         </span>
+        <label className="inline-flex items-center gap-1.5" data-testid={`${testId}-day`}>
+          <span data-testid={`${testId}-day-caption`}>Ver el día</span>
+          <input
+            type="date"
+            className="bo-input h-8 px-2 text-xs"
+            value={day}
+            onChange={(e) => e.currentTarget.value && setDay(e.currentTarget.value)}
+            aria-label="Día que se previsualiza"
+            data-testid={`${testId}-day-input`}
+          />
+        </label>
+        {hiddenIds.length > 0 && !noCards && (
+          <span className="text-[var(--bo-on-surface-warning)]" data-testid={`${testId}-day-hidden`}>
+            {hiddenIds.length === 1 ? "1 tarjeta oculta ese día" : `${hiddenIds.length} tarjetas ocultas ese día`}
+          </span>
+        )}
         {!open && (
           <button
             type="button"
