@@ -669,7 +669,9 @@
   margin: 0;
 }
 
-.bo-invoiceFormRow--invoiceNumber .bo-field {
+/* The switch field keeps the flex layout of .bo-field--switch (toggle and
+   label on the same line); only the label-above-input fields become grids. */
+.bo-invoiceFormRow--invoiceNumber .bo-field:not(.bo-field--switch) {
   display: grid;
   gap: var(--bo-space-1);
 }
