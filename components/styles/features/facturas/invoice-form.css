@@ -629,8 +629,13 @@
   align-items: end;
 }
 
+/* Importe + Moneda on the first line; the IVA section takes the whole row. */
 .bo-invoiceFormRow--amount {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bo-invoiceFormRow--amount > .bo-ivaModeField {
+  grid-column: 1 / -1;
 }
 
 .bo-field--dniCif {
@@ -1386,14 +1391,21 @@
   }
 }
 
-/* ── IVA mode: toggle sits just above the IVA input field ── */
+/* ── IVA mode: the section gets its own line and the toggle travels with the
+   IVA rate input (toggle + label + rate on the same row) ── */
 .bo-invoiceForm .bo-ivaModeField {
-  display: grid;
-  gap: var(--bo-space-2);
-  align-content: start;
+  display: flex;
+  align-items: center;
+  gap: var(--bo-space-3);
+  flex-wrap: wrap;
   min-width: 0;
 }
 
 .bo-invoiceForm .bo-ivaModeField > .bo-field {
   margin: 0;
+}
+
+.bo-invoiceForm .bo-ivaModeField .bo-ivaRateInput {
+  width: 96px;
+  flex: 0 0 96px;
 }
