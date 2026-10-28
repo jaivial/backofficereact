@@ -1046,7 +1046,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     );
   }, [errors, invoiceDate, amount, useLineItems, lineItems]);
 
-  // Shared IVA mode control, rendered just above the IVA inputs of the active mode.
+  // Shared IVA mode control, rendered with the IVA inputs of the active mode.
   const ivaModeToggle = (
     <SwitchField
       checked={ivaIncluded}
@@ -1423,10 +1423,10 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
                   <div data-testid="invoice-form-iva-mode-field" className="bo-ivaModeField" data-slot="invoice-form-iva-mode-field">
                     {ivaModeToggle}
                     {!ivaIncluded && (
-                      <label data-testid="invoice-form-iva-rate-label" className="bo-field" data-slot="invoice-form-iva-rate-label">
+                      <label data-testid="invoice-form-iva-rate-label" className="bo-field bo-field--inline" data-slot="invoice-form-iva-rate-label">
                         <span data-testid="invoiceForm-label-20" className="bo-label" data-slot="invoiceForm-label">IVA (%)</span>
                         <input
-                          className="bo-input"
+                          className="bo-input bo-ivaRateInput"
                           type="number"
                           step="0.1"
                           min="0"
