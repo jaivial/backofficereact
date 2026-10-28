@@ -153,7 +153,7 @@ function legacyCard(step: RestaurantAdStep, ctx: BlockContext): string {
   return (
     `<a ${EB_NAME}="Tarjeta" ${AD_STEP_ATTR}="${esc(step.id)}" href="#" class="flex items-center gap-4 rounded-2xl bg-[${bg}] p-3 text-left no-underline shadow-sm">${img}` +
     `<div class="min-w-0"><h3 class="m-0 text-lg font-bold leading-snug text-[${color}] sm:text-xl">${esc(title)}</h3>${desc}` +
-    `<p class="mb-0 mt-2 text-sm font-bold text-[${color}]">Ver más ›</p></div></a>`
+    `<p data-eb-name="Ver más" class="mb-0 mt-2 text-sm font-bold text-[${color}]">Ver más ›</p></div></a>`
   );
 }
 

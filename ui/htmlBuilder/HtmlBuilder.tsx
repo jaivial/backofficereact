@@ -43,6 +43,8 @@ export type BuilderProfile = {
   canvasCss?: string;
   linkPresets?: LinkPreset[];
   extraVisibility?: (el: Element, update: (fn: (node: HTMLElement) => void) => void) => React.ReactNode;
+  /** Profile controls at the top of the inspector for the selected element. */
+  inspectorTop?: (el: Element, update: (fn: (node: HTMLElement) => void) => void) => React.ReactNode;
   ai: BuilderAI;
   /** Stage the canvas draws behind the design on each device (web ads). */
   stage?: (device: BuilderDevice) => CanvasStage;
@@ -336,7 +338,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
   }
 
   const inspector = (
-    <BuilderInspector html={design} selectedId={selectedId} accent={context.accent} websiteUrl={context.websiteUrl} actions={actions} linkPresets={profile.linkPresets} extraVisibility={profile.extraVisibility} />
+    <BuilderInspector html={design} selectedId={selectedId} accent={context.accent} websiteUrl={context.websiteUrl} actions={actions} linkPresets={profile.linkPresets} extraVisibility={profile.extraVisibility} inspectorTop={profile.inspectorTop} />
   );
   const leftTabs: { id: LeftTab; label: string; icon: React.ReactNode }[] = [
     { id: "blocks", label: "Añadir", icon: <Plus size={14} aria-hidden="true" data-testid={`${tp}-tab-blocks-icon`} /> },
