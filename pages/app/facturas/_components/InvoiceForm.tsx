@@ -1046,7 +1046,7 @@ export const InvoiceForm = forwardRef<InvoiceFormRef, InvoiceFormProps>(function
     );
   }, [errors, invoiceDate, amount, useLineItems, lineItems]);
 
-  // Shared IVA mode control, rendered just above the IVA inputs of the active mode.
+  // Shared IVA mode control, rendered with the IVA inputs of the active mode.
   const ivaModeToggle = (
     <SwitchField
       checked={ivaIncluded}
