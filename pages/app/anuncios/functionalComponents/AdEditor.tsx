@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "vike/client/router";
-import { CalendarRange, Eye, Layers3, LayoutPanelTop, PenLine, Plus, Settings, Square, Trash2, TriangleAlert, X } from "lucide-react";
+import { CalendarClock, CalendarRange, Eye, Layers3, LayoutPanelTop, PenLine, Plus, Settings, Square, Trash2, TriangleAlert, X } from "lucide-react";
 import type { RestaurantAd, RestaurantAdDesignContainer, RestaurantAdDesignKind, RestaurantAdInput } from "../../../../api/types";
 import { createClient } from "../../../../api/client";
 import { InlineAlert } from "../../../../ui/feedback/InlineAlert";
@@ -19,10 +19,11 @@ import { AdEditorHeader, type AdSaveState } from "./AdEditorHeader";
 import { AdBuilder } from "./editor/AdBuilder";
 import { AD_DEVICE_WIDTHS, AdLivePreview, websiteBase } from "./editor/AdStage";
 import {
-  AD_DEFAULT_OVERLAY, addStep, defaultDraft, designFromDraft, draftFromDesign, orphanSteps, removeStep, stepIdsOf, switchKind, syncSteps,
-  type AdDraft, type AdPage,
+  AD_DEFAULT_OVERLAY, addStep, defaultDraft, designFromDraft, draftFromDesign, orphanSteps, removeStep, setStepSchedule, stepIdsOf, stepShownOn, switchKind, syncSteps,
+  todayMadrid, type AdDraft, type AdPage, type StepSchedule,
 } from "./editor/adDesign";
 import { draftFromLegacy, isLegacyAd } from "./editor/adLegacy";
+import { StepScheduleControl, stepBadge, type DateRange } from "./editor/StepSchedule";
 
 /*
  * Ad editor (ads_html_editor_v1): the web ad built with the shared HTML
@@ -73,7 +74,7 @@ const shortDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateStrin
 
 function scheduleLabel(meta: Meta): string {
   if (meta.starts_at && meta.ends_at) return `Del ${shortDate(meta.starts_at)} al ${shortDate(meta.ends_at)}`;
-  return "Sin fechas: siempre que esté activo";
+  return "Sin fechas: no aparece en la web";
 }
 
 /** rgba()/hex overlay <-> colour + opacity controls. */
@@ -345,6 +346,23 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
   }, [ad, api, pushToast]);
 
   const stepTitle = useCallback((id: string) => draft?.steps[id]?.title ?? "", [draft?.steps]);
+  const stepSchedule = useCallback(
+    (id: string): StepSchedule => ({ starts_at: draft?.steps[id]?.starts_at ?? null, ends_at: draft?.steps[id]?.ends_at ?? null }),
+    [draft?.steps],
+  );
+  const onStepSchedule = useCallback((id: string, schedule: StepSchedule) => setDraft((d) => (d ? setStepSchedule(d, id, schedule) : d)), []);
+  const adRange = useMemo<DateRange>(() => ({ starts_at: meta.starts_at, ends_at: meta.ends_at }), [meta.starts_at, meta.ends_at]);
+  // «Ajustar a las tarjetas»: the ad runs from the first card's start to the last card's end.
+  const cardsRange = useMemo<DateRange | null>(() => {
+    if (!draft || draft.kind !== "multiple") return null;
+    const ids = stepIdsOf(draft.main);
+    const dated = ids.map((id) => draft.steps[id]).filter((s) => s?.starts_at && s.ends_at);
+    if (!ids.length || dated.length !== ids.length) return null;
+    return {
+      starts_at: dated.map((s) => s.starts_at as string).sort()[0],
+      ends_at: dated.map((s) => s.ends_at as string).sort().slice(-1)[0],
+    };
+  }, [draft]);
   const openStep = useCallback((id: string) => setPage({ kind: "step", id }), []);
   const site = websiteBase(brand.website);
   // The website only shows active ads (the saved version).
@@ -367,6 +385,7 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
         name={meta.name}
         active={meta.active}
         schedule={scheduleLabel(meta)}
+        scheduleWarn={!meta.starts_at || !meta.ends_at}
         kind={draft?.kind ?? "single"}
         saveState={saveState}
         canDelete={Boolean(ad)}
@@ -428,6 +447,8 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
                         onClick={() => setPage({ kind: "step", id })}
                         onRemove={() => setConfirm({ kind: "step", id })}
                         testId={`ad-page-step-${i + 1}`}
+                        badge={stepBadge(stepSchedule(id))}
+                        dimmed={!stepShownOn(draft.steps[id], todayMadrid())}
                       >
                         {i + 1} · {draft.steps[id]?.title || "Paso"}
                       </PageChip>
@@ -470,6 +491,9 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
                   onOpenStep={openStep}
                   onUploadImage={uploadImage}
                   imageAI={imageAI}
+                  stepSchedule={stepSchedule}
+                  onStepSchedule={onStepSchedule}
+                  adRange={adRange}
                 />
               </div>
             </div>
@@ -487,7 +511,7 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
                 <div className="flex flex-wrap items-center justify-center gap-2" data-testid="ad-preview-device-toggle">
                   <DeviceSwitch value={device} onChange={setDevice} testId="ad-preview-device" widths={AD_DEVICE_WIDTHS} />
                 </div>
-                <AdLivePreview key={device} draft={draft} device={device} website={brand.website} coordId={coordId} initialStep={currentStep} />
+                <AdLivePreview key={device} draft={draft} device={device} website={brand.website} coordId={coordId} initialStep={currentStep} adRange={adRange} />
               </Panel>
             </div>
           )}
@@ -505,17 +529,17 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
                       {meta.active ? "Activo" : "Inactivo"}
                     </span>
                   </CampaignField>
-                  <CampaignField as="div" label="Programación" helper="Sin fechas se muestra mientras esté activo" className="sm:col-span-2" data-testid="ad-settings-schedule">
+                  <CampaignField as="div" label="Programación" helper="El anuncio solo aparece en la web entre su fecha de inicio y la de fin" className="sm:col-span-2" data-testid="ad-settings-schedule">
                     <div className="flex flex-wrap items-center gap-2" data-testid="ad-settings-schedule-row">
                       <Segmented<"always" | "range">
                         label="Programación"
                         value={meta.starts_at && meta.ends_at ? "range" : "always"}
                         onChange={(v) => {
-                          const today = new Date().toISOString().slice(0, 10);
+                          const today = todayMadrid();
                           setMeta((m) => (v === "always" ? { ...m, starts_at: null, ends_at: null } : { ...m, starts_at: m.starts_at ?? today, ends_at: m.ends_at ?? today }));
                         }}
                         options={[
-                          { value: "always", label: "Siempre", title: "Se muestra mientras esté activo" },
+                          { value: "always", label: "Sin fechas", title: "Sin fechas el anuncio no aparece en la web" },
                           { value: "range", label: "Entre fechas", title: "Solo entre dos fechas" },
                         ]}
                         testId="ad-settings-schedule-mode"
@@ -568,6 +592,41 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
                   ))}
                 </div>
               </CampaignSection>
+
+              {draft.kind === "multiple" && (
+                <CampaignSection
+                  icon={<CalendarClock size={15} aria-hidden="true" data-testid="ad-settings-cards-schedule-svg" />}
+                  title="Fechas de cada tarjeta"
+                  helper="Cada propuesta puede tener su propia duración dentro de las fechas del anuncio"
+                  data-testid="ad-settings-cards-schedule"
+                >
+                  <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2" data-testid="ad-settings-cards-schedule-list">
+                    {stepIds.map((id, i) => (
+                      <li key={id} className="grid content-start gap-2 rounded-bo-md border border-bo-border bg-bo-surface-3 p-3" data-testid={`ad-settings-card-${i + 1}`}>
+                        <span className="text-sm font-semibold text-bo-text" data-testid={`ad-settings-card-${i + 1}-title`}>
+                          {i + 1} · {draft.steps[id]?.title || "Paso"}
+                        </span>
+                        <StepScheduleControl schedule={stepSchedule(id)} adRange={adRange} onChange={(next) => onStepSchedule(id, next)} testId={`ad-settings-card-${i + 1}-schedule`} />
+                      </li>
+                    ))}
+                  </ul>
+                  {cardsRange && (cardsRange.starts_at !== meta.starts_at || cardsRange.ends_at !== meta.ends_at) && (
+                    <div className="flex flex-wrap items-center gap-2 text-[12px] text-bo-muted" data-testid="ad-settings-cards-fit">
+                      <span data-testid="ad-settings-cards-fit-text">
+                        Las tarjetas van del {shortDate(cardsRange.starts_at as string)} al {shortDate(cardsRange.ends_at as string)}.
+                      </span>
+                      <button
+                        type="button"
+                        className="bo-btn bo-btn--secondary bo-btn--sm"
+                        onClick={() => setMeta((m) => ({ ...m, starts_at: cardsRange.starts_at, ends_at: cardsRange.ends_at }))}
+                        data-testid="ad-settings-cards-fit-btn"
+                      >
+                        Ajustar las fechas del anuncio a las tarjetas
+                      </button>
+                    </div>
+                  )}
+                </CampaignSection>
+              )}
 
               <WindowSettings container={draft.container} onChange={setContainer} />
 
@@ -626,7 +685,7 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
   );
 }
 
-function PageChip({ active, onClick, onRemove, testId, icon, children }: { active: boolean; onClick: () => void; onRemove?: () => void; testId: string; icon?: React.ReactNode; children: React.ReactNode }) {
+function PageChip({ active, onClick, onRemove, testId, icon, badge, dimmed, children }: { active: boolean; onClick: () => void; onRemove?: () => void; testId: string; icon?: React.ReactNode; badge?: string; dimmed?: boolean; children: React.ReactNode }) {
   return (
     <span
       className={cn(
@@ -638,7 +697,12 @@ function PageChip({ active, onClick, onRemove, testId, icon, children }: { activ
     >
       <button type="button" onClick={onClick} aria-current={active ? "page" : undefined} className="inline-flex h-full min-w-0 items-center gap-1 truncate pl-3 pr-2" data-testid={`${testId}-open`}>
         {icon}
-        <span className="truncate" data-testid={`${testId}-label`}>{children}</span>
+        <span className={cn("truncate", dimmed && "line-through opacity-60")} data-testid={`${testId}-label`}>{children}</span>
+        {badge && (
+          <span className={cn("ml-1 shrink-0 rounded-full px-1.5 text-[10px]", dimmed ? "bg-[var(--bo-on-surface-warning)]/15 text-[var(--bo-on-surface-warning)]" : "bg-bo-surface-2 text-bo-faint")} data-testid={`${testId}-badge`}>
+            {badge}
+          </span>
+        )}
       </button>
       {onRemove && (
         <button type="button" onClick={onRemove} aria-label="Quitar propuesta" title="Quitar propuesta" className="mr-1 grid size-6 place-items-center rounded-full text-bo-faint hover:bg-bo-surface-2 hover:text-bo-text" data-testid={`${testId}-remove`}>

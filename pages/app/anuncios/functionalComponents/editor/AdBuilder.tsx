@@ -13,6 +13,8 @@ import { useBuilderTestId } from "../../../../../ui/htmlBuilder/testIds";
 import { InspectorSection, Segmented, type ImageAI } from "../../../../../ui/htmlBuilder/BuilderInspector";
 import { applyCardDesign, cardGroupOf, matchCardsTo, readCardDesign, type CardColumns, type CardDesign, type CardImageSize, type CardLayout, type CardMore, type CardWidth } from "./adCards";
 import { AD_STEP_ATTR, adBlocksFor, newStepId, type AdBlockKind } from "./adBlocks";
+import { stepShownOn, todayMadrid, type StepSchedule } from "./adDesign";
+import { StepScheduleControl, type DateRange } from "./StepSchedule";
 import { AD_DEFAULT_OVERLAY } from "./adDesign";
 import { AD_BACKDROP_BLUR, AD_DEVICE_WIDTHS, AD_VIEWPORT, AdChrome, WebsiteBackdrop, adSheetWidth, websiteBase } from "./AdStage";
 
@@ -39,6 +41,10 @@ type Props = {
   onOpenStep: (id: string) => void;
   onUploadImage?: (file: File) => Promise<string>;
   imageAI?: ImageAI;
+  /** Card dates (multiple ads): read, change, and the dates of the ad. */
+  stepSchedule: (id: string) => StepSchedule;
+  onStepSchedule: (id: string, schedule: StepSchedule) => void;
+  adRange: DateRange;
 };
 
 const AD_BLOCK_ICONS: Record<AdBlockKind, BlockIcon> = {
@@ -104,7 +110,23 @@ function MakeCardControl({ el, update, page }: { el: Element; update: (fn: (node
  * opens, and the design of every card of its grid at once: layout, image
  * size, columns, width, the «Ver más» and «Igualar las demás a esta».
  */
-function CardsSection({ el, update, page, stepTitle, onOpenStep }: { el: Element; update: (fn: (node: HTMLElement) => void) => void; page: AdBuilderPage; stepTitle: (id: string) => string; onOpenStep: (id: string) => void }) {
+type ScheduleProps = { stepSchedule: (id: string) => StepSchedule; onStepSchedule: (id: string, schedule: StepSchedule) => void; adRange: DateRange };
+
+function CardsSection({
+  el,
+  update,
+  page,
+  stepTitle,
+  onOpenStep,
+  schedule,
+}: {
+  el: Element;
+  update: (fn: (node: HTMLElement) => void) => void;
+  page: AdBuilderPage;
+  stepTitle: (id: string) => string;
+  onOpenStep: (id: string) => void;
+  schedule: ScheduleProps;
+}) {
   const tp = useBuilderTestId();
   if (page !== "cards") return null;
   const group = cardGroupOf(el);
@@ -158,6 +180,14 @@ function CardsSection({ el, update, page, stepTitle, onOpenStep }: { el: Element
               </button>
             )}
           </div>
+          <span className="mt-1 text-[11px] font-medium text-bo-muted" data-testid={`${tp}-inspector-card-schedule-caption`}>Fechas de esta tarjeta</span>
+          <StepScheduleControl
+            compact
+            schedule={schedule.stepSchedule(id)}
+            adRange={schedule.adRange}
+            onChange={(next) => schedule.onStepSchedule(id, next)}
+            testId={`${tp}-inspector-card-schedule`}
+          />
         </>
       )}
       {row<CardLayout>("Disposición", "layout", design.layout, [
@@ -192,7 +222,7 @@ function CardsSection({ el, update, page, stepTitle, onOpenStep }: { el: Element
   );
 }
 
-export function AdBuilder({ value, onChange, context, coordId, website, container, page, device, onDeviceChange, stepTitle, onOpenStep, onUploadImage, imageAI }: Props) {
+export function AdBuilder({ value, onChange, context, coordId, website, container, page, device, onDeviceChange, stepTitle, onOpenStep, onUploadImage, imageAI, stepSchedule, onStepSchedule, adRange }: Props) {
   const api = useMemo(() => createClient({ baseUrl: "" }).config, []);
   const site = websiteBase(website);
   const ai = useMemo<BuilderProfile["ai"]>(
@@ -208,13 +238,24 @@ export function AdBuilder({ value, onChange, context, coordId, website, containe
     [api, page],
   );
   const backdrop = useMemo(() => <WebsiteBackdrop website={website} testId="ad-builder-stage-site" />, [website]);
+  const schedule = useMemo<ScheduleProps>(() => ({ stepSchedule, onStepSchedule, adRange }), [adRange, onStepSchedule, stepSchedule]);
+  // Cards out of their dates today are dimmed on the canvas (editing CSS only).
+  const hiddenCardsCss = useMemo(() => {
+    if (page !== "cards") return "";
+    const today = todayMadrid();
+    return Array.from(value.matchAll(/data-ad-step="([^"]+)"/g))
+      .map((m) => m[1])
+      .filter((id) => !stepShownOn(stepSchedule(id), today))
+      .map((id) => `[data-ad-step="${id.replace(/[^A-Za-z0-9_-]/g, "")}"]{opacity:.4;outline-color:#f59e0b!important}`)
+      .join("");
+  }, [page, stepSchedule, value]);
   const profile = useMemo<BuilderProfile>(
     () => ({
       testIdPrefix: "ad-builder",
       rootTestId: "ad-content-panel",
       blocks: adBlocksFor(page),
       blockIcons: AD_BLOCK_ICONS,
-      canvasCss: page === "cards" ? CARD_HINT_CSS : "",
+      canvasCss: page === "cards" ? CARD_HINT_CSS + hiddenCardsCss : "",
       linkPresets: site
         ? [
             { id: "reservas", label: "Reservar", href: `${site}/reservas` },
@@ -222,7 +263,7 @@ export function AdBuilder({ value, onChange, context, coordId, website, containe
           ]
         : [],
       extraVisibility: (el, update) => <MakeCardControl el={el} update={update} page={page} />,
-      inspectorTop: (el, update) => <CardsSection el={el} update={update} page={page} stepTitle={stepTitle} onOpenStep={onOpenStep} />,
+      inspectorTop: (el, update) => <CardsSection el={el} update={update} page={page} stepTitle={stepTitle} onOpenStep={onOpenStep} schedule={schedule} />,
       ai,
       modes: ["design", "code"],
       deviceWidths: AD_DEVICE_WIDTHS,
@@ -238,7 +279,7 @@ export function AdBuilder({ value, onChange, context, coordId, website, containe
         label: `${AD_VIEWPORT[d].label} · ${AD_VIEWPORT[d].width} × ${AD_VIEWPORT[d].height} · ventana ${adSheetWidth(d, container)}px`,
       }),
     }),
-    [ai, backdrop, container, onOpenStep, page, site, stepTitle],
+    [ai, backdrop, container, hiddenCardsCss, onOpenStep, page, schedule, site, stepTitle],
   );
   return (
     <HtmlBuilder
