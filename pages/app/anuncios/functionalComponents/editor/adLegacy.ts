@@ -109,15 +109,19 @@ function canvasBackground(canvas: RestaurantAdCanvas): { color: string; image: s
   return { color: hex(bg.value) || hex(fill?.props?.fill), image: "" };
 }
 
-function canvasPage(name: string, canvas: RestaurantAdCanvas): string {
+/** Top padding of a page's content: a step leaves room for the «Volver» and close chips. */
+const STEP_TOP = "pt-16";
+
+function canvasPage(name: string, canvas: RestaurantAdCanvas, step = false): string {
   const bg = canvasBackground(canvas);
   const cover = bg.image ? `<img src="${esc(bg.image)}" alt="" class="block h-auto w-full">` : "";
-  const root = adFrame(name, `${cover}<div ${EB_NAME}="Contenido" class="px-6 pt-6 sm:px-10 sm:pt-10">${canvasToFlow(canvas)}</div>`);
+  const top = step && !cover ? STEP_TOP : "pt-6 sm:pt-10";
+  const root = adFrame(name, `${cover}<div ${EB_NAME}="Contenido" class="px-6 ${top} sm:px-10">${canvasToFlow(canvas)}</div>`);
   return bg.color ? root.replace("bg-white", `bg-[${bg.color}]`) : root;
 }
 
 /** Classic content + buttons (title, subtitle, text, image; buttons by slot). */
-function contentPage(name: string, content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[], ctx: BlockContext, website: string, bgColor = ""): string {
+function contentPage(name: string, content: RestaurantAdContentElement[], buttons: RestaurantAdCTA[], ctx: BlockContext, website: string, bgColor = "", step = false): string {
   const out: string[] = [];
   const btn = (cta: RestaurantAdCTA) => buttonHtml(cta.text, ctaHref(cta, website), hex(cta.color) || accentOf(ctx), "#ffffff", 12, true);
   content.forEach((item, index) => {
@@ -133,7 +137,7 @@ function contentPage(name: string, content: RestaurantAdContentElement[], button
   });
   const actions = buttons.filter((cta) => typeof cta.slot !== "number" || cta.slot >= content.length);
   if (actions.length) out.push(`<div ${EB_NAME}="Botones" class="flex flex-wrap justify-center gap-3">${actions.map(btn).join("")}</div>`);
-  const root = adFrame(name, `<div ${EB_NAME}="Contenido" class="px-6 pt-6 sm:px-8">${out.join("") || textHtml(name, 30, "", "center", true, false)}</div>`);
+  const root = adFrame(name, `<div ${EB_NAME}="Contenido" class="px-6 ${step ? STEP_TOP : "pt-6"} sm:px-8">${out.join("") || textHtml(name, 30, "", "center", true, false)}</div>`);
   return bgColor ? root.replace("bg-white", `bg-[${bgColor}]`) : root;
 }
 
@@ -192,8 +196,8 @@ export function draftFromLegacy(ad: RestaurantAd, ctx: BlockContext, website: st
           {
             title: s.title || "Paso",
             html: s.canvas
-              ? canvasPage(s.title || "Paso", s.canvas)
-              : contentPage(s.title || "Paso", s.content ?? [], s.buttons ?? [], ctx, site, s.detail_background_mode === "color" ? hex(s.detail_background_color) : ""),
+              ? canvasPage(s.title || "Paso", s.canvas, true)
+              : contentPage(s.title || "Paso", s.content ?? [], s.buttons ?? [], ctx, site, s.detail_background_mode === "color" ? hex(s.detail_background_color) : "", true),
           },
         ]),
       ),
