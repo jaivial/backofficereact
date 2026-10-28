@@ -16,6 +16,8 @@ type Props = {
   name: string;
   active: boolean;
   schedule: string;
+  /** The schedule keeps the ad off the website (no dates). */
+  scheduleWarn?: boolean;
   kind: RestaurantAdDesignKind;
   saveState: AdSaveState;
   canDelete: boolean;
@@ -89,7 +91,9 @@ export function AdEditorHeader(props: Props) {
               {props.kind === "multiple" ? <Layers3 size={12} aria-hidden="true" data-testid="ad-editor-meta-kind-icon" /> : <Square size={12} aria-hidden="true" data-testid="ad-editor-meta-kind-icon" />}
               {props.kind === "multiple" ? "Múltiple" : "Individual"}
             </li>
-            <li className="text-[11px] text-bo-faint" data-testid="ad-editor-meta-schedule">{props.schedule}</li>
+            <li className={cn("text-[11px]", props.scheduleWarn ? "text-[var(--bo-on-surface-warning)]" : "text-bo-faint")} data-testid="ad-editor-meta-schedule">
+              {props.schedule}
+            </li>
           </ul>
         </div>
       </div>
