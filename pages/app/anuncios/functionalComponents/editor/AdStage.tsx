@@ -108,9 +108,9 @@ document.addEventListener("click",function(e){var t=e.target;if(!t||!t.closest)r
 if(card){e.preventDefault();post({event:"step",target:card.getAttribute("data-ad-step")});return}
 var a=t.closest("a[href]");if(a&&(a.getAttribute("href")||"").charAt(0)==="#")e.preventDefault()});})();`;
 
-function previewDoc(html: string, css: string, step: string, hiddenCss = ""): string {
+function previewDoc(html: string, css: string, step: string, hiddenCss = "", device: BuilderDevice = "desktop"): string {
   return (
-    `<!doctype html><html lang="es" data-step="${step.replace(/"/g, "")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank">` +
+    `<!doctype html><html lang="es" class="group/vp" data-vp="${device}" data-step="${step.replace(/"/g, "")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank">` +
     // Never scrolls (same as the public render): the iframe follows the posted height.
     `<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden}[data-ad-step]{cursor:pointer}${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}${css}${hiddenCss}</style></head>` +
     `<body>${html}<script>${PREVIEW_BRIDGE}</script></body></html>`
@@ -176,13 +176,13 @@ export function AdLivePreview({ draft, device, website, coordId, initialStep = "
     const controller = new AbortController();
     setDoc((prev) => ({ html: prev.html, error: "" }));
     fetchDesignCss(page, coordId, controller.signal)
-      .then((css) => alive && setDoc({ html: previewDoc(page, css, current, hiddenCss), error: "" }))
+      .then((css) => alive && setDoc({ html: previewDoc(page, css, current, hiddenCss, device), error: "" }))
       .catch((err: unknown) => alive && !controller.signal.aborted && setDoc({ html: "", error: err instanceof Error ? err.message : "No se pudo preparar la vista previa" }));
     return () => {
       alive = false;
       controller.abort();
     };
-  }, [page, current, coordId, hiddenCss]);
+  }, [page, current, coordId, hiddenCss, device]);
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
