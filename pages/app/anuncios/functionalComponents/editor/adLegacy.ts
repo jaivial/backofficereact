@@ -182,7 +182,7 @@ export function draftFromLegacy(ad: RestaurantAd, ctx: BlockContext, website: st
     const cards = fixed.map((s) => legacyCard(s, ctx)).join("");
     const main = adFrame(
       "Tarjetas",
-      `<div ${EB_NAME}="Cabecera" class="px-6 pt-6 sm:px-8"><h2 class="m-0 text-2xl font-bold leading-tight text-gray-900">${esc(ad.name)}</h2>` +
+      `<div ${EB_NAME}="Cabecera" class="pl-6 pr-16 pt-6 sm:pl-8 group-data-[vp=desktop]/vp:pr-8"><h2 class="m-0 text-2xl font-bold leading-tight text-gray-900">${esc(ad.name)}</h2>` +
         `<p class="mb-0 mt-1 text-base text-gray-600">Elige una opción para ver todos los detalles.</p></div>` +
         `<div ${EB_NAME}="Tarjetas" class="grid gap-4 px-6 pt-5 sm:px-8">${cards}</div>`,
     );
