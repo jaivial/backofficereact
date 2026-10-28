@@ -44,6 +44,8 @@ export type CanvasStage = {
   chrome?: React.ReactNode;
   /** Text of the canvas meta line ("Escritorio · 1280 × 800"). */
   label?: string;
+  /** Attributes of the canvas <html> (the device the design is laid out for). */
+  docAttrs?: Record<string, string>;
 };
 
 type Props = {
@@ -122,6 +124,15 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
     setAvailable(el.clientWidth);
     return () => ro.disconnect();
   }, []);
+
+  // The device of the stage on the canvas <html> (e.g. data-vp for ad designs).
+  const docAttrsKey = JSON.stringify(stage?.docAttrs ?? {});
+  useEffect(() => {
+    const d = doc();
+    if (!ready || !d) return;
+    for (const [k, v] of Object.entries(JSON.parse(docAttrsKey) as Record<string, string>)) d.documentElement.setAttribute(k, v);
+    measure();
+  }, [docAttrsKey, ready, measure]);
 
   // Design + CSS into the frame. A text being edited in place is never overwritten.
   useEffect(() => {

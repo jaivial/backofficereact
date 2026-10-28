@@ -190,7 +190,11 @@ function CardsSection({
           />
         </>
       )}
-      {row<CardLayout>("Disposición", "layout", design.layout, [
+      {row<CardLayout>("Disposición en escritorio", "layout", design.layout, [
+        { value: "horizontal", label: "Imagen al lado", title: "Imagen a la izquierda y texto a la derecha" },
+        { value: "vertical", label: "Imagen arriba", title: "Imagen ancha arriba y texto debajo" },
+      ])}
+      {row<CardLayout>("Disposición en tablet y móvil", "mobileLayout", design.mobileLayout, [
         { value: "horizontal", label: "Imagen al lado", title: "Imagen a la izquierda y texto a la derecha" },
         { value: "vertical", label: "Imagen arriba", title: "Imagen ancha arriba y texto debajo" },
       ])}
@@ -200,7 +204,7 @@ function CardsSection({
         { value: "l", label: "L", title: "Grande" },
         { value: "xl", label: "XL", title: "Muy grande" },
       ])}
-      {row<CardColumns>("Columnas (tablet y escritorio)", "columns", design.columns, [
+      {row<CardColumns>("Columnas en escritorio", "columns", design.columns, [
         { value: "1", label: "1", title: "Una tarjeta por fila" },
         { value: "2", label: "2", title: "Dos tarjetas por fila" },
         { value: "3", label: "3", title: "Tres tarjetas por fila" },
@@ -216,7 +220,7 @@ function CardsSection({
         { value: "light", label: "Botón claro", title: "Botón blanco redondeado con texto negro" },
       ])}
       <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid={`${tp}-inspector-cards-help`}>
-        Se aplica a todas las tarjetas de la rejilla. En el móvil siempre van una debajo de otra.
+        Se aplica a todas las tarjetas de la rejilla. En tablet y móvil van una por fila.
       </p>
     </InspectorSection>
   );
@@ -277,6 +281,8 @@ export function AdBuilder({ value, onChange, context, coordId, website, containe
         background: container.background || "#ffffff",
         chrome: <AdChrome back={page === "step"} testId="ad-builder-stage-chrome" />,
         label: `${AD_VIEWPORT[d].label} · ${AD_VIEWPORT[d].width} × ${AD_VIEWPORT[d].height} · ventana ${adSheetWidth(d, container)}px`,
+        // The device the page is laid out for (group-data-[vp=…]/vp: classes).
+        docAttrs: { class: "group/vp", "data-vp": d },
       }),
     }),
     [ai, backdrop, container, hiddenCardsCss, onOpenStep, page, schedule, site, stepTitle],

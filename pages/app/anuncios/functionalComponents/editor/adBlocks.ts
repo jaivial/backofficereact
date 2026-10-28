@@ -128,7 +128,7 @@ export function cardsDesign(ctx: BlockContext, cards: string[], title = "Nuestra
     "Tarjetas",
     `<div ${EB_NAME}="Cabecera" class="${PAD} pt-6"><h2 class="m-0 text-2xl font-bold leading-tight text-gray-900">${esc(title)}</h2>` +
       `<p class="mb-0 mt-1 text-base text-gray-600">${esc(subtitle)}</p></div>` +
-      `<div ${EB_NAME}="Rejilla de tarjetas" class="${PAD} grid gap-4 pt-5 sm:grid-cols-2">${cards.join("")}</div>`,
+      `<div ${EB_NAME}="Rejilla de tarjetas" class="${PAD} grid gap-4 pt-5 group-data-[vp=desktop]/vp:grid-cols-2">${cards.join("")}</div>`,
   );
 }
 
@@ -137,7 +137,7 @@ export function stepDesign(ctx: BlockContext, title: string): string {
   return adFrame(
     title || "Paso",
     `<div ${EB_NAME}="Portada"><img src="${placeholder(1200, 675, "Imagen")}" alt="${esc(title || "Imagen")}" class="block h-auto w-full">` +
-      `<div class="${PAD} pt-6"><h2 class="m-0 text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">${esc(title || "Título")}</h2>` +
+      `<div class="${PAD} pt-6 text-center"><h2 class="m-0 text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">${esc(title || "Título")}</h2>` +
       `<p class="mb-0 mt-2 text-base leading-relaxed text-gray-600">Cuenta aquí todos los detalles de esta propuesta.</p></div></div>` +
       AD_BLOCKS.find((b) => b.kind === "button")!.html(ctx),
   );
