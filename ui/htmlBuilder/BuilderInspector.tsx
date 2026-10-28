@@ -45,6 +45,8 @@ type Props = {
   linkPresets?: LinkPreset[];
   /** Profile controls under "Visibilidad" (campaign channel), for the selected element. */
   extraVisibility?: (el: Element, update: (fn: (node: HTMLElement) => void) => void) => React.ReactNode;
+  /** Profile controls shown first for the selected element (ad cards). */
+  inspectorTop?: (el: Element, update: (fn: (node: HTMLElement) => void) => void) => React.ReactNode;
 };
 
 type Option = { value: string; label: string };
@@ -178,6 +180,11 @@ function CommitInput({ value, onCommit, testId, multiline, placeholder, mono }: 
   );
 }
 
+/** A titled block of the inspector (also used by profile controls). */
+export function InspectorSection({ title, children, testId }: { title: string; children: React.ReactNode; testId: string }) {
+  return <Section title={title} testId={testId}>{children}</Section>;
+}
+
 function Section({ title, children, testId }: { title: string; children: React.ReactNode; testId: string }) {
   return (
     <section className="grid gap-2.5 border-b border-bo-border px-3 py-3" data-testid={testId}>
@@ -187,7 +194,7 @@ function Section({ title, children, testId }: { title: string; children: React.R
   );
 }
 
-export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions, linkPresets = [], extraVisibility }: Props) {
+export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions, linkPresets = [], extraVisibility, inspectorTop }: Props) {
   const tp = useBuilderTestId();
   const [scope, setScope] = useState<"" | "md:">("");
   const [uploading, setUploading] = useState(false);
@@ -267,6 +274,8 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
           </button>
         ))}
       </div>
+
+      {inspectorTop?.(el, (fn) => actions.update(selectedId, fn))}
 
       {(isText || tag === "a" || tag === "img") && (
         <Section title="Contenido" testId={`${tp}-inspector-content`}>
