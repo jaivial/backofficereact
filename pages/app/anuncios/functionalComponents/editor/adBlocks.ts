@@ -20,6 +20,8 @@ export type AdBlockKind =
 export type AdBlockDef = BlockDef & { kind: AdBlockKind };
 
 const PAD = "px-6 sm:px-8";
+/** Header of the cards page: on tablets and phones the title keeps clear of the close chip. */
+const HEAD_PAD = "pl-6 pr-16 sm:pl-8 group-data-[vp=desktop]/vp:pr-8";
 export const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 export const accentOf = (ctx: BlockContext) => (/^#[0-9a-fA-F]{3,8}$/.test(ctx.accent) ? ctx.accent : "#1e4636");
 const site = (ctx: BlockContext) => (ctx.websiteUrl || "https://").replace(/\/+$/, "");
@@ -126,7 +128,7 @@ export function defaultSingleDesign(ctx: BlockContext): string {
 export function cardsDesign(ctx: BlockContext, cards: string[], title = "Nuestras propuestas", subtitle = "Elige una para ver todos los detalles."): string {
   return adFrame(
     "Tarjetas",
-    `<div ${EB_NAME}="Cabecera" class="${PAD} pt-6"><h2 class="m-0 text-2xl font-bold leading-tight text-gray-900">${esc(title)}</h2>` +
+    `<div ${EB_NAME}="Cabecera" class="${HEAD_PAD} pt-6"><h2 class="m-0 text-2xl font-bold leading-tight text-gray-900">${esc(title)}</h2>` +
       `<p class="mb-0 mt-1 text-base text-gray-600">${esc(subtitle)}</p></div>` +
       `<div ${EB_NAME}="Rejilla de tarjetas" class="${PAD} grid gap-4 pt-5 group-data-[vp=desktop]/vp:grid-cols-2">${cards.join("")}</div>`,
   );
