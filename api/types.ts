@@ -2751,6 +2751,44 @@ export type MiniMaxConfigInput = {
   model: string;
 };
 
+// Coordination id: google_reviews_ai_v1 - Google review assistant.
+export type GoogleReviewsStatus = {
+  configured: boolean;
+  connected: boolean;
+  email: string;
+  location: string;
+  locationTitle: string;
+  autoPublishMinStars: number;
+  formality: "tu" | "usted";
+  signature: string;
+  complaintContact: string;
+  syncEnabled: boolean;
+  syncHour: number;
+  lastSyncAt: string | null;
+  lastSyncError: string;
+  redirectUri: string;
+};
+
+export type GoogleReviewsSettingsInput = Pick<GoogleReviewsStatus, "autoPublishMinStars" | "formality" | "signature" | "complaintContact" | "syncEnabled">;
+
+export type GoogleBusinessLocation = { account: string; name: string; title: string; address: string };
+
+export type GoogleReviewStatus = "pending" | "draft" | "published" | "skipped";
+
+export type GoogleReview = {
+  id: number;
+  reviewer: string;
+  stars: number;
+  comment: string;
+  createdAt: string | null;
+  reply: string;
+  status: GoogleReviewStatus;
+  error: string;
+  publishedAt: string | null;
+};
+
+export type GoogleReviewsSyncSummary = { imported: number; new: number; drafted: number; published: number; pending: number };
+
 export type EmailProviderConfig = {
   id: number;
   provider: "smtp" | "gmail";

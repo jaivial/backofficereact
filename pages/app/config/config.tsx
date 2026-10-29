@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react";
 import { useAtomValue } from "jotai";
 import { usePageContext } from "vike-react/usePageContext";
-import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud, CreditCard, GitBranch } from "lucide-react";
+import { Building2, LayoutGrid, Phone, UtensilsCrossed, CalendarDays, Scale, Sparkles, Cloud, CreditCard, GitBranch, Star } from "lucide-react";
 
 import { createClient } from "../../../api/client";
 import type { ConfigDefaults, ConfigFloor, RestaurantInfo } from "../../../api/types";
@@ -25,6 +25,7 @@ import { ConfigAIImage } from "./functionalComponents/ConfigAIImage/ConfigAIImag
 import { ConfigMiniMax } from "./functionalComponents/ConfigMiniMax/ConfigMiniMax";
 import { ConfigBunnyStorage } from "./functionalComponents/ConfigBunnyStorage/ConfigBunnyStorage";
 import { ConfigCobrosOnline } from "./functionalComponents/ConfigCobrosOnline/ConfigCobrosOnline";
+import { ConfigGoogleReviews } from "./functionalComponents/ConfigGoogleReviews/ConfigGoogleReviews";
 import { ConfigWhatsAppBot } from "./functionalComponents/ConfigWhatsAppBot/ConfigWhatsAppBot";
 import { ConfigBotAI } from "./functionalComponents/ConfigBotAI/ConfigBotAI";
 import { ConfigBotPipeline } from "./functionalComponents/ConfigBotPipeline/ConfigBotPipeline";
@@ -38,7 +39,7 @@ type PageData = {
   error: string | null;
 };
 
-type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "pipeline" | "cdn" | "stripe";
+type ContentTab = "restaurante" | "contacto" | "booking" | "legal-pages" | "ia" | "pipeline" | "cdn" | "stripe" | "resenas";
 
 function resolveContentTab(raw: unknown, isRoot: boolean): ContentTab {
   const value = String(raw ?? "").trim() as ContentTab;
@@ -239,6 +240,13 @@ export default function Page() {
             label: "Cobros online",
             href: "#stripe",
             icon: <CreditCard className="bo-ico" />,
+          } as TabItem,
+          {
+            // Coordination id: google_reviews_ai_v1
+            id: "resenas",
+            label: "Reseñas Google",
+            href: "#resenas",
+            icon: <Star className="bo-ico" />,
           } as TabItem]
         : []),
     ],
@@ -388,6 +396,8 @@ export default function Page() {
             isRoot ? <ConfigBunnyStorage /> : null
           ) : contentTab === "stripe" ? (
             isRoot ? <ConfigCobrosOnline /> : null
+          ) : contentTab === "resenas" ? (
+            isRoot ? <ConfigGoogleReviews /> : null
           ) : contentTab === "restaurante" ? (
             <ConfigRestaurante
               defaults={defaults}

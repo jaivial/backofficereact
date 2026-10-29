@@ -106,7 +106,7 @@ export function sidebarItemsForRole(roleRaw: string | null | undefined, sectionA
 }
 
 /** /app/config tabs (`?content=`) that only the root role may open. */
-export const ROOT_ONLY_CONFIG_CONTENT: readonly string[] = ["ia", "pipeline", "cdn", "stripe"];
+export const ROOT_ONLY_CONFIG_CONTENT: readonly string[] = ["ia", "pipeline", "cdn", "stripe", "resenas"];
 
 /** Whether the user may open /app/config?content=<content> (section ACL + root-only tabs). */
 export function isConfigContentAllowed(content: string, roleRaw: string | null | undefined, sectionAccessRaw?: string[] | null, roleImportanceRaw?: number | null, appVersionRaw?: unknown): boolean {

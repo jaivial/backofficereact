@@ -2583,6 +2583,34 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
         });
         return res.success ? { ...res, config: normalizeMiniMaxConfig(res.config) } : res;
       },
+      // Coordination id: google_reviews_ai_v1 - Google review assistant (root only).
+      async getGoogleReviewsStatus(): Promise<APISuccess<{ status: import("./types").GoogleReviewsStatus }> | APIError> {
+        return json("/api/admin/config/google-reviews", { method: "GET" });
+      },
+      async setGoogleReviewsSettings(input: import("./types").GoogleReviewsSettingsInput): Promise<APISuccess<{ status: import("./types").GoogleReviewsStatus }> | APIError> {
+        return json("/api/admin/config/google-reviews", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
+      async startGoogleReviewsOAuth(): Promise<APISuccess<{ url: string }> | APIError> {
+        return json("/api/admin/config/google-reviews/oauth/start", { method: "GET" });
+      },
+      async getGoogleReviewsLocations(): Promise<APISuccess<{ locations: import("./types").GoogleBusinessLocation[] }> | APIError> {
+        return json("/api/admin/config/google-reviews/locations", { method: "GET" });
+      },
+      async setGoogleReviewsLocation(location: import("./types").GoogleBusinessLocation): Promise<APISuccess<{ status: import("./types").GoogleReviewsStatus }> | APIError> {
+        return json("/api/admin/config/google-reviews/location", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(location) });
+      },
+      async disconnectGoogleReviews(): Promise<APISuccess<{ status: import("./types").GoogleReviewsStatus }> | APIError> {
+        return json("/api/admin/config/google-reviews/disconnect", { method: "POST" });
+      },
+      async syncGoogleReviews(): Promise<APISuccess<{ summary: import("./types").GoogleReviewsSyncSummary }> | APIError> {
+        return json("/api/admin/config/google-reviews/sync", { method: "POST" });
+      },
+      async listGoogleReviews(status: "open" | "published" | "skipped" | "all"): Promise<APISuccess<{ reviews: import("./types").GoogleReview[]; counts: Record<string, number> }> | APIError> {
+        return json(`/api/admin/config/google-reviews/reviews?status=${status}`, { method: "GET" });
+      },
+      async googleReviewAction(id: number, action: "draft" | "publish" | "skip", input: { text?: string; instruction?: string } = {}): Promise<APISuccess<{ review: import("./types").GoogleReview }> | APIError> {
+        return json(`/api/admin/config/google-reviews/reviews/${id}/${action}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      },
       // WhatsApp bot AI routing, encrypted provider keys and RAG knowledge (wa_bot_ai_providers_v1).
       async getBotAIConfig(restaurantId: number): Promise<(APISuccess<import("./types").BotAIConfig>) | APIError> {
         return json(`/api/admin/bot/ai/${restaurantId}`, { method: "GET" });
