@@ -2602,7 +2602,7 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async disconnectGoogleReviews(): Promise<APISuccess<{ status: import("./types").GoogleReviewsStatus }> | APIError> {
         return json("/api/admin/config/google-reviews/disconnect", { method: "POST" });
       },
-      async syncGoogleReviews(): Promise<APISuccess<{ summary: import("./types").GoogleReviewsSyncSummary }> | APIError> {
+      async syncGoogleReviews(): Promise<APISuccess<import("./types").GoogleReviewsSyncStart> | APIError> {
         return json("/api/admin/config/google-reviews/sync", { method: "POST" });
       },
       async listGoogleReviews(status: "open" | "published" | "skipped" | "all"): Promise<APISuccess<{ reviews: import("./types").GoogleReview[]; counts: Record<string, number> }> | APIError> {

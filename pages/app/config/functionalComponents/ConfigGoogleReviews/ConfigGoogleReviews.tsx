@@ -138,14 +138,23 @@ export function ConfigGoogleReviews() {
     }
   }, "No se pudieron guardar los ajustes");
 
+  // The backend runs the sync detached (it drafts one AI reply per review);
+  // follow status.syncing, then refresh the list and report the result.
   const syncNow = () => run("sync", async () => {
     const res = await api.config.syncGoogleReviews();
-    const st = await api.config.getGoogleReviewsStatus();
-    if (st.success) applyStatus(st.status);
+    if (!res.success) return;
+    let current: GoogleReviewsStatus | null = null;
+    for (let i = 0; i < 320; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      const st = await api.config.getGoogleReviewsStatus();
+      if (!st.success) continue;
+      current = st.status;
+      if (!st.status.syncing) break;
+    }
+    if (current) applyStatus(current);
     await loadReviews(filter);
-    if (!res.success) throw new Error(res.message || "La revisión falló");
-    const s = res.summary;
-    pushToast({ kind: "success", title: "Revisión completada", message: `${s.new} nuevas · ${s.drafted} borradores · ${s.published} publicadas · ${s.pending} por revisar` });
+    if (current?.lastSyncError) throw new Error(current.lastSyncError);
+    pushToast({ kind: "success", title: "Revisión completada" });
   }, "La revisión falló");
 
   const replaceReview = (next: GoogleReview) => setReviews((prev) => prev.map((r) => (r.id === next.id ? next : r)));
@@ -293,8 +302,8 @@ export function ConfigGoogleReviews() {
             <span className="flex items-center gap-2" data-testid="config-google-reviews-list-title-text">
               <Star size={18} className="text-[var(--bo-accent)]" aria-hidden="true" /> Reseñas
             </span>
-            <button type="button" className="bo-btn bo-btn--ghost gap-2" onClick={() => void syncNow()} disabled={!status.connected || !status.location || !!busy} data-testid="config-google-reviews-sync-now">
-              <RefreshCw size={14} /> {busy === "sync" ? "Revisando..." : "Revisar ahora"}
+            <button type="button" className="bo-btn bo-btn--ghost gap-2" onClick={() => void syncNow()} disabled={!status.connected || !status.location || status.syncing || !!busy} data-testid="config-google-reviews-sync-now">
+              <RefreshCw size={14} /> {busy === "sync" || status.syncing ? "Revisando..." : "Revisar ahora"}
             </button>
           </div>
           <div className="flex flex-wrap gap-2" role="tablist" data-testid="config-google-reviews-filters">

@@ -2763,6 +2763,7 @@ export type GoogleReviewsStatus = {
   signature: string;
   complaintContact: string;
   syncEnabled: boolean;
+  syncing: boolean;
   syncHour: number;
   lastSyncAt: string | null;
   lastSyncError: string;
@@ -2787,7 +2788,7 @@ export type GoogleReview = {
   publishedAt: string | null;
 };
 
-export type GoogleReviewsSyncSummary = { imported: number; new: number; drafted: number; published: number; pending: number };
+export type GoogleReviewsSyncStart = { started: boolean };
 
 export type EmailProviderConfig = {
   id: number;
