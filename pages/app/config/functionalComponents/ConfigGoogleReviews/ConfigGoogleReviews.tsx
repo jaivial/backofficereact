@@ -15,9 +15,9 @@ import { Switch } from "../../../../../ui/shadcn/Switch";
 type Filter = "open" | "published" | "skipped";
 
 const AUTO_OPTIONS = [
-  { value: "0", label: "Nunca: todo con mi aprobación" },
+  { value: "0", label: "Nunca: todo con mi aprobación (recomendado al empezar)" },
   { value: "5", label: "Solo las de 5★" },
-  { value: "4", label: "Las de 4★ y 5★ (recomendado)" },
+  { value: "4", label: "Las de 4★ y 5★" },
   { value: "3", label: "Las de 3★ o más" },
 ];
 const FORMALITY_OPTIONS = [
@@ -29,6 +29,15 @@ const FILTERS: { id: Filter; label: string; countKeys: string[] }[] = [
   { id: "published", label: "Publicadas", countKeys: ["published"] },
   { id: "skipped", label: "Descartadas", countKeys: ["skipped"] },
 ];
+
+// Readable text for the ?google=error:<code> result of the OAuth round trip.
+const OAUTH_ERRORS: Record<string, string> = {
+  access_denied: "Has cancelado el permiso en Google.",
+  state: "La conexión ha caducado o no es válida. Vuelve a pulsar Conectar con Google.",
+  exchange: "Google no devolvió el permiso. Vuelve a intentarlo.",
+  vault: "No se pudo guardar la conexión de forma segura (VAULT_TOKEN).",
+  db: "No se pudo guardar la conexión.",
+};
 
 const errorMessage = (e: unknown, fallback: string) => (e instanceof Error && e.message ? e.message : fallback);
 const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" }) : "—");
@@ -83,7 +92,7 @@ export function ConfigGoogleReviews() {
     if (result) {
       pushToast(result === "connected"
         ? { kind: "success", title: "Cuenta de Google conectada" }
-        : { kind: "error", title: "No se pudo conectar con Google", message: result.replace(/^error:/, "") });
+        : { kind: "error", title: "No se pudo conectar con Google", message: OAUTH_ERRORS[result.replace(/^error:/, "")] || result.replace(/^error:/, "") });
       params.delete("google");
       window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
     }
@@ -352,7 +361,7 @@ function ReviewCard(props: {
         <span className="bo-panelMeta" data-testid={`${tid}-date`}>{formatDate(review.createdAt)}</span>
       </header>
       <p className="text-sm whitespace-pre-line" data-testid={`${tid}-comment`}>{review.comment || <em>Sin comentario, solo estrellas.</em>}</p>
-      {review.error ? <InlineAlert kind="error" title="Google rechazó la respuesta" message={review.error} /> : null}
+      {review.error ? <InlineAlert kind="error" title="Aviso" message={review.error} /> : null}
       {editable ? (
         <>
           <label className="bo-field" data-testid={`${tid}-reply-field`}>
@@ -376,7 +385,7 @@ function ReviewCard(props: {
         </>
       ) : review.reply ? (
         <div className="bo-panelMeta whitespace-pre-line" data-testid={`${tid}-published-reply`}>
-          <strong>Respuesta publicada{review.publishedAt ? ` · ${formatDate(review.publishedAt)}` : ""}:</strong>{"\n"}{review.reply}
+          <strong>{review.status === "published" ? `Respuesta publicada${review.publishedAt ? ` · ${formatDate(review.publishedAt)}` : ""}:` : "Borrador descartado (no publicado):"}</strong>{"\n"}{review.reply}
         </div>
       ) : null}
     </article>
