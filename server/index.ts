@@ -158,6 +158,9 @@ function proxyTimeoutForPath(pathname: string): number {
   // "Sin conexión con el servicio de transcripción". The Go handler already caps
   // itself at 60 s, so this only stops US from hanging up first.
   if (path.includes("/transcribe")) return 90 * 1000;
+  // google_reviews_ai_v1: regenerating a reply waits on one AI call (up to 60 s)
+  // plus Google; the full sync is detached server-side and never waits here.
+  if (path.includes("/google-reviews/")) return 2 * 60_000;
   return 30_000;
 }
 
