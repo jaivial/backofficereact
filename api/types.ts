@@ -783,6 +783,11 @@ export type MenuPublicSEO = {
   seo_description_english: string;
   seo_h1: string;
   seo_h1_english: string;
+  /** Coordination id: menu_seo_content_v1 - intro + FAQ (blocks "question\nanswer" separated by a blank line). */
+  seo_intro?: string;
+  seo_intro_english?: string;
+  seo_faq?: string;
+  seo_faq_english?: string;
 };
 
 export type GroupMenuV2 = MenuPublicSEO & {
