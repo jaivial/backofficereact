@@ -6,6 +6,7 @@ import { AutosaveInput } from "../../../../../ui/inputs/AutosaveInput";
 const EMPTY: MenuPublicSEO = {
   seo_slug: "", seo_title: "", seo_title_english: "", seo_description: "",
   seo_description_english: "", seo_h1: "", seo_h1_english: "",
+  seo_intro: "", seo_intro_english: "", seo_faq: "", seo_faq_english: "",
 };
 
 const FIELDS: Array<{ key: keyof MenuPublicSEO; label: string; multiline?: boolean }> = [
@@ -15,6 +16,11 @@ const FIELDS: Array<{ key: keyof MenuPublicSEO; label: string; multiline?: boole
   { key: "seo_description_english", label: "Meta description (English)", multiline: true },
   { key: "seo_h1", label: "H1 de la página" },
   { key: "seo_h1_english", label: "H1 de la página (English)" },
+  // Coordination id: menu_seo_content_v1
+  { key: "seo_intro", label: "Introducción visible (texto SEO bajo el H1)", multiline: true },
+  { key: "seo_intro_english", label: "Introducción visible (English)", multiline: true },
+  { key: "seo_faq", label: "Preguntas frecuentes (pregunta en la primera línea, respuesta debajo; separa cada pregunta con una línea en blanco)", multiline: true },
+  { key: "seo_faq_english", label: "Preguntas frecuentes (English)", multiline: true },
 ];
 
 function slugify(value: string): string {
@@ -37,12 +43,8 @@ export function MenuPublicSEOSettings({ menuId, title }: { menuId: number | null
     void api.menus.gruposV2.get(menuId).then((result) => {
       if (cancelled) return;
       if (!result.success) { setStatus(result.message || "No se pudo cargar el SEO"); return; }
-      setDraft({
-        seo_slug: result.menu.seo_slug || "", seo_title: result.menu.seo_title || "",
-        seo_title_english: result.menu.seo_title_english || "", seo_description: result.menu.seo_description || "",
-        seo_description_english: result.menu.seo_description_english || "", seo_h1: result.menu.seo_h1 || "",
-        seo_h1_english: result.menu.seo_h1_english || "",
-      });
+      const menu = result.menu;
+      setDraft(Object.fromEntries((Object.keys(EMPTY) as Array<keyof MenuPublicSEO>).map((key) => [key, menu[key] || ""])) as MenuPublicSEO);
     }).catch((error: unknown) => { if (!cancelled) setStatus(error instanceof Error ? error.message : "No se pudo cargar el SEO"); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -53,8 +55,8 @@ export function MenuPublicSEOSettings({ menuId, title }: { menuId: number | null
     setDraft((current) => ({
       ...current,
       seo_slug: current.seo_slug || slugify(cleanTitle),
-      seo_title: current.seo_title || (cleanTitle ? `${cleanTitle} | Restaurante Villa Carmen` : ""),
-      seo_description: current.seo_description || (cleanTitle ? `Descubre ${cleanTitle} en Restaurante Villa Carmen. Consulta los platos, la información y reserva tu experiencia.` : ""),
+      seo_title: current.seo_title || (cleanTitle ? `${cleanTitle} en Catarroja | Alquería Villa Carmen` : ""),
+      seo_description: current.seo_description || (cleanTitle ? `${cleanTitle} en Alquería Villa Carmen, Catarroja (Valencia). Consulta platos, precio y condiciones y reserva online.` : ""),
       seo_h1: current.seo_h1 || cleanTitle,
     }));
   };
@@ -90,7 +92,7 @@ export function MenuPublicSEOSettings({ menuId, title }: { menuId: number | null
         {FIELDS.map((field) => (
           <div className="bo-field bo-field--full" key={field.key} data-testid={`menu-public-seo-field-${field.key}`}>
             <label className="bo-label" htmlFor={`menu-public-seo-${field.key}`} data-testid={`menu-public-seo-label-${field.key}`}>{field.label}</label>
-            <AutosaveInput id={`menu-public-seo-${field.key}`} className={field.multiline ? "bo-input bo-textarea" : "bo-input"} multiline={field.multiline} rows={field.multiline ? 3 : undefined} value={draft[field.key]} disabled={!menuId || loading} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })} data-testid={`menu-public-seo-input-${field.key}`} />
+            <AutosaveInput id={`menu-public-seo-${field.key}`} className={field.multiline ? "bo-input bo-textarea" : "bo-input"} multiline={field.multiline} rows={field.multiline ? (field.key.startsWith("seo_faq") || field.key.startsWith("seo_intro") ? 6 : 3) : undefined} value={draft[field.key] || ""} disabled={!menuId || loading} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })} data-testid={`menu-public-seo-input-${field.key}`} />
           </div>
         ))}
         <div className="bo-menuWizardActions" data-testid="menu-public-seo-actions">
