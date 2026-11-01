@@ -100,6 +100,9 @@ export const FoodItemModal = React.memo(function FoodItemModal({
   const [hasSuplemento, setHasSuplemento] = useState(false);
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  // Coordination id: comida_description_toggle_v1 - menu-dish model: the switch
+  // shows/hides the description on the web and the text is kept.
+  const [descriptionEnabled, setDescriptionEnabled] = useState(true);
   const [categoria, setCategoria] = useState("");
   const [alergenos, setAlergenos] = useState<string[]>([]);
   // Slugs the linked technical sheet declares. Kept separate from `alergenos`
@@ -153,7 +156,10 @@ export const FoodItemModal = React.memo(function FoodItemModal({
       setSuplemento(item.suplemento?.toString() || "");
       setHasSuplemento(Number(item.suplemento || 0) > 0);
       setTitulo(item.titulo || "");
-      setDescripcion(item.descripcion || item.nombre || "");
+      // Postres store their name in descripcion; for the rest the description
+      // is its own text and must not be seeded with the name.
+      setDescripcion(isPostre ? (item.descripcion || item.nombre || "") : (item.descripcion || ""));
+      setDescriptionEnabled(item.description_enabled !== false);
       setCategoria(item.category_id ? String(item.category_id) : (item.categoria || ""));
       setAlergenos(item.alergenos || []);
       setActive(item.active ?? true);
@@ -176,6 +182,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     setHasSuplemento(false);
     setTitulo("");
     setDescripcion("");
+    setDescriptionEnabled(true);
     setCategoria("");
     setAlergenos([]);
     setActive(!isPlato);
@@ -321,6 +328,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
         tipo: tipo || undefined,
         precio: precioNum,
         descripcion: descripcion.trim() || undefined,
+        description_enabled: descriptionEnabled,
         titulo: titulo.trim() || undefined,
         suplemento: supportsSuplemento ? suplementoNum : undefined,
         alergenos: alergenos.length > 0 ? alergenos : undefined,
@@ -362,6 +370,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
         tipo: tipo || "",
         precio: precioNum,
         descripcion: descripcion.trim(),
+        description_enabled: descriptionEnabled,
         titulo: titulo.trim(),
         suplemento: suplementoNum,
         alergenos,
@@ -388,6 +397,7 @@ export const FoodItemModal = React.memo(function FoodItemModal({
     categoria,
     effectiveCategoryOptions,
     descripcion,
+    descriptionEnabled,
     foodType,
     hasSuplemento,
     imageBase64,
@@ -757,18 +767,29 @@ export const FoodItemModal = React.memo(function FoodItemModal({
 
               {!isPostre ? (
                 <div data-ui="food-modal-field-detalle" className="bo-field">
-                  <label data-role="food-modal-label-detalle" className="bo-label" htmlFor="descripcion">
-                    Detalle
-                  </label>
-                  <textarea
-                    data-role="food-modal-textarea-detalle"
-                    id="descripcion"
-                    className="bo-textarea"
-                    value={descripcion}
-                    onChange={(e) => setDescripcion(e.target.value)}
-                    placeholder="Descripción del elemento..."
-                    rows={3}
-                  />
+                  <div className="flex items-center justify-between" data-slot="food-modal-description-head">
+                    <label data-role="food-modal-label-detalle" className="bo-label" htmlFor="descripcion">
+                      Descripción
+                    </label>
+                    <Switch
+                      checked={descriptionEnabled}
+                      onCheckedChange={setDescriptionEnabled}
+                      aria-label="Mostrar descripción en la web"
+                      data-testid="food-modal-description-switch"
+                    />
+                  </div>
+                  {descriptionEnabled ? (
+                    <textarea
+                      data-role="food-modal-textarea-detalle"
+                      data-testid="food-modal-description-textarea"
+                      id="descripcion"
+                      className="bo-textarea"
+                      value={descripcion}
+                      onChange={(e) => setDescripcion(e.target.value)}
+                      placeholder="Descripción"
+                      rows={3}
+                    />
+                  ) : null}
                 </div>
               ) : null}
 

@@ -60,6 +60,19 @@ export const FoodItemCard = React.memo(function FoodItemCard({
     return "";
   }, [isWine, item]);
 
+  // Coordination id: comida_description_toggle_v1 - list preview like the menu
+  // dish editor; hidden descriptions are flagged instead of shown.
+  const descriptionPreview = useMemo(() => {
+    if (isWine || foodType === "postres") return null;
+    const food = item as FoodItem;
+    const text = String(food.descripcion || "").trim();
+    if (!text || text === String(food.nombre || "").trim()) return null;
+    if (food.description_enabled === false) {
+      return <div className="bo-foodCardDescription is-hidden" data-testid={`food-card-description-hidden-${food.num}`}>Descripción oculta en la web</div>;
+    }
+    return <div className="bo-foodCardDescription" data-testid={`food-card-description-${food.num}`}>{text}</div>;
+  }, [foodType, isWine, item]);
+
   return (
     <FoodDishCard
       title={item.nombre}
@@ -73,6 +86,7 @@ export const FoodItemCard = React.memo(function FoodItemCard({
       priceLabel={formatEuro(item.precio)}
       onOpen={onOpen}
       openAriaLabel={`Abrir detalle de ${item.nombre}`}
+      children={descriptionPreview}
       footerActions={(
         <>
           <Switch

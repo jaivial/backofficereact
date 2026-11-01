@@ -578,6 +578,8 @@ export type FoodItem = {
   nombre: string;
   precio: number;
   descripcion: string;
+  /** comida_description_toggle_v1: false hides the description on the web (text kept). */
+  description_enabled?: boolean;
   titulo: string;
   suplemento: number;
   alergenos: string[];
