@@ -76,7 +76,7 @@ export function PublicSEOForm({
       ...current,
       seo_slug: fixedPath ? "" : (current.seo_slug || slugify(cleanTitle)),
       seo_title: current.seo_title || (cleanTitle ? `${cleanTitle} en Catarroja | Alquería Villa Carmen` : ""),
-      seo_description: current.seo_description || (cleanTitle ? `${cleanTitle} en Alquería Villa Carmen, Catarroja (Valencia). Consulta la carta y reserva online.` : ""),
+      seo_description: current.seo_description || (cleanTitle ? `${cleanTitle} en Alquería Villa Carmen, Catarroja (Valencia). ${fixedPath ? "Consulta la carta" : "Consulta platos, precio y condiciones"} y reserva online.` : ""),
       seo_h1: current.seo_h1 || cleanTitle,
     }));
   };
@@ -100,7 +100,7 @@ export function PublicSEOForm({
       <div className="bo-menuConfigSectionHead" data-testid={`${t}-head`}>
         <div data-testid={`${t}-head-copy`}>
           <h2 className="bo-panelTitle" data-testid={`${t}-title`}>{heading}</h2>
-          <p className="bo-panelMeta" data-testid={`${t}-help`}>Configura los textos de búsqueda. Los cambios se guardan por separado del contenido.</p>
+          <p className="bo-panelMeta" data-testid={`${t}-help`}>{fixedPath ? "Configura los textos de búsqueda. Los cambios se guardan por separado de la carta." : "Configura la URL y los textos de búsqueda. Los cambios se guardan por separado del contenido del menú."}</p>
         </div>
       </div>
       <div className="bo-menuConfigSectionBody bo-form" data-testid={`${t}-body`}>
