@@ -9,21 +9,26 @@ import { Switch } from "../../../../../../../ui/shadcn/Switch";
 import { Panel } from "../../../../../../../ui/shell/Panel";
 import { FOOD_TYPE_ICONS, CARD_ALLERGENS } from "../../constants";
 
-function DescripcionToggle({ value, onChange, disabled }: { value: string; onChange: (v: string) => void; disabled: boolean }) {
-  const [show, setShow] = useState(value.length > 0);
+// Coordination id: comida_description_toggle_v1 - same model as the menu dish
+// editor: the switch persists description_enabled and the text is kept, so
+// turning it off hides the description on the web without deleting it.
+// Postres live in their own table without description_enabled, so they keep a
+// plain field: a switch there would not persist.
+function DescripcionToggle({ value, onChange, enabled, onEnabledChange, disabled, withSwitch }: { value: string; onChange: (v: string) => void; enabled: boolean; onEnabledChange: (v: boolean) => void; disabled: boolean; withSwitch: boolean }) {
+  const show = withSwitch ? enabled : true;
   return (
     <div className="bo-foodDetailQuickDescription" data-slot="food-detail-quick-description-field">
       <div data-slot="foodDetailQuickEditor-mb-2" className="flex items-center justify-between mb-2">
         <span className="bo-label" data-role="food-detail-quick-description-label">Descripción</span>
-        <Switch
-          checked={show}
-          onCheckedChange={(v) => {
-            setShow(v);
-            if (!v) onChange("");
-          }}
-          disabled={disabled}
-          aria-label="Mostrar descripción"
-        />
+        {withSwitch ? (
+          <Switch
+            checked={enabled}
+            onCheckedChange={onEnabledChange}
+            disabled={disabled}
+            aria-label="Mostrar descripción en la web"
+            data-testid="food-detail-quick-description-switch"
+          />
+        ) : null}
       </div>
       {show ? (
         <AutosaveInput multiline
@@ -32,7 +37,9 @@ function DescripcionToggle({ value, onChange, disabled }: { value: string; onCha
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
+          placeholder="Descripción"
           data-role="food-detail-quick-description-textarea"
+          data-testid="food-detail-quick-description-textarea"
         />
       ) : null}
     </div>
@@ -51,6 +58,7 @@ interface FoodDetailQuickEditorProps {
   quickHasSuplemento: boolean;
   quickCategoria: string;
   quickDescripcion: string;
+  quickDescriptionEnabled?: boolean;
   quickActive: boolean;
   categoriesLoading: boolean;
   quickTipoOptions: Array<{ value: string; label: string }>;
@@ -66,6 +74,7 @@ interface FoodDetailQuickEditorProps {
   onQuickHasSuplementoChange: (value: boolean) => void;
   onQuickCategoriaChange: (value: string) => void;
   onQuickDescripcionChange: (value: string) => void;
+  onQuickDescriptionEnabledChange?: (value: boolean) => void;
   onQuickActiveChange: (value: boolean) => void;
   onQuickSave: () => void;
   onAddCategoryClick: () => void;
@@ -89,6 +98,7 @@ export function FoodDetailQuickEditor({
   quickHasSuplemento,
   quickCategoria,
   quickDescripcion,
+  quickDescriptionEnabled = true,
   quickActive,
   categoriesLoading,
   quickTipoOptions,
@@ -100,6 +110,7 @@ export function FoodDetailQuickEditor({
   onQuickHasSuplementoChange,
   onQuickCategoriaChange,
   onQuickDescripcionChange,
+  onQuickDescriptionEnabledChange = () => {},
   onQuickActiveChange,
   allergenList,
   savingAllergens,
@@ -293,7 +304,10 @@ export function FoodDetailQuickEditor({
           <DescripcionToggle
             value={quickDescripcion}
             onChange={onQuickDescripcionChange}
+            enabled={quickDescriptionEnabled}
+            onEnabledChange={onQuickDescriptionEnabledChange}
             disabled={savingQuick}
+            withSwitch={source !== "postres"}
           />
         </div>
       </div>

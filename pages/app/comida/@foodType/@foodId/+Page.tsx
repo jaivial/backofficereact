@@ -60,6 +60,7 @@ function FoodDetailPage() {
     quickHasSuplemento, setQuickHasSuplemento,
     quickCategoria, setQuickCategoria,
     quickDescripcion, setQuickDescripcion,
+    quickDescriptionEnabled, setQuickDescriptionEnabled,
     quickActive, setQuickActive,
     quickCanSave,
     quickTipoOptions,
@@ -227,6 +228,7 @@ function FoodDetailPage() {
               quickHasSuplemento={quickHasSuplemento}
               quickCategoria={quickCategoria}
               quickDescripcion={quickDescripcion}
+              quickDescriptionEnabled={quickDescriptionEnabled}
               quickActive={quickActive}
               categoriesLoading={categoriesLoading}
               quickTipoOptions={quickTipoOptions}
@@ -238,6 +240,7 @@ function FoodDetailPage() {
               onQuickHasSuplementoChange={setQuickHasSuplemento}
               onQuickCategoriaChange={setQuickCategoria}
               onQuickDescripcionChange={setQuickDescripcion}
+              onQuickDescriptionEnabledChange={setQuickDescriptionEnabled}
               onQuickActiveChange={setQuickActive}
               onQuickSave={onQuickSave}
               onAddCategoryClick={() => setBebidaCatModalOpen(true)}
