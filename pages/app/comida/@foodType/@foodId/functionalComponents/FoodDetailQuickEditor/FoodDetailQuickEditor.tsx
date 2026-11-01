@@ -12,20 +12,25 @@ import { FOOD_TYPE_ICONS, CARD_ALLERGENS } from "../../constants";
 // Coordination id: comida_description_toggle_v1 - same model as the menu dish
 // editor: the switch persists description_enabled and the text is kept, so
 // turning it off hides the description on the web without deleting it.
-function DescripcionToggle({ value, onChange, enabled, onEnabledChange, disabled }: { value: string; onChange: (v: string) => void; enabled: boolean; onEnabledChange: (v: boolean) => void; disabled: boolean }) {
+// Postres live in their own table without description_enabled, so they keep a
+// plain field: a switch there would not persist.
+function DescripcionToggle({ value, onChange, enabled, onEnabledChange, disabled, withSwitch }: { value: string; onChange: (v: string) => void; enabled: boolean; onEnabledChange: (v: boolean) => void; disabled: boolean; withSwitch: boolean }) {
+  const show = withSwitch ? enabled : true;
   return (
     <div className="bo-foodDetailQuickDescription" data-slot="food-detail-quick-description-field">
       <div data-slot="foodDetailQuickEditor-mb-2" className="flex items-center justify-between mb-2">
         <span className="bo-label" data-role="food-detail-quick-description-label">Descripción</span>
-        <Switch
-          checked={enabled}
-          onCheckedChange={onEnabledChange}
-          disabled={disabled}
-          aria-label="Mostrar descripción en la web"
-          data-testid="food-detail-quick-description-switch"
-        />
+        {withSwitch ? (
+          <Switch
+            checked={enabled}
+            onCheckedChange={onEnabledChange}
+            disabled={disabled}
+            aria-label="Mostrar descripción en la web"
+            data-testid="food-detail-quick-description-switch"
+          />
+        ) : null}
       </div>
-      {enabled ? (
+      {show ? (
         <AutosaveInput multiline
           className="bo-textarea"
           rows={4}
@@ -302,6 +307,7 @@ export function FoodDetailQuickEditor({
             enabled={quickDescriptionEnabled}
             onEnabledChange={onQuickDescriptionEnabledChange}
             disabled={savingQuick}
+            withSwitch={source !== "postres"}
           />
         </div>
       </div>
