@@ -86,6 +86,9 @@ export function useFoodDetailPage() {
   const [quickHasSuplemento, setQuickHasSuplemento] = useState(false);
   const [quickCategoria, setQuickCategoria] = useState("");
   const [quickDescripcion, setQuickDescripcion] = useState("");
+  // Coordination id: comida_description_toggle_v1 - same model as the menu
+  // dishes: the text is kept, the switch decides if the public site shows it.
+  const [quickDescriptionEnabled, setQuickDescriptionEnabled] = useState(true);
   const [quickActive, setQuickActive] = useState(false);
   const [quickAllergens, setQuickAllergens] = useState<string[]>([]);
 
@@ -186,6 +189,7 @@ export function useFoodDetailPage() {
       setQuickHasSuplemento(false);
       setQuickCategoria("");
       setQuickDescripcion("");
+      setQuickDescriptionEnabled(true);
       setQuickActive(false);
       setQuickAllergens([]);
       return;
@@ -198,6 +202,7 @@ export function useFoodDetailPage() {
     setQuickHasSuplemento(suplementoValue > 0.001);
     setQuickCategoria(nextItem.category_id ? String(nextItem.category_id) : String(nextItem.categoria || ""));
     setQuickDescripcion(String(nextItem.descripcion || ""));
+    setQuickDescriptionEnabled(nextItem.description_enabled !== false);
     setQuickActive(!!nextItem.active);
     setQuickAllergens(normalizeToCardAllergens(Array.isArray(nextItem.alergenos) ? nextItem.alergenos : []));
   }, []);
@@ -292,6 +297,7 @@ export function useFoodDetailPage() {
       quickName.trim() !== String(currentFoodItem.nombre || "").trim()
       || (isPlate ? quickTipo.trim() !== String(currentFoodItem.tipo || "").trim() : false)
       || quickDescripcion.trim() !== String(currentFoodItem.descripcion || "").trim()
+      || quickDescriptionEnabled !== (currentFoodItem.description_enabled !== false)
       || categoryCheck
       || quickActive !== !!currentFoodItem.active
       || quickAllergens.length !== (Array.isArray(currentFoodItem.alergenos) ? currentFoodItem.alergenos : []).length
@@ -308,6 +314,7 @@ export function useFoodDetailPage() {
     quickAllergens,
     quickCategoria,
     quickDescripcion,
+    quickDescriptionEnabled,
     quickName,
     quickPrecio,
     quickPriceNumber,
@@ -350,6 +357,7 @@ export function useFoodDetailPage() {
       precio: precioNumber,
       suplemento: suplementoNumber ?? 0,
       descripcion: quickDescripcion.trim(),
+      description_enabled: quickDescriptionEnabled,
       active: quickActive,
       alergenos: quickAllergens,
     };
@@ -453,6 +461,7 @@ export function useFoodDetailPage() {
           precio: Number((basePayload.precio as number | undefined) ?? currentFoodItem!.precio ?? 0),
           suplemento: Number((basePayload.suplemento as number | undefined) ?? currentFoodItem!.suplemento ?? 0),
           descripcion: String((basePayload.descripcion as string | undefined) ?? currentFoodItem!.descripcion ?? ""),
+          description_enabled: Boolean(basePayload.description_enabled),
           active: Boolean(basePayload.active),
           category_id: typeof basePayload.category_id === "number" ? basePayload.category_id as number : null,
           categoria: (isPlate || isBebida) ? quickCategoryLabel || "" : currentFoodItem!.categoria || "",
@@ -483,6 +492,7 @@ export function useFoodDetailPage() {
     quickCategoria,
     quickCategoryLabel,
     quickDescripcion,
+    quickDescriptionEnabled,
     quickHasSuplemento,
     quickName,
     quickPrecio,
@@ -748,6 +758,7 @@ export function useFoodDetailPage() {
     quickHasSuplemento, setQuickHasSuplemento,
     quickCategoria, setQuickCategoria,
     quickDescripcion, setQuickDescripcion,
+    quickDescriptionEnabled, setQuickDescriptionEnabled,
     quickActive, setQuickActive,
     quickAllergens, setQuickAllergens,
     // Derived state
