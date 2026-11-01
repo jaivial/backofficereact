@@ -17,6 +17,8 @@ export function FoodPageSettings({
   busy,
   onTogglePageActive,
   onChangeWebPlacement,
+  showPrices,
+  onToggleShowPrices,
 }: {
   foodType: string;
   pageActive: boolean;
@@ -24,6 +26,8 @@ export function FoodPageSettings({
   busy: boolean;
   onTogglePageActive: (checked: boolean) => void;
   onChangeWebPlacement: (value: string) => void;
+  showPrices: boolean;
+  onToggleShowPrices: (checked: boolean) => void;
 }) {
   return (
     <div className="bo-card" data-testid={`food-page-settings-panel-${foodType}`} data-coordination-id="foodtype-page-visibility-v1">
@@ -51,6 +55,19 @@ export function FoodPageSettings({
           onChange={onChangeWebPlacement}
           fitWidestOption
           data-testid={`food-page-settings-placement-select-${foodType}`}
+        />
+      </div>
+
+      {/* Coordination id: foodtype_show_prices_v1 */}
+      <div className="bo-foodPageVisibilityRow" data-testid={`food-page-settings-prices-row-${foodType}`}>
+        <span className="bo-foodPageVisibilityTitle" data-testid={`food-page-settings-prices-label-${foodType}`}>
+          Mostrar precios en la web
+        </span>
+        <Switch
+          checked={showPrices}
+          disabled={busy}
+          onCheckedChange={onToggleShowPrices}
+          data-testid={`food-page-settings-prices-switch-${foodType}`}
         />
       </div>
     </div>

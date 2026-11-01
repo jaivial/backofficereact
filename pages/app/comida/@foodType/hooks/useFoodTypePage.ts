@@ -44,6 +44,8 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
   // Page visibility state, for every food type that owns a public page.
   const [pageActive, setPageActive] = useState(true);
   const [webPlacement, setWebPlacement] = useState("inside_menus");
+  // Coordination id: foodtype_show_prices_v1
+  const [showPrices, setShowPrices] = useState(true);
   const [pageVisibilityLoading, setPageVisibilityLoading] = useState(false);
   // Each public food-type page maps to the pair of API keys that store its
   // toggle and its placement, so one code path serves every type.
@@ -101,6 +103,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     const placement = String(res[visibilityKeys.placement] || "inside_menus");
     setPageActive(active);
     setWebPlacement(placement);
+    setShowPrices(res[visibilityKeys.prices] !== false);
     console.log("[checkpoint] food_page_visibility_applied", `type=${foodType}`,
       `active=${active}`, `placement=${placement}`);
   }, [foodType, visibilityKeys]);
@@ -157,6 +160,14 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     await savePageVisibility(
       { [visibilityKeys.placement]: value } as Partial<PageVisibility>,
       "Posicionamiento actualizado",
+    );
+  }, [savePageVisibility, visibilityKeys]);
+
+  const toggleShowPrices = useCallback(async (checked: boolean) => {
+    if (!visibilityKeys) return;
+    await savePageVisibility(
+      { [visibilityKeys.prices]: checked } as Partial<PageVisibility>,
+      checked ? "Precios visibles" : "Precios ocultos",
     );
   }, [savePageVisibility, visibilityKeys]);
 
@@ -357,6 +368,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     page,
     pageActive,
     webPlacement,
+    showPrices,
     pageVisibilityLoading,
     showPageVisibilityToggle,
     showSettingsTab,
@@ -397,6 +409,7 @@ export function useFoodTypePage({ data }: UseFoodTypePageOptions) {
     // Handlers
     togglePageActive,
     changeWebPlacement,
+    toggleShowPrices,
     loadItems,
     onResetFilters,
     onOpenCreate,
