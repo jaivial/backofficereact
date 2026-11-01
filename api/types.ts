@@ -716,6 +716,15 @@ export type GroupMenuV2Dish = {
   read_only?: boolean;
 };
 
+// Coordination id: menu_section_cta_v1 - target is a whitelisted public route.
+export type MenuSectionCtaTarget = "cafes";
+export type MenuSectionCta = {
+  enabled: boolean;
+  label: string;
+  target: MenuSectionCtaTarget;
+  href?: string;
+};
+
 export type GroupMenuV2Section = {
   id: number;
   title: string;
@@ -731,6 +740,8 @@ export type GroupMenuV2Section = {
   public_page_active?: boolean;
   web_placement?: string;
   annotations: string[];
+  // Coordination id: menu_section_cta_v1 - optional button under the section.
+  cta?: MenuSectionCta | null;
   dishes: GroupMenuV2Dish[];
 };
 

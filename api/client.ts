@@ -1206,6 +1206,17 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           body: JSON.stringify(input),
         });
       },
+      // Coordination id: cafes_page_seo_v1 (Configuración de /app/comida/cafes -> /cafes)
+      async getCafesSEO(): Promise<APISuccess<{ seo: Omit<import("./types").MenuPublicSEO, "seo_slug"> }> | APIError> {
+        return json("/api/admin/restaurant/pages/cafes-seo", { method: "GET" });
+      },
+      async setCafesSEO(input: Omit<import("./types").MenuPublicSEO, "seo_slug">): Promise<APISuccess<{ seo: Omit<import("./types").MenuPublicSEO, "seo_slug"> }> | APIError> {
+        return json("/api/admin/restaurant/pages/cafes-seo", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
+      },
     },
     members: {
       async list(): Promise<APISuccess<{ members: Member[] }> | APIError> {
@@ -1756,6 +1767,18 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           form.append("image", file, file.name || "slider-ai.webp");
           form.append("generation_id", generationId);
           return json(`/api/admin/group-menus-v2/${id}/slider/images/ai`, { method: "POST", body: form });
+        },
+        // Coordination id: menu_section_cta_v1 (section CTA button -> public menu section)
+        async putSectionCta(
+          menuId: number,
+          sectionId: number,
+          input: import("./types").MenuSectionCta,
+        ): Promise<APISuccess<{ cta: import("./types").MenuSectionCta }> | APIError> {
+          return json(`/api/admin/group-menus-v2/${menuId}/sections/${sectionId}/cta`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(input),
+          });
         },
         // Coordination id: menu_public_seo_v1 (editor SEO fields -> DB -> public SSR)
         async patchSEO(id: number, input: import("./types").MenuPublicSEO): Promise<APISuccess<{ seo_slug: string }> | APIError> {

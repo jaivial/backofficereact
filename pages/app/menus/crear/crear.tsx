@@ -25,6 +25,7 @@ import { usePageContext } from "vike-react/usePageContext";
 import { createClient } from "../../../../api/client";
 import { useToasts } from "../../../../ui/feedback/useToasts";
 import { MenuPublicSEOSettings } from "./functionalComponents/MenuPublicSEOSettings";
+import { MenuSectionCtaSettings } from "./functionalComponents/MenuSectionCtaSettings";
 import { useErrorToast } from "../../../../ui/feedback/useErrorToast";
 import { LoadingSpinner } from "../../../../ui/feedback/LoadingSpinner";
 import { Select } from "../../../../ui/inputs/Select";
@@ -845,6 +846,15 @@ export function CrearPage({ onClose, embedded = false }: { onClose?: () => void;
                       <div className="bo-label" data-slot="crear-label">Visibilidad con pestañas</div>
                       <Switch checked={showSectionTabs} onCheckedChange={setShowSectionTabs} data-testid="menu-crear-section-tabs-switch" />
                     </div>
+                  ) : null}
+                  {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-tabs-cta" /> : null}
+                  {/* Coordination id: menu_section_cta_v1 */}
+                  {!isSpecial ? (
+                    <MenuSectionCtaSettings
+                      menuId={menuId}
+                      sections={sections}
+                      onSectionCtaSaved={(sectionId, cta) => setSections((prev) => prev.map((row) => (row.id === sectionId ? { ...row, cta } : row)))}
+                    />
                   ) : null}
                   {!isSpecial ? <FadeSeparator testId="menu-crear-config-sep-tabs-slider" /> : null}
                   {!isSpecial ? <MenuSliderPanel menuId={menuId} initialSlider={initialSlider} onSliderChange={setSliderPreview} /> : null}
