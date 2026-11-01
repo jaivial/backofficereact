@@ -76,6 +76,8 @@ export type EditorSection = {
   // Coordination id: menu_section_public_placement_v1
   public_page_active?: boolean;
   web_placement?: string;
+  // Coordination id: menu_section_cta_v1 - saved on its own (PUT .../cta).
+  cta?: import("../../../../../api/types").MenuSectionCta | null;
 };
 
 export type PersistedEditorSection = EditorSection & { id: number };

@@ -20,6 +20,7 @@ import { FoodList } from "./functionalComponents/FoodList";
 import { useBreadcrumbFadeout } from "../_components/hooks/useBreadcrumbFadeout";
 import { Tabs } from "../../../../ui/nav/Tabs";
 import { FoodPageSettings } from "./functionalComponents/FoodPageSettings";
+import { CafesPageSEOSettings } from "./functionalComponents/CafesPageSEOSettings";
 
 function FoodTypePage() {
   const pageContext = usePageContext();
@@ -236,14 +237,17 @@ function FoodTypePage() {
             </div>
 
             {settingsTab === "configuracion" ? (
-              <FoodPageSettings
-                foodType={foodType}
-                pageActive={pageActive}
-                webPlacement={webPlacement}
-                busy={pageVisibilityLoading}
-                onTogglePageActive={togglePageActive}
-                onChangeWebPlacement={changeWebPlacement}
-              />
+              <>
+                <FoodPageSettings
+                  foodType={foodType}
+                  pageActive={pageActive}
+                  webPlacement={webPlacement}
+                  busy={pageVisibilityLoading}
+                  onTogglePageActive={togglePageActive}
+                  onChangeWebPlacement={changeWebPlacement}
+                />
+                {foodType === "cafes" ? <CafesPageSEOSettings /> : null}
+              </>
             ) : (
               listPanel
             )}
