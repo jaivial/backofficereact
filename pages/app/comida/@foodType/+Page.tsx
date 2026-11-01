@@ -248,7 +248,7 @@ function FoodTypePage() {
                   onTogglePageActive={togglePageActive}
                   onChangeWebPlacement={changeWebPlacement}
                   showPrices={showPrices}
-                  onToggleShowPrices={toggleShowPrices}
+                  onToggleShowPrices={foodType === "postres" ? undefined : toggleShowPrices}
                 />
                 {foodType === "cafes" ? <CafesPageSEOSettings /> : null}
               </>

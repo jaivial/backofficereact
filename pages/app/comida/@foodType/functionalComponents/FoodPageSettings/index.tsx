@@ -27,7 +27,8 @@ export function FoodPageSettings({
   onTogglePageActive: (checked: boolean) => void;
   onChangeWebPlacement: (value: string) => void;
   showPrices: boolean;
-  onToggleShowPrices: (checked: boolean) => void;
+  // The public desserts page shows no prices, so it gets no switch.
+  onToggleShowPrices?: (checked: boolean) => void;
 }) {
   return (
     <div className="bo-card" data-testid={`food-page-settings-panel-${foodType}`} data-coordination-id="foodtype-page-visibility-v1">
@@ -59,7 +60,7 @@ export function FoodPageSettings({
       </div>
 
       {/* Coordination id: foodtype_show_prices_v1 */}
-      <div className="bo-foodPageVisibilityRow" data-testid={`food-page-settings-prices-row-${foodType}`}>
+      {onToggleShowPrices ? <div className="bo-foodPageVisibilityRow" data-testid={`food-page-settings-prices-row-${foodType}`}>
         <span className="bo-foodPageVisibilityTitle" data-testid={`food-page-settings-prices-label-${foodType}`}>
           Mostrar precios en la web
         </span>
@@ -69,7 +70,7 @@ export function FoodPageSettings({
           onCheckedChange={onToggleShowPrices}
           data-testid={`food-page-settings-prices-switch-${foodType}`}
         />
-      </div>
+      </div> : null}
     </div>
   );
 }
