@@ -76,10 +76,10 @@ export type FoodTypeWithPublicPage = "cafes" | "vinos" | "bebidas" | "postres";
 
 export const FOOD_TYPE_VISIBILITY_KEYS: Record<
   FoodTypeWithPublicPage,
-  { active: keyof PageVisibility; placement: keyof PageVisibility }
+  { active: keyof PageVisibility; placement: keyof PageVisibility; prices: keyof PageVisibility }
 > = {
-  cafes: { active: "cafe_page_active", placement: "cafes_web_placement" },
-  vinos: { active: "vinos_page_active", placement: "vinos_web_placement" },
-  bebidas: { active: "bebidas_page_active", placement: "bebidas_web_placement" },
-  postres: { active: "postres_page_active", placement: "postres_web_placement" },
+  cafes: { active: "cafe_page_active", placement: "cafes_web_placement", prices: "cafes_show_prices" },
+  vinos: { active: "vinos_page_active", placement: "vinos_web_placement", prices: "vinos_show_prices" },
+  bebidas: { active: "bebidas_page_active", placement: "bebidas_web_placement", prices: "bebidas_show_prices" },
+  postres: { active: "postres_page_active", placement: "postres_web_placement", prices: "postres_show_prices" },
 };

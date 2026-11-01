@@ -3237,6 +3237,11 @@ export type PageVisibility = {
   cafes_web_placement: string;
   vinos_web_placement: string;
   bebidas_web_placement: string;
+  // Coordination id: foodtype_show_prices_v1
+  cafes_show_prices: boolean;
+  bebidas_show_prices: boolean;
+  postres_show_prices: boolean;
+  vinos_show_prices: boolean;
 };
 
 // Coordination id: stripe_connect_multitenant_v1 - connected account state of
