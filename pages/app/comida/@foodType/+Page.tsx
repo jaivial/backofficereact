@@ -74,6 +74,7 @@ function FoodTypePage() {
     setDeleteConfirm,
     pageActive,
     webPlacement,
+    showPrices,
     pageVisibilityLoading,
     showPageVisibilityToggle,
     showSettingsTab,
@@ -86,6 +87,7 @@ function FoodTypePage() {
     showPagerBtns,
     togglePageActive,
     changeWebPlacement,
+    toggleShowPrices,
     onResetFilters,
     onOpenCreate,
     onOpenEdit,
@@ -245,6 +247,8 @@ function FoodTypePage() {
                   busy={pageVisibilityLoading}
                   onTogglePageActive={togglePageActive}
                   onChangeWebPlacement={changeWebPlacement}
+                  showPrices={showPrices}
+                  onToggleShowPrices={foodType === "postres" ? undefined : toggleShowPrices}
                 />
                 {foodType === "cafes" ? <CafesPageSEOSettings /> : null}
               </>
