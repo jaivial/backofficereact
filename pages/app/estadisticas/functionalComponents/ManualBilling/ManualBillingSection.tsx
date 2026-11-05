@@ -12,6 +12,7 @@ import {
   PERIOD_PRESETS,
   WEEKDAY_LABELS,
   bucketLabel,
+  defaultSeasonMonths,
   deltaTone,
   formatISODate,
   formatNumber,
@@ -21,6 +22,7 @@ import {
   type PeriodKey,
 } from "../AffluenceDashboard/affluenceUtils";
 import { AffluencePanel, ChartEmpty, ToggleChip } from "../AffluenceDashboard/affluenceWidgets";
+import { BillingMonthSeasonPanel, BillingSeasonPanel, useManualBillingSeasonal } from "./ManualBillingSeasonality";
 
 const LineChartPrimitive = LineChart as React.ComponentType<any>;
 const LinePrimitive = Line as React.ComponentType<any>;
@@ -104,6 +106,14 @@ export function ManualBillingSection({ refreshKey = 0, className, ...props }: Ma
   const preset = useMemo(() => PERIOD_PRESETS.find((entry) => entry.id === period) ?? PERIOD_PRESETS[4], [period]);
   const range = useMemo(() => periodRange(preset), [preset]);
   const bucket = preset.bucket;
+
+  // Seasonality comparisons are independent from the period above (same
+  // behaviour as the booking statistics): one month vs previous years and a
+  // multi-month season.
+  const [compareMonth, setCompareMonth] = useState(() => new Date().getMonth() + 1);
+  const [seasonMonths, setSeasonMonths] = useState<number[]>(() => defaultSeasonMonths());
+  const monthSeason = useManualBillingSeasonal([compareMonth]);
+  const seasonSet = useManualBillingSeasonal(seasonMonths);
 
   const [data, setData] = useState<ManualBillingPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -386,6 +396,24 @@ export function ManualBillingSection({ refreshKey = 0, className, ...props }: Ma
           )}
         </AffluencePanel>
       </div>
+
+      <BillingMonthSeasonPanel
+        month={compareMonth}
+        onMonthChange={setCompareMonth}
+        years={monthSeason.data?.years ?? []}
+        loading={monthSeason.loading}
+        error={monthSeason.error}
+        testId="manual-billing-month-season"
+      />
+
+      <BillingSeasonPanel
+        months={seasonMonths}
+        onMonthsChange={setSeasonMonths}
+        years={seasonSet.data?.years ?? []}
+        loading={seasonSet.loading}
+        error={seasonSet.error}
+        testId="manual-billing-season"
+      />
 
       <footer className="flex items-center gap-2 text-xs text-[var(--bo-faint)]" data-ui="manual-billing-footer">
         <Wallet size={13} aria-hidden="true" data-ui="manual-billing-footer-icon" />
