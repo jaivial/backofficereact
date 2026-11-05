@@ -40,6 +40,8 @@ function grossTone(value: number): string {
   return value < 0 ? "text-[var(--bo-on-surface-danger)]" : "text-[var(--bo-text)]";
 }
 
+// Local KPI card instead of AffluenceKpi: that widget renders DeltaBadge, which
+// pulls lucide icons not present in the existing AnalyticsDashboard test mock.
 function BillingKpi({
   label,
   value,
@@ -158,7 +160,7 @@ export function ManualBillingSection({ refreshKey = 0, className, ...props }: Ma
   const totals = data?.totals ?? null;
   const previous = data?.previous ?? null;
   const hasData = Boolean(totals && totals.entries !== 0);
-  const hasVat = Boolean(data?.vatBreakdown.some((row) => row.rate > 0 && row.vatEUR !== 0));
+  const hasVat = Boolean(data?.vatBreakdown?.some((row) => row.rate > 0 && row.vatEUR !== 0));
   const periodDelta = percentDelta(totals?.grossEUR ?? 0, previous?.grossEUR ?? 0);
 
   return (
@@ -180,7 +182,7 @@ export function ManualBillingSection({ refreshKey = 0, className, ...props }: Ma
             Datos simples de facturación introducidos a mano, con base neta e IVA separados. Un importe negativo resta.
           </p>
           <p className="mt-1 text-xs text-[var(--bo-faint)]" data-testid="manual-billing-history" data-ui="manual-billing-history">
-            {data?.history.firstDate
+            {data?.history?.firstDate
               ? `Registros disponibles: ${formatISODate(data.history.firstDate)} — ${formatISODate(data.history.lastDate ?? data.history.firstDate)}`
               : "Sin registros de facturación manual todavía."}
           </p>
@@ -215,13 +217,13 @@ export function ManualBillingSection({ refreshKey = 0, className, ...props }: Ma
       ) : null}
 
       <div className="grid grid-cols-2 gap-2.5 sm:gap-5 xl:grid-cols-4" data-testid="manual-billing-kpis" data-ui="manual-billing-kpis" data-loading={loading}>
-        <BillingKpi label="Facturado" value={formatCurrency(totals?.grossEUR)} detail="Importe total registrado en el periodo" delta={data?.deltaPercent.grossEUR ?? null} icon={Wallet} testId="manual-billing-kpi-gross" />
-        <BillingKpi label="Base neta" value={formatCurrency(totals?.netEUR)} detail="Lo facturado sin IVA" delta={data?.deltaPercent.netEUR ?? null} icon={Receipt} testId="manual-billing-kpi-net" />
+        <BillingKpi label="Facturado" value={formatCurrency(totals?.grossEUR)} detail="Importe total registrado en el periodo" delta={data?.deltaPercent?.grossEUR ?? null} icon={Wallet} testId="manual-billing-kpi-gross" />
+        <BillingKpi label="Base neta" value={formatCurrency(totals?.netEUR)} detail="Lo facturado sin IVA" delta={data?.deltaPercent?.netEUR ?? null} icon={Receipt} testId="manual-billing-kpi-net" />
         <BillingKpi
           label="IVA repercutido"
           value={formatCurrency(totals?.vatEUR)}
           detail={`${formatNumber(totals?.vatIncludedEntries ?? 0)} de ${formatNumber(totals?.entries ?? 0)} registros con IVA`}
-          delta={data?.deltaPercent.vatEUR ?? null}
+          delta={data?.deltaPercent?.vatEUR ?? null}
           icon={Percent}
           testId="manual-billing-kpi-vat"
         />
@@ -229,7 +231,7 @@ export function ManualBillingSection({ refreshKey = 0, className, ...props }: Ma
           label="Ticket medio"
           value={formatCurrency(totals?.avgGrossEUR)}
           detail={`${formatNumber(totals?.entries ?? 0)} registros en ${formatNumber(totals?.activeDays ?? 0)} días`}
-          delta={percentDelta(totals?.avgGrossEUR, previous?.avgGrossEUR)}
+          delta={previous && previous.avgGrossEUR > 0 ? percentDelta(totals?.avgGrossEUR, previous.avgGrossEUR) : null}
           icon={WalletCards}
           testId="manual-billing-kpi-average"
         />
@@ -311,7 +313,7 @@ export function ManualBillingSection({ refreshKey = 0, className, ...props }: Ma
           icon={Percent}
           testId="manual-billing-vat-panel"
         >
-          {data && data.vatBreakdown.length ? (
+          {data?.vatBreakdown?.length ? (
             <div className="overflow-x-auto" data-ui="manual-billing-vat-table-wrap">
               <table className="w-full text-left text-sm" data-testid="manual-billing-vat-table">
                 <thead className="border-b border-[var(--bo-border)] text-xs uppercase tracking-wide text-[var(--bo-muted)]">
@@ -348,11 +350,13 @@ export function ManualBillingSection({ refreshKey = 0, className, ...props }: Ma
 
         <AffluencePanel
           title="Registros del periodo"
-          description="Los últimos registros incluidos en los totales, con su base neta e IVA."
+          description={data?.entriesTruncated
+            ? `Los últimos ${formatNumber(data.entries.length)} registros incluidos en los totales, con su base neta e IVA (hay más en el periodo).`
+            : "Los últimos registros incluidos en los totales, con su base neta e IVA."}
           icon={Receipt}
           testId="manual-billing-entries-panel"
         >
-          {data && data.entries.length ? (
+          {data?.entries?.length ? (
             <div className="max-h-72 overflow-y-auto" data-ui="manual-billing-entries-list">
               <table className="w-full text-left text-sm" data-testid="manual-billing-entries-table">
                 <thead className="sticky top-0 border-b border-[var(--bo-border)] bg-[var(--bo-surface)] text-xs uppercase tracking-wide text-[var(--bo-muted)]">

@@ -570,6 +570,8 @@ export type ManualBillingPayload = {
   series: ManualBillingSeriesPoint[];
   weekday: ManualBillingWeekdayPoint[];
   vatBreakdown: ManualBillingVatRateRow[];
+  /** True when the range has more entries than the latest-200 list shows. */
+  entriesTruncated?: boolean;
   entries: ManualBillingEntry[];
 };
 
