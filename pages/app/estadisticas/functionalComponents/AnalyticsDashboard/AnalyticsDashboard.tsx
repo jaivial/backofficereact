@@ -7,6 +7,8 @@ import type { AnalyticsCategoryRevenue, AnalyticsDayOfWeek, AnalyticsGranularity
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "../../../../../ui/shadcn/chart";
 import { cn } from "../../../../../ui/shadcn/utils";
 import { Card } from "../../../../../ui/shell/Card";
+import { ManualBillingModal } from "../ManualBilling/ManualBillingModal";
+import { ManualBillingSection } from "../ManualBilling/ManualBillingSection";
 import { TaxSimulation } from "../TaxSimulation/TaxSimulation";
 
 const GRANULARITY_OPTIONS: Array<{ value: AnalyticsGranularity; label: string }> = [
@@ -138,6 +140,8 @@ export function AnalyticsDashboard({
   ...props
 }: AnalyticsDashboardProps) {
   const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [billingModalOpen, setBillingModalOpen] = useState(false);
+  const [billingRefreshKey, setBillingRefreshKey] = useState(0);
   const reduceMotion = useReducedMotion();
 
   // Real data only: no synthetic fallbacks. If the backend returns no data
@@ -261,6 +265,23 @@ export function AnalyticsDashboard({
         </div>
       </header>
 
+      {/* Manual billing entry point: above the filters, right aligned, icon only. */}
+      <div className="flex justify-end" data-ui="analytics-actions-row">
+        <button
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--bo-accent)] text-[var(--bo-on-accent)] transition-[filter,opacity] duration-[var(--bo-transition-base)] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bo-accent)]"
+          type="button"
+          onClick={() => setBillingModalOpen(true)}
+          aria-label="Añadir facturación manual"
+          title="Añadir facturación manual"
+          data-testid="analytics-manual-billing-add"
+          data-ui="analytics-manual-billing-add"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" data-ui="analytics-manual-billing-add-icon">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+      </div>
+
       {/* Collapsible Filters */}
       <Card variant="glass" data-ui="analytics-filters-accordion">
         <div className="flex items-center justify-between gap-3 p-3 sm:gap-4 sm:p-4" data-ui="analytics-filters-header">
@@ -375,6 +396,14 @@ export function AnalyticsDashboard({
           ) : null}
         </AnimatePresence>
       </Card>
+
+      <ManualBillingSection refreshKey={billingRefreshKey} data-ui="analytics-manual-billing-section" />
+
+      <ManualBillingModal
+        open={billingModalOpen}
+        onClose={() => setBillingModalOpen(false)}
+        onCreated={() => setBillingRefreshKey((key) => key + 1)}
+      />
 
       {loading ? <LoadingState data-ui="analytics-loading-state" /> : null}
       {!loading && error ? <ErrorState message={error} data-ui="analytics-error-state" /> : null}

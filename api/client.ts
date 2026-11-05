@@ -100,6 +100,9 @@ import type {
   AffluenceBucket,
   AffluenceResponse,
   AffluenceSeasonalResponse,
+  ManualBillingCreateInput,
+  ManualBillingCreateResponse,
+  ManualBillingResponse,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 // Coordination id: menu_type_codes_v1 - menus.menu_type travels as a numeric code.
@@ -898,6 +901,19 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
       async getAffluenceSeasonal(months: number[]): Promise<AffluenceSeasonalResponse> {
         const q = new URLSearchParams({ months: months.join(",") });
         return json(`/api/admin/analytics/affluence/seasonal?${q.toString()}`, { method: "GET" });
+      },
+      /** Manual billing ledger for the Ventas tab. Tag: manual_billing_stats_v1. */
+      async getManualBilling(params: { from: string; to: string; bucket: AffluenceBucket }): Promise<ManualBillingResponse> {
+        const q = new URLSearchParams({ from: params.from, to: params.to, bucket: params.bucket });
+        return json(`/api/admin/analytics/manual-billing?${q.toString()}`, { method: "GET" });
+      },
+      /** Creates one manual billing entry; negative amounts subtract. Tag: manual_billing_stats_v1. */
+      async createManualBillingEntry(input: ManualBillingCreateInput): Promise<ManualBillingCreateResponse> {
+        return json("/api/admin/analytics/manual-billing", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(input),
+        });
       },
       async refresh(params: AnalyticsRefreshRequest): Promise<AnalyticsRefreshResponse> {
         return json("/api/admin/analytics/refresh", {
