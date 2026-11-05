@@ -2589,6 +2589,12 @@ export type SpecialDateSettings = {
    */
   custom_notice: string;
   prereserva_enabled: boolean;
+  /**
+   * Bookings for this date only through the restaurant's WhatsApp: the public
+   * wizard shows a WhatsApp notice instead of the time / party selectors.
+   * Coordination id: special_date_whatsapp_only_v1
+   */
+  whatsapp_only?: boolean;
   max_per_table_enabled: boolean;
   max_per_table: number | null;
   /**

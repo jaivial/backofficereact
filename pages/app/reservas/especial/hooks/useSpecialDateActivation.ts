@@ -20,6 +20,8 @@ export function emptySpecialDate(date: string): SpecialDateSettings {
     // Coordination id: special_date_custom_notice_v1
     custom_notice: "",
     prereserva_enabled: false,
+    // Coordination id: special_date_whatsapp_only_v1
+    whatsapp_only: false,
     max_per_table_enabled: false,
     max_per_table: null,
     mobility_enabled: false,

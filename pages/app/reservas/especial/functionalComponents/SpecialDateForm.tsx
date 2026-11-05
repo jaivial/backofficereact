@@ -277,6 +277,9 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
   const handleAskHighChairsToggle = useCallback((checked: boolean) => patch({ ask_high_chairs: checked }), [patch]);
   const handleAskBabyStrollersToggle = useCallback((checked: boolean) => patch({ ask_baby_strollers: checked }), [patch]);
 
+  // Coordination id: special_date_whatsapp_only_v1
+  const handleWhatsAppOnlyToggle = useCallback((checked: boolean) => patch({ whatsapp_only: checked }), [patch]);
+
   const handlePrereservaToggle = useCallback(
     (checked: boolean) => {
       patch({
@@ -766,6 +769,17 @@ export function SpecialDateForm({ date, initial, availableMenus, onSaved }: Spec
           </div>
 
           <FadeSeparator testId="special-date-sep-menus-prereserva" />
+
+          {/* Coordination id: special_date_whatsapp_only_v1 - the public
+              wizard shows a WhatsApp notice instead of time / party. */}
+          <ToggleRow
+            title="Reservas solo por WhatsApp"
+            desc="La web no permite reservar ni prereservar este día: muestra un aviso con el WhatsApp del restaurante"
+            checked={draft.whatsapp_only === true}
+            onToggle={handleWhatsAppOnlyToggle}
+            ariaLabel="Reservas solo por WhatsApp"
+            testId="special-date-whatsapp-only-row"
+          />
 
           {/* #3 Prereserva toggle */}
           <ToggleRow
