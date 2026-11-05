@@ -513,6 +513,82 @@ export type AffluenceSeasonalPayload = {
 
 export type AffluenceSeasonalResponse = APISuccess<AffluenceSeasonalPayload> | APIError;
 
+/** Manual billing ledger for Estadísticas > Ventas — tag `manual_billing_stats_v1`. */
+export type ManualBillingEntry = {
+  id: number;
+  date: string;
+  grossEUR: number;
+  netEUR: number;
+  vatEUR: number;
+  vatRate: number;
+  includesVat: boolean;
+};
+
+export type ManualBillingTotals = {
+  entries: number;
+  grossEUR: number;
+  netEUR: number;
+  vatEUR: number;
+  vatIncludedEntries: number;
+  activeDays: number;
+  avgGrossEUR: number;
+};
+
+export type ManualBillingSeriesPoint = {
+  key: string;
+  entries: number;
+  grossEUR: number;
+  netEUR: number;
+  vatEUR: number;
+};
+
+export type ManualBillingWeekdayPoint = {
+  weekday: number;
+  entries: number;
+  grossEUR: number;
+  netEUR: number;
+  vatEUR: number;
+};
+
+export type ManualBillingVatRateRow = {
+  rate: number;
+  entries: number;
+  grossEUR: number;
+  netEUR: number;
+  vatEUR: number;
+};
+
+export type ManualBillingPayload = {
+  tag: string;
+  from: string;
+  to: string;
+  bucket: AffluenceBucket;
+  history: AffluenceHistory;
+  totals: ManualBillingTotals;
+  previous: ManualBillingTotals & { from: string; to: string };
+  deltaPercent: { entries: number | null; grossEUR: number | null; netEUR: number | null; vatEUR: number | null };
+  series: ManualBillingSeriesPoint[];
+  weekday: ManualBillingWeekdayPoint[];
+  vatBreakdown: ManualBillingVatRateRow[];
+  /** True when the range has more entries than the latest-200 list shows. */
+  entriesTruncated?: boolean;
+  entries: ManualBillingEntry[];
+};
+
+/** Success payload plus the standard APIError branch (discriminated by `success`). */
+export type ManualBillingResponse = APISuccess<ManualBillingPayload> | APIError;
+
+export type ManualBillingCreateInput = {
+  date: string;
+  /** Signed amount: negative entries subtract from every total. */
+  amount: number;
+  includesVat: boolean;
+  /** Only meaningful when `includesVat`; the backend defaults it to 10%. */
+  vatRate?: number;
+};
+
+export type ManualBillingCreateResponse = APISuccess<{ tag: string; entry: ManualBillingEntry }> | APIError;
+
 export type MenuVisibilityItem = {
   menuKey: string;
   menuName: string;
