@@ -103,6 +103,7 @@ import type {
   ManualBillingCreateInput,
   ManualBillingCreateResponse,
   ManualBillingResponse,
+  ManualBillingSeasonalResponse,
 } from "./types";
 import type { BORole } from "../lib/rbac";
 // Coordination id: menu_type_codes_v1 - menus.menu_type travels as a numeric code.
@@ -914,6 +915,11 @@ export function createClient(opts: ClientOpts = { baseUrl: "" }) {
           headers: { "content-type": "application/json" },
           body: JSON.stringify(input),
         });
+      },
+      /** Same months across every year with entries (seasonality). Tag: manual_billing_stats_v1. */
+      async getManualBillingSeasonal(months: number[]): Promise<ManualBillingSeasonalResponse> {
+        const q = new URLSearchParams({ months: months.join(",") });
+        return json(`/api/admin/analytics/manual-billing/seasonal?${q.toString()}`, { method: "GET" });
       },
       async refresh(params: AnalyticsRefreshRequest): Promise<AnalyticsRefreshResponse> {
         return json("/api/admin/analytics/refresh", {

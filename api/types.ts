@@ -589,6 +589,38 @@ export type ManualBillingCreateInput = {
 
 export type ManualBillingCreateResponse = APISuccess<{ tag: string; entry: ManualBillingEntry }> | APIError;
 
+export type ManualBillingSeasonalWeek = {
+  entries: number;
+  grossEUR: number;
+  netEUR: number;
+  vatEUR: number;
+};
+
+export type ManualBillingSeasonalMonth = ManualBillingSeasonalWeek & {
+  month: number;
+  weeks: ManualBillingSeasonalWeek[];
+};
+
+export type ManualBillingSeasonalYear = ManualBillingSeasonalWeek & {
+  year: number;
+  partial: boolean;
+  /** Gross delta against the previous listed year (null when there is none). */
+  deltaPercentGross: number | null;
+  /** True when an unfinished season compared the previous year only up to the same date. */
+  deltaToDate: boolean;
+  months: ManualBillingSeasonalMonth[];
+};
+
+export type ManualBillingSeasonalPayload = {
+  tag: string;
+  months: number[];
+  today: string;
+  history: AffluenceHistory;
+  years: ManualBillingSeasonalYear[];
+};
+
+export type ManualBillingSeasonalResponse = APISuccess<ManualBillingSeasonalPayload> | APIError;
+
 export type MenuVisibilityItem = {
   menuKey: string;
   menuName: string;
