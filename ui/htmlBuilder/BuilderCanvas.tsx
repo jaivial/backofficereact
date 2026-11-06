@@ -319,7 +319,7 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
   return (
     <div
       ref={viewportRef}
-      className="relative h-full min-h-[420px] overflow-auto bg-[#0d0e13] bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:18px_18px]"
+      className="relative min-h-[420px] overflow-x-auto bg-[#0d0e13] lg:h-full lg:overflow-auto bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:18px_18px]"
       onClick={(e) => {
         if (e.target === e.currentTarget) onSelect(null);
       }}

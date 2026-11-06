@@ -9,6 +9,7 @@ import {
 } from "./document";
 import { fetchDesignCss } from "./css";
 import { BuilderCanvas, type BuilderDevice, type CanvasDrop, type CanvasStage } from "./BuilderCanvas";
+import { DraggableSheet } from "../mobile/DraggableSheet/DraggableSheet";
 import { BlockPalette, LayersPanel, type BlockIcon } from "./BuilderPanels";
 import { BuilderInspector, type ImageAI, type LinkPreset } from "./BuilderInspector";
 import { BuilderChat, type BuilderAI, type ChatLayout } from "./BuilderChat";
@@ -447,7 +448,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
           </aside>
         )}
 
-        <main className="relative h-[calc(100dvh-7rem)] min-h-[360px] min-w-0 lg:h-auto lg:min-h-0 lg:flex-1" data-testid={`${tp}-main`}>
+        <main className={cn("relative min-h-[360px] min-w-0 lg:h-auto lg:min-h-0 lg:flex-1", !lg && selectedId && "pb-[50dvh]")} data-testid={`${tp}-main`}>
           {mode === "design" && (
             <BuilderCanvas
               extraCss={profile.canvasCss}
@@ -476,7 +477,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
             </div>
           )}
           {mode === "code" && (
-            <div className="flex h-full flex-col gap-2 bg-[#0d0e13] p-3" data-testid={`${tp}-code`}>
+            <div className="flex h-full min-h-[70dvh] flex-col gap-2 bg-[#0d0e13] p-3 lg:min-h-0" data-testid={`${tp}-code`}>
               <textarea
                 className="min-h-0 flex-1 resize-none rounded-md border border-bo-border bg-bo-surface-3 p-3 font-mono text-[12px] leading-relaxed text-bo-text outline-none focus:border-[#7c5cff]/70"
                 spellCheck={false}
@@ -544,10 +545,9 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
         {/* Phones and small tablets: the same panels as tabs under the canvas
             (mounted instead of the side panel, never next to it). */}
         {!lg && (
-          <section className="border-t border-bo-border bg-bo-shell" aria-label="Paneles del editor" data-testid={`${tp}-mobile-panels`}>
-            {tabBar(`${tp}-mobile-tabs`)}
-            <div className="max-h-[60dvh] overflow-y-auto" data-testid={`${tp}-mobile-body`}>{panelBody(leftTab)}</div>
-          </section>
+          <DraggableSheet open={Boolean(selectedId)} onClose={() => select(null)} label="Paneles del editor" header={tabBar(`${tp}-mobile-tabs`)} testId={`${tp}-mobile-panels`}>
+            <div data-testid={`${tp}-mobile-body`}>{panelBody(leftTab)}</div>
+          </DraggableSheet>
         )}
       </div>
     </div>
