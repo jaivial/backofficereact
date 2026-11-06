@@ -379,7 +379,7 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
   const builderPage = draft?.kind === "multiple" ? (currentStep ? "step" : "cards") : "single";
 
   return (
-    <section className="flex min-w-0 flex-col gap-3 pb-24 sm:pb-0 lg:min-h-0 lg:flex-1 lg:pb-0" aria-label="Editor de anuncio" data-testid="ad-editor" data-coord-id="ads_html_editor_v1">
+    <section className="flex min-w-0 flex-col gap-5 pb-24 sm:pb-0 lg:min-h-0 lg:flex-1 lg:pb-0" aria-label="Editor de anuncio" data-testid="ad-editor" data-coord-id="ads_html_editor_v1">
       <h2 className="sr-only" data-testid="ad-editor-heading">Editor de anuncio</h2>
       <AdEditorHeader
         name={meta.name}
@@ -423,7 +423,7 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
       ) : (
         <>
           {tab === "diseno" && (
-            <div className="flex min-w-0 flex-col gap-2 lg:min-h-0 lg:flex-1" role="tabpanel" aria-label="Diseño" data-testid="ad-tabpanel-design">
+            <div className="flex min-w-0 flex-col gap-4 lg:min-h-0 lg:flex-1" role="tabpanel" aria-label="Diseño" data-testid="ad-tabpanel-design">
               <div className="eb-scope flex flex-wrap items-center gap-2" data-testid="ad-pages">
                 <Segmented<RestaurantAdDesignKind>
                   label="Tipo de anuncio"

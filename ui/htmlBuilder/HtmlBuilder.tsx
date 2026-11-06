@@ -447,7 +447,7 @@ export function HtmlBuilder({ value, onChange, context, coordId, onUploadImage, 
           </aside>
         )}
 
-        <main className="relative h-[64dvh] min-h-[420px] min-w-0 lg:h-auto lg:min-h-0 lg:flex-1" data-testid={`${tp}-main`}>
+        <main className="relative h-[calc(100dvh-7rem)] min-h-[360px] min-w-0 lg:h-auto lg:min-h-0 lg:flex-1" data-testid={`${tp}-main`}>
           {mode === "design" && (
             <BuilderCanvas
               extraCss={profile.canvasCss}
