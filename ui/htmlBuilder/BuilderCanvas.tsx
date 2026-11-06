@@ -84,6 +84,9 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
   // Load count of the canvas document: listeners and content re-bind on every load.
   const [ready, setReady] = useState(0);
   const [frameKey, setFrameKey] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const [coarse, setCoarse] = useState(false);
+  useEffect(() => setCoarse(window.matchMedia("(pointer: coarse)").matches), []);
   // canvas_no_navigation_v1: links target a blocked popup (<base target=_blank>
   // without allow-popups); if a native browser still navigates the frame away
   // from the canvas document, the canvas is rebuilt in place.
@@ -196,10 +199,42 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
     const el = editingRef.current;
     if (!el) return;
     editingRef.current = null;
+    setEditing(false);
     el.removeAttribute("contenteditable");
     const id = el.getAttribute(EB_ID);
     if (!cancel && id) handlers.current.onInlineEdit(id, el.innerHTML);
   }, []);
+
+  const startEdit = useCallback((el: HTMLElement | null) => {
+    if (!el || !isTextElement(el)) return false;
+    commitEdit();
+    editingRef.current = el;
+    setEditing(true);
+    el.setAttribute("contenteditable", "true");
+    el.focus();
+    handlers.current.onSelect(el.getAttribute(EB_ID));
+    return true;
+  }, [commitEdit]);
+
+  // Touch (canvas_tap_select_v1): native mobile browsers do not deliver taps
+  // to listeners on the script-less canvas document, so on coarse pointers a
+  // transparent layer over the frame takes the tap and resolves the element
+  // under the finger with elementFromPoint. A second tap on the same text
+  // within 350ms edits it in place; the layer steps aside while editing.
+  const lastTap = useRef<{ el: HTMLElement | null; at: number }>({ el: null, at: 0 });
+  const onTap = useCallback((e: React.MouseEvent) => {
+    const frame = frameRef.current;
+    const d = frame?.contentDocument;
+    if (!frame || !d) return;
+    const r = frame.getBoundingClientRect();
+    const node = d.elementFromPoint((e.clientX - r.left) / scale, (e.clientY - r.top) / scale);
+    const el = node?.closest<HTMLElement>(`[${EB_ID}]`) ?? null;
+    const double = lastTap.current.el === el && e.timeStamp - lastTap.current.at < 350;
+    lastTap.current = { el, at: e.timeStamp };
+    if (double && startEdit(el)) return;
+    commitEdit();
+    handlers.current.onSelect(el?.getAttribute(EB_ID) ?? null);
+  }, [commitEdit, scale, startEdit]);
 
   // One set of listeners per loaded document; they read the latest props through refs.
   useEffect(() => {
@@ -215,29 +250,6 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
       commitEdit();
       handlers.current.onSelect(elementAt(e.target)?.getAttribute(EB_ID) ?? null);
     };
-    // Touch (canvas_tap_select_v1): a tap selects the element under the finger and
-    // cancels the synthetic click, so links, cards and buttons never activate.
-    // A second tap on the same text within 350ms edits it in place (as dblclick).
-    let touchStart: { x: number; y: number } | null = null;
-    let lastTap: { el: HTMLElement | null; at: number } = { el: null, at: 0 };
-    const onTouchStart = (e: TouchEvent) => {
-      const t = e.touches[0];
-      touchStart = e.touches.length === 1 && t ? { x: t.clientX, y: t.clientY } : null;
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      const t = e.changedTouches[0];
-      const start = touchStart;
-      touchStart = null;
-      if (!start || !t || Math.hypot(t.clientX - start.x, t.clientY - start.y) > 10) return;
-      if (editingRef.current?.contains(e.target as Node)) return;
-      e.preventDefault();
-      const el = elementAt(e.target);
-      const double = lastTap.el === el && e.timeStamp - lastTap.at < 350;
-      lastTap = { el, at: e.timeStamp };
-      if (double && startEdit(el)) return;
-      commitEdit();
-      handlers.current.onSelect(el?.getAttribute(EB_ID) ?? null);
-    };
     const onSubmit = (e: Event) => e.preventDefault();
     const onMove = (e: MouseEvent) => {
       const el = elementAt(e.target);
@@ -248,15 +260,6 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
     const onLeave = () => {
       hoveredRef.current = null;
       setHoverBox(null);
-    };
-    const startEdit = (el: HTMLElement | null) => {
-      if (!el || !isTextElement(el)) return false;
-      commitEdit();
-      editingRef.current = el;
-      el.setAttribute("contenteditable", "true");
-      el.focus();
-      handlers.current.onSelect(el.getAttribute(EB_ID));
-      return true;
     };
     const onDblClick = (e: MouseEvent) => {
       if (startEdit(elementAt(e.target))) e.preventDefault();
@@ -312,8 +315,6 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
     d.addEventListener("click", onClick, true);
     d.addEventListener("auxclick", onSubmit, true);
     d.addEventListener("submit", onSubmit, true);
-    d.addEventListener("touchstart", onTouchStart, { capture: true, passive: true });
-    d.addEventListener("touchend", onTouchEnd, { capture: true, passive: false });
     d.addEventListener("mousemove", onMove);
     d.addEventListener("mouseleave", onLeave);
     d.addEventListener("dblclick", onDblClick);
@@ -326,8 +327,6 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
       d.removeEventListener("click", onClick, true);
       d.removeEventListener("auxclick", onSubmit, true);
       d.removeEventListener("submit", onSubmit, true);
-      d.removeEventListener("touchstart", onTouchStart, true);
-      d.removeEventListener("touchend", onTouchEnd, true);
       d.removeEventListener("mousemove", onMove);
       d.removeEventListener("mouseleave", onLeave);
       d.removeEventListener("dblclick", onDblClick);
@@ -337,7 +336,7 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
       d.removeEventListener("dragleave", onDragLeave);
       d.removeEventListener("drop", onDropEvent);
     };
-  }, [ready, commitEdit]);
+  }, [ready, commitEdit, startEdit]);
 
   const place = (b: Box): React.CSSProperties => ({ left: b.x * scale, top: b.y * scale, width: b.w * scale, height: b.h * scale });
 
@@ -376,6 +375,7 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
             style={{ width, height: frameHeight, transform: `scale(${scale})` }}
             data-testid={`${tp}-frame`}
           />
+          {coarse && !editing && <div className="absolute inset-0 z-[1] touch-manipulation" onClick={onTap} data-testid={`${tp}-tap-layer`} data-observe="canvas_tap_select_v1" />}
           {hoverBox && <div className="pointer-events-none absolute border border-dashed border-[#9b87ff]" style={place(hoverBox)} data-testid={`${tp}-hover-box`} />}
           {selectedBox && (
             <div className="pointer-events-none absolute border-2 border-[#7c5cff]" style={place(selectedBox)} data-testid={`${tp}-selection-box`}>
