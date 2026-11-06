@@ -5,6 +5,7 @@ import { cn } from "../../shadcn/utils";
  * Non-modal bottom sheet (draggable_sheet_v1): the page behind stays usable.
  * The handle in its header resizes it: drag up to grow, drag down to shrink,
  * below the close threshold it closes; a plain tap toggles small / tall.
+ * Its body keeps clear of the app bottom navbar (76px + safe area).
  */
 
 type Props = {
@@ -82,7 +83,7 @@ export function DraggableSheet({ open, onClose, header, children, label, testId,
         <span className="h-1.5 w-11 rounded-full bg-bo-muted/50" aria-hidden="true" data-testid={`${testId}-handle-bar`} />
       </div>
       {header && <div className="shrink-0" data-testid={`${testId}-header`}>{header}</div>}
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-testid={`${testId}-body`}>{children}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(76px+env(safe-area-inset-bottom,0px)+24px)]" data-testid={`${testId}-body`}>{children}</div>
     </section>
   );
 }
