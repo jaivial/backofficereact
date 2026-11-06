@@ -66,7 +66,7 @@ type Props = {
 };
 
 const skeleton = (extraCss: string) =>
-  `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}</style><style id="eb-tw"></style><style>[contenteditable="true"]{outline:none;cursor:text}a,img{cursor:default}html{touch-action:manipulation;-webkit-tap-highlight-color:transparent}a,button{-webkit-touch-callout:none}</style><style>${extraCss}</style></head><body></body></html>`;
+  `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank"><style>${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}</style><style id="eb-tw"></style><style>[contenteditable="true"]{outline:none;cursor:text}a,img{cursor:default}html{touch-action:manipulation;-webkit-tap-highlight-color:transparent}a,button{-webkit-touch-callout:none}</style><style>${extraCss}</style></head><body></body></html>`;
 const CONTAINER_TAGS = new Set(["DIV", "SECTION", "TD", "UL", "OL", "TABLE", "TR"]);
 
 function boxOf(el: Element | null): Box | null {
@@ -81,7 +81,32 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const editingRef = useRef<HTMLElement | null>(null);
-  const [ready, setReady] = useState(false);
+  // Load count of the canvas document: listeners and content re-bind on every load.
+  const [ready, setReady] = useState(0);
+  const [frameKey, setFrameKey] = useState(0);
+  // canvas_no_navigation_v1: links target a blocked popup (<base target=_blank>
+  // without allow-popups); if a native browser still navigates the frame away
+  // from the canvas document, the canvas is rebuilt in place.
+  const onFrameLoad = useCallback(() => {
+    let href = "";
+    try {
+      href = frameRef.current?.contentWindow?.location.href ?? "";
+    } catch {
+      href = "cross-origin";
+    }
+    if (href === "about:blank") return;
+    if (href && href !== "about:srcdoc") {
+      console.warn("[canvas_no_navigation_v1] canvas navigated away, restoring", href);
+      setReady(0);
+      setFrameKey((k) => k + 1);
+      return;
+    }
+    setReady((n) => n + 1);
+  }, []);
+  // A frame that finished loading before React attached onLoad still binds.
+  useEffect(() => {
+    if (!ready && frameRef.current?.contentDocument?.readyState === "complete" && frameRef.current.contentWindow?.location.href === "about:srcdoc") onFrameLoad();
+  }, [ready, frameKey, onFrameLoad]);
   const [frameHeight, setFrameHeight] = useState(640);
   const [available, setAvailable] = useState(800);
   const [hoverBox, setHoverBox] = useState<Box | null>(null);
@@ -340,11 +365,12 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
           data-testid={`${tp}-frame-box`}
         >
           <iframe
+            key={frameKey}
             ref={frameRef}
             title={stage ? "Lienzo del anuncio" : "Lienzo del email"}
             srcDoc={srcDoc}
             sandbox="allow-same-origin"
-            onLoad={() => setReady(true)}
+            onLoad={onFrameLoad}
             scrolling="no"
             className="block origin-top-left border-0"
             style={{ width, height: frameHeight, transform: `scale(${scale})` }}
