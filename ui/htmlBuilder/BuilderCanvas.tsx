@@ -66,7 +66,7 @@ type Props = {
 };
 
 const skeleton = (extraCss: string) =>
-  `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}</style><style id="eb-tw"></style><style>[contenteditable="true"]{outline:none;cursor:text}a,img{cursor:default}</style><style>${extraCss}</style></head><body></body></html>`;
+  `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${BORDER_PREFLIGHT_CSS}${EMAIL_RESET_CSS}</style><style id="eb-tw"></style><style>[contenteditable="true"]{outline:none;cursor:text}a,img{cursor:default}html{touch-action:manipulation;-webkit-tap-highlight-color:transparent}a,button{-webkit-touch-callout:none}</style><style>${extraCss}</style></head><body></body></html>`;
 const CONTAINER_TAGS = new Set(["DIV", "SECTION", "TD", "UL", "OL", "TABLE", "TR"]);
 
 function boxOf(el: Element | null): Box | null {
@@ -190,6 +190,30 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
       commitEdit();
       handlers.current.onSelect(elementAt(e.target)?.getAttribute(EB_ID) ?? null);
     };
+    // Touch (canvas_tap_select_v1): a tap selects the element under the finger and
+    // cancels the synthetic click, so links, cards and buttons never activate.
+    // A second tap on the same text within 350ms edits it in place (as dblclick).
+    let touchStart: { x: number; y: number } | null = null;
+    let lastTap: { el: HTMLElement | null; at: number } = { el: null, at: 0 };
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0];
+      touchStart = e.touches.length === 1 && t ? { x: t.clientX, y: t.clientY } : null;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const t = e.changedTouches[0];
+      const start = touchStart;
+      touchStart = null;
+      if (!start || !t || Math.hypot(t.clientX - start.x, t.clientY - start.y) > 10) return;
+      if (editingRef.current?.contains(e.target as Node)) return;
+      e.preventDefault();
+      const el = elementAt(e.target);
+      const double = lastTap.el === el && e.timeStamp - lastTap.at < 350;
+      lastTap = { el, at: e.timeStamp };
+      if (double && startEdit(el)) return;
+      commitEdit();
+      handlers.current.onSelect(el?.getAttribute(EB_ID) ?? null);
+    };
+    const onSubmit = (e: Event) => e.preventDefault();
     const onMove = (e: MouseEvent) => {
       const el = elementAt(e.target);
       if (el === hoveredRef.current) return;
@@ -200,15 +224,17 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
       hoveredRef.current = null;
       setHoverBox(null);
     };
-    const onDblClick = (e: MouseEvent) => {
-      const el = elementAt(e.target);
-      if (!el || !isTextElement(el)) return;
-      e.preventDefault();
+    const startEdit = (el: HTMLElement | null) => {
+      if (!el || !isTextElement(el)) return false;
       commitEdit();
       editingRef.current = el;
       el.setAttribute("contenteditable", "true");
       el.focus();
       handlers.current.onSelect(el.getAttribute(EB_ID));
+      return true;
+    };
+    const onDblClick = (e: MouseEvent) => {
+      if (startEdit(elementAt(e.target))) e.preventDefault();
     };
     const onFocusOut = (e: FocusEvent) => {
       if (editingRef.current && e.target === editingRef.current) commitEdit();
@@ -258,7 +284,11 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
         position,
       });
     };
-    d.addEventListener("click", onClick);
+    d.addEventListener("click", onClick, true);
+    d.addEventListener("auxclick", onSubmit, true);
+    d.addEventListener("submit", onSubmit, true);
+    d.addEventListener("touchstart", onTouchStart, { capture: true, passive: true });
+    d.addEventListener("touchend", onTouchEnd, { capture: true, passive: false });
     d.addEventListener("mousemove", onMove);
     d.addEventListener("mouseleave", onLeave);
     d.addEventListener("dblclick", onDblClick);
@@ -268,7 +298,11 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
     d.addEventListener("dragleave", onDragLeave);
     d.addEventListener("drop", onDropEvent);
     return () => {
-      d.removeEventListener("click", onClick);
+      d.removeEventListener("click", onClick, true);
+      d.removeEventListener("auxclick", onSubmit, true);
+      d.removeEventListener("submit", onSubmit, true);
+      d.removeEventListener("touchstart", onTouchStart, true);
+      d.removeEventListener("touchend", onTouchEnd, true);
       d.removeEventListener("mousemove", onMove);
       d.removeEventListener("mouseleave", onLeave);
       d.removeEventListener("dblclick", onDblClick);
