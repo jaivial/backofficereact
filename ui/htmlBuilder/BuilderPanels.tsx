@@ -34,7 +34,7 @@ const LAYER_ICONS: Record<string, Icon> = {
 export function BlockPalette({ blocks, icons = {}, onAdd }: { blocks: BlockDef[]; icons?: Record<string, BlockIcon>; onAdd: (kind: string) => void }) {
   const tp = useBuilderTestId();
   return (
-    <div className="grid grid-cols-2 gap-2 p-3" data-testid={`${tp}-palette`} data-observe={`${tp}-palette`}>
+    <div className="grid h-auto grid-cols-2 content-start gap-2 overflow-visible p-3" data-testid={`${tp}-palette`} data-observe={`${tp}-palette`}>
       {blocks.map((block) => {
         const Glyph = icons[block.kind] ?? Square;
         return (
