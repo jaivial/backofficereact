@@ -192,7 +192,9 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
     };
     // Touch (canvas_tap_select_v1): a tap selects the element under the finger and
     // cancels the synthetic click, so links, cards and buttons never activate.
+    // A second tap on the same text within 350ms edits it in place (as dblclick).
     let touchStart: { x: number; y: number } | null = null;
+    let lastTap: { el: HTMLElement | null; at: number } = { el: null, at: 0 };
     const onTouchStart = (e: TouchEvent) => {
       const t = e.touches[0];
       touchStart = e.touches.length === 1 && t ? { x: t.clientX, y: t.clientY } : null;
@@ -204,8 +206,12 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
       if (!start || !t || Math.hypot(t.clientX - start.x, t.clientY - start.y) > 10) return;
       if (editingRef.current?.contains(e.target as Node)) return;
       e.preventDefault();
+      const el = elementAt(e.target);
+      const double = lastTap.el === el && e.timeStamp - lastTap.at < 350;
+      lastTap = { el, at: e.timeStamp };
+      if (double && startEdit(el)) return;
       commitEdit();
-      handlers.current.onSelect(elementAt(e.target)?.getAttribute(EB_ID) ?? null);
+      handlers.current.onSelect(el?.getAttribute(EB_ID) ?? null);
     };
     const onSubmit = (e: Event) => e.preventDefault();
     const onMove = (e: MouseEvent) => {
@@ -218,15 +224,17 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
       hoveredRef.current = null;
       setHoverBox(null);
     };
-    const onDblClick = (e: MouseEvent) => {
-      const el = elementAt(e.target);
-      if (!el || !isTextElement(el)) return;
-      e.preventDefault();
+    const startEdit = (el: HTMLElement | null) => {
+      if (!el || !isTextElement(el)) return false;
       commitEdit();
       editingRef.current = el;
       el.setAttribute("contenteditable", "true");
       el.focus();
       handlers.current.onSelect(el.getAttribute(EB_ID));
+      return true;
+    };
+    const onDblClick = (e: MouseEvent) => {
+      if (startEdit(elementAt(e.target))) e.preventDefault();
     };
     const onFocusOut = (e: FocusEvent) => {
       if (editingRef.current && e.target === editingRef.current) commitEdit();
