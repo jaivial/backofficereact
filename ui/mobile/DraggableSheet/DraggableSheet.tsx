@@ -80,7 +80,7 @@ export function DraggableSheet({ open, onClose, header, children, label, testId,
         onPointerCancel={onUp}
         data-testid={`${testId}-handle`}
       >
-        <span className="h-1.5 w-11 rounded-full bg-bo-muted/50" aria-hidden="true" data-testid={`${testId}-handle-bar`} />
+        <span className="h-1.5 w-11 rounded-full bg-zinc-800 dark:bg-[#f8f6f0]" aria-hidden="true" data-testid={`${testId}-handle-bar`} />
       </div>
       {header && <div className="shrink-0" data-testid={`${testId}-header`}>{header}</div>}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(76px+env(safe-area-inset-bottom,0px)+24px)]" data-testid={`${testId}-body`}>{children}</div>
