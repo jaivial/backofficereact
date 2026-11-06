@@ -94,6 +94,7 @@ export function BuilderCanvas({ html, css, device, zoom, selectedId, selectedLab
     } catch {
       href = "cross-origin";
     }
+    if (href === "about:blank") return;
     if (href && href !== "about:srcdoc") {
       console.warn("[canvas_no_navigation_v1] canvas navigated away, restoring", href);
       setReady(0);
