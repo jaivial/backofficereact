@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ArrowUpLeft, Copy, ImageUp, Loader2, Sparkles, Trash2, WandSparkles } from "lucide-react";
 import { cn } from "../shadcn/utils";
 import { Select } from "../inputs/Select";
@@ -153,18 +153,55 @@ export function Segmented<T extends string>({ value, options, onChange, testId, 
   );
 }
 
-/** Text input that commits on blur/Enter, so typing never floods the undo history. */
+/**
+ * Text input that commits on blur/Enter, so typing never floods the undo
+ * history. A pending draft is never lost: it is flushed when the field goes
+ * away (the mobile sheet is closed, the page or the selection changes) and
+ * before it resyncs with a new value. Coordination id: builder_commit_flush_v1.
+ */
 function CommitInput({ value, onCommit, testId, multiline, placeholder, mono }: { value: string; onCommit: (v: string) => void; testId: string; multiline?: boolean; placeholder?: string; mono?: boolean }) {
   const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
-  const commit = () => draft !== value && onCommit(draft);
+  const draftRef = useRef(draft);
+  /** Value the draft is based on: while it differs, something is pending. */
+  const baseRef = useRef(value);
+  const onCommitRef = useRef(onCommit);
+  draftRef.current = draft;
+  onCommitRef.current = onCommit;
+
+  /** Sends the pending draft to the element of this field (only once). */
+  const flush = useCallback(() => {
+    const pending = draftRef.current;
+    if (pending === baseRef.current) return;
+    baseRef.current = pending;
+    onCommitRef.current(pending);
+  }, []);
+
+  // The field goes away (the mobile sheet is closed, the page or the selection
+  // changes): the draft still has to reach the element it was typed for.
+  useEffect(
+    () => () => {
+      if (draftRef.current === baseRef.current) return;
+      console.info("[builder_commit_flush_v1]", "borrador confirmado al desmontar", { testId, from: baseRef.current, to: draftRef.current });
+      flush();
+    },
+    [flush, testId],
+  );
+
+  // A new value arrived (our own commit, an undo, the AI): the draft is
+  // committed before the field resyncs, so it is never lost.
+  useEffect(() => {
+    if (draftRef.current !== baseRef.current) flush();
+    baseRef.current = value;
+    setDraft(value);
+  }, [value, flush]);
+
   return multiline ? (
     <textarea
       className={cn(INPUT, "h-auto min-h-[76px] resize-y py-1.5 leading-snug", mono && "font-mono text-[11.5px]")}
       value={draft}
       placeholder={placeholder}
       onChange={(e) => setDraft(e.currentTarget.value)}
-      onBlur={commit}
+      onBlur={flush}
       data-testid={testId}
     />
   ) : (
@@ -173,7 +210,7 @@ function CommitInput({ value, onCommit, testId, multiline, placeholder, mono }: 
       value={draft}
       placeholder={placeholder}
       onChange={(e) => setDraft(e.currentTarget.value)}
-      onBlur={commit}
+      onBlur={flush}
       onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
       data-testid={testId}
     />
@@ -282,6 +319,7 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
           {isText && (
             <Field label={el.children.length ? "Contenido (HTML)" : "Texto"} testId={`${tp}-inspector-text`}>
               <CommitInput
+                key={selectedId}
                 multiline
                 value={el.children.length ? el.innerHTML : el.textContent ?? ""}
                 onCommit={(v) => actions.update(selectedId, (node) => (el.children.length ? (node.innerHTML = v) : (node.textContent = v)))}
@@ -291,7 +329,7 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
           )}
           {tag === "a" && (
             <Field label="Enlace (URL)" testId={`${tp}-inspector-href`}>
-              <CommitInput value={el.getAttribute("href") ?? ""} placeholder="https://" onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("href", v.trim()))} testId={`${tp}-inspector-href-input`} />
+              <CommitInput key={selectedId} value={el.getAttribute("href") ?? ""} placeholder="https://" onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("href", v.trim()))} testId={`${tp}-inspector-href-input`} />
               <span className="flex flex-wrap gap-1.5" data-testid={`${tp}-inspector-href-presets`}>
                 {websiteUrl && (
                   <button type="button" className="rounded-full border border-bo-border px-2 py-0.5 text-[11px] text-bo-muted hover:text-bo-text" onClick={() => actions.update(selectedId, (node) => node.setAttribute("href", websiteUrl))} data-testid={`${tp}-inspector-href-website`}>
@@ -309,7 +347,7 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
           {tag === "img" && (
             <>
               <Field label="Imagen (URL)" testId={`${tp}-inspector-src`}>
-                <CommitInput value={el.getAttribute("src") ?? ""} placeholder="https://" onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("src", v.trim()))} testId={`${tp}-inspector-src-input`} />
+                <CommitInput key={selectedId} value={el.getAttribute("src") ?? ""} placeholder="https://" onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("src", v.trim()))} testId={`${tp}-inspector-src-input`} />
               </Field>
               {actions.uploadImage && (
                 <>
@@ -335,7 +373,7 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
                 />
               )}
               <Field label="Texto alternativo" testId={`${tp}-inspector-alt`}>
-                <CommitInput value={el.getAttribute("alt") ?? ""} onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("alt", v))} testId={`${tp}-inspector-alt-input`} />
+                <CommitInput key={selectedId} value={el.getAttribute("alt") ?? ""} onCommit={(v) => actions.update(selectedId, (node) => node.setAttribute("alt", v))} testId={`${tp}-inspector-alt-input`} />
               </Field>
             </>
           )}
@@ -404,7 +442,7 @@ export function BuilderInspector({ html, selectedId, accent, websiteUrl, actions
       </Section>
 
       <Section title="Clases Tailwind" testId={`${tp}-inspector-classes`}>
-        <CommitInput multiline mono value={classes.join(" ")} onCommit={(v) => setClasses(splitClasses(v))} testId={`${tp}-inspector-classes-input`} />
+        <CommitInput key={selectedId} multiline mono value={classes.join(" ")} onCommit={(v) => setClasses(splitClasses(v))} testId={`${tp}-inspector-classes-input`} />
         <p className="m-0 text-[11px] leading-snug text-bo-faint" data-testid={`${tp}-inspector-classes-help`}>
           Cualquier clase de Tailwind v3, con prefijos sm: y md: para tablet y escritorio.
         </p>

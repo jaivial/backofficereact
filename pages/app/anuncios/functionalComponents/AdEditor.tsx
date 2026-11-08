@@ -292,16 +292,31 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
 
   const saveRef = useRef(save);
   saveRef.current = save;
+  const saveTimer = useRef(0);
+  /**
+   * Saves once the focused field has committed its pending draft: the field
+   * is blurred (the draft is committed on blur) and the save waits one tick,
+   * so the committed value is already part of the design that is persisted.
+   * Coordination id: builder_commit_flush_v1.
+   */
+  const saveWithCommit = useCallback(() => {
+    (document.activeElement as HTMLElement | null)?.blur?.();
+    window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => void saveRef.current(), 0);
+  }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        void saveRef.current();
+        saveWithCommit();
       }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    return () => {
+      window.clearTimeout(saveTimer.current);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [saveWithCommit]);
 
   // Every image of the design lives in the ad's CDN folder: a new ad is saved
   // in place first to get its id. Failures are told here (toast) and rethrown.
@@ -394,7 +409,7 @@ export function AdEditor({ mode, adId, initialAd = null, initialTab = "diseno" }
         backHref={LIST_HREF}
         onBack={() => void navigate(LIST_HREF)}
         onNameChange={(name) => setMeta((m) => ({ ...m, name }))}
-        onSave={() => void save()}
+        onSave={saveWithCommit}
         onDelete={() => setConfirm({ kind: "delete" })}
       />
 
